@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Blazor", "RestaurantApp.Blazor\RestaurantApp.Blazor.csproj", "{6628AC3C-7C3A-4444-8C7D-8422D067E542}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{3934ECF5-CEE6-47EC-80F1-EB6C08998BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3934ECF5-CEE6-47EC-80F1-EB6C08998BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3934ECF5-CEE6-47EC-80F1-EB6C08998BD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6628AC3C-7C3A-4444-8C7D-8422D067E542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6628AC3C-7C3A-4444-8C7D-8422D067E542}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6628AC3C-7C3A-4444-8C7D-8422D067E542}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6628AC3C-7C3A-4444-8C7D-8422D067E542}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
