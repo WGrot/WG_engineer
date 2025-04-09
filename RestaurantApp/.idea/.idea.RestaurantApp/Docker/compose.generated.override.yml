@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  restaurantapp.api:
+    build:
+      context: "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp"
+      dockerfile: "RestaurantApp.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/RestaurantApp.Api.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "restaurantapp.api:dev"
+    ports: []
+    volumes:
+    - "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Api:/app:rw"
+    - "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp:/src:rw"
+    - "C:\\Users\\wojte\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"

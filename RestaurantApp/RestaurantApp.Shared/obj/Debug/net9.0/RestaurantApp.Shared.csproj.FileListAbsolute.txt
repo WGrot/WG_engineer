@@ -1,0 +1,11 @@
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\bin\Debug\net9.0\RestaurantApp.Shared.deps.json
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\bin\Debug\net9.0\RestaurantApp.Shared.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\bin\Debug\net9.0\RestaurantApp.Shared.pdb
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.GeneratedMSBuildEditorConfig.editorconfig
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.AssemblyInfoInputs.cache
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.AssemblyInfo.cs
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.csproj.CoreCompileInputs.cache
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\refint\RestaurantApp.Shared.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.pdb
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\ref\RestaurantApp.Shared.dll
