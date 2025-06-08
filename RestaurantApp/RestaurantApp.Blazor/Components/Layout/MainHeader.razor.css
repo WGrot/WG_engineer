@@ -15,7 +15,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px; /* usuń max-width i margin auto */
+    padding: 0 20px;
     width: 100%;
 }
 
@@ -55,6 +55,117 @@
     font-size: 1rem;
 }
 
+/* Nowe style dla menu */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1100;
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.slide-menu {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+    transition: right 0.3s ease;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+}
+
+.slide-menu.active {
+    right: 0;
+}
+
+.menu-header {
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    transition: opacity 0.2s ease;
+}
+
+.close-btn:hover {
+    opacity: 0.8;
+}
+
+.menu-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.menu-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.user-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+}
+
+.username {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.menu-nav {
+    padding: 20px 0;
+}
+
+.menu-item {
+    display: block;
+    padding: 16px 24px;
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 /* Responsywność */
 @media (max-width: 1080px) {
     .brand h1 {
@@ -67,5 +178,12 @@
 
     .header-actions {
         gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .slide-menu {
+        width: 280px;
+        right: -280px;
     }
 }
