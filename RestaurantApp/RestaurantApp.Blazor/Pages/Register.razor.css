@@ -1,0 +1,113 @@
+﻿.register-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #a8b5ff 0%, #e6d9ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: 80px;
+    z-index: 1001;
+}
+
+.register-container {
+    width: 100%;
+    max-width: 380px;
+}
+
+.register-card {
+    background: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%);
+    border-radius: 20px;
+    padding: 35px 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.register-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-align: center;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    box-sizing: border-box;
+}
+
+.form-control::placeholder {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.form-control:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.login-link {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.login-link span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.login-link a {
+    color: #b8c6ff;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.login-link a:hover {
+    color: white;
+}
+
+.register-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 5px;
+}
+
+.register-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.validation-message {
+    color: #9500ff;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+}
+

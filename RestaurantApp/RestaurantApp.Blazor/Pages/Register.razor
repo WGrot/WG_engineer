@@ -1,0 +1,74 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+
+<div class="register-page">
+    <div class="register-container">
+        <div class="register-card">
+            <h2 class="register-title">Create Account</h2>
+            
+            <EditForm Model="@_registerModel" OnValidSubmit="@HandleRegister">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <InputText id="username" @bind-Value="_registerModel.Username" class="form-control" placeholder="Choose your username" />
+                    <ValidationMessage For="@(() => _registerModel.Username)" class="validation-message" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <InputText id="email" @bind-Value="_registerModel.Email" class="form-control" placeholder="Enter your email" />
+                    <ValidationMessage For="@(() => _registerModel.Email)" class="validation-message" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <InputText id="password" @bind-Value="_registerModel.Password" type="password" class="form-control" placeholder="Create a password" />
+                    <ValidationMessage For="@(() => _registerModel.Password)" class="validation-message" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <InputText id="confirmPassword" @bind-Value="_registerModel.ConfirmPassword" type="password" class="form-control" placeholder="Confirm your password" />
+                    <ValidationMessage For="@(() => _registerModel.ConfirmPassword)" class="validation-message" />
+                </div>
+
+                <div class="login-link">
+                    <span>Already have an account?</span><br />
+                    <a href="/login">Log in here!</a>
+                </div>
+                
+                <button type="submit" class="register-btn">Create Account</button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel _registerModel = new();
+    
+    private async Task HandleRegister()
+    {
+        Console.WriteLine($"Registration attempt: {_registerModel.Email}");
+
+    }
+    
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Username is required")]
+        [StringLength(20, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 20 characters")]
+        public string Username { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
+        public string Password { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Please confirm your password")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

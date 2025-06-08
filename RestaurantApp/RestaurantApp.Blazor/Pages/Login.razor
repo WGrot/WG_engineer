@@ -1,21 +1,19 @@
 ﻿@page "/login"
 
-@inject NavigationManager NavigationManager
-
 <div class="login-page">
     <div class="login-container">
         <div class="login-card">
             <h2 class="login-title">Log in</h2>
             
-            <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
                 <div class="form-group">
                     <label for="email">e-mail</label>
-                    <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+                    <InputText id="email" @bind-Value="_loginModel.Email" class="form-control" />
                 </div>
                 
                 <div class="form-group">
                     <label for="password">password</label>
-                    <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+                    <InputText id="password" @bind-Value="_loginModel.Password" type="password" class="form-control" />
                 </div>
 
                 <div class="register-link">
@@ -34,11 +32,11 @@
 </div>
 
 @code {
-    private LoginModel loginModel = new();
+    private LoginModel _loginModel = new();
     
     private async Task HandleLogin()
     {
-        Console.WriteLine($"Login attempt: {loginModel.Email}");
+        Console.WriteLine($"Login attempt: {_loginModel.Email}");
     }
     
     public class LoginModel
