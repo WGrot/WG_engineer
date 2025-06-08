@@ -1,0 +1,52 @@
+﻿@page "/"
+<div class="homepage-container">
+    <div class="hero-section">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Book a table at your favorite restaurants</h1>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <div class="search-input-group">
+                        <div class="search-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <input type="text"
+                               class="search-input"
+                               placeholder="Search for restaurants"
+                               @bind="_searchQuery"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="location-input-group">
+                        <div class="location-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <input type="text"
+                               class="location-input"
+                               placeholder="Location"
+                               @bind="_locationQuery"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <button class="search-button" @onclick="SearchRestaurants">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _searchQuery = "";
+    private string _locationQuery = "";
+
+    private void SearchRestaurants()
+    {
+        // TODO: Implement search logic
+        Console.WriteLine($"Searching for: {_searchQuery} in {_locationQuery}");
+    }
+}

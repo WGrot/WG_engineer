@@ -26,6 +26,15 @@
     color: white;
 }
 
+.brand-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-link:hover {
+    text-decoration: none;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
