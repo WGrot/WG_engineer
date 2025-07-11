@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj": {}
+    "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj": {}
   },
   "projects": {
-    "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj": {
+    "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
+        "projectUniqueName": "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
         "projectName": "RestaurantApp.Shared",
-        "projectPath": "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
+        "projectPath": "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
         "packagesPath": "C:\\Users\\wojte\\.nuget\\packages\\",
-        "outputPath": "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\obj\\",
+        "outputPath": "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -45,11 +45,25 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
+            "Microsoft.AspNetCore.Identity": {
+              "target": "Package",
+              "version": "[2.3.1, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -66,7 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
