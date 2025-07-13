@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "GG5u9G5rCfQ=",
+  "dgSpecHash": "VeLPUD4Udhc=",
   "success": true,
-  "projectFilePath": "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
+  "projectFilePath": "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Shared\\RestaurantApp.Shared.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wojte\\.nuget\\packages\\microsoft.aspnetcore.authentication\\2.3.0\\microsoft.aspnetcore.authentication.2.3.0.nupkg.sha512",
     "C:\\Users\\wojte\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",

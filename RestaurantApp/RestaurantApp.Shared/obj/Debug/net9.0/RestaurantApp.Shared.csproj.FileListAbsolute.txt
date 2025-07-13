@@ -22,3 +22,5 @@ C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Sha
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.pdb
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\ref\RestaurantApp.Shared.dll
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.csproj.AssemblyReference.cache
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.csproj.AssemblyReference.cache
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Shared\obj\Debug\net9.0\RestaurantApp.Shared.sourcelink.json

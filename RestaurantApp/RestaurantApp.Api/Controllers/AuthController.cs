@@ -109,19 +109,32 @@ public class AuthController : ControllerBase
     }
     
     [HttpGet("me")]
+    [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
-        
-        // DEBUG - sprawdź wszystkie claims
-        var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-    
+        // Pobierz ID użytkownika z claims
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     
-        // DEBUG - zwróć info o tym co masz
-        return Ok(new { 
-            Claims = claims,
-            UserId = userId,
-            HasUserId = !string.IsNullOrEmpty(userId)
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { Message = "Nie znaleziono identyfikatora użytkownika" });
+        }
+
+        // Znajdź użytkownika w bazie danych
+        var user = await _userManager.FindByIdAsync(userId);
+    
+        if (user == null)
+        {
+            return NotFound(new { Message = "Użytkownik nie został znaleziony" });
+        }
+
+        // Zwróć dane użytkownika
+        return Ok(new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName
         });
     }
 

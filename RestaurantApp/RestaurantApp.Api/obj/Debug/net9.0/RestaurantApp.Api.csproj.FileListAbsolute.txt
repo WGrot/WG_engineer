@@ -284,3 +284,17 @@ C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Api
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\wojte\Documents\GitHub\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.Extensions.Identity.Core.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.Extensions.Identity.Stores.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+F:\wojte\Projects\Engineer\codename-scorpio\RestaurantApp\RestaurantApp.Api\obj\Debug\net9.0\RestaurantApp.Api.sourcelink.json

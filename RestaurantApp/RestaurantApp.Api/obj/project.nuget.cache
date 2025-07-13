@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BmXD0OPI004=",
+  "dgSpecHash": "vbN3UXb1wP0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Api\\RestaurantApp.Api.csproj",
+  "projectFilePath": "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Api\\RestaurantApp.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wojte\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\wojte\\.nuget\\packages\\microsoft.aspnetcore.authentication\\2.3.0\\microsoft.aspnetcore.authentication.2.3.0.nupkg.sha512",
