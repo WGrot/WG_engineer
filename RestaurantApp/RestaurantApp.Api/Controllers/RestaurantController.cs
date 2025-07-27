@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api;
 using RestaurantApp.Shared;
+using RestaurantApp.Shared.Models;
 
 [ApiController]
 [Route("api/[controller]")]

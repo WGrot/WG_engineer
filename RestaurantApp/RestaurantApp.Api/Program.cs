@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Shared;
+using RestaurantApp.Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

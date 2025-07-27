@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantApp.Shared;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
 

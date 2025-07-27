@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantApp.Api;
@@ -12,9 +13,11 @@ using RestaurantApp.Api;
 namespace RestaurantApp.Api.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250727145721_AddedMenuModels")]
+    partial class AddedMenuModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,87 +316,6 @@ namespace RestaurantApp.Api.Migrations
                     b.ToTable("MenuItems");
                 });
 
-            modelBuilder.Entity("RestaurantApp.Shared.Models.OpeningHours", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<TimeOnly>("CloseTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsClosed")
-                        .HasColumnType("boolean");
-
-                    b.Property<TimeOnly>("OpenTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RestaurantId");
-
-                    b.ToTable("OpeningHours");
-                });
-
-            modelBuilder.Entity("RestaurantApp.Shared.Models.ReservationBase", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerPhone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<int>("NumberOfGuests")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ReservationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RestaurantId");
-
-                    b.ToTable("Reservations");
-                });
-
             modelBuilder.Entity("RestaurantApp.Shared.Models.Restaurant", b =>
                 {
                     b.Property<int>("Id")
@@ -544,28 +466,6 @@ namespace RestaurantApp.Api.Migrations
                     b.Navigation("Menu");
                 });
 
-            modelBuilder.Entity("RestaurantApp.Shared.Models.OpeningHours", b =>
-                {
-                    b.HasOne("RestaurantApp.Shared.Models.Restaurant", "Restaurant")
-                        .WithMany("OpeningHours")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
-            modelBuilder.Entity("RestaurantApp.Shared.Models.ReservationBase", b =>
-                {
-                    b.HasOne("RestaurantApp.Shared.Models.Restaurant", "Restaurant")
-                        .WithMany()
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
             modelBuilder.Entity("RestaurantApp.Shared.Models.Seat", b =>
                 {
                     b.HasOne("RestaurantApp.Shared.Models.Table", "Table")
@@ -597,8 +497,6 @@ namespace RestaurantApp.Api.Migrations
                 {
                     b.Navigation("Menu")
                         .IsRequired();
-
-                    b.Navigation("OpeningHours");
                 });
 
             modelBuilder.Entity("RestaurantApp.Shared.Models.Table", b =>
