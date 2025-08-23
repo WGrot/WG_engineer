@@ -1,31 +1,55 @@
 ﻿@page "/login"
+@using Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <div class="login-page">
     <div class="login-container">
         <div class="login-card">
             <h2 class="login-title">Log in</h2>
-            
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+
             <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
                 <div class="form-group">
                     <label for="email">e-mail</label>
-                    <InputText id="email" @bind-Value="_loginModel.Email" class="form-control" />
+                    <InputText id="email" @bind-Value="_loginModel.Email"
+                               class="form-control" placeholder="email@example.com" />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">password</label>
-                    <InputText id="password" @bind-Value="_loginModel.Password" type="password" class="form-control" />
+                    <InputText id="password" @bind-Value="_loginModel.Password"
+                               type="password" class="form-control" />
                 </div>
 
                 <div class="register-link">
-                    <a href="/register">Forgot your password?</a>
+                    <a href="/forgot-password">Forgot your password?</a>
                 </div>
-                
+
                 <div class="register-link">
                     <span>Don't have an account?</span><br />
                     <a href="/register">Register now!</a>
                 </div>
-                
-                <button type="submit" class="login-btn">Log in</button>
+
+                <button type="submit" class="login-btn" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </span>
+                        <span>Logging in...</span>
+                    }
+                    else
+                    {
+                        <span>Log in</span>
+                    }
+                </button>
             </EditForm>
         </div>
     </div>
@@ -33,12 +57,44 @@
 
 @code {
     private LoginModel _loginModel = new();
-    
+    private bool _isLoading = false;
+    private string _errorMessage = string.Empty;
+
     private async Task HandleLogin()
     {
-        Console.WriteLine($"Login attempt: {_loginModel.Email}");
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        StateHasChanged(); // Odśwież UI
+
+        try
+        {
+            var success = await AuthService.LoginAsync(_loginModel.Email, _loginModel.Password);
+
+            if (success)
+            {
+                Navigation.NavigateTo("/", true); // true = force reload
+            }
+            else
+            {
+                _errorMessage = "Nieprawidłowy email lub hasło";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Nie można połączyć się z serwerem. Spróbuj ponownie później.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Wystąpił błąd podczas logowania. Spróbuj ponownie.";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
-    
+
     public class LoginModel
     {
         public string Email { get; set; } = string.Empty;

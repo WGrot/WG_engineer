@@ -100,6 +100,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("BlazorPolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:5198", "https://localhost:7174") // Adresy Twojego Blazor WASM
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -124,6 +137,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Dodaj po app.UseHttpsRedirection() i przed app.UseAuthentication()
+app.UseCors("BlazorPolicy");
 
 // WAŻNA KOLEJNOŚĆ!
 app.UseAuthentication(); // Musi być przed UseAuthorization
