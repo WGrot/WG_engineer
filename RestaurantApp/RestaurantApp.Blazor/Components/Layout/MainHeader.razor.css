@@ -41,7 +41,7 @@
     gap: 10px;
 }
 
-.login-btn, .menu-btn, .hamburger-btn {
+.login-btn, .menu-btn, .hamburger-btn, .user-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0);
     color: white;
@@ -55,7 +55,7 @@
     font-size: 0.9rem;
 }
 
-.login-btn:hover, .menu-btn:hover, .hamburger-btn:hover {
+.login-btn:hover, .menu-btn:hover, .hamburger-btn:hover, .user-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
 }
@@ -64,7 +64,66 @@
     font-size: 1rem;
 }
 
-/* Nowe style dla menu */
+/* User button styles */
+.user-btn {
+    gap: 8px;
+    position: relative;
+}
+
+.user-name {
+    font-weight: 500;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* User dropdown menu */
+.user-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 140px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    z-index: 1050;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #333;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: #f5f5f5;
+    text-decoration: none;
+}
+
+.dropdown-item i {
+    font-size: 1.1rem;
+    width: 20px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0;
+}
+
+/* Menu overlay */
 .menu-overlay {
     position: fixed;
     top: 0;
@@ -83,6 +142,7 @@
     visibility: visible;
 }
 
+/* Slide menu */
 .slide-menu {
     position: fixed;
     top: 0;
@@ -126,34 +186,6 @@
     overflow-y: auto;
 }
 
-.menu-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.user-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.user-avatar {
-    font-size: 1.5rem;
-    color: white;
-}
-
-.user-info {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-}
-
-.username {
-    font-size: 1rem;
-    font-weight: 400;
-}
-
 .menu-nav {
     padding: 20px 0;
 }
@@ -173,6 +205,66 @@
 
 .menu-item:hover {
     background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    color: white;
+}
+
+/* Menu footer */
+.menu-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 16px 24px;
+}
+
+.user-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.user-avatar {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.user-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.username {
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+}
+
+.user-email {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    color: white;
+}
+
+.logout-icon-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.logout-icon-btn:hover {
+    background: rgba(255, 100, 100, 0.3);
 }
 
 /* Responsywność */
@@ -181,12 +273,27 @@
         font-size: 1.2rem;
     }
 
-    .login-btn span {
+    .login-btn span:not(.user-icon) {
         display: none;
     }
 
     .header-actions {
         gap: 8px;
+    }
+
+    .user-name {
+        max-width: 100px;
+    }
+
+    .user-dropdown {
+        right: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-dropdown {
+        right: 10px;
+        min-width: 180px;
     }
 }
 
@@ -194,5 +301,24 @@
     .slide-menu {
         width: 280px;
         right: -280px;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .user-btn {
+        padding: 8px 12px;
+    }
+
+    .user-dropdown {
+        right: 10px;
+        top: 55px;
+        min-width: 160px;
+    }
+
+    .dropdown-item {
+        padding: 10px 14px;
+        font-size: 0.9rem;
     }
 }

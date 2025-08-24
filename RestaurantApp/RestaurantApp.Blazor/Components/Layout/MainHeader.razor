@@ -1,4 +1,10 @@
-﻿<header class="top-header">
+﻿@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Blazor.Models.DTO
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<header class="top-header">
     <div class="container-fluid">
         <div class="header-content">
             <div class="brand">
@@ -7,12 +13,26 @@
                 </a>
             </div>
             <div class="header-actions">
-                <a href="/login" class="login-btn">
-                    <span class="user-icon">
-                        <i class="bi bi-person"></i>
-                    </span>
-                    Log in
-                </a>
+                @if (_isAuthenticated && _currentUser != null)
+                {
+                    <button class="user-btn" @onclick="ToggleUserMenu">
+                        <span class="user-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </span>
+                        <span class="user-name">@_currentUser.Email</span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </button>
+                }
+                else
+                {
+                    <a href="/login" class="login-btn">
+                        <span class="user-icon">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        Log in
+                    </a>
+                }
+
                 <button class="menu-btn">
                     <span class="globe-icon">
                         <i class="bi bi-globe"></i>
@@ -28,6 +48,26 @@
     </div>
 </header>
 
+<!-- User Dropdown Menu -->
+@if (_isAuthenticated && isUserMenuOpen)
+{
+    <div class="user-dropdown">
+        <a href="/profile" class="dropdown-item">
+            <i class="bi bi-person"></i>
+            My profile
+        </a>
+        <a href="/orders" class="dropdown-item">
+            <i class="bi bi-bag"></i>
+            My orders
+        </a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" @onclick="HandleLogout">
+            <i class="bi bi-box-arrow-right"></i>
+            Log out
+        </button>
+    </div>
+}
+
 <!-- Overlay -->
 <div class="menu-overlay @(isMenuOpen ? "active" : "")" @onclick="CloseMenu"></div>
 
@@ -35,42 +75,133 @@
 <div class="slide-menu @(isMenuOpen ? "active" : "")">
     <div class="menu-content">
         <nav class="menu-nav">
-            <a href="#" class="menu-item">
-                <span>Placeholder 1</span>
-            </a>
-            <a href="#" class="menu-item">
-                <span>Placeholder 2</span>
-            </a>
-            <a href="#" class="menu-item">
-                <span>Placeholder 3</span>
-            </a>
+            @if (_isAuthenticated)
+            {
+                <a href="/profile" class="menu-item" @onclick="CloseMenu">
+                    <span>My Profile</span>
+                </a>
+                <a href="/orders" class="menu-item" @onclick="CloseMenu">
+                    <span>Orders</span>
+                </a>
+                <a href="/settings" class="menu-item" @onclick="CloseMenu">
+                    <span>Settings</span>
+                </a>
+            }
+            else
+            {
+                <a href="/login" class="menu-item" @onclick="CloseMenu">
+                    <span>log In</span>
+                </a>
+                <a href="/register" class="menu-item" @onclick="CloseMenu">
+                    <span>Register</span>
+                </a>
+            }
         </nav>
     </div>
     <div class="menu-footer">
-        <a href="#" class="menu-item user-menu-item">
-
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="bi bi-person-circle"></i>
+        @if (_isAuthenticated && _currentUser != null)
+        {
+            <div class="user-menu-item">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-email">@_currentUser.Email</span>
+                    </div>
                 </div>
-
-                <span class="username">Username</span>
-                <i class="bi bi-chevron-down"></i>
+                <button class="logout-icon-btn" @onclick="HandleLogout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
             </div>
-        </a>
+        }
+        else
+        {
+            <a href="/login" class="menu-item user-menu-item" @onclick="CloseMenu">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <span class="username">Gość</span>
+                </div>
+            </a>
+        }
     </div>
 </div>
 
 @code {
     private bool isMenuOpen = false;
+    private bool isUserMenuOpen = false;
+    private bool _isAuthenticated = false;
+    private UserDto? _currentUser;
+    private Timer? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthenticationStatus();
+
+        // Odświeżaj status co 30 sekund
+        _refreshTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await CheckAuthenticationStatus();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private async Task CheckAuthenticationStatus()
+    {
+        try
+        {
+            _isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            if (_isAuthenticated)
+            {
+                _currentUser = await AuthService.GetCurrentUserAsync();
+            }
+            else
+            {
+                _currentUser = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking auth status: {ex.Message}");
+            _isAuthenticated = false;
+            _currentUser = null;
+        }
+    }
 
     private void ToggleMenu()
     {
         isMenuOpen = !isMenuOpen;
+        isUserMenuOpen = false; // Zamknij user menu
+    }
+
+    private void ToggleUserMenu()
+    {
+        isUserMenuOpen = !isUserMenuOpen;
+        isMenuOpen = false; // Zamknij główne menu
     }
 
     private void CloseMenu()
     {
         isMenuOpen = false;
+        isUserMenuOpen = false;
+    }
+
+    private async Task HandleLogout()
+    {
+        CloseMenu();
+        await AuthService.LogoutAsync();
+        _isAuthenticated = false;
+        _currentUser = null;
+        Navigation.NavigateTo("/", true); // Force reload
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
     }
 }

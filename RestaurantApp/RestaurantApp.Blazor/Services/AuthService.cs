@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using RestaurantApp.Blazor.Models.DTO;
 
 namespace RestaurantApp.Blazor.Services;
 
@@ -78,5 +79,23 @@ public class AuthService
     {
         var token = await GetTokenAsync();
         return !string.IsNullOrEmpty(token);
+    }
+    
+    public async Task<UserDto?> GetCurrentUserAsync()
+    {
+        try
+        {
+            var userJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", USER_KEY);
+            if (!string.IsNullOrEmpty(userJson))
+            {
+                return JsonSerializer.Deserialize<UserDto>(userJson, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+        }
+        catch
+        {
+            // Ignore
+        }
+        return null;
     }
 }
