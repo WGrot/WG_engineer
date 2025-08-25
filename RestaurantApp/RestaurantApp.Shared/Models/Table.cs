@@ -10,5 +10,5 @@ public class Table
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; } = null!;
     
-    public List<Seat> Seats { get; set; } = new();
+    public List<Seat>? Seats { get; set; } = new();
 }

@@ -6,8 +6,8 @@ public class Restaurant
     public string Name { get; set; }
     public string Address { get; set; }
     
-    public Menu Menu { get; set; } = new Menu();
+    public Menu? Menu { get; set; }
 
-    public List<OpeningHours> OpeningHours { get; set; } = new();
+    public List<OpeningHours>? OpeningHours { get; set; }
 
 }
