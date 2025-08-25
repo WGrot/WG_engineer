@@ -10,5 +10,5 @@ public class Menu
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; } = null!;
     
-    public List<MenuItem> Items { get; set; } = new();
+    public List<MenuItem>? Items { get; set; } = new();
 }
