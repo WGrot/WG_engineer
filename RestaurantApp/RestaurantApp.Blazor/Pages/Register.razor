@@ -1,18 +1,43 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using System.Text
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="register-page">
     <div class="register-container">
         <div class="register-card">
             <h2 class="register-title">Create Account</h2>
             
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @_errorMessage
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(_successMessage))
+            {
+                <div class="alert alert-success">
+                    @_successMessage
+                </div>
+            }
+            
             <EditForm Model="@_registerModel" OnValidSubmit="@HandleRegister">
                 <DataAnnotationsValidator />
                 
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <InputText id="username" @bind-Value="_registerModel.Username" class="form-control" placeholder="Choose your username" />
-                    <ValidationMessage For="@(() => _registerModel.Username)" class="validation-message" />
+                    <label for="firstName">First Name</label>
+                    <InputText id="firstName" @bind-Value="_registerModel.FirstName" class="form-control" placeholder="Enter your first name" />
+                    <ValidationMessage For="@(() => _registerModel.FirstName)" class="validation-message" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <InputText id="lastName" @bind-Value="_registerModel.LastName" class="form-control" placeholder="Enter your last name" />
+                    <ValidationMessage For="@(() => _registerModel.LastName)" class="validation-message" />
                 </div>
                 
                 <div class="form-group">
@@ -38,7 +63,16 @@
                     <a href="/login">Log in here!</a>
                 </div>
                 
-                <button type="submit" class="register-btn">Create Account</button>
+                <button type="submit" class="register-btn" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span>Creating Account...</span>
+                    }
+                    else
+                    {
+                        <span>Create Account</span>
+                    }
+                </button>
             </EditForm>
         </div>
     </div>
@@ -46,18 +80,85 @@
 
 @code {
     private RegisterModel _registerModel = new();
+    private bool _isLoading = false;
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
     
     private async Task HandleRegister()
     {
-        Console.WriteLine($"Registration attempt: {_registerModel.Email}");
-
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+        
+        try
+        {
+            var registerRequest = new RegisterRequest
+            {
+                Email = _registerModel.Email,
+                Password = _registerModel.Password,
+                FirstName = _registerModel.FirstName,
+                LastName = _registerModel.LastName
+            };
+            
+            var json = JsonSerializer.Serialize(registerRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            // Zamień "https://localhost:7001" na adres swojego API
+            var response = await Http.PostAsync("api/auth/register", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _successMessage = "Account created successfully! You can now log in.";
+                
+                // Opcjonalnie: przekieruj na stronę logowania po kilku sekundach
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                
+                // Spróbuj sparsować błędy walidacji z ModelState
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(errorContent);
+                    if (errorResponse != null && errorResponse.ContainsKey("errors"))
+                    {
+                        var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(errorResponse["errors"].ToString());
+                        _errorMessage = string.Join("; ", errors.SelectMany(e => e.Value));
+                    }
+                    else
+                    {
+                        _errorMessage = "Registration failed. Please try again.";
+                    }
+                }
+                catch
+                {
+                    _errorMessage = "Registration failed. Please check your information and try again.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Registration error: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
     
     public class RegisterModel
     {
-        [Required(ErrorMessage = "Username is required")]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 20 characters")]
-        public string Username { get; set; } = string.Empty;
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be between 2 and 50 characters")]
+        public string FirstName { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters")]
+        public string LastName { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
@@ -70,5 +171,13 @@
         [Required(ErrorMessage = "Please confirm your password")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; } = string.Empty;
+    }
+    
+    public class RegisterRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
     }
 }
