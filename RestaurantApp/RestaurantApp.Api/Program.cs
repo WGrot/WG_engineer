@@ -47,7 +47,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
-
+builder.Services.AddScoped<IMenuService, MenuService>();
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

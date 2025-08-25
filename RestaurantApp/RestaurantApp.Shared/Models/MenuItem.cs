@@ -9,5 +9,6 @@ public class MenuItem
     
     public string? ImagePath { get; set; }
     
-    public Menu Menu { get; set; } = new Menu();
+    public int MenuId { get; set; }
+    public Menu Menu { get; set; }
 }
