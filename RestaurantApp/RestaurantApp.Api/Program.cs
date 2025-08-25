@@ -6,6 +6,8 @@ using RestaurantApp.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RestaurantApp.Api.Services;
+using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
 
@@ -43,6 +45,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
