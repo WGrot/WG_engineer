@@ -21,4 +21,7 @@ public class ReservationBase
     // Relacje
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; } = null!;
+    
+    public string UserId { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
 }

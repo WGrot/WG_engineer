@@ -16,6 +16,8 @@ public class ApplicationUser : IdentityUser
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
     
+    //Relacja do rezerwacji
+    public List<ReservationBase>? Reservations { get; set; } = new();
     
     // Jeśli aplikacja ma role restauracyjne
     public string? RestaurantId { get; set; } // Dla powiązania z konkretną restauracją
