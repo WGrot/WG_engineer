@@ -1,0 +1,241 @@
+﻿@page "/restaurants"
+@page "/restaurants/search"
+@using RestaurantApp.Shared.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="restaurants-container">
+    <div class="search-header">
+        <div class="search-header-content">
+            <h1>Restaurants</h1>
+            
+            <div class="search-filters">
+                <div class="filter-box">
+                    <div class="filter-input-group">
+                        <i class="bi bi-search"></i>
+                        <input type="text"
+                               placeholder="Search restaurants..."
+                               @bind="searchName"
+                               @bind:event="oninput"/>
+                    </div>
+                    
+                    <div class="filter-input-group">
+                        <i class="bi bi-geo-alt"></i>
+                        <input type="text"
+                               placeholder="Location..."
+                               @bind="searchLocation"
+                               @bind:event="oninput"/>
+                    </div>
+                    
+                    <button class="filter-button" @onclick="PerformSearch">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="restaurants-content">
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Loading restaurants...</p>
+            </div>
+        }
+        else if (restaurants == null || !restaurants.Any())
+        {
+            <div class="no-results">
+                <i class="bi bi-search" style="font-size: 3rem; color: #999;"></i>
+                <h3>No restaurants found</h3>
+                <p>Try adjusting your search criteria</p>
+                <button class="btn-primary" @onclick="ClearSearch">Clear filters</button>
+            </div>
+        }
+        else
+        {
+            <div class="results-info">
+                <p>Found <strong>@restaurants.Count()</strong> restaurant(s) @(!string.IsNullOrEmpty(searchName) || !string.IsNullOrEmpty(searchLocation) ? "matching your criteria" : "")</p>
+            </div>
+            
+            <div class="restaurants-grid">
+                @foreach (var restaurant in restaurants)
+                {
+                    <div class="restaurant-card" @onclick="() => NavigateToRestaurant(restaurant.Id)">
+                        <div class="restaurant-image">
+                            <!-- Placeholder image - możesz dodać właściwe obrazki -->
+                            <img src="https://via.placeholder.com/400x250/667eea/ffffff?text=@(restaurant.Name)" 
+                                 alt="@restaurant.Name" />
+                        </div>
+                        
+                        <div class="restaurant-info">
+                            <h3 class="restaurant-name">@restaurant.Name</h3>
+                            
+                            <div class="restaurant-details">
+                                <div class="detail-item">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>@restaurant.Address</span>
+                                </div>
+                                
+                                @if (restaurant.OpeningHours != null && restaurant.OpeningHours.Any())
+                                {
+                                    var todayHours = GetTodayHours(restaurant);
+                                    <div class="detail-item">
+                                        <i class="bi bi-clock"></i>
+                                        @if (todayHours != null && !todayHours.IsClosed)
+                                        {
+                                            <span class="@(IsOpenNow(restaurant) ? "text-success" : "text-danger")">
+                                                @(IsOpenNow(restaurant) ? "Open now" : "Closed") 
+                                                • @todayHours.OpenTime.ToString("HH:mm") - @todayHours.CloseTime.ToString("HH:mm")
+                                            </span>
+                                        }
+                                        else if (todayHours?.IsClosed == true)
+                                        {
+                                            <span class="text-danger">Closed today</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Hours not available</span>
+                                        }
+                                    </div>
+                                }
+                                
+                                @if (restaurant.Menu != null)
+                                {
+                                    <div class="detail-item">
+                                        <i class="bi bi-journal-text"></i>
+                                        <span>Menu available</span>
+                                    </div>
+                                }
+                            </div>
+                            
+                            <div class="restaurant-actions">
+                                <button class="btn-book" @onclick:stopPropagation="true" @onclick="() => BookTable(restaurant.Id)">
+                                    <i class="bi bi-calendar-check"></i>
+                                    Book Table
+                                </button>
+                                <button class="btn-view" @onclick:stopPropagation="true" @onclick="() => NavigateToRestaurant(restaurant.Id)">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    private List<Restaurant>? restaurants;
+    private bool isLoading = false;
+    private string searchName = "";
+    private string searchLocation = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Pobierz parametry z query string
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        
+        searchName = query["name"] ?? "";
+        searchLocation = query["location"] ?? "";
+        
+        await LoadRestaurants();
+    }
+
+    private async Task LoadRestaurants()
+    {
+        try
+        {
+            isLoading = true;
+            
+            var queryParams = new List<string>();
+            
+            if (!string.IsNullOrWhiteSpace(searchName))
+                queryParams.Add($"name={Uri.EscapeDataString(searchName)}");
+            
+            if (!string.IsNullOrWhiteSpace(searchLocation))
+                queryParams.Add($"address={Uri.EscapeDataString(searchLocation)}");
+            
+            var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+            
+            restaurants = await Http.GetFromJsonAsync<List<Restaurant>>($"api/Restaurant/search{queryString}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading restaurants: {ex.Message}");
+            restaurants = new List<Restaurant>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PerformSearch()
+    {
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(searchName))
+            queryParams.Add($"name={Uri.EscapeDataString(searchName)}");
+        
+        if (!string.IsNullOrWhiteSpace(searchLocation))
+            queryParams.Add($"location={Uri.EscapeDataString(searchLocation)}");
+        
+        var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        
+        Navigation.NavigateTo($"/restaurants{queryString}");
+        await LoadRestaurants();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchName = "";
+        searchLocation = "";
+        Navigation.NavigateTo("/restaurants");
+        await LoadRestaurants();
+    }
+
+    private void NavigateToRestaurant(int id)
+    {
+        Navigation.NavigateTo($"/restaurant/{id}");
+    }
+
+    private void BookTable(int restaurantId)
+    {
+        Navigation.NavigateTo($"/booking/{restaurantId}");
+    }
+
+    private bool IsOpenNow(Restaurant restaurant)
+    {
+        if (restaurant.OpeningHours == null || !restaurant.OpeningHours.Any())
+            return false;
+        
+        var now = DateTime.Now;
+        var currentDay = now.DayOfWeek;
+        var currentTime = TimeOnly.FromDateTime(now);
+        
+        // Znajdź godziny otwarcia dla dzisiejszego dnia
+        var todayHours = restaurant.OpeningHours
+            .FirstOrDefault(h => h.DayOfWeek == currentDay);
+        
+        if (todayHours == null)
+            return false;
+        
+        // Użyj metody IsOpenAt z modelu OpeningHours
+        return todayHours.IsOpenAt(currentTime);
+    }
+    
+    private OpeningHours? GetTodayHours(Restaurant restaurant)
+    {
+        if (restaurant.OpeningHours == null || !restaurant.OpeningHours.Any())
+            return null;
+            
+        var currentDay = DateTime.Now.DayOfWeek;
+        return restaurant.OpeningHours.FirstOrDefault(h => h.DayOfWeek == currentDay);
+    }
+}

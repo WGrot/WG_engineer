@@ -1,4 +1,6 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
+
 <div class="homepage-container">
     <div class="hero-section">
         <div class="hero-background"></div>
@@ -15,7 +17,7 @@
                                class="search-input"
                                placeholder="Search for restaurants"
                                @bind="_searchQuery"
-                               @bind:event="oninput" />
+                               @bind:event="oninput"/>
                     </div>
 
                     <div class="divider"></div>
@@ -28,7 +30,7 @@
                                class="location-input"
                                placeholder="Location"
                                @bind="_locationQuery"
-                               @bind:event="oninput" />
+                               @bind:event="oninput"/>
                     </div>
 
                     <button class="search-button" @onclick="SearchRestaurants">
@@ -38,15 +40,37 @@
             </div>
         </div>
     </div>
+    
+
 </div>
 
 @code {
     private string _searchQuery = "";
     private string _locationQuery = "";
 
-    private void SearchRestaurants()
+    private async Task SearchRestaurants()
     {
-        // TODO: Implement search logic
-        Console.WriteLine($"Searching for: {_searchQuery} in {_locationQuery}");
+        // Buduj query string z parametrami wyszukiwania
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            queryParams.Add($"name={Uri.EscapeDataString(_searchQuery)}");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(_locationQuery))
+        {
+            queryParams.Add($"location={Uri.EscapeDataString(_locationQuery)}");
+        }
+        
+        var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        
+        // Nawiguj do strony z listą restauracji
+        Navigation.NavigateTo($"/restaurants{queryString}");
+    }
+
+    private void BrowseAllRestaurants()
+    {
+        Navigation.NavigateTo("/restaurants");
     }
 }

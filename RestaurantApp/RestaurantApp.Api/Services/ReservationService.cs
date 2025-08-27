@@ -18,7 +18,6 @@ public class ReservationService : IReservationService
     {
         return await _context.Reservations
             .Include(r => r.Restaurant)
-            .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
     }
 
@@ -26,7 +25,6 @@ public class ReservationService : IReservationService
     {
         return await _context.Reservations
             .Include(r => r.Restaurant)
-            .Include(r => r.User)
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
     }
@@ -92,7 +90,6 @@ public class ReservationService : IReservationService
     {
         return await _context.TableReservations
             .Include(r => r.Restaurant)
-            .Include(r => r.User)
             .Include(r => r.Table)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
     }
@@ -252,7 +249,6 @@ public class ReservationService : IReservationService
     {
         return await _context.TableReservations
             .Include(r => r.Restaurant)
-            .Include(r => r.User)
             .Include(r => r.Table)
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
@@ -262,7 +258,6 @@ public class ReservationService : IReservationService
     {
         return await _context.TableReservations
             .Include(r => r.Restaurant)
-            .Include(r => r.User)
             .Include(r => r.Table)
             .Where(r => r.TableId == tableId)
             .OrderBy(r => r.ReservationDate)
