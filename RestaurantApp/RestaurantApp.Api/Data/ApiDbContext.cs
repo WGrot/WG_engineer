@@ -21,9 +21,14 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OpeningHours> OpeningHours => Set<OpeningHours>();
     
     public DbSet<ReservationBase> Reservations => Set<ReservationBase>();
+    public DbSet<TableReservation> TableReservations { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         
+        builder.Entity<ReservationBase>()
+            .HasDiscriminator<string>("Discriminator")
+            .HasValue<ReservationBase>("ReservationBase")
+            .HasValue<TableReservation>("TableReservation");
     }
 }
