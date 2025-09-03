@@ -17,6 +17,8 @@ public interface IReservationService
     Task UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
     Task DeleteTableReservationAsync(int reservationId);
 
+    Task<IEnumerable<ReservationBase>> GetReservationsByTableIdAsync(int tableId);
+
     // Metody pomocnicze
     Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime, int? excludeReservationId = null);
     Task UpdateReservationStatusAsync(int reservationId, ReservationStatus status);

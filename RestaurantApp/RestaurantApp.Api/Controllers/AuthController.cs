@@ -133,7 +133,8 @@ public class AuthController : ControllerBase
             Id = user.Id,
             Email = user.Email,
             FirstName = user.FirstName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber
         });
     }
 
@@ -187,4 +188,6 @@ public class UserDto
     public string? Email { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    
+    public string? PhoneNumber { get; set; }
 }

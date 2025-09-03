@@ -130,7 +130,7 @@ public class ReservationController : ControllerBase
     // Table Reservation Endpoints
 
     // GET: api/reservation/table/{id}
-    [HttpGet("table/{id}")]
+    [HttpGet("tableReservation/{id}")]
     public async Task<ActionResult<TableReservation>> GetTableReservation(int id)
     {
         try
@@ -150,7 +150,23 @@ public class ReservationController : ControllerBase
             return StatusCode(500, "An error occurred while retrieving the table reservation.");
         }
     }
-
+    
+    // GET: api/reservation/table/{tableId}
+    [HttpGet("reservation/table/{tableId}")]
+    public async Task<ActionResult<IEnumerable<ReservationBase>>> GetTableReservationsByTableId(int tableId)
+    {
+        try
+        {
+            var reservations = await _reservationService.GetReservationsByTableIdAsync(tableId);
+            return Ok(reservations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting reservations for restaurant {tableId}", tableId);
+            return StatusCode(500, "An error occurred while retrieving reservations.");
+        }
+    }
+    
     // POST: api/reservation/table
     [HttpPost("table")]
     public async Task<ActionResult<TableReservation>> CreateTableReservation([FromBody] TableReservationDto tableReservationDto)

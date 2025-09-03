@@ -28,6 +28,14 @@ public class ReservationService : IReservationService
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
     }
+    
+    public async Task<IEnumerable<ReservationBase>> GetReservationsByTableIdAsync(int tableId)
+    {
+        return await _context.TableReservations
+            .Include(r => r.Restaurant)
+            .Where(r => r.TableId== tableId)
+            .ToListAsync();
+    }
 
     public async Task<ReservationBase> CreateReservationAsync(ReservationDto reservationDto)
     {
