@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
@@ -41,17 +42,34 @@ public class ReservationController : ControllerBase
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
-    [HttpGet("restaurant/{restaurantId}")]
-    public async Task<ActionResult<IEnumerable<ReservationBase>>> GetReservationsByRestaurant(int restaurantId)
+    [HttpGet("restaurant/{userId}")]
+    public async Task<ActionResult<IEnumerable<ReservationBase>>> GetReservationsByRestaurant(int userId)
     {
         try
         {
-            var reservations = await _reservationService.GetReservationsByRestaurantIdAsync(restaurantId);
+            var reservations = await _reservationService.GetReservationsByRestaurantIdAsync(userId);
             return Ok(reservations);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting reservations for restaurant {RestaurantId}", restaurantId);
+            _logger.LogError(ex, "Error getting reservations for restaurant {RestaurantId}", userId);
+            return StatusCode(500, "An error occurred while retrieving reservations.");
+        }
+    }
+    
+    // GET: api/reservation/client/{clientId}
+    [Authorize]
+    [HttpGet("client/{userId}")]
+    public async Task<ActionResult<IEnumerable<ReservationBase>>> GetReservationsByUserId(string userId)
+    {
+        try
+        {
+            var reservations = await _reservationService.GetReservationsByUserIdAsync(userId);
+            return Ok(reservations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting reservations for restaurant {RestaurantId}", userId);
             return StatusCode(500, "An error occurred while retrieving reservations.");
         }
     }

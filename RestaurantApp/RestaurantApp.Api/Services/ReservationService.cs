@@ -28,7 +28,15 @@ public class ReservationService : IReservationService
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
     }
-    
+
+    public async Task<IEnumerable<ReservationBase>> GetReservationsByUserIdAsync(string userId)
+    {
+        return await _context.Reservations
+            .Include(r => r.Restaurant)
+            .Where(r => r.UserId == userId)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<ReservationBase>> GetReservationsByTableIdAsync(int tableId)
     {
         return await _context.TableReservations

@@ -7,6 +7,8 @@ public interface IReservationService
 {
     Task<ReservationBase?> GetReservationByIdAsync(int reservationId);
     Task<IEnumerable<ReservationBase>> GetReservationsByRestaurantIdAsync(int restaurantId);
+    
+    Task<IEnumerable<ReservationBase>> GetReservationsByUserIdAsync(string userId);
     Task<ReservationBase> CreateReservationAsync(ReservationDto reservationDto);
     Task UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
     Task DeleteReservationAsync(int reservationId);
