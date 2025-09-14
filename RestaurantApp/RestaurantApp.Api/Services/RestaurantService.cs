@@ -205,6 +205,25 @@ public class RestaurantService : IRestaurantService
         _logger.LogInformation("Updated address for restaurant ID: {RestaurantId}", id);
     }
 
+    public async Task UpdateNameAsync(int id, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be empty.");
+        }
+
+        var restaurant = await _context.Restaurants.FindAsync(id);
+        if (restaurant == null)
+        {
+            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+        }
+
+        restaurant.Name = name;
+        await _context.SaveChangesAsync();
+        
+        _logger.LogInformation("Updated name for restaurant ID: {RestaurantId}", id);
+    }
+
     public async Task UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours)
     {
         var restaurant = await _context.Restaurants

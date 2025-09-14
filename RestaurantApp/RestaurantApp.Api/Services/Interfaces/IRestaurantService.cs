@@ -15,6 +15,7 @@ public interface IRestaurantService
     Task<Restaurant> CreateAsync(RestaurantDto restaurantDto);
     Task UpdateAsync(int id, RestaurantDto restaurantDto);
     Task UpdateAddressAsync(int id, string address);
+    Task UpdateNameAsync(int id, string name);
     Task UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
     Task DeleteAsync(int id);
 }

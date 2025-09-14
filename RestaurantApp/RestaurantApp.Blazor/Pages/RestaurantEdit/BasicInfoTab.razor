@@ -1,5 +1,6 @@
 ﻿@using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.Models
+@inject HttpClient Http
 <h3>BasicInfoTab</h3>
 
 @if (restaurant != null)
@@ -47,9 +48,18 @@ else
         throw new NotImplementedException();
     }
 
-    private Task SaveChanges()
+    private async Task SaveChanges()
     {
-        throw new NotImplementedException();
+        try
+        {
+            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/name", restaurant.Name);
+            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/address", restaurant.Address);
+            changesMade = false;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error saving data: {e.Message}");
+        }
     }
 
 }

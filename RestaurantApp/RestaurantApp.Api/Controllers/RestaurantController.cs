@@ -178,6 +178,28 @@ public class RestaurantController : ControllerBase
             return NotFound(ex.Message);
         }
     }
+    
+    // PATCH: api/Restaurant/5/address
+    [HttpPatch("{id}/name")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateName(int id, [FromBody] string name)
+    {
+        try
+        {
+            await _restaurantService.UpdateNameAsync(id, name);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
 
     // PATCH: api/Restaurant/5/opening-hours
     [HttpPatch("{id}/opening-hours")]
