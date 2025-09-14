@@ -1,0 +1,55 @@
+﻿@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+<h3>BasicInfoTab</h3>
+
+@if (restaurant != null)
+{
+    <div class="edit-content">
+        <!-- Sekcja podstawowych informacji -->
+        <div class="edit-card">
+            <h3 class="section-title">Basic informations</h3>
+            <div class="form-group">
+                <label class="form-label">Restaurant name</label>
+                <input type="text" class="form-input"
+                       @bind="restaurant.Name"
+                       @bind:after="() => changesMade = true"/>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <input type="text" class="form-input"
+                       @bind="restaurant.Address"
+                       @bind:after="() => changesMade = true"/>
+            </div>
+        </div>
+    </div>
+    @if (changesMade)
+    {
+        <div class="action-buttons">
+            <button  @onclick="CancelChanges">Cancel</button>
+            <button  @onclick="SaveChanges">
+                Save Changes
+            </button>
+        </div>
+    }
+}
+else
+{
+    <div class="loading">Loading restaurant data...</div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Restaurant? restaurant { get; set; }
+    private bool changesMade = false;
+
+    private Task CancelChanges()
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task SaveChanges()
+    {
+        throw new NotImplementedException();
+    }
+
+}

@@ -1,0 +1,213 @@
+﻿@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+<h3>TablesTab</h3>
+
+<!-- Sekcja stolików -->
+<div class="edit-card">
+    <div class="section-header">
+        <h3 class="section-title">Tables</h3>
+        <button class="add-button" @onclick="ShowAddTableForm">
+            <span class="plus-icon">+</span> Add table
+        </button>
+    </div>
+
+    @if (showAddTable)
+    {
+        <div class="add-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Table number</label>
+                    <input type="text" class="form-input" @bind="newTable.TableNumber" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Number of seats</label>
+                    <input type="number" class="form-input" min="1" @bind="newTable.Capacity" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Localization</label>
+                    <input type="text" class="form-input" @bind="newTable.Location" />
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn-secondary" @onclick="CancelAddTable">Cancel</button>
+                <button class="btn-primary" @onclick="AddTable">Add</button>
+            </div>
+        </div>
+    }
+
+    <div class="tables-grid">
+        @if (loadedTables != null && loadedTables.Any())
+        {
+            @foreach (var table in loadedTables)
+            {
+                <div class="table-card">
+                    <div class="table-header">
+                        <span class="table-number">Table @table.TableNumber</span>
+                        <button class="delete-button" @onclick="() => DeleteTable(table)">
+                            <span class="delete-icon">×</span>
+                        </button>
+                    </div>
+                    <div class="table-info">
+                        <div class="info-row">
+                            <span class="info-label">Seats:</span>
+                            <span class="info-value">@table.Capacity</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(table.Location))
+                        {
+                            <div class="info-row">
+                                <span class="info-label">Localization:</span>
+                                <span class="info-value">@table.Location</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            @if (changesMade)
+            {
+                <div class="action-buttons">
+                    <button  @onclick="CancelChanges">Cancel</button>
+                    <button  @onclick="SaveChanges">
+                        Save Changes
+                    </button>
+                </div>
+            }
+
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No tables configured please add some</p>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Restaurant? restaurant { get; set; }
+    private List<Table> loadedTables = new();
+    private List<CreateTableDto> modifiedTablesDtos = new();
+    private List<Table> deletedTables = new();
+    private Table newTable = new();
+    private bool showAddTable = false;
+    private bool changesMade = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTables();
+    }
+    
+    private async Task LoadTables()
+    {
+        try
+        {
+            loadedTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+            if (loadedTables == null)
+            {
+                loadedTables = new List<Table>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tables: {ex.Message}");
+        }
+    }
+    
+    private void ShowAddTableForm()
+    {
+        showAddTable = true;
+        newTable = new Table { RestaurantId = Id, Capacity = 2 };
+    }
+
+    private void CancelAddTable()
+    {
+        showAddTable = false;
+        newTable = new Table();
+    }
+
+    private void AddTable()
+    {
+        if (string.IsNullOrWhiteSpace(newTable.TableNumber))
+        {
+            return;
+        }
+        
+            // Przygotuj DTO zgodne z oczekiwaniami endpointu
+            var createTableDto = new CreateTableDto
+            {
+                TableNumber = newTable.TableNumber,
+                Capacity = newTable.Capacity,
+                Location = newTable.Location,
+                RestaurantId = Id,
+                SeatCount = newTable.Capacity // Ustaw SeatCount na podstawie Capacity
+            };
+            
+            modifiedTablesDtos.Add(createTableDto);
+            loadedTables.Add(newTable);
+            
+        showAddTable = false;
+        changesMade = true;
+        newTable = new Table();
+    }
+
+    private async Task DeleteTable(Table table)
+    {
+        loadedTables.Remove(table);
+        deletedTables.Add(table);
+        changesMade = true;
+    }
+
+    private async Task SaveChanges()
+    {
+        foreach (CreateTableDto createTableDto in modifiedTablesDtos)
+        {
+            try
+            {
+                var response = await Http.PostAsJsonAsync("api/table", createTableDto);
+        
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Wyświetl szczegóły błędu
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error adding table: {e.Message}");
+            }
+        }
+        
+        foreach (Table table in deletedTables)
+        {
+            try
+            {
+                var response = await Http.DeleteAsync($"api/table/{table.Id}");
+        
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Wyświetl szczegóły błędu
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
+                }
+                changesMade = false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error deleting table: {e.Message}");
+            }
+        }
+        
+    }
+    
+    private async Task CancelChanges()
+    {
+        await LoadTables();
+        modifiedTablesDtos.Clear();
+        deletedTables.Clear();
+        changesMade = false;
+    }
+    
+}

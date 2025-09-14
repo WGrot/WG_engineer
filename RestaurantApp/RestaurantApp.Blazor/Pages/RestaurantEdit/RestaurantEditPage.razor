@@ -1,0 +1,100 @@
+﻿@page "/restaurant/edit/{Id:int}"
+@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="edit-container">
+    <div class="edit-header">
+        <div class="header-background"></div>
+        <div class="header-content">
+            <button class="back-button" @onclick="GoBack">
+                <span class="arrow-icon">←</span> Back
+            </button>
+            <h1 class="page-title">Restaurant edit</h1>
+            @if (restaurant != null)
+            {
+                <h2 class="restaurant-name">@restaurant.Name <br> @restaurant.Address</h2>
+            }
+        </div>
+    </div>
+
+    @if (restaurant == null)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Ładowanie...</p>
+        </div>
+    }
+    else
+    {
+        <div class="tabs-navigation">
+            <button class="tab-button @(activeTab == "basic" ? "active" : "")"
+                    @onclick="@(e => activeTab = "basic")">
+                Basic Info
+            </button>
+            <button class="tab-button @(activeTab == "tables" ? "active" : "")"
+                    @onclick="@(e => activeTab = "tables")">
+                Tables
+            </button>
+            <button class="tab-button @(activeTab == "hours" ? "active" : "")"
+                    @onclick="@(e => activeTab = "hours")">
+                Opening Hours
+            </button>
+            <button class="tab-button @(activeTab == "settings" ? "active" : "")"
+                    @onclick="@(e => activeTab = "settings")">
+                Restaurant settings
+            </button>
+        </div>
+        
+        @switch(activeTab)
+        {
+            case "basic":
+                <BasicInfoTab Id=@Id restaurant=@restaurant />
+                break;
+            case "tables":
+                <TablesTab Id=@Id restaurant=@restaurant />
+                break;
+            case "hours":
+                <OpeningHoursTab Id=@Id restaurant=@restaurant />
+                break;
+            case "settings":
+                <RestaurantSettingsTab Id=@Id restaurant=@restaurant />
+                break;
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Restaurant? restaurant;
+    private bool isLoading = true;
+    string activeTab = "basic";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRestaurant();
+    }
+    
+    private async Task LoadRestaurant()
+    {
+        try
+        {
+            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/restaurant/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading restaurant: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/restaurants");
+    }
+}
+}
