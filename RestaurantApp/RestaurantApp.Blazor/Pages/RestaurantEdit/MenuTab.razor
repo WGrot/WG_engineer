@@ -1,49 +1,444 @@
 ﻿@using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
-<h3>MenuTab</h3>
 
-@if (restaurant != null)
+<h3>Menu Management</h3>
+
+@if (menu != null)
 {
+    <div>
+        <button @onclick="ShowAddCategoryForm">Add New Category</button>
 
-    @foreach(MenuItem item in restaurant.Menu.Items)
-    {
-        <div class="menu-item-card">
-            <h4 class="menu-item-name">@item.Name</h4>
-            <p class="menu-item-description">@item.Description</p>
-            <p class="menu-item-price">Price: @item.Price.Price  @item.Price.CurrencyCode</p>
+        @if (showAddCategory)
+        {
+            <div>
+                <h4>New Category</h4>
+                <input type="text" @bind="newCategory.Name" placeholder="Category Name" />
+                <input type="text" @bind="newCategory.Description" placeholder="Description" />
+                <input type="number" @bind="newCategory.DisplayOrder" placeholder="Display Order" />
+                <button @onclick="AddCategory">Add</button>
+                <button @onclick="() => showAddCategory = false">Cancel</button>
+            </div>
+        }
+
+        <!-- Lista kategorii -->
+        @foreach (var category in categories.OrderBy(c => c.DisplayOrder))
+        {
+            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                @if (editingCategoryId == category.Id)
+                {
+                    <input type="text" @bind="category.Name" />
+                    <input type="text" @bind="category.Description" />
+                    <input type="number" @bind="category.DisplayOrder" />
+                    <button @onclick="() => SaveCategory(category)">Save</button>
+                    <button @onclick="() => editingCategoryId = null">Cancel</button>
+                }
+                else
+                {
+                    <h4>
+                        @category.Name
+                        <button @onclick="() => ToggleCategory(category.Id)">
+                            @(expandedCategories.Contains(category.Id) ? "Collapse" : "Expand")
+                        </button>
+                        <button @onclick="() => editingCategoryId = category.Id">Edit</button>
+                        <button @onclick="() => DeleteCategory(category.Id)">Delete</button>
+                    </h4>
+                    @if (!string.IsNullOrEmpty(category.Description))
+                    {
+                        <p>@category.Description</p>
+                    }
+                }
+
+                @if (expandedCategories.Contains(category.Id))
+                {
+                    <div style="margin-left: 20px;">
+                        <button @onclick="() => ShowAddItemForm(category.Id)">Add Item</button>
+
+                        @if (showAddItem && addItemToCategoryId == category.Id)
+                        {
+                            <div>
+                                <input type="text" @bind="newItem.Name" placeholder="Item Name" />
+                                <input type="text" @bind="newItem.Description" placeholder="Description" />
+                                <input type="number" @bind="newItem.Price" placeholder="Price" />
+                                <input type="text" @bind="newItem.CurrencyCode" placeholder="Currency (PLN)" />
+                                <input type="text" @bind="newItem.ImagePath" placeholder="Image Path" />
+                                <button @onclick="() => AddItem(category.Id)">Add</button>
+                                <button @onclick="() => showAddItem = false">Cancel</button>
+                            </div>
+                        }
+
+                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                        {
+                            <div style="border: 1px solid #ddd; margin: 5px; padding: 5px;">
+                                @if (editingItemId == item.Id)
+                                {
+                                    <input type="text" @bind="item.Name" />
+                                    <input type="text" @bind="item.Description" />
+                                    <input type="number" @bind="item.Price.Price" />
+                                    <input type="text" @bind="item.Price.CurrencyCode" />
+                                    <input type="text" @bind="item.ImagePath" />
+                                    <button @onclick="() => SaveItem(item)">Save</button>
+                                    <button @onclick="() => editingItemId = null">Cancel</button>
+                                }
+                                else
+                                {
+                                    <strong>@item.Name</strong>  @item.Price.Price @item.Price.CurrencyCode
+                                        <br />
+                                        @item.Description
+                                        <br />
+                                        <button @onclick="() => editingItemId = item.Id">Edit</button>
+                                        <button @onclick="() => DeleteItem(item.Id)">Delete</button>
+                                        <button @onclick="() => ShowMoveItemForm(item.Id)">Move to Category</button>
+                                }
+
+                                @if (movingItemId == item.Id)
+                                {
+                                    <select @onchange="(e) => MoveItem(item.Id, e.Value?.ToString())">
+                                        <option value="">Select category...</option>
+                                        <option value="uncategorized">No category</option>
+                                        @foreach (var cat in categories.Where(c => c.Id != category.Id))
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                    <button @onclick="() => movingItemId = null">Cancel</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Pozycje bez kategorii -->
+        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+            <h4>
+                Uncategorized Items
+                <button @onclick="ToggleUncategorized">
+                    @(showUncategorized ? "Collapse" : "Expand")
+                </button>
+            </h4>
+
+            @if (showUncategorized)
+            {
+                <div style="margin-left: 20px;">
+                    <button @onclick="() => ShowAddItemForm(null)">Add Item</button>
+
+                    @if (showAddItem && addItemToCategoryId == null)
+                    {
+                        <div>
+                            <input type="text" @bind="newItem.Name" placeholder="Item Name" />
+                            <input type="text" @bind="newItem.Description" placeholder="Description" />
+                            <input type="number" @bind="newItem.Price" placeholder="Price" />
+                            <input type="text" @bind="newItem.CurrencyCode" placeholder="Currency (PLN)" />
+                            <input type="text" @bind="newItem.ImagePath" placeholder="Image Path" />
+                            <button @onclick="() => AddItem(null)">Add</button>
+                            <button @onclick="() => showAddItem = false">Cancel</button>
+                        </div>
+                    }
+
+                    @foreach (var item in uncategorizedItems)
+                    {
+                        <div style="border: 1px solid #ddd; margin: 5px; padding: 5px;">
+                            @if (editingItemId == item.Id)
+                            {
+                                <input type="text" @bind="item.Name" />
+                                <input type="text" @bind="item.Description" />
+                                <input type="number" @bind="item.Price.Price" />
+                                <input type="text" @bind="item.Price.CurrencyCode" />
+                                <input type="text" @bind="item.ImagePath" />
+                                <button @onclick="() => SaveItem(item)">Save</button>
+                                <button @onclick="() => editingItemId = null">Cancel</button>
+                            }
+                            else
+                            {
+                                <strong>@item.Name</strong>  @item.Price.Price @item.Price.CurrencyCode
+                                    <br />
+                                    @item.Description
+                                    <br />
+                                    <button @onclick="() => editingItemId = item.Id">Edit</button>
+                                    <button @onclick="() => DeleteItem(item.Id)">Delete</button>
+                                    <button @onclick="() => ShowMoveItemForm(item.Id)">Move to Category</button>
+                            }
+
+                            @if (movingItemId == item.Id)
+                            {
+                                <select @onchange="(e) => MoveItem(item.Id, e.Value?.ToString())">
+                                    <option value="">Select category...</option>
+                                    @foreach (var cat in categories)
+                                    {
+                                        <option value="@cat.Id">@cat.Name</option>
+                                    }
+                                </select>
+                                <button @onclick="() => movingItemId = null">Cancel</button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
         </div>
-    }
-    
-    @if (changesMade)
-    {
-        <div class="action-buttons">
-            <button  @onclick="CancelChanges">Cancel</button>
-            <button  @onclick="SaveChanges">
-                Save Changes
-            </button>
-        </div>
-    }
+    </div>
 }
 else
 {
-    <div class="loading">Loading restaurant data...</div>
+    <div>Loading menu data...</div>
 }
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
-    private bool changesMade = false;
 
-    private Task CancelChanges()
+    private Menu? menu;
+    private List<MenuCategory> categories = new();
+    private Dictionary<int, List<MenuItem>> categoryItems = new();
+    private List<MenuItem> uncategorizedItems = new();
+    private HashSet<int> expandedCategories = new();
+
+    private bool showAddCategory = false;
+    private bool showAddItem = false;
+    private bool showUncategorized = false;
+    private int? addItemToCategoryId;
+    private int? editingCategoryId;
+    private int? editingItemId;
+    private int? movingItemId;
+
+    private MenuCategoryDto newCategory = new();
+    private MenuItemDto newItem = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        throw new NotImplementedException();
+        await LoadMenu();
     }
 
-    private async Task SaveChanges()
+    private async Task LoadMenu()
     {
-        
-    }
-    
+        try
+        {
+            // Pobierz menu dla restauracji
+            menu = await Http.GetFromJsonAsync<Menu>($"api/Menu/restaurant/{Id}");
 
+            if (menu != null)
+            {
+                // Pobierz kategorie
+                categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
+
+                // Pobierz items dla każdej kategorii
+                foreach (var category in categories)
+                {
+                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/category/{category.Id}/items");
+                    categoryItems[category.Id] = items ?? new();
+                }
+
+                // Pobierz items bez kategorii
+                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/{menu.Id}/items/uncategorized")) ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading menu: {ex.Message}");
+        }
+    }
+
+    private void ShowAddCategoryForm()
+    {
+        showAddCategory = true;
+        newCategory = new MenuCategoryDto();
+    }
+
+    private void ShowAddItemForm(int? categoryId)
+    {
+        showAddItem = true;
+        addItemToCategoryId = categoryId;
+        newItem = new MenuItemDto { CurrencyCode = "PLN" };
+    }
+
+    private void ShowMoveItemForm(int itemId)
+    {
+        movingItemId = itemId;
+    }
+
+    private void ToggleCategory(int categoryId)
+    {
+        if (expandedCategories.Contains(categoryId))
+            expandedCategories.Remove(categoryId);
+        else
+            expandedCategories.Add(categoryId);
+    }
+
+    private void ToggleUncategorized()
+    {
+        showUncategorized = !showUncategorized;
+    }
+
+    private async Task AddCategory()
+    {
+        if (menu == null || string.IsNullOrEmpty(newCategory.Name)) return;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"api/Menu/{menu.Id}/categories", newCategory);
+            if (response.IsSuccessStatusCode)
+            {
+                showAddCategory = false;
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding category: {ex.Message}");
+        }
+    }
+
+    private async Task SaveCategory(MenuCategory category)
+    {
+        try
+        {
+            var dto = new MenuCategoryDto
+            {
+                Name = category.Name,
+                Description = category.Description,
+                DisplayOrder = category.DisplayOrder,
+                IsActive = category.IsActive
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/Menu/category/{category.Id}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                editingCategoryId = null;
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving category: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteCategory(int categoryId)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/Menu/category/{categoryId}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting category: {ex.Message}");
+        }
+    }
+
+    private async Task AddItem(int? categoryId)
+    {
+        if (string.IsNullOrEmpty(newItem.Name)) return;
+
+        try
+        {
+            HttpResponseMessage response;
+            if (categoryId.HasValue)
+            {
+                response = await Http.PostAsJsonAsync($"api/Menu/category/{categoryId}/items", newItem);
+            }
+            else
+            {
+                response = await Http.PostAsJsonAsync($"api/Menu/{menu.Id}/items", newItem);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                showAddItem = false;
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding item: {ex.Message}");
+        }
+    }
+
+    private async Task SaveItem(MenuItem item)
+    {
+        try
+        {
+            var dto = new MenuItemDto
+            {
+                Name = item.Name,
+                Description = item.Description,
+                Price = item.Price.Price,
+                CurrencyCode = item.Price.CurrencyCode,
+                ImagePath = item.ImagePath
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/Menu/item/{item.Id}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                editingItemId = null;
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving item: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteItem(int itemId)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/Menu/item/{itemId}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting item: {ex.Message}");
+        }
+    }
+
+    private async Task MoveItem(int itemId, string? targetCategoryId)
+    {
+        if (string.IsNullOrEmpty(targetCategoryId)) return;
+
+        try
+        {
+            int? categoryId = targetCategoryId == "uncategorized" ? null : int.Parse(targetCategoryId);
+
+            var moveDto = new MoveItemDto { CategoryId = categoryId };
+            var response = await Http.PatchAsJsonAsync($"api/Menu/item/{itemId}/move", moveDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                movingItemId = null;
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error moving item: {ex.Message}");
+        }
+    }
+    public class MenuCategoryDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public int DisplayOrder { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+    public class MenuItemDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string CurrencyCode { get; set; } = "PLN";
+        public string? ImagePath { get; set; }
+    }
+    public class MoveItemDto
+    {
+        public int? CategoryId { get; set; } // null oznacza przeniesienie do items bez kategorii
+    }
 }
