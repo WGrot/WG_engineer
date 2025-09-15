@@ -8,7 +8,10 @@ public class MenuItem
     public MenuItemPrice Price { get; set; } = new MenuItemPrice();
     
     public string? ImagePath { get; set; }
+    public int? MenuId { get; set; }
+    public Menu? Menu { get; set; }
     
-    public int MenuId { get; set; }
-    public Menu Menu { get; set; }
+    // Relacja z kategorią (opcjonalna - item może być bez kategorii)
+    public int? CategoryId { get; set; }
+    public MenuCategory? Category { get; set; }
 }

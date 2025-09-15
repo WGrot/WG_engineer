@@ -22,6 +22,8 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
     
     public DbSet<ReservationBase> Reservations => Set<ReservationBase>();
     public DbSet<TableReservation> TableReservations { get; set; }
+    
+    public DbSet<MenuCategory> MenuCategories { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
