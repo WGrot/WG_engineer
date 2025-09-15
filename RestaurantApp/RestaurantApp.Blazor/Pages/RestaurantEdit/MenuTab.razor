@@ -1,0 +1,49 @@
+﻿@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+<h3>MenuTab</h3>
+
+@if (restaurant != null)
+{
+
+    @foreach(MenuItem item in restaurant.Menu.Items)
+    {
+        <div class="menu-item-card">
+            <h4 class="menu-item-name">@item.Name</h4>
+            <p class="menu-item-description">@item.Description</p>
+            <p class="menu-item-price">Price: @item.Price.Price  @item.Price.CurrencyCode</p>
+        </div>
+    }
+    
+    @if (changesMade)
+    {
+        <div class="action-buttons">
+            <button  @onclick="CancelChanges">Cancel</button>
+            <button  @onclick="SaveChanges">
+                Save Changes
+            </button>
+        </div>
+    }
+}
+else
+{
+    <div class="loading">Loading restaurant data...</div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Restaurant? restaurant { get; set; }
+    private bool changesMade = false;
+
+    private Task CancelChanges()
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task SaveChanges()
+    {
+        
+    }
+    
+
+}

@@ -5,7 +5,6 @@ namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IRestaurantService
 {
-    // Operacje biznesowe
     Task<IEnumerable<Restaurant>> GetAllAsync();
     Task<Restaurant?> GetByIdAsync(int id);
     Task<IEnumerable<Restaurant>> SearchAsync(string? name, string? address);
