@@ -9,5 +9,7 @@ public class Restaurant
     public Menu? Menu { get; set; }
 
     public List<OpeningHours>? OpeningHours { get; set; }
+    
+    public List<RestaurantEmployee> Employees { get; set; }
 
 }

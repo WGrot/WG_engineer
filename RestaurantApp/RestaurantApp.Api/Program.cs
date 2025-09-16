@@ -49,6 +49,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

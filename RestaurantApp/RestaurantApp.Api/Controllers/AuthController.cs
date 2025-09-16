@@ -1,12 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using RestaurantApp.Shared;
-using RestaurantApp.Shared.Models;
+using RestaurantApp.Api.Services.Interfaces;
+
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -17,15 +14,18 @@ public class AuthController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly IJwtService _jwtService;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IJwtService jwtService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _jwtService = jwtService;
     }
     
     [HttpPost("register")]
@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
         
         if (result.Succeeded)
         {
-            var token = GenerateJwtToken(user);
+            var token = await _jwtService.GenerateJwtTokenAsync(user);
             return Ok(new LoginResponse 
             { 
                 Token = token,
@@ -138,28 +138,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    private string GenerateJwtToken(ApplicationUser user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["JwtConfig:Key"]);
-        
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email)
-            }),
-            Expires = DateTime.UtcNow.AddDays(7),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = _configuration["JwtConfig:Issuer"],
-            Audience = _configuration["JwtConfig:Audience"]
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
-    }
+    
 }
 
 public class RegisterRequest
