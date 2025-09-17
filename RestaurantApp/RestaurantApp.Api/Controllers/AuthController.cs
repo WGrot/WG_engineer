@@ -137,6 +137,38 @@ public class AuthController : ControllerBase
             PhoneNumber = user.PhoneNumber
         });
     }
+    
+    [HttpGet("users")]
+ // Opcjonalnie - możesz wymagać autoryzacji
+    public async Task<IActionResult> GetAllUsers()
+    {
+        try
+        {
+            // Pobierz wszystkich użytkowników z bazy
+            var users = _userManager.Users.ToList();
+        
+            // Mapuj na DTO żeby nie zwracać wrażliwych danych
+            var userDtos = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber
+            }).ToList();
+        
+            return Ok(new 
+            { 
+                Message = "Pobrano listę użytkowników",
+                Count = userDtos.Count,
+                Users = userDtos 
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Błąd podczas pobierania użytkowników", Error = ex.Message });
+        }
+    }
 
     
 }

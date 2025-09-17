@@ -1,11 +1,13 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared;
@@ -49,6 +51,8 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -124,7 +128,33 @@ builder.Services.AddCors(options =>
 
 
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Podstawowy dostęp do konkretnej restauracji
+    options.AddPolicy("SpecificRestaurantEmployee", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement()));
+
+    // Manager konkretnej restauracji
+    options.AddPolicy("SpecificRestaurantManager", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
+        {
+            MinimumRole = RestaurantRole.Manager
+        }));
+
+    // Konkretne uprawnienia w konkretnej restauracji
+    options.AddPolicy("CanManageReservationsInRestaurant", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
+        {
+            RequiredPermissions = new[] { PermissionType.ManageReservations }
+        }));
+
+    // Właściciel konkretnej restauracji
+    options.AddPolicy("SpecificRestaurantOwner", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
+        {
+            MinimumRole = RestaurantRole.Owner
+        }));
+});
 
 var app = builder.Build();
 
