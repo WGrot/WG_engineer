@@ -53,6 +53,7 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
+builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

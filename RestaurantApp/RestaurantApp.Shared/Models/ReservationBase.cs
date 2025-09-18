@@ -15,6 +15,8 @@ public class ReservationBase
     
     // Status
     public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
+    
+    public bool NeedsConfirmation { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? Notes { get; set; }
     

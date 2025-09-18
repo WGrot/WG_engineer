@@ -11,5 +11,7 @@ public class Restaurant
     public List<OpeningHours>? OpeningHours { get; set; }
     
     public List<RestaurantEmployee> Employees { get; set; }
+    
+    public RestaurantSettings? Settings { get; set; }
 
 }

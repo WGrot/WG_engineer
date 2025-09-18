@@ -24,6 +24,8 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<TableReservation> TableReservations { get; set; }
     
     public DbSet<RestaurantEmployee> RestaurantEmployees { get; set; }
+    
+    public DbSet<RestaurantSettings> RestaurantSettings { get; set; }
     public DbSet<RestaurantPermission> RestaurantPermissions { get; set; }
     public DbSet<MenuCategory> MenuCategories { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
@@ -34,5 +36,10 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
             .HasDiscriminator<string>("Discriminator")
             .HasValue<ReservationBase>("ReservationBase")
             .HasValue<TableReservation>("TableReservation");
+        
+        builder.Entity<RestaurantSettings>()
+            .HasOne(rs => rs.Restaurant)
+            .WithOne(r => r.Settings)
+            .HasForeignKey<RestaurantSettings>(rs => rs.RestaurantId);
     }
 }

@@ -8,10 +8,12 @@ namespace RestaurantApp.Api.Services;
 public class ReservationService : IReservationService
 {
         private readonly ApiDbContext _context;
+        private readonly IRestaurantService _restaurantService;
 
-    public ReservationService(ApiDbContext context)
+    public ReservationService(ApiDbContext context, IRestaurantService restaurantService)
     {
         _context = context;
+        _restaurantService = restaurantService;
     }
 
     public async Task<ReservationBase?> GetReservationByIdAsync(int reservationId)
@@ -47,26 +49,38 @@ public class ReservationService : IReservationService
 
     public async Task<ReservationBase> CreateReservationAsync(ReservationDto reservationDto)
     {
-        var reservation = new ReservationBase
+        try
         {
-            RestaurantId = reservationDto.RestaurantId,
-            UserId = reservationDto.UserId,
-            NumberOfGuests = reservationDto.NumberOfGuests,
-            CustomerName = reservationDto.CustomerName,
-            CustomerEmail = reservationDto.CustomerEmail,
-            CustomerPhone = reservationDto.CustomerPhone,
-            ReservationDate = DateTime.Now.ToUniversalTime(),
-            StartTime = reservationDto.StartTime,
-            EndTime = reservationDto.EndTime,
-            Notes = reservationDto.Notes,
-            Status = ReservationStatus.Pending,
-            CreatedAt = DateTime.UtcNow
-        };
+            var restaurant = await _restaurantService.GetByIdAsync(reservationDto.RestaurantId);
+        
+            var reservation = new ReservationBase
+            {
+                RestaurantId = reservationDto.RestaurantId,
+                UserId = reservationDto.UserId,
+                NumberOfGuests = reservationDto.NumberOfGuests,
+                CustomerName = reservationDto.CustomerName,
+                CustomerEmail = reservationDto.CustomerEmail,
+                CustomerPhone = reservationDto.CustomerPhone,
+                ReservationDate = DateTime.Now.ToUniversalTime(),
+                StartTime = reservationDto.StartTime,
+                EndTime = reservationDto.EndTime,
+                Notes = reservationDto.Notes,
+                Status = ReservationStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                NeedsConfirmation = restaurant?.Settings?.ReservationsNeedConfirmation == true
+            };
 
-        _context.Reservations.Add(reservation);
-        await _context.SaveChangesAsync();
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
 
-        return await GetReservationByIdAsync(reservation.Id) ?? reservation;
+            return await GetReservationByIdAsync(reservation.Id) ?? reservation;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
 
     public async Task UpdateReservationAsync(int reservationId, ReservationDto reservationDto)
@@ -140,6 +154,8 @@ public class ReservationService : IReservationService
                 $"Table {tableReservationDto.TableId} is already reserved for this time period");
         }
 
+        var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
+        
         var reservation = new TableReservation
         {
             RestaurantId = tableReservationDto.RestaurantId,
@@ -154,7 +170,8 @@ public class ReservationService : IReservationService
             Notes = tableReservationDto.Notes,
             TableId = tableReservationDto.TableId,
             Status = ReservationStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            NeedsConfirmation = restaurant?.Settings?.ReservationsNeedConfirmation == true
         };
 
         _context.TableReservations.Add(reservation);

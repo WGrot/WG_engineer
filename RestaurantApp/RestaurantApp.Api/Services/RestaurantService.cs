@@ -36,6 +36,7 @@ public class RestaurantService : IRestaurantService
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
+            .Include(r => r.Settings)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
