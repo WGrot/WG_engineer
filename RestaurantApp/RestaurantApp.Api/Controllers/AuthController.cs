@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 
 
@@ -76,7 +77,7 @@ public class AuthController : ControllerBase
             return Ok(new LoginResponse 
             { 
                 Token = token,
-                User = new UserDto
+                ResponseUser = new ResponseUserDto
                 {
                     Id = user.Id,
                     Email = user.Email,
@@ -128,7 +129,7 @@ public class AuthController : ControllerBase
             return NotFound(new { Message = "Użytkownik nie został znaleziony" });
         }
         
-        return Ok(new UserDto
+        return Ok(new ResponseUserDto
         {
             Id = user.Id,
             Email = user.Email,
@@ -148,7 +149,7 @@ public class AuthController : ControllerBase
             var users = _userManager.Users.ToList();
         
             // Mapuj na DTO żeby nie zwracać wrażliwych danych
-            var userDtos = users.Select(user => new UserDto
+            var userDtos = users.Select(user => new ResponseUserDto
             {
                 Id = user.Id,
                 Email = user.Email,
@@ -190,15 +191,6 @@ public class LoginRequest
 public class LoginResponse
 {
     public string Token { get; set; } = string.Empty;
-    public UserDto User { get; set; } = new();
+    public ResponseUserDto ResponseUser { get; set; } = new();
 }
 
-public class UserDto
-{
-    public string Id { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    
-    public string? PhoneNumber { get; set; }
-}

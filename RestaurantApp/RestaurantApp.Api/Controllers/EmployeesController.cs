@@ -11,11 +11,13 @@ public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
     private readonly IRestaurantService _restaurantService;
+    private readonly IUserService _userService;
 
-    public EmployeesController(IEmployeeService employeeService, IRestaurantService restaurantService)
+    public EmployeesController(IEmployeeService employeeService, IRestaurantService restaurantService, IUserService userService)
     {
         _employeeService = employeeService;
         _restaurantService = restaurantService;
+        _userService = userService;
     }
 
     [HttpGet]
@@ -36,10 +38,15 @@ public class EmployeesController : ControllerBase
     }
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<ActionResult<IEnumerable<RestaurantEmployee>>> GetByRestaurant(int restaurantId)
+    public async Task<ActionResult<IEnumerable<ResponseRestaurantEmployeeDto>>> GetByRestaurant(int restaurantId)
     {
         var employees = await _employeeService.GetByRestaurantIdAsync(restaurantId);
-        return Ok(employees);
+        List<ResponseRestaurantEmployeeDto> employeesDto = new List<ResponseRestaurantEmployeeDto>();
+        foreach (var employee in employees)
+        {
+            employeesDto.Add(await FillEmployeeData(employee));
+        }
+        return Ok(employeesDto);
     }
 
     [HttpGet("user/{userId}")]
@@ -102,5 +109,26 @@ public class EmployeesController : ControllerBase
             return NotFound();
 
         return NoContent();
+    }
+
+    private async Task<ResponseRestaurantEmployeeDto> FillEmployeeData(RestaurantEmployee employee)
+    {
+        var user = await _userService.GetByIdAsync(employee.UserId);
+        ResponseRestaurantEmployeeDto returnDto = new ResponseRestaurantEmployeeDto
+        {
+            Id = employee.Id.ToString(),
+            UserId = employee.UserId,
+            RestaurantId = employee.RestaurantId,
+            Restaurant = employee.Restaurant,
+            Role = employee.Role,
+            Permissions = employee.Permissions,
+            CreatedAt = employee.CreatedAt,
+            IsActive = employee.IsActive,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber
+        };
+        return returnDto;
     }
 }

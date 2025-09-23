@@ -45,6 +45,10 @@
                     @onclick="@(e => activeTab = "menu")">
                 Menu setup
             </button>
+            <button class="tab-button @(activeTab == "employees" ? "active" : "")"
+                    @onclick="@(e => activeTab = "employees")">
+                Employees
+            </button>
             <button class="tab-button @(activeTab == "settings" ? "active" : "")"
                     @onclick="@(e => activeTab = "settings")">
                 Restaurant settings
@@ -64,6 +68,9 @@
                 break;
             case "settings":
                 <RestaurantSettingsTab Id=@Id restaurant=@restaurant />
+                break;
+            case "employees":
+                <RestaurantEmployeesTab Id=@Id restaurant=@restaurant />
                 break;
             case "menu":
                 <MenuTab Id=@Id restaurant=@restaurant />
