@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Api.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Identity;
+using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Models.DTOs;
@@ -10,7 +11,8 @@ public class ReservationService : IReservationService
         private readonly ApiDbContext _context;
         private readonly IRestaurantService _restaurantService;
 
-    public ReservationService(ApiDbContext context, IRestaurantService restaurantService)
+
+        public ReservationService(ApiDbContext context, IRestaurantService restaurantService)
     {
         _context = context;
         _restaurantService = restaurantService;
@@ -112,6 +114,28 @@ public class ReservationService : IReservationService
 
         _context.Reservations.Remove(existing);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ReservationBase>> GetReservationsToManage(string userId)
+    {
+        var restaurantEmployeesId = await _context.RestaurantEmployees
+            .Where(re => re.UserId == userId)
+            .Select(re => re.RestaurantId)
+            .ToListAsync();
+
+        var reservations = new List<ReservationBase>();
+        foreach (var restaurantId in restaurantEmployeesId)
+        {
+            var restaurantReservations = await _context.Reservations
+                .Include(r => r.Restaurant)
+                .Where(r => r.RestaurantId == restaurantId)
+                .ToListAsync();
+
+            reservations.AddRange(restaurantReservations);
+            
+        }
+        return reservations;
+        
     }
 
     // ===== METODY DLA TABLE RESERVATIONS - UŻYWAJĄ TableReservations DbSet =====
@@ -274,6 +298,84 @@ public class ReservationService : IReservationService
         reservation.Status = status;
         _context.Reservations.Update(reservation);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<ReservationBase>> SearchReservationsAsync(int? restaurantId = null, string? userId = null, ReservationStatus? status = null,
+        string? customerName = null, string? customerEmail = null, string? customerPhone = null,
+        DateTime? reservationDate = null, DateTime? reservationDateFrom = null, DateTime? reservationDateTo = null,
+        string? notes = null)
+    {
+            var query = _context.Reservations
+        .Include(r => r.Restaurant)
+        .AsQueryable();
+
+    // Filtrowanie po ID restauracji
+    if (restaurantId.HasValue)
+    {
+        query = query.Where(r => r.RestaurantId == restaurantId.Value);
+    }
+
+    // Filtrowanie po ID użytkownika
+    if (!string.IsNullOrWhiteSpace(userId))
+    {
+        query = query.Where(r => r.UserId == userId);
+    }
+
+    // Filtrowanie po statusie
+    if (status.HasValue)
+    {
+        query = query.Where(r => r.Status == status.Value);
+    }
+
+    // Filtrowanie po nazwisku klienta (case-insensitive)
+    if (!string.IsNullOrWhiteSpace(customerName))
+    {
+        query = query.Where(r => r.CustomerName.ToLower().Contains(customerName.ToLower()));
+    }
+
+    // Filtrowanie po emailu klienta (case-insensitive)
+    if (!string.IsNullOrWhiteSpace(customerEmail))
+    {
+        query = query.Where(r => r.CustomerEmail.ToLower().Contains(customerEmail.ToLower()));
+    }
+
+    // Filtrowanie po numerze telefonu klienta
+    if (!string.IsNullOrWhiteSpace(customerPhone))
+    {
+        // Usuwamy spacje i myślniki z numeru telefonu dla lepszego dopasowania
+        var normalizedPhone = customerPhone.Replace(" ", "").Replace("-", "");
+        query = query.Where(r => r.CustomerPhone.Replace(" ", "").Replace("-", "").Contains(normalizedPhone));
+    }
+
+    // Filtrowanie po konkretnej dacie rezerwacji
+    if (reservationDate.HasValue)
+    {
+        var dateOnly = reservationDate.Value.Date;
+        query = query.Where(r => r.ReservationDate.Date == dateOnly);
+    }
+
+    // Alternatywnie: filtrowanie po zakresie dat
+    if (reservationDateFrom.HasValue)
+    {
+        query = query.Where(r => r.ReservationDate >= reservationDateFrom.Value);
+    }
+
+    if (reservationDateTo.HasValue)
+    {
+        query = query.Where(r => r.ReservationDate <= reservationDateTo.Value);
+    }
+
+    // Filtrowanie po notatkach (case-insensitive)
+    if (!string.IsNullOrWhiteSpace(notes))
+    {
+        query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(notes.ToLower()));
+    }
+
+    // Sortowanie po dacie rezerwacji (od najnowszych)
+    query = query.OrderByDescending(r => r.ReservationDate)
+                 .ThenByDescending(r => r.StartTime);
+
+    return await query.ToListAsync();
     }
 
     // ===== DODATKOWE METODY DLA TABLE RESERVATIONS =====

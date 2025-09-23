@@ -1,0 +1,179 @@
+﻿@page "/manage-reservations"
+@using RestaurantApp.Shared.Models
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization
+@using RestaurantApp.Blazor.Models.DTO
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h3>ManageReservationsPage</h3>
+
+@if (isLoading)
+{
+    <p>Loading reservations...</p>
+}
+else if (error != null)
+{
+    <p>Error: @error</p>
+}
+else if (reservations == null || !reservations.Any())
+{
+    <p>You don't have any reservations yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var reservation in reservations.OrderByDescending(r => r.ReservationDate))
+        {
+            <li>
+                <div>
+                    <strong>@reservation.Restaurant?.Name</strong><br />
+                    Date: @reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")<br />
+                    Time: @reservation.StartTime.ToString("HH:mm") - @reservation.EndTime.ToString("HH:mm")<br />
+                    Address: @reservation.Restaurant?.Address<br />
+                    Status: @reservation.Status<br />
+                    Guests: @reservation.NumberOfGuests
+                    @if (reservation is TableReservation)
+                    {
+                        <div>
+                            table number: @(reservation as TableReservation)?.TableNumber
+                        </div>
+                    }
+                </div>
+                <hr />
+            </li>
+        }
+    </ul>
+}
+
+
+@code {
+    private List<ReservationBase>? reservations;
+    private bool isLoading = true;
+    private string? error;
+    private ReservationSearchParameters searchParameters = new ReservationSearchParameters();
+    
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LoadReservations();
+    }
+    
+    
+    private async Task LoadReservations()
+    {
+        try
+        {
+            isLoading = true;
+            error = null;
+            
+            // Budowanie query string z parametrów wyszukiwania
+            var queryString = BuildQueryString(searchParameters);
+            
+            // Wywołanie endpointu search
+            reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/reservation/search{queryString}");
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to load reservations: {ex.Message}";
+            reservations = new List<ReservationBase>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    // Metoda pomocnicza do budowania query string
+    private string BuildQueryString(ReservationSearchParameters parameters)
+    {
+        var queryParams = new List<string>();
+        
+        if (parameters.RestaurantId.HasValue)
+            queryParams.Add($"restaurantId={parameters.RestaurantId}");
+            
+        if (!string.IsNullOrWhiteSpace(parameters.UserId))
+            queryParams.Add($"userId={Uri.EscapeDataString(parameters.UserId)}");
+            
+        if (parameters.Status.HasValue)
+            queryParams.Add($"status={parameters.Status}");
+            
+        if (!string.IsNullOrWhiteSpace(parameters.CustomerName))
+            queryParams.Add($"customerName={Uri.EscapeDataString(parameters.CustomerName)}");
+            
+        if (!string.IsNullOrWhiteSpace(parameters.CustomerEmail))
+            queryParams.Add($"customerEmail={Uri.EscapeDataString(parameters.CustomerEmail)}");
+            
+        if (!string.IsNullOrWhiteSpace(parameters.CustomerPhone))
+            queryParams.Add($"customerPhone={Uri.EscapeDataString(parameters.CustomerPhone)}");
+            
+        if (parameters.ReservationDate.HasValue)
+            queryParams.Add($"reservationDate={parameters.ReservationDate.Value:yyyy-MM-dd}");
+            
+        if (parameters.ReservationDateFrom.HasValue)
+            queryParams.Add($"reservationDateFrom={parameters.ReservationDateFrom.Value:yyyy-MM-dd}");
+            
+        if (parameters.ReservationDateTo.HasValue)
+            queryParams.Add($"reservationDateTo={parameters.ReservationDateTo.Value:yyyy-MM-dd}");
+            
+        if (!string.IsNullOrWhiteSpace(parameters.Notes))
+            queryParams.Add($"notes={Uri.EscapeDataString(parameters.Notes)}");
+        
+        return queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+    }
+    
+    // Metoda do wyszukiwania - wywoływana po zmianie filtrów
+    private async Task SearchReservations()
+    {
+        await LoadReservations();
+    }
+    
+    // Metoda do resetowania filtrów
+    private async Task ResetFilters()
+    {
+        searchParameters = new ReservationSearchParameters();
+        await LoadReservations();
+    }
+    
+    // Pobierz tylko dzisiejsze rezerwacje
+    private async Task LoadTodayReservations()
+    {
+        try
+        {
+            isLoading = true;
+            error = null;
+            
+            reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/reservations/today");
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to load today's reservations: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    // Przykład użycia z filtrami UI
+    private async Task ApplyFilters()
+    {
+        // Ta metoda może być wywoływana z UI po ustawieniu filtrów
+        await SearchReservations();
+    }
+    
+    
+    public class ReservationSearchParameters
+    {
+        public int? RestaurantId { get; set; }
+        public string? UserId { get; set; }
+        public ReservationStatus? Status { get; set; }
+        public string? CustomerName { get; set; }
+        public string? CustomerEmail { get; set; }
+        public string? CustomerPhone { get; set; }
+        public DateTime? ReservationDate { get; set; }
+        public DateTime? ReservationDateFrom { get; set; }
+        public DateTime? ReservationDateTo { get; set; }
+        public string? Notes { get; set; }
+    }
+}

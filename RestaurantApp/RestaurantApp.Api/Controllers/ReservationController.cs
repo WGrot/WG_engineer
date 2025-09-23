@@ -42,7 +42,7 @@ public class ReservationController : ControllerBase
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
-    [HttpGet("restaurant/{userId}")]
+    [HttpGet("restaurant/{restaurantId}")]
     public async Task<ActionResult<IEnumerable<ReservationBase>>> GetReservationsByRestaurant(int userId)
     {
         try
@@ -52,7 +52,7 @@ public class ReservationController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting reservations for restaurant {RestaurantId}", userId);
+            _logger.LogError(ex, "Error getting reservations for restaurant {restaurantId}", userId);
             return StatusCode(500, "An error occurred while retrieving reservations.");
         }
     }
@@ -253,6 +253,64 @@ public class ReservationController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting table reservation {Id}", id);
             return StatusCode(500, "An error occurred while deleting the table reservation.");
+        }
+    }
+    
+    // GET: api/reservation/restaurant/{restaurantId}
+    [HttpGet("manage/{userId}")]
+    public async Task<ActionResult<IEnumerable<ReservationBase>>> GetReservationsToManage(string userId)
+    {
+        try
+        {
+            var reservations = await _reservationService.GetReservationsToManage(userId);
+            return Ok(reservations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting reservations to manage for user {userId}", userId);
+            return StatusCode(500, "An error occurred while retrieving reservations.");
+        }
+    }
+    
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(IEnumerable<ReservationBase>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<ReservationBase>>> SearchReservations(
+        [FromQuery] ReservationSearchParameters searchParams)
+    {
+        try
+        {
+            // Walidacja zakresu dat
+            if (searchParams.ReservationDateFrom.HasValue && 
+                searchParams.ReservationDateTo.HasValue &&
+                searchParams.ReservationDateFrom > searchParams.ReservationDateTo)
+            {
+                return BadRequest(new { message = "Data początkowa nie może być późniejsza niż data końcowa." });
+            }
+            
+
+            var reservations = await _reservationService.SearchReservationsAsync(
+                searchParams.RestaurantId,
+                searchParams.UserId,
+                searchParams.Status,
+                searchParams.CustomerName,
+                searchParams.CustomerEmail,
+                searchParams.CustomerPhone,
+                searchParams.ReservationDate,
+                searchParams.ReservationDateFrom,
+                searchParams.ReservationDateTo,
+                searchParams.Notes
+            );
+
+            _logger.LogInformation($"Znaleziono {reservations.Count()} rezerwacji dla kryteriów wyszukiwania.");
+
+            return Ok(reservations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas wyszukiwania rezerwacji");
+            return StatusCode(500, new { message = "Wystąpił błąd podczas wyszukiwania rezerwacji." });
         }
     }
 }
