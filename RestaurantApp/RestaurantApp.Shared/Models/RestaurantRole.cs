@@ -6,5 +6,6 @@ public enum RestaurantRole
     Manager = 2,
     Waiter = 3,
     Host = 4,
-    Chef = 5
+    Chef = 5,
+    Employee = 6
 }
