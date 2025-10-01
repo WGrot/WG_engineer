@@ -14,7 +14,6 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IConfiguration _configuration;
     private readonly IJwtService _jwtService;
 
     public AuthController(
@@ -25,7 +24,6 @@ public class AuthController : ControllerBase
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _configuration = configuration;
         _jwtService = jwtService;
     }
     

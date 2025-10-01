@@ -9,40 +9,41 @@ namespace RestaurantApp.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    
+
     public UserController(IUserService userService)
     {
         _userService = userService;
     }
-    
+
     [HttpGet("search")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ResponseUserDto>>> Search(
-        [FromQuery] string? firstName = null, 
-        [FromQuery] string? lastName = null, 
-        [FromQuery] string? email = null, 
+    public async Task<IActionResult> Search(
+        [FromQuery] string? firstName = null,
+        [FromQuery] string? lastName = null,
+        [FromQuery] string? email = null,
         [FromQuery] string? phoneNumber = null)
     {
-        var users = await _userService.SearchAsync(firstName, lastName, email, phoneNumber );
-        return Ok(users);
+        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email);
+
+        return result.Match<IActionResult>(
+            err => StatusCode(err.StatusCode, new { Error = err.Message }),
+            users => Ok(users)
+        );
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
-        try
-        {
-            var result = await _userService.CreateAsync(dto);
-            return Ok(new 
-            { 
+        var result = await _userService.CreateAsync(dto);
+
+        return result.Match<IActionResult>(
+            err => StatusCode(err.StatusCode, new { Error = err.Message }),
+            user => Ok(new
+            {
                 Message = "Użytkownik utworzony",
-                Email = result.Email,
-                Password = result.Password
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
+                Email = user.Email,
+                Password = user.Password
+            })
+        );
     }
 }

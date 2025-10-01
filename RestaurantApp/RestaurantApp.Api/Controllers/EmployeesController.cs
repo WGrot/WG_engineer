@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Functional;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
@@ -38,14 +39,26 @@ public class EmployeesController : ControllerBase
     }
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<ActionResult<IEnumerable<ResponseRestaurantEmployeeDto>>> GetByRestaurant(int restaurantId)
+    public async Task<IActionResult> GetByRestaurant(int restaurantId)
     {
         var employees = await _employeeService.GetByRestaurantIdAsync(restaurantId);
-        List<ResponseRestaurantEmployeeDto> employeesDto = new List<ResponseRestaurantEmployeeDto>();
+        var employeesDto = new List<ResponseRestaurantEmployeeDto>();
+
         foreach (var employee in employees)
         {
-            employeesDto.Add(await FillEmployeeData(employee));
+            var result = await FillEmployeeData(employee);
+
+            if (result.IsLeft)
+            {
+                return result.Match<IActionResult>(
+                    err => StatusCode(err.StatusCode, new { Error = err.Message }),
+                    _ => Ok() 
+                );
+            }
+
+            employeesDto.Add(result.Match(_ => null!, dto => dto));
         }
+
         return Ok(employeesDto);
     }
 
@@ -111,10 +124,11 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
-    private async Task<ResponseRestaurantEmployeeDto> FillEmployeeData(RestaurantEmployee employee)
+    private async Task<Either<ApiError, ResponseRestaurantEmployeeDto>> FillEmployeeData(RestaurantEmployee employee)
     {
-        var user = await _userService.GetByIdAsync(employee.UserId);
-        ResponseRestaurantEmployeeDto returnDto = new ResponseRestaurantEmployeeDto
+        var userResult = await _userService.GetByIdAsync(employee.UserId);
+
+        return userResult.Map(user => new ResponseRestaurantEmployeeDto
         {
             Id = employee.Id.ToString(),
             UserId = employee.UserId,
@@ -128,7 +142,6 @@ public class EmployeesController : ControllerBase
             FirstName = user.FirstName,
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber
-        };
-        return returnDto;
+        });
     }
 }
