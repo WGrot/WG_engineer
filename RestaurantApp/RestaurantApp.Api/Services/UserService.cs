@@ -134,12 +134,11 @@ public class UserService : IUserService
         {
             try
             {
-                var employee = new RestaurantEmployee
+                var employee = new CreateEmployeeDto
                 {
                     UserId = user.Id,
                     RestaurantId = userDto.RestaurantId.Value,
                     Role = userDto.Role ?? RestaurantRole.Employee,
-                    Permissions = new List<RestaurantPermission>()
                 };
         
                 await _employeeService.CreateAsync(employee);

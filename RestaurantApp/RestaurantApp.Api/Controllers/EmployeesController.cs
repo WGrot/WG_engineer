@@ -11,149 +11,41 @@ namespace RestaurantApp.Api.Controllers;
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-    private readonly IRestaurantService _restaurantService;
-    private readonly IUserService _userService;
 
-    public EmployeesController(IEmployeeService employeeService, IRestaurantService restaurantService, IUserService userService)
+    public EmployeesController(IEmployeeService employeeService)
     {
         _employeeService = employeeService;
-        _restaurantService = restaurantService;
-        _userService = userService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RestaurantEmployee>>> GetAll()
-    {
-        var employees = await _employeeService.GetAllAsync();
-        return Ok(employees);
-    }
+    public async Task<IActionResult> GetAll()
+        => (await _employeeService.GetAllAsync()).ToActionResult(this);
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<RestaurantEmployee>> GetById(int id)
-    {
-        var employee = await _employeeService.GetByIdAsync(id);
-        if (employee == null)
-            return NotFound();
-
-        return Ok(employee);
-    }
+    public async Task<IActionResult> GetById(int id)
+        => (await _employeeService.GetByIdAsync(id)).ToActionResult(this);
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<ActionResult<IEnumerable<ResponseRestaurantEmployeeDto>>> GetByRestaurant(int restaurantId)
-    {
-        var employees = await _employeeService.GetByRestaurantIdAsync(restaurantId);
-
-        var employeesDto = new List<ResponseRestaurantEmployeeDto>();
-
-        foreach (var employee in employees)
-        {
-            var result = await FillEmployeeData(employee);
-            if (result.IsFailure)
-            {
-                // Możesz tutaj zwrócić odpowiedni status HTTP
-                return StatusCode(
-                    (int)result.StatusCode, 
-                    Result<IEnumerable<ResponseRestaurantEmployeeDto>>.Failure(result.Error, result.StatusCode)
-                );
-            }
-
-            employeesDto.Add(result.Value!);
-        }
-        return Ok(employeesDto);
-    }
+    public async Task<IActionResult> GetByRestaurant(int restaurantId)
+        => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult(this);
 
     [HttpGet("user/{userId}")]
-    public async Task<ActionResult<IEnumerable<RestaurantEmployee>>> GetByUser(string userId)
-    {
-        var employees = await _employeeService.GetByUserIdAsync(userId);
-        return Ok(employees);
-    }
+    public async Task<IActionResult> GetByUser(string userId)
+        => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult(this);
 
     [HttpPost]
-    public async Task<ActionResult<RestaurantEmployee>> Create(CreateEmployeeDto employeeDto)
-    {
-        var restaurant = await _restaurantService.GetByIdAsync(employeeDto.RestaurantId);
-        RestaurantEmployee employee = new RestaurantEmployee
-        {
-            UserId = employeeDto.UserId,
-            RestaurantId = employeeDto.RestaurantId,
-            Restaurant = restaurant,
-            Role = employeeDto.Role,
-            Permissions = new List<RestaurantPermission>(),
-            CreatedAt = DateTime.UtcNow,
-            IsActive = true
-            
-        };
-        var created = await _employeeService.CreateAsync(employee);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-    }
+    public async Task<IActionResult> Create(CreateEmployeeDto dto)
+        => (await _employeeService.CreateAsync(dto)).ToActionResult(this);
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<RestaurantEmployee>> Update(int id, RestaurantEmployee employee)
-    {
-        if (id != employee.Id)
-            return BadRequest();
-
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var updated = await _employeeService.UpdateAsync(employee);
-        if (updated == null)
-            return NotFound();
-
-        return Ok(updated);
-    }
+    public async Task<IActionResult> Update(int id, UpdateEmployeeDto dto)
+        => (await _employeeService.UpdateAsync(id, dto)).ToActionResult(this);
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
-    {
-        var result = await _employeeService.DeleteAsync(id);
-        if (!result)
-            return NotFound();
-
-        return NoContent();
-    }
+    public async Task<IActionResult> Delete(int id)
+        => (await _employeeService.DeleteAsync(id)).ToActionResult(this);
 
     [HttpPatch("{id}/deactivate")]
-    public async Task<ActionResult> Deactivate(int id)
-    {
-        var result = await _employeeService.DeactivateAsync(id);
-        if (!result)
-            return NotFound();
-
-        return NoContent();
-    }
-
-    private async Task<Result<ResponseRestaurantEmployeeDto>> FillEmployeeData(RestaurantEmployee employee)
-    {
-        var userResult = await _userService.GetByIdAsync(employee.UserId);
-    
-        if (userResult.IsFailure)
-        {
-            return Result<ResponseRestaurantEmployeeDto>.Failure(
-                $"Failed to get user data for employee: {userResult.Error}", 
-                userResult.StatusCode
-            );
-        }
-    
-        var user = userResult.Value!;
-    
-        var returnDto = new ResponseRestaurantEmployeeDto
-        {
-            Id = employee.Id.ToString(),
-            UserId = employee.UserId,
-            RestaurantId = employee.RestaurantId,
-            Restaurant = employee.Restaurant,
-            Role = employee.Role,
-            Permissions = employee.Permissions,
-            CreatedAt = employee.CreatedAt,
-            IsActive = employee.IsActive,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber
-        };
-    
-        return Result<ResponseRestaurantEmployeeDto>.Success(returnDto);
-    }
+    public async Task<IActionResult> Deactivate(int id)
+        => (await _employeeService.DeactivateAsync(id)).ToActionResult(this);
 }

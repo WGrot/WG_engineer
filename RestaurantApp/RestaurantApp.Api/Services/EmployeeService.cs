@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
 
@@ -7,98 +9,155 @@ namespace RestaurantApp.Api.Services;
 public class EmployeeService : IEmployeeService
 {
     private readonly ApiDbContext _context;
-    
-    public EmployeeService(ApiDbContext context)
+    private readonly IRestaurantService _restaurantService;
+
+    public EmployeeService(ApiDbContext context, IRestaurantService restaurantService)
     {
         _context = context;
+        _restaurantService = restaurantService;
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetAllAsync()
     {
-        return await _context.RestaurantEmployees
+        var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .ToListAsync();
+
+        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
     }
 
-    public async Task<RestaurantEmployee> GetByIdAsync(int id)
+    public async Task<Result<RestaurantEmployee>> GetByIdAsync(int id)
     {
-        return await _context.RestaurantEmployees
+        var employee = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .FirstOrDefaultAsync(e => e.Id == id);
+
+        return employee == null
+            ? Result<RestaurantEmployee>.NotFound($"Employee with ID {id} not found.")
+            : Result.Success(employee);
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetByRestaurantIdAsync(int restaurantId)
     {
-        return await _context.RestaurantEmployees
+        var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .Where(e => e.RestaurantId == restaurantId)
             .ToListAsync();
+
+        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetByUserIdAsync(string userId)
     {
-        return await _context.RestaurantEmployees
+        var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .Where(e => e.UserId == userId)
             .ToListAsync();
+
+        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
     }
 
-    public async Task<RestaurantEmployee> CreateAsync(RestaurantEmployee employee)
+    public async Task<Result<IEnumerable<ResponseRestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId)
     {
-        employee.CreatedAt = DateTime.UtcNow;
-        employee.IsActive = true;
-        
+        var employees = await _context.RestaurantEmployees
+            .Include(e => e.Restaurant)
+            .Include(e => e.Permissions)
+            .Where(e => e.RestaurantId == restaurantId)
+            .ToListAsync();
+
+        var dtoList = new List<ResponseRestaurantEmployeeDto>();
+
+        foreach (var employee in employees)
+        {
+            // Bezpośrednie zapytanie zamiast przez UserService
+            var user = await _context.Users.FindAsync(employee.UserId);
+            if (user == null)
+                return Result.Failure<IEnumerable<ResponseRestaurantEmployeeDto>>(
+                    $"User with ID {employee.UserId} not found", 404
+                );
+
+            var dto = new ResponseRestaurantEmployeeDto
+            {
+                Id = employee.Id.ToString(),
+                UserId = employee.UserId,
+                RestaurantId = employee.RestaurantId,
+                Restaurant = employee.Restaurant,
+                Role = employee.Role,
+                Permissions = employee.Permissions,
+                CreatedAt = employee.CreatedAt,
+                IsActive = employee.IsActive,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty
+            };
+
+            dtoList.Add(dto);
+        }
+
+        return Result<IEnumerable<ResponseRestaurantEmployeeDto>>.Success(dtoList);
+    }
+
+    public async Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto)
+    {
+        var restaurantResult = await _restaurantService.GetByIdAsync(dto.RestaurantId);
+        if (restaurantResult == null)
+            return Result<RestaurantEmployee>.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
+
+        var employee = new RestaurantEmployee
+        {
+            UserId = dto.UserId,
+            RestaurantId = dto.RestaurantId,
+            Restaurant = restaurantResult,
+            Role = dto.Role,
+            Permissions = new List<RestaurantPermission>(),
+            CreatedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+
         _context.RestaurantEmployees.Add(employee);
         await _context.SaveChangesAsync();
-        
-        return await GetByIdAsync(employee.Id);
+
+        return Result.Success(employee);
     }
 
-    public async Task<RestaurantEmployee> UpdateAsync(RestaurantEmployee employee)
-    {
-        _context.Entry(employee).State = EntityState.Modified;
-        
-        try
-        {
-            await _context.SaveChangesAsync();
-            return await GetByIdAsync(employee.Id);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await EmployeeExistsAsync(employee.Id))
-                return null;
-            throw;
-        }
-    }
-
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result<RestaurantEmployee>> UpdateAsync(int id, UpdateEmployeeDto dto)
     {
         var employee = await _context.RestaurantEmployees.FindAsync(id);
         if (employee == null)
-            return false;
+            return Result<RestaurantEmployee>.NotFound($"Employee with ID {id} not found.");
+
+        employee.Role = dto.Role;
+        employee.IsActive = dto.IsActive;
+        // inne pola do aktualizacji
+
+        await _context.SaveChangesAsync();
+        return Result.Success(employee);
+    }
+
+    public async Task<Result> DeleteAsync(int id)
+    {
+        var employee = await _context.RestaurantEmployees.FindAsync(id);
+        if (employee == null)
+            return Result.NotFound($"Employee with ID {id} not found.");
 
         _context.RestaurantEmployees.Remove(employee);
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Success();
     }
 
-    public async Task<bool> DeactivateAsync(int id)
+    public async Task<Result> DeactivateAsync(int id)
     {
         var employee = await _context.RestaurantEmployees.FindAsync(id);
         if (employee == null)
-            return false;
-        
+            return Result.NotFound($"Employee with ID {id} not found.");
+
         employee.IsActive = false;
         await _context.SaveChangesAsync();
-        return true;
-    }
-
-    private async Task<bool> EmployeeExistsAsync(int id)
-    {
-        return await _context.RestaurantEmployees.AnyAsync(e => e.Id == id);
+        return Result.Success();
     }
 }

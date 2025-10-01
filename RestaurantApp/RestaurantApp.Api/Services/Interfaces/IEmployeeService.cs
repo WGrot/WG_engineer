@@ -1,15 +1,21 @@
-﻿using RestaurantApp.Shared.Models;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IEmployeeService
 {
-    Task<IEnumerable<RestaurantEmployee>> GetAllAsync();
-    Task<RestaurantEmployee> GetByIdAsync(int id);
-    Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdAsync(int restaurantId);
-    Task<IEnumerable<RestaurantEmployee>> GetByUserIdAsync(string userId);
-    Task<RestaurantEmployee> CreateAsync(RestaurantEmployee employee);
-    Task<RestaurantEmployee> UpdateAsync(RestaurantEmployee employee);
-    Task<bool> DeleteAsync(int id);
-    Task<bool> DeactivateAsync(int id);
+    Task<Result<IEnumerable<RestaurantEmployee>>> GetAllAsync();
+    Task<Result<RestaurantEmployee>> GetByIdAsync(int id);
+    Task<Result<IEnumerable<RestaurantEmployee>>> GetByRestaurantIdAsync(int restaurantId);
+    Task<Result<IEnumerable<RestaurantEmployee>>> GetByUserIdAsync(string userId);
+
+    // Nowa metoda zwracająca od razu DTO
+    Task<Result<IEnumerable<ResponseRestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId);
+
+    Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto);
+    Task<Result<RestaurantEmployee>> UpdateAsync(int id, UpdateEmployeeDto dto);
+    Task<Result> DeleteAsync(int id);
+    Task<Result> DeactivateAsync(int id);
 }

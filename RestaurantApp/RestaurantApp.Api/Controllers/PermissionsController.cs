@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
@@ -59,9 +60,14 @@ public class PermissionsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<RestaurantPermission>> Create(CreateRestaurantPermissionDto permissionDto)
     {
-        var employee = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
-        
-        RestaurantPermission permission = new RestaurantPermission
+        var employeeResult = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
+
+        if (employeeResult.IsFailure)
+            return StatusCode(employeeResult.StatusCode, new { error = employeeResult.Error });
+
+        var employee = employeeResult.Value!;
+
+        var permission = new RestaurantPermission
         {
             RestaurantEmployeeId = permissionDto.RestaurantEmployeeId,
             RestaurantEmployee = employee,
