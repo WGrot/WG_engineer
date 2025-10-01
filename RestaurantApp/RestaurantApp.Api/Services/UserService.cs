@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
@@ -8,34 +9,31 @@ namespace RestaurantApp.Api.Services;
 
 public class UserService : IUserService
 {
-    
     private readonly ApiDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmployeeService _employeeService;
     
-    public UserService(ApiDbContext context, UserManager <ApplicationUser> userManager, IEmployeeService employeeService)
+    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService)
     {
         _context = context;
         _userManager = userManager;
         _employeeService = employeeService;
     }
 
-    public async Task<ResponseUserDto> GetByIdAsync(string id)
+    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            throw new ArgumentException("User ID cannot be null or empty", nameof(id));
+            return Result<ResponseUserDto>.ValidationError("User ID cannot be null or empty");
         }
 
-        // Pobranie użytkownika z null-checkiem
         var user = await _context.Users.FindAsync(id);
     
         if (user == null)
         {
-            throw new KeyNotFoundException($"User with ID '{id}' was not found");
+            return Result<ResponseUserDto>.NotFound($"User with ID '{id}' was not found");
         }
 
-        // Bezpieczne mapowanie
         var responseUserDto = new ResponseUserDto
         {
             Id = user.Id,
@@ -45,60 +43,69 @@ public class UserService : IUserService
             PhoneNumber = user.PhoneNumber ?? string.Empty
         };
 
-        return responseUserDto;
+        return Result<ResponseUserDto>.Success(responseUserDto);
     }
 
-    public async Task<IEnumerable<ResponseUserDto>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string email)
+    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string? email)
     {
-        var query = _context.Users.AsQueryable();
+        try
+        {
+            var query = _context.Users.AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(firstName))
-        {
-            query = query.Where(u => u.FirstName.ToLower().Contains(firstName.ToLower()));
-        }
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                query = query.Where(u => u.FirstName.ToLower().Contains(firstName.ToLower()));
+            }
         
-        if (!string.IsNullOrWhiteSpace(lastName))
-        {
-            query = query.Where(u => u.LastName.ToLower().Contains(lastName.ToLower()));
-        }
+            if (!string.IsNullOrWhiteSpace(lastName))
+            {
+                query = query.Where(u => u.LastName.ToLower().Contains(lastName.ToLower()));
+            }
         
-        if (!string.IsNullOrWhiteSpace(phoneNumber))
-        {
-            query = query.Where(u => u.PhoneNumber.Contains(phoneNumber));
-        }
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                query = query.Where(u => u.PhoneNumber.Contains(phoneNumber));
+            }
         
-        if (!string.IsNullOrWhiteSpace(email))
-        {
-            query = query.Where(u => u.Email.Contains(email));
-        }
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                query = query.Where(u => u.Email.ToLower().Contains(email.ToLower()));
+            }
 
-        List<ResponseUserDto> responseUserDtos = new List<ResponseUserDto>();
-
-        foreach (var user in await query.ToListAsync())
-        {
-            responseUserDtos.Add(new ResponseUserDto
+            var users = await query.ToListAsync();
+            
+            var responseUserDtos = users.Select(user => new ResponseUserDto
             {
                 Id = user.Id,
                 Email = user.Email ?? string.Empty,
                 FirstName = user.FirstName ?? string.Empty,
                 LastName = user.LastName ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty
-            });
+            }).ToList();
+            
+            return Result<IEnumerable<ResponseUserDto>>.Success(responseUserDtos);
         }
-        
-        return responseUserDtos;
+        catch (Exception ex)
+        {
+            // Logowanie błędu tutaj (jeśli używasz ILogger)
+            return Result<IEnumerable<ResponseUserDto>>.InternalError($"An error occurred while searching users: {ex.Message}");
+        }
     }
 
-    public async Task<CreateUserDto> CreateAsync(CreateUserDto userDto)
+    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
     {
         // Walidacja
-        if (string.IsNullOrEmpty(userDto.Email))
-            throw new ArgumentException("Email jest wymagany");
+        if (string.IsNullOrWhiteSpace(userDto.Email))
+        {
+            return Result<CreateUserDto>.ValidationError("Email is required");
+        }
 
         // Sprawdź czy użytkownik już istnieje
         var existingUser = await _userManager.FindByEmailAsync(userDto.Email);
         if (existingUser != null)
-            throw new InvalidOperationException("Użytkownik o podanym emailu już istnieje");
+        {
+            return Result<CreateUserDto>.Conflict("User with this email already exists");
+        }
 
         // Wygeneruj hasło
         string generatedPassword = GenerateSecurePassword();
@@ -119,26 +126,34 @@ public class UserService : IUserService
         if (!result.Succeeded)
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Nie udało się utworzyć użytkownika: {errors}");
+            return Result<CreateUserDto>.InternalError($"Failed to create user: {errors}");
         }
 
         // Jeśli jest RestaurantId, dodaj jako pracownika
         if (userDto.RestaurantId.HasValue)
         {
-        
-            var employee = new RestaurantEmployee
+            try
             {
-                UserId = user.Id,
-                RestaurantId = userDto.RestaurantId.Value,
-                Role = userDto.Role ?? RestaurantRole.Employee, // Ustaw domyślną rolę
-                Permissions = new List<RestaurantPermission>() // Pusta lista lub domyślne uprawnienia
-            };
+                var employee = new RestaurantEmployee
+                {
+                    UserId = user.Id,
+                    RestaurantId = userDto.RestaurantId.Value,
+                    Role = userDto.Role ?? RestaurantRole.Employee,
+                    Permissions = new List<RestaurantPermission>()
+                };
         
-            await _employeeService.CreateAsync(employee);
+                await _employeeService.CreateAsync(employee);
+            }
+            catch (Exception ex)
+            {
+                // Jeśli nie udało się utworzyć pracownika, usuń utworzonego użytkownika
+                await _userManager.DeleteAsync(user);
+                return Result<CreateUserDto>.InternalError($"Failed to create employee association: {ex.Message}");
+            }
         }
 
         // Zwróć DTO z wygenerowanym hasłem
-        return new CreateUserDto
+        var resultDto = new CreateUserDto
         {
             Email = user.Email,
             FirstName = user.FirstName,
@@ -147,6 +162,8 @@ public class UserService : IUserService
             RestaurantId = userDto.RestaurantId,
             Password = generatedPassword
         };
+        
+        return Result<CreateUserDto>.Created(resultDto);
     }
     
     private string GenerateSecurePassword(int length = 16)

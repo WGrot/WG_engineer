@@ -1,11 +1,11 @@
-﻿using RestaurantApp.Api.Models.DTOs;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<ResponseUserDto> GetByIdAsync(string id);
-    Task<IEnumerable<ResponseUserDto>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string email);
-    
-    Task<CreateUserDto> CreateAsync(CreateUserDto userDto);
+    Task<Result<ResponseUserDto>> GetByIdAsync(string id);
+    Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string? email);
+    Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto);
 }

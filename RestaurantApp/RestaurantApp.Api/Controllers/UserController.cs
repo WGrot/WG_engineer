@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 
@@ -15,34 +16,67 @@ public class UserController : ControllerBase
         _userService = userService;
     }
     
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ResponseUserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(string id)
+    {
+        var result = await _userService.GetByIdAsync(id);
+        return result.ToActionResult(this);
+    }
+    
     [HttpGet("search")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ResponseUserDto>>> Search(
+    [ProducesResponseType(typeof(IEnumerable<ResponseUserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Search(
         [FromQuery] string? firstName = null, 
         [FromQuery] string? lastName = null, 
         [FromQuery] string? email = null, 
         [FromQuery] string? phoneNumber = null)
     {
-        var users = await _userService.SearchAsync(firstName, lastName, email, phoneNumber );
-        return Ok(users);
+        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email);
+        return result.ToActionResult(this);
     }
     
     [HttpPost]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
-        try
+        if (!ModelState.IsValid)
         {
-            var result = await _userService.CreateAsync(dto);
-            return Ok(new 
+            return BadRequest(ModelState);
+        }
+        
+        var result = await _userService.CreateAsync(dto);
+        
+        if (result.IsSuccess && result.StatusCode == 201)
+        {
+            var response = new 
             { 
-                Message = "Użytkownik utworzony",
-                Email = result.Email,
-                Password = result.Password
-            });
+                message = "User created successfully",
+                email = result.Value!.Email,
+                password = result.Value.Password
+            };
+            
+            // Dla statusu 201 Created zwracamy z lokalizacją
+            return CreatedAtAction(
+                nameof(GetById), 
+                new { id = result.Value.Email },
+                response
+            );
         }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
+        
+        return result.ToActionResult(this);
     }
+}
+
+// Extension methods dla ułatwienia obsługi Result w kontrolerach
+public static class ControllerExtensions
+{
+    
 }

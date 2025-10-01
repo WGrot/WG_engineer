@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
@@ -41,10 +42,22 @@ public class EmployeesController : ControllerBase
     public async Task<ActionResult<IEnumerable<ResponseRestaurantEmployeeDto>>> GetByRestaurant(int restaurantId)
     {
         var employees = await _employeeService.GetByRestaurantIdAsync(restaurantId);
-        List<ResponseRestaurantEmployeeDto> employeesDto = new List<ResponseRestaurantEmployeeDto>();
+
+        var employeesDto = new List<ResponseRestaurantEmployeeDto>();
+
         foreach (var employee in employees)
         {
-            employeesDto.Add(await FillEmployeeData(employee));
+            var result = await FillEmployeeData(employee);
+            if (result.IsFailure)
+            {
+                // Możesz tutaj zwrócić odpowiedni status HTTP
+                return StatusCode(
+                    (int)result.StatusCode, 
+                    Result<IEnumerable<ResponseRestaurantEmployeeDto>>.Failure(result.Error, result.StatusCode)
+                );
+            }
+
+            employeesDto.Add(result.Value!);
         }
         return Ok(employeesDto);
     }
@@ -111,10 +124,21 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
-    private async Task<ResponseRestaurantEmployeeDto> FillEmployeeData(RestaurantEmployee employee)
+    private async Task<Result<ResponseRestaurantEmployeeDto>> FillEmployeeData(RestaurantEmployee employee)
     {
-        var user = await _userService.GetByIdAsync(employee.UserId);
-        ResponseRestaurantEmployeeDto returnDto = new ResponseRestaurantEmployeeDto
+        var userResult = await _userService.GetByIdAsync(employee.UserId);
+    
+        if (userResult.IsFailure)
+        {
+            return Result<ResponseRestaurantEmployeeDto>.Failure(
+                $"Failed to get user data for employee: {userResult.Error}", 
+                userResult.StatusCode
+            );
+        }
+    
+        var user = userResult.Value!;
+    
+        var returnDto = new ResponseRestaurantEmployeeDto
         {
             Id = employee.Id.ToString(),
             UserId = employee.UserId,
@@ -129,6 +153,7 @@ public class EmployeesController : ControllerBase
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber
         };
-        return returnDto;
+    
+        return Result<ResponseRestaurantEmployeeDto>.Success(returnDto);
     }
 }
