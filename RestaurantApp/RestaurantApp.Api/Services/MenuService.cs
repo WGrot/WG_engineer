@@ -1,6 +1,9 @@
 ﻿using RestaurantApp.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Controllers;
 using RestaurantApp.Shared.Models;
+using RestaurantApp.Api.Models.DTOs;
 
 namespace RestaurantApp.Api.Services;
 
@@ -17,69 +20,82 @@ public class MenuService : IMenuService
 
     // ===== MENU OPERATIONS =====
 
-    public async Task<Menu?> GetMenuByIdAsync(int menuId)
+    public async Task<Result<Menu>> GetMenuByIdAsync(int menuId)
     {
-        return await _context.Menus
+        var menu = await _context.Menus
             .Include(m => m.Categories)
                 .ThenInclude(c => c.Items)
-            .Include(m => m.Items.Where(i => i.CategoryId == null)) // Items bez kategorii
+            .Include(m => m.Items.Where(i => i.CategoryId == null))
             .FirstOrDefaultAsync(m => m.Id == menuId);
+        
+        return menu == null
+            ? Result<Menu>.NotFound($"Menu with ID {menuId} not found.")
+            : Result.Success(menu);
     }
 
-    public async Task<Menu?> GetMenuByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<Menu>> GetMenuByRestaurantIdAsync(int restaurantId)
     {
-        return await _context.Menus
+        var menu = await _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
                 .ThenInclude(c => c.Items)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
             .FirstOrDefaultAsync();
+
+        return menu == null
+            ? Result<Menu>.NotFound($"Active menu for restaurant ID {restaurantId} not found.")
+            : Result.Success(menu);
     }
 
-    public async Task<Menu> CreateMenuAsync(int restaurantId, Menu menu)
+    public async Task<Result<Menu>> CreateMenuAsync(int restaurantId, MenuDto menuDto)
     {
-        _logger.LogInformation("Creating menu for restaurant {RestaurantId}", restaurantId);
-
         var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
         if (!restaurantExists)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {restaurantId} not found");
+            return Result<Menu>.NotFound($"restaurant with ID {restaurantId} not found.");
         }
 
-        if (menu.IsActive)
+        if (menuDto.IsActive)
         {
             await DeactivateAllMenusForRestaurantAsync(restaurantId);
         }
 
+        Menu menu = new Menu
+        {
+            Name = menuDto.Name,
+            Description = menuDto.Description,
+            IsActive = menuDto.IsActive
+        };
+        
         menu.RestaurantId = restaurantId;
         _context.Menus.Add(menu);
         await _context.SaveChangesAsync();
 
-        return menu;
+        return Result<Menu>.Success(menu);
     }
 
-    public async Task UpdateMenuAsync(int menuId, Menu menu)
+    public async Task<Result> UpdateMenuAsync(int menuId, MenuDto menuDto)
     {
         var existingMenu = await _context.Menus.FindAsync(menuId);
         if (existingMenu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result.NotFound($"Menu with ID {menuId} not found.");
         }
 
-        if (menu.IsActive && !existingMenu.IsActive)
+        if (menuDto.IsActive && !existingMenu.IsActive)
         {
             await DeactivateAllMenusForRestaurantAsync(existingMenu.RestaurantId);
         }
 
-        existingMenu.Name = menu.Name;
-        existingMenu.Description = menu.Description;
-        existingMenu.IsActive = menu.IsActive;
-
+        existingMenu.Name = menuDto.Name;
+        existingMenu.Description = menuDto.Description;
+        existingMenu.IsActive = menuDto.IsActive;
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Updated menu {MenuId}", menuId);
+        
+        return Result.Success();
     }
 
-    public async Task DeleteMenuAsync(int menuId)
+    public async Task<Result> DeleteMenuAsync(int menuId)
     {
         var menu = await _context.Menus
             .Include(m => m.Categories)
@@ -89,26 +105,26 @@ public class MenuService : IMenuService
 
         if (menu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result.NotFound($"Menu with ID {menuId} not found.");
         }
 
         if (menu.IsActive)
         {
-            throw new InvalidOperationException("Cannot delete active menu. Please deactivate it first");
+            return Result.InternalError("Cannot delete an active menu. Deactivate it first.");
         }
 
         _context.Menus.Remove(menu);
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Deleted menu {MenuId}", menuId);
+        return Result.Success();
     }
 
-    public async Task<bool> ActivateMenuAsync(int menuId)
+    public async Task<Result> ActivateMenuAsync(int menuId)
     {
         var menu = await _context.Menus.FindAsync(menuId);
         if (menu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result.NotFound($"Menu with ID {menuId} not found.");
         }
 
         await DeactivateAllMenusForRestaurantAsync(menu.RestaurantId);
@@ -116,89 +132,102 @@ public class MenuService : IMenuService
         menu.IsActive = true;
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Activated menu {MenuId}", menuId);
-        return true;
+        return Result.Success();
     }
 
-    public async Task<bool> DeactivateMenuAsync(int menuId)
+    public async Task<Result> DeactivateMenuAsync(int menuId)
     {
         var menu = await _context.Menus.FindAsync(menuId);
         if (menu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result.NotFound("Menu with ID {menuId} not found.");
         }
 
         menu.IsActive = false;
         await _context.SaveChangesAsync();
         
         _logger.LogInformation("Deactivated menu {MenuId}", menuId);
-        return true;
+        return Result.Success();
     }
 
     // ===== CATEGORY OPERATIONS =====
 
-    public async Task<MenuCategory?> GetCategoryByIdAsync(int categoryId)
+    public async Task<Result<MenuCategory>> GetCategoryByIdAsync(int categoryId)
     {
-        return await _context.MenuCategories
+        var category = await _context.MenuCategories
             .Include(c => c.Items)
             .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+        return category == null
+            ? Result<MenuCategory>.NotFound($"Category with ID {categoryId} not found.")
+            : Result<MenuCategory>.Success(category);
     }
 
-    public async Task<IEnumerable<MenuCategory>> GetCategoriesAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuCategory>>> GetCategoriesAsync(int menuId)
     {
-        return await _context.MenuCategories
+        var categories = await _context.MenuCategories
             .Include(c => c.Items)
             .Where(c => c.MenuId == menuId && c.IsActive)
             .OrderBy(c => c.DisplayOrder)
             .ToListAsync();
+        return categories.Any()
+            ? Result<IEnumerable<MenuCategory>>.Success(categories)
+            : Result<IEnumerable<MenuCategory>>.NotFound($"No active categories found for menu ID {menuId}."); 
     }
 
-    public async Task<MenuCategory> CreateCategoryAsync(int menuId, MenuCategory category)
+    public async Task<Result<MenuCategory>> CreateCategoryAsync(int menuId, MenuCategoryDto categoryDto)
     {
         var menu = await _context.Menus.FindAsync(menuId);
         if (menu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result<MenuCategory>.NotFound($"Menu with ID {menuId} not found.");
         }
 
         // Ustaw kolejność wyświetlania na końcu jeśli nie podano
-        if (category.DisplayOrder == 0)
+        if (categoryDto.DisplayOrder == 0)
         {
             var maxOrder = await _context.MenuCategories
                 .Where(c => c.MenuId == menuId)
                 .MaxAsync(c => (int?)c.DisplayOrder) ?? 0;
-            category.DisplayOrder = maxOrder + 1;
+            categoryDto.DisplayOrder = maxOrder + 1;
         }
-
+        
+        MenuCategory category = new MenuCategory
+        {
+            Name = categoryDto.Name,
+            Description = categoryDto.Description,
+            IsActive = categoryDto.IsActive,
+            DisplayOrder = categoryDto.DisplayOrder
+        };
         category.MenuId = menuId;
+        
         _context.MenuCategories.Add(category);
         await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Created category {CategoryName} for menu {MenuId}", category.Name, menuId);
-        return category;
+        
+        return Result<MenuCategory>.Success(category);
     }
 
-    public async Task UpdateCategoryAsync(int categoryId, MenuCategory category)
+    public async Task<Result> UpdateCategoryAsync(int categoryId, MenuCategoryDto categoryDto)
     {
         var existingCategory = await _context.MenuCategories.FindAsync(categoryId);
         if (existingCategory == null)
         {
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found");
+            return Result.NotFound($"Category with ID {categoryId} not found.");
         }
 
-        existingCategory.Name = category.Name;
-        existingCategory.Description = category.Description;
-        existingCategory.IsActive = category.IsActive;
-        if (category.DisplayOrder > 0)
+        existingCategory.Name = categoryDto.Name;
+        existingCategory.Description = categoryDto.Description;
+        existingCategory.IsActive = categoryDto.IsActive;
+        if (categoryDto.DisplayOrder > 0)
         {
-            existingCategory.DisplayOrder = category.DisplayOrder;
+            existingCategory.DisplayOrder = categoryDto.DisplayOrder;
         }
 
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Updated category {CategoryId}", categoryId);
+        return Result.Success();
     }
 
-    public async Task DeleteCategoryAsync(int categoryId)
+    public async Task<Result> DeleteCategoryAsync(int categoryId)
     {
         var category = await _context.MenuCategories
             .Include(c => c.Items)
@@ -206,12 +235,11 @@ public class MenuService : IMenuService
 
         if (category == null)
         {
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found");
+            return Result.NotFound($"Category with ID {categoryId} not found.");
         }
 
         if (category.Items.Any())
         {
-            // Przenieś items do menu bez kategorii
             foreach (var item in category.Items)
             {
                 item.CategoryId = null;
@@ -222,73 +250,96 @@ public class MenuService : IMenuService
         _context.MenuCategories.Remove(category);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Deleted category {CategoryId}", categoryId);
+        return Result.Success();
     }
 
-    public async Task UpdateCategoryOrderAsync(int categoryId, int displayOrder)
+    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder)
     {
         var category = await _context.MenuCategories.FindAsync(categoryId);
         if (category == null)
         {
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found");
+            return Result.NotFound($"Category with ID {categoryId} not found.");
         }
 
         category.DisplayOrder = displayOrder;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Updated display order for category {CategoryId} to {Order}", categoryId, displayOrder);
+        return Result.Success();
     }
 
     // ===== MENU ITEM OPERATIONS =====
 
-    public async Task<MenuItem?> GetMenuItemByIdAsync(int itemId)
+    public async Task<Result<MenuItem>> GetMenuItemByIdAsync(int itemId)
     {
-        return await _context.MenuItems
+        var item =  await _context.MenuItems
             .Include(mi => mi.Menu)
             .Include(mi => mi.Category)
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
+        
+        return item == null 
+            ? Result<MenuItem>.NotFound($"Menu item with ID {itemId} not found.") 
+            : Result<MenuItem>.Success(item);
     }
 
-    public async Task<IEnumerable<MenuItem>> GetMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsAsync(int menuId)
     {
-        return await _context.MenuItems
+        var items = await _context.MenuItems
             .Include(mi => mi.Category)
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
+
+        return Result<IEnumerable<MenuItem>>.Success(items);
+
     }
 
-    public async Task<IEnumerable<MenuItem>> GetMenuItemsByCategoryAsync(int categoryId)
+    public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId)
     {
-        return await _context.MenuItems
+        var items = await _context.MenuItems
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
+
+        return Result<IEnumerable<MenuItem>>.Success(items);
+
     }
 
-    public async Task<IEnumerable<MenuItem>> GetUncategorizedMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId)
     {
-        return await _context.MenuItems
+        var items = await _context.MenuItems
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
+        
+        return Result<IEnumerable<MenuItem>>.Success(items);
     }
 
-    public async Task<MenuItem> AddMenuItemAsync(int menuId, MenuItem item)
+    public async Task<Result<MenuItem>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
     {
         var menu = await _context.Menus.FindAsync(menuId);
         if (menu == null)
         {
-            throw new KeyNotFoundException($"Menu with ID {menuId} not found");
+            return Result<MenuItem>.NotFound($"Menu with ID {menuId} not found.");
         }
 
+        MenuItem item = new MenuItem
+        {
+            Name = itemDto.Name,
+            Description = itemDto.Description,
+            Price = new MenuItemPrice
+            {
+                Price = itemDto.Price,
+                CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
+            },
+            ImagePath = itemDto.ImagePath
+        };
+        
         item.MenuId = menuId;
-        item.CategoryId = null; // Item bez kategorii
+        item.CategoryId = null; 
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Added menu item {ItemName} to menu {MenuId}", item.Name, menuId);
-        return item;
+        return Result<MenuItem>.Success(item);
     }
 
-    public async Task<MenuItem> AddMenuItemToCategoryAsync(int categoryId, MenuItem item)
+    public async Task<Result<MenuItem>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
     {
         var category = await _context.MenuCategories
             .Include(c => c.Menu)
@@ -296,55 +347,69 @@ public class MenuService : IMenuService
             
         if (category == null)
         {
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found");
+            return Result<MenuItem>.NotFound($"Category with ID {categoryId} not found.");
         }
+        
+        MenuItem item = new MenuItem{
+            Name = itemDto.Name,
+            Description = itemDto.Description,
+            Price = new MenuItemPrice
+            {
+                Price = itemDto.Price,
+                CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
+            },
+            ImagePath = itemDto.ImagePath
+        };
 
         item.CategoryId = categoryId;
         item.MenuId = null; // Relacja przez kategorię
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Added menu item {ItemName} to category {CategoryId}", item.Name, categoryId);
-        return item;
+        return Result<MenuItem>.Success(item);
     }
 
-    public async Task UpdateMenuItemAsync(int itemId, MenuItem item)
+    public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto)
     {
         var existingItem = await _context.MenuItems.FindAsync(itemId);
         if (existingItem == null)
         {
-            throw new KeyNotFoundException($"Menu item with ID {itemId} not found");
+            return Result.NotFound($"Menu with ID {itemId} not found.");
         }
 
-        existingItem.Name = item.Name;
-        existingItem.Description = item.Description;
-        existingItem.Price = item.Price;
-        existingItem.ImagePath = item.ImagePath;
+        existingItem.Name = itemDto.Name;
+        existingItem.Description = itemDto.Description;
+        existingItem.Price = new MenuItemPrice
+        {
+            Price = itemDto.Price,
+            CurrencyCode = itemDto.CurrencyCode ?? existingItem.Price.CurrencyCode
+        };
+        existingItem.ImagePath = itemDto.ImagePath;
 
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Updated menu item {ItemId}", itemId);
+        return Result.Success();
     }
 
-    public async Task DeleteMenuItemAsync(int itemId)
+    public async Task<Result> DeleteMenuItemAsync(int itemId)
     {
         var item = await _context.MenuItems.FindAsync(itemId);
         if (item == null)
         {
-            throw new KeyNotFoundException($"Menu item with ID {itemId} not found");
+            return Result.NotFound($"Menu item with ID {itemId} not found");
         }
 
         _context.MenuItems.Remove(item);
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Deleted menu item {ItemId}", itemId);
+        return Result.Success();
     }
 
-    public async Task UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null)
+    public async Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null)
     {
         var item = await _context.MenuItems.FindAsync(itemId);
         if (item == null)
         {
-            throw new KeyNotFoundException($"Menu item with ID {itemId} not found");
+            return Result.NotFound($"Menu with ID {itemId} not found.");
         }
 
         item.Price.Price = price;
@@ -354,11 +419,10 @@ public class MenuService : IMenuService
         }
 
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Updated price for menu item {ItemId} to {Price} {Currency}", 
-            itemId, price, item.Price.CurrencyCode);
+        return Result.Success();
     }
 
-    public async Task MoveMenuItemToCategoryAsync(int itemId, int? categoryId)
+    public async Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId)
     {
         var item = await _context.MenuItems
             .Include(i => i.Category)
@@ -366,7 +430,7 @@ public class MenuService : IMenuService
             
         if (item == null)
         {
-            throw new KeyNotFoundException($"Menu item with ID {itemId} not found");
+            return Result.NotFound($"Item with ID {itemId} not found");
         }
 
         if (categoryId.HasValue)
@@ -386,7 +450,7 @@ public class MenuService : IMenuService
             var menuId = item.Category?.MenuId ?? item.MenuId;
             if (!menuId.HasValue)
             {
-                throw new InvalidOperationException("Cannot determine menu ID for uncategorized item");
+                return Result.Failure("Cannot determine menu ID for uncategorized item");
             }
 
             item.CategoryId = null;
@@ -394,7 +458,7 @@ public class MenuService : IMenuService
         }
 
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Moved menu item {ItemId} to category {CategoryId}", itemId, categoryId);
+        return Result.Success();
     }
 
     // ===== PRIVATE HELPER METHODS =====

@@ -1,35 +1,37 @@
-﻿using RestaurantApp.Shared.Models;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IMenuService
 {
     // Menu operations
-    Task<Menu?> GetMenuByIdAsync(int menuId);
-    Task<Menu?> GetMenuByRestaurantIdAsync(int restaurantId);
-    Task<Menu> CreateMenuAsync(int restaurantId, Menu menu);
-    Task UpdateMenuAsync(int menuId, Menu menu);
-    Task DeleteMenuAsync(int menuId);
-    Task<bool> ActivateMenuAsync(int menuId);
-    Task<bool> DeactivateMenuAsync(int menuId);
+    Task<Result<Menu>> GetMenuByIdAsync(int menuId);
+    Task<Result<Menu>> GetMenuByRestaurantIdAsync(int restaurantId);
+    Task<Result<Menu>> CreateMenuAsync(int restaurantId, MenuDto menuDto);
+    Task<Result> UpdateMenuAsync(int menuId, MenuDto menuDto);
+    Task<Result> DeleteMenuAsync(int menuId);
+    Task<Result> ActivateMenuAsync(int menuId);
+    Task<Result> DeactivateMenuAsync(int menuId);
     
     // Category operations
-    Task<MenuCategory?> GetCategoryByIdAsync(int categoryId);
-    Task<IEnumerable<MenuCategory>> GetCategoriesAsync(int menuId);
-    Task<MenuCategory> CreateCategoryAsync(int menuId, MenuCategory category);
-    Task UpdateCategoryAsync(int categoryId, MenuCategory category);
-    Task DeleteCategoryAsync(int categoryId);
-    Task UpdateCategoryOrderAsync(int categoryId, int displayOrder);
+    Task<Result<MenuCategory>> GetCategoryByIdAsync(int categoryId);
+    Task<Result<IEnumerable<MenuCategory>>> GetCategoriesAsync(int menuId);
+    Task<Result<MenuCategory>> CreateCategoryAsync(int menuId, MenuCategoryDto categoryDto);
+    Task<Result> UpdateCategoryAsync(int categoryId, MenuCategoryDto categoryDto);
+    Task<Result> DeleteCategoryAsync(int categoryId);
+    Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder);
     
     // MenuItem operations
-    Task<MenuItem?> GetMenuItemByIdAsync(int itemId);
-    Task<IEnumerable<MenuItem>> GetMenuItemsAsync(int menuId);
-    Task<IEnumerable<MenuItem>> GetMenuItemsByCategoryAsync(int categoryId);
-    Task<IEnumerable<MenuItem>> GetUncategorizedMenuItemsAsync(int menuId);
-    Task<MenuItem> AddMenuItemAsync(int menuId, MenuItem item);
-    Task<MenuItem> AddMenuItemToCategoryAsync(int categoryId, MenuItem item);
-    Task UpdateMenuItemAsync(int itemId, MenuItem item);
-    Task DeleteMenuItemAsync(int itemId);
-    Task UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null);
-    Task MoveMenuItemToCategoryAsync(int itemId, int? categoryId);
+    Task<Result<MenuItem>> GetMenuItemByIdAsync(int itemId);
+    Task<Result<IEnumerable<MenuItem>>> GetMenuItemsAsync(int menuId);
+    Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId);
+    Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId);
+    Task<Result<MenuItem>> AddMenuItemAsync(int menuId, MenuItemDto itemDto);
+    Task<Result<MenuItem>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto);
+    Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto);
+    Task<Result> DeleteMenuItemAsync(int itemId);
+    Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null);
+    Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId);
 }
