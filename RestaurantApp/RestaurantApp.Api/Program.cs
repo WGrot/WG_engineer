@@ -49,6 +49,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
+builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
