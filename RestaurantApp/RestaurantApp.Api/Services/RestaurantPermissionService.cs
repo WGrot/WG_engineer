@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
 
@@ -13,80 +14,191 @@ public class RestaurantPermissionService : IRestaurantPermissionService
         _context = context;
     }
 
-    public async Task<IEnumerable<RestaurantPermission>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantPermission>>> GetAllAsync()
     {
-        return await _context.RestaurantPermissions
-            .Include(p => p.RestaurantEmployee)
-            .ToListAsync();
-    }
-
-    public async Task<RestaurantPermission> GetByIdAsync(int id)
-    {
-        return await _context.RestaurantPermissions
-            .Include(p => p.RestaurantEmployee)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    public async Task<IEnumerable<RestaurantPermission>> GetByEmployeeIdAsync(int employeeId)
-    {
-        return await _context.RestaurantPermissions
-            .Include(p => p.RestaurantEmployee)
-            .Where(p => p.RestaurantEmployeeId == employeeId)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<RestaurantPermission>> GetByRestaurantIdAsync(int restaurantId)
-    {
-        return await _context.RestaurantPermissions
-            .Include(p => p.RestaurantEmployee)
-            .Where(p => p.RestaurantEmployee.RestaurantId == restaurantId)
-            .ToListAsync();
-    }
-
-    public async Task<RestaurantPermission> CreateAsync(RestaurantPermission permission)
-    {
-        _context.RestaurantPermissions.Add(permission);
-        await _context.SaveChangesAsync();
-        
-        return await GetByIdAsync(permission.Id);
-    }
-
-    public async Task<RestaurantPermission> UpdateAsync(RestaurantPermission permission)
-    {
-        _context.Entry(permission).State = EntityState.Modified;
-        
         try
         {
+            var permissions = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .ToListAsync();
+                
+            return Result<IEnumerable<RestaurantPermission>>.Success(permissions);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<RestaurantPermission>>.InternalError($"Błąd podczas pobierania uprawnień: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<RestaurantPermission>> GetByIdAsync(int id)
+    {
+        try
+        {
+            var permission = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .FirstOrDefaultAsync(p => p.Id == id);
+                
+            if (permission == null)
+                return Result<RestaurantPermission>.NotFound($"Nie znaleziono uprawnienia o ID: {id}");
+                
+            return Result<RestaurantPermission>.Success(permission);
+        }
+        catch (Exception ex)
+        {
+            return Result<RestaurantPermission>.InternalError($"Błąd podczas pobierania uprawnienia: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<IEnumerable<RestaurantPermission>>> GetByEmployeeIdAsync(int employeeId)
+    {
+        try
+        {
+            var permissions = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .Where(p => p.RestaurantEmployeeId == employeeId)
+                .ToListAsync();
+                
+            return Result<IEnumerable<RestaurantPermission>>.Success(permissions);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<RestaurantPermission>>.InternalError($"Błąd podczas pobierania uprawnień pracownika: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<IEnumerable<RestaurantPermission>>> GetByRestaurantIdAsync(int restaurantId)
+    {
+        try
+        {
+            var permissions = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .Where(p => p.RestaurantEmployee.RestaurantId == restaurantId)
+                .ToListAsync();
+                
+            return Result<IEnumerable<RestaurantPermission>>.Success(permissions);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<RestaurantPermission>>.InternalError($"Błąd podczas pobierania uprawnień restauracji: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<RestaurantPermission>> CreateAsync(RestaurantPermission permission)
+    {
+        try
+        {
+            // Sprawdzenie, czy pracownik istnieje
+            var employeeExists = await _context.RestaurantEmployees
+                .AnyAsync(e => e.Id == permission.RestaurantEmployeeId);
+                
+            if (!employeeExists)
+                return Result<RestaurantPermission>.NotFound($"Nie znaleziono pracownika o ID: {permission.RestaurantEmployeeId}");
+            
+            // Sprawdzenie, czy takie uprawnienie już istnieje
+            var existingPermission = await _context.RestaurantPermissions
+                .AnyAsync(p => p.RestaurantEmployeeId == permission.RestaurantEmployeeId 
+                    && p.Permission == permission.Permission);
+                    
+            if (existingPermission)
+                return Result<RestaurantPermission>.Conflict($"Pracownik już posiada uprawnienie: {permission.Permission}");
+            
+            _context.RestaurantPermissions.Add(permission);
             await _context.SaveChangesAsync();
-            return await GetByIdAsync(permission.Id);
+            
+            var createdPermission = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .FirstOrDefaultAsync(p => p.Id == permission.Id);
+                
+            return Result<RestaurantPermission>.Created(createdPermission!);
+        }
+        catch (Exception ex)
+        {
+            return Result<RestaurantPermission>.InternalError($"Błąd podczas tworzenia uprawnienia: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<RestaurantPermission>> UpdateAsync(RestaurantPermission permission)
+    {
+        try
+        {
+            // Sprawdzenie, czy uprawnienie istnieje
+            var existingPermission = await _context.RestaurantPermissions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == permission.Id);
+                
+            if (existingPermission == null)
+                return Result<RestaurantPermission>.NotFound($"Nie znaleziono uprawnienia o ID: {permission.Id}");
+            
+            // Sprawdzenie, czy pracownik istnieje
+            var employeeExists = await _context.RestaurantEmployees
+                .AnyAsync(e => e.Id == permission.RestaurantEmployeeId);
+                
+            if (!employeeExists)
+                return Result<RestaurantPermission>.NotFound($"Nie znaleziono pracownika o ID: {permission.RestaurantEmployeeId}");
+            
+            // Sprawdzenie duplikatu (jeśli zmieniono typ uprawnienia)
+            if (existingPermission.Permission != permission.Permission)
+            {
+                var duplicateExists = await _context.RestaurantPermissions
+                    .AnyAsync(p => p.RestaurantEmployeeId == permission.RestaurantEmployeeId 
+                        && p.Permission == permission.Permission 
+                        && p.Id != permission.Id);
+                        
+                if (duplicateExists)
+                    return Result<RestaurantPermission>.Conflict($"Pracownik już posiada uprawnienie: {permission.Permission}");
+            }
+            
+            _context.Entry(permission).State = EntityState.Modified;
+            
+            await _context.SaveChangesAsync();
+            
+            var updatedPermission = await _context.RestaurantPermissions
+                .Include(p => p.RestaurantEmployee)
+                .FirstOrDefaultAsync(p => p.Id == permission.Id);
+                
+            return Result<RestaurantPermission>.Success(updatedPermission!);
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!await PermissionExistsAsync(permission.Id))
-                return null;
-            throw;
+            return Result<RestaurantPermission>.Conflict("Uprawnienie zostało zmodyfikowane przez innego użytkownika");
+        }
+        catch (Exception ex)
+        {
+            return Result<RestaurantPermission>.InternalError($"Błąd podczas aktualizacji uprawnienia: {ex.Message}");
         }
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
-        var permission = await _context.RestaurantPermissions.FindAsync(id);
-        if (permission == null)
-            return false;
+        try
+        {
+            var permission = await _context.RestaurantPermissions.FindAsync(id);
+            if (permission == null)
+                return Result.NotFound($"Nie znaleziono uprawnienia o ID: {id}");
 
-        _context.RestaurantPermissions.Remove(permission);
-        await _context.SaveChangesAsync();
-        return true;
+            _context.RestaurantPermissions.Remove(permission);
+            await _context.SaveChangesAsync();
+            
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.InternalError($"Błąd podczas usuwania uprawnienia: {ex.Message}");
+        }
     }
 
-    public async Task<bool> HasPermissionAsync(int employeeId, PermissionType permission)
+    public async Task<Result<bool>> HasPermissionAsync(int employeeId, PermissionType permission)
     {
-        return await _context.RestaurantPermissions
-            .AnyAsync(p => p.RestaurantEmployeeId == employeeId && p.Permission == permission);
-    }
-
-    private async Task<bool> PermissionExistsAsync(int id)
-    {
-        return await _context.RestaurantPermissions.AnyAsync(p => p.Id == id);
+        try
+        {
+            var hasPermission = await _context.RestaurantPermissions
+                .AnyAsync(p => p.RestaurantEmployeeId == employeeId && p.Permission == permission);
+                
+            return Result<bool>.Success(hasPermission);
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.InternalError($"Błąd podczas sprawdzania uprawnienia: {ex.Message}");
+        }
     }
 }

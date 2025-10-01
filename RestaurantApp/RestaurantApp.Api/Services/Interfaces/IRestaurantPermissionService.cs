@@ -1,15 +1,16 @@
-﻿using RestaurantApp.Shared.Models;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IRestaurantPermissionService
 {
-    Task<IEnumerable<RestaurantPermission>> GetAllAsync();
-    Task<RestaurantPermission> GetByIdAsync(int id);
-    Task<IEnumerable<RestaurantPermission>> GetByEmployeeIdAsync(int employeeId);
-    Task<IEnumerable<RestaurantPermission>> GetByRestaurantIdAsync(int restaurantId);
-    Task<RestaurantPermission> CreateAsync(RestaurantPermission permission);
-    Task<RestaurantPermission> UpdateAsync(RestaurantPermission permission);
-    Task<bool> DeleteAsync(int id);
-    Task<bool> HasPermissionAsync(int employeeId, PermissionType permission);
+    Task<Result<IEnumerable<RestaurantPermission>>> GetAllAsync();
+    Task<Result<RestaurantPermission>> GetByIdAsync(int id);
+    Task<Result<IEnumerable<RestaurantPermission>>> GetByEmployeeIdAsync(int employeeId);
+    Task<Result<IEnumerable<RestaurantPermission>>> GetByRestaurantIdAsync(int restaurantId);
+    Task<Result<RestaurantPermission>> CreateAsync(RestaurantPermission permission);
+    Task<Result<RestaurantPermission>> UpdateAsync(RestaurantPermission permission);
+    Task<Result> DeleteAsync(int id);
+    Task<Result<bool>> HasPermissionAsync(int employeeId, PermissionType permission);
 }

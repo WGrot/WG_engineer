@@ -20,87 +20,89 @@ public class PermissionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RestaurantPermission>>> GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var permissions = await _permissionService.GetAllAsync();
-        return Ok(permissions);
+        var result = await _permissionService.GetAllAsync();
+        return result.ToActionResult(this);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<RestaurantPermission>> GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        var permission = await _permissionService.GetByIdAsync(id);
-        if (permission == null)
-            return NotFound();
-
-        return Ok(permission);
+        var result = await _permissionService.GetByIdAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("employee/{employeeId}")]
-    public async Task<ActionResult<IEnumerable<RestaurantPermission>>> GetByEmployee(int employeeId)
+    public async Task<IActionResult> GetByEmployee(int employeeId)
     {
-        var permissions = await _permissionService.GetByEmployeeIdAsync(employeeId);
-        return Ok(permissions);
+        var result = await _permissionService.GetByEmployeeIdAsync(employeeId);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<ActionResult<IEnumerable<RestaurantPermission>>> GetByRestaurant(int restaurantId)
+    public async Task<IActionResult> GetByRestaurant(int restaurantId)
     {
-        var permissions = await _permissionService.GetByRestaurantIdAsync(restaurantId);
-        return Ok(permissions);
+        var result = await _permissionService.GetByRestaurantIdAsync(restaurantId);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("employee/{employeeId}/check/{permission}")]
-    public async Task<ActionResult<bool>> CheckPermission(int employeeId, PermissionType permission)
+    public async Task<IActionResult> CheckPermission(int employeeId, PermissionType permission)
     {
-        var hasPermission = await _permissionService.HasPermissionAsync(employeeId, permission);
-        return Ok(hasPermission);
+        var result = await _permissionService.HasPermissionAsync(employeeId, permission);
+        return result.ToActionResult(this);
     }
 
     [HttpPost]
-    public async Task<ActionResult<RestaurantPermission>> Create(CreateRestaurantPermissionDto permissionDto)
+    public async Task<IActionResult> Create(CreateRestaurantPermissionDto permissionDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var employeeResult = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
 
         if (employeeResult.IsFailure)
             return StatusCode(employeeResult.StatusCode, new { error = employeeResult.Error });
 
-        var employee = employeeResult.Value!;
-
         var permission = new RestaurantPermission
         {
             RestaurantEmployeeId = permissionDto.RestaurantEmployeeId,
-            RestaurantEmployee = employee,
+            RestaurantEmployee = employeeResult.Value!,
             Permission = permissionDto.Permission
         };
 
-        var created = await _permissionService.CreateAsync(permission);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        var result = await _permissionService.CreateAsync(permission);
+        
+        if (result.IsSuccess && result.StatusCode == 201)
+        {
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
+        }
+        
+        return result.ToActionResult(this);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<RestaurantPermission>> Update(int id, RestaurantPermission permission)
+    public async Task<IActionResult> Update(int id, RestaurantPermission permission)
     {
         if (id != permission.Id)
-            return BadRequest();
+            return BadRequest(new { error = "ID w URL nie zgadza się z ID w body" });
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var updated = await _permissionService.UpdateAsync(permission);
-        if (updated == null)
-            return NotFound();
-
-        return Ok(updated);
+        var result = await _permissionService.UpdateAsync(permission);
+        return result.ToActionResult(this);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         var result = await _permissionService.DeleteAsync(id);
-        if (!result)
-            return NotFound();
-
-        return NoContent();
+        
+        if (result.IsSuccess)
+            return NoContent();
+            
+        return result.ToActionResult(this);
     }
 }
