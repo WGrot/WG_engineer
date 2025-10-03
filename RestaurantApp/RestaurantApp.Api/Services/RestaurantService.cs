@@ -1,7 +1,9 @@
 ﻿using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.Common;
 
 
 namespace RestaurantApp.Api.Services;
@@ -17,30 +19,32 @@ public class RestaurantService : IRestaurantService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<Restaurant>> GetAllAsync()
+    public async Task<Result<IEnumerable<Restaurant>>> GetAllAsync()
     {
-        _logger.LogInformation("Fetching all restaurants");
-        
-        return await _context.Restaurants
+        var restaurants = await _context.Restaurants
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
             .ToListAsync();
+
+        return Result<IEnumerable<Restaurant>>.Success(restaurants);
     }
 
-    public async Task<Restaurant?> GetByIdAsync(int id)
+    public async Task<Result<Restaurant>> GetByIdAsync(int id)
     {
-        _logger.LogInformation("Fetching restaurant with ID: {RestaurantId}", id);
-        
-        return await _context.Restaurants
+        var restaurant = await _context.Restaurants
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
             .Include(r => r.Settings)
             .FirstOrDefaultAsync(r => r.Id == id);
+
+        return restaurant == null
+            ? Result<Restaurant>.NotFound("Restaurant not found")
+            : Result<Restaurant>.Success(restaurant);
     }
 
-    public async Task<IEnumerable<Restaurant>> SearchAsync(string? name, string? address)
+    public async Task<Result<IEnumerable<Restaurant>>> SearchAsync(string? name, string? address)
     {
         var query = _context.Restaurants
             .Include(r => r.Menu)
@@ -57,41 +61,48 @@ public class RestaurantService : IRestaurantService
             query = query.Where(r => r.Address.ToLower().Contains(address.ToLower()));
         }
 
-        return await query.ToListAsync();
+        var restaurants = await query.ToListAsync();
+
+        return Result<IEnumerable<Restaurant>>.Success(restaurants);
     }
 
-    public async Task<IEnumerable<Table>> GetTablesAsync(int restaurantId)
+    public async Task<Result<IEnumerable<Table>>> GetTablesAsync(int restaurantId)
     {
         var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
         if (!restaurantExists)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {restaurantId} not found.");
+            return Result<IEnumerable<Table>>.NotFound($"Cannot find restaurant with ID {restaurantId}");
         }
 
-        return await _context.Tables
+        var tables = await _context.Tables
             .Where(t => t.RestaurantId == restaurantId)
             .Include(t => t.Seats)
             .ToListAsync();
+
+        return Result<IEnumerable<Table>>.Success(tables);
     }
 
-    public async Task<IEnumerable<Restaurant>> GetOpenNowAsync()
+    public async Task<Result<IEnumerable<Restaurant>>> GetOpenNowAsync()
     {
         var now = TimeOnly.FromDateTime(DateTime.Now);
         var currentDay = DateTime.Now.DayOfWeek;
 
         // Optymalizacja - filtrowanie na poziomie bazy danych
-        return await _context.Restaurants
+        var openRestaurants = await _context.Restaurants
             .Include(r => r.OpeningHours)
             .Include(r => r.Menu)
-            .Where(r => r.OpeningHours.Any(oh => 
-                oh.DayOfWeek == currentDay && 
-                oh.OpenTime <= now && 
-                oh.CloseTime >= now && 
+            .Where(r => r.OpeningHours.Any(oh =>
+                oh.DayOfWeek == currentDay &&
+                oh.OpenTime <= now &&
+                oh.CloseTime >= now &&
                 !oh.IsClosed))
             .ToListAsync();
+
+        return Result<IEnumerable<Restaurant>>.Success(openRestaurants);
     }
 
-    public async Task<OpenStatusDto> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null)
+    public async Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null,
+        DayOfWeek? dayOfWeek = null)
     {
         var restaurant = await _context.Restaurants
             .Include(r => r.OpeningHours)
@@ -109,32 +120,39 @@ public class RestaurantService : IRestaurantService
 
         if (openingHours == null)
         {
-            return new OpenStatusDto
+            OpenStatusDto status = new OpenStatusDto
             {
                 IsOpen = false,
                 Message = "No opening hours defined for this day",
                 DayOfWeek = checkDay.ToString(),
                 CheckedTime = checkTime.ToString("HH:mm")
             };
+            return Result<OpenStatusDto>.Success(status);
         }
 
-        return new OpenStatusDto
-        {
-            IsOpen = openingHours.IsOpenAt(checkTime),
-            DayOfWeek = checkDay.ToString(),
-            CheckedTime = checkTime.ToString("HH:mm"),
-            OpenTime = openingHours.OpenTime.ToString("HH:mm"),
-            CloseTime = openingHours.CloseTime.ToString("HH:mm"),
-            IsClosed = openingHours.IsClosed
-        };
+        return Result<OpenStatusDto>.Success(
+            new OpenStatusDto
+            {
+                IsOpen = openingHours.IsOpenAt(checkTime),
+                DayOfWeek = checkDay.ToString(),
+                CheckedTime = checkTime.ToString("HH:mm"),
+                OpenTime = openingHours.OpenTime.ToString("HH:mm"),
+                CloseTime = openingHours.CloseTime.ToString("HH:mm"),
+                IsClosed = openingHours.IsClosed
+            }
+        );
     }
 
-    public async Task<Restaurant> CreateAsync(RestaurantDto restaurantDto)
+    public async Task<Result<Restaurant>> CreateAsync(RestaurantDto restaurantDto)
     {
         _logger.LogInformation("Creating new restaurant: {RestaurantName}", restaurantDto.Name);
 
+        Result validationResult = await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
         // Walidacja biznesowa
-        await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
+        if(validationResult.IsFailure)
+        {
+            return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
+        }
 
         var restaurant = new Restaurant
         {
@@ -151,12 +169,10 @@ public class RestaurantService : IRestaurantService
         _context.Restaurants.Add(restaurant);
         await _context.SaveChangesAsync();
 
-        // Reload with related data
-        return await GetByIdAsync(restaurant.Id) 
-            ?? throw new InvalidOperationException("Failed to retrieve created restaurant");
+        return Result<Restaurant>.Success(restaurant);
     }
 
-    public async Task UpdateAsync(int id, RestaurantDto restaurantDto)
+    public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)
     {
         var existingRestaurant = await _context.Restaurants
             .Include(r => r.OpeningHours)
@@ -164,13 +180,18 @@ public class RestaurantService : IRestaurantService
 
         if (existingRestaurant == null)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+            return Result.NotFound($"Restaurant with ID {id} not found.");
         }
 
         // Walidacja biznesowa
         if (existingRestaurant.Name != restaurantDto.Name || existingRestaurant.Address != restaurantDto.Address)
         {
-            await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address, id);
+            Result validationResult = await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
+            
+            if(validationResult.IsFailure)
+            {
+                return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
+            }
         }
 
         // Update basic properties
@@ -184,48 +205,48 @@ public class RestaurantService : IRestaurantService
         }
 
         await _context.SaveChangesAsync();
-        _logger.LogInformation("Updated restaurant ID: {RestaurantId}", id);
+        return Result.Success();
     }
 
-    public async Task UpdateAddressAsync(int id, string address)
+    public async Task<Result> UpdateAddressAsync(int id, string address)
     {
         if (string.IsNullOrWhiteSpace(address))
         {
-            throw new ArgumentException("Address cannot be empty.");
+            return Result.Failure("Address cannot be empty");
         }
 
         var restaurant = await _context.Restaurants.FindAsync(id);
         if (restaurant == null)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+            return Result.NotFound($"Restaurant with ID {id} not found.");;
         }
 
         restaurant.Address = address;
         await _context.SaveChangesAsync();
-        
-        _logger.LogInformation("Updated address for restaurant ID: {RestaurantId}", id);
+
+        return Result.Success();
     }
 
-    public async Task UpdateNameAsync(int id, string name)
+    public async Task<Result> UpdateNameAsync(int id, string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Name cannot be empty.");
+            return Result.Failure("Name cannot be empty");
         }
 
         var restaurant = await _context.Restaurants.FindAsync(id);
         if (restaurant == null)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+            return Result.NotFound($"Restaurant with ID {id} not found.");
         }
 
         restaurant.Name = name;
         await _context.SaveChangesAsync();
-        
-        _logger.LogInformation("Updated name for restaurant ID: {RestaurantId}", id);
+
+        return Result.Success();
     }
 
-    public async Task UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours)
+    public async Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours)
     {
         var restaurant = await _context.Restaurants
             .Include(r => r.OpeningHours)
@@ -233,16 +254,16 @@ public class RestaurantService : IRestaurantService
 
         if (restaurant == null)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+            return Result.NotFound($"Restaurant with ID {id} not found.");
         }
 
         await UpdateRestaurantOpeningHoursAsync(restaurant, openingHours);
         await _context.SaveChangesAsync();
-        
-        _logger.LogInformation("Updated opening hours for restaurant ID: {RestaurantId}", id);
+
+        return Result.Success();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var restaurant = await _context.Restaurants
             .Include(r => r.Menu)
@@ -251,21 +272,25 @@ public class RestaurantService : IRestaurantService
 
         if (restaurant == null)
         {
-            throw new KeyNotFoundException($"Restaurant with ID {id} not found.");
+            return Result.NotFound($"Restaurant with ID {id} not found.");
         }
 
         // Walidacja biznesowa przed usunięciem
-        await ValidateRestaurantDeletionAsync(id, restaurant);
+        var validationResult = await ValidateRestaurantDeletionAsync(id, restaurant);
+        if (validationResult.IsFailure)
+        {
+            return validationResult;
+        }
 
         _context.Restaurants.Remove(restaurant);
         await _context.SaveChangesAsync();
-        
-        _logger.LogInformation("Deleted restaurant ID: {RestaurantId}", id);
+
+        return Result.Success();
     }
 
     // ========== Metody pomocnicze (prywatne) ==========
 
-    private async Task ValidateRestaurantUniquenessAsync(string name, string address, int? excludeId = null)
+    private async Task<Result> ValidateRestaurantUniquenessAsync(string name, string address, int? excludeId = null)
     {
         var query = _context.Restaurants
             .Where(r => r.Name == name && r.Address == address);
@@ -277,18 +302,18 @@ public class RestaurantService : IRestaurantService
 
         if (await query.AnyAsync())
         {
-            throw new InvalidOperationException($"Restaurant '{name}' already exists at this address.");
+            return Result.Failure($"Restaurant with name '{name}' and address '{address}' already exists.");
         }
+        return Result.Success();
     }
 
-    private async Task ValidateRestaurantDeletionAsync(int id, Restaurant restaurant)
+    private async Task<Result> ValidateRestaurantDeletionAsync(int id, Restaurant restaurant)
     {
         // Check if restaurant has any tables
         var hasTables = await _context.Tables.AnyAsync(t => t.RestaurantId == id);
         if (hasTables)
         {
-            throw new InvalidOperationException(
-                "Cannot delete restaurant. It has associated tables. Please delete all tables first.");
+            return Result.Failure($"Cannot delete restaurant with tables.");
         }
 
         // Check if restaurant has active menu items
@@ -300,10 +325,11 @@ public class RestaurantService : IRestaurantService
 
             if (hasActiveMenu)
             {
-                throw new InvalidOperationException(
-                    "Cannot delete restaurant. It has an active menu. Please deactivate the menu first.");
+                return Result.Failure($"Cannot delete restaurant with active menu.");
             }
         }
+
+        return Result.Success();
     }
 
     private async Task UpdateRestaurantOpeningHoursAsync(Restaurant restaurant, List<OpeningHoursDto> newHours)
@@ -316,7 +342,7 @@ public class RestaurantService : IRestaurantService
 
         // Add new opening hours
         restaurant.OpeningHours = MapOpeningHours(newHours, restaurant.Id);
-        
+
         // Explicit tracking for EF Core
         await Task.CompletedTask;
     }

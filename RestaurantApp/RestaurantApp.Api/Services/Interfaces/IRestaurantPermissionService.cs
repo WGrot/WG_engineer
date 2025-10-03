@@ -1,4 +1,5 @@
 ﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;

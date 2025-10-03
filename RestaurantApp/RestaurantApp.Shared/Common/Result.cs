@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace RestaurantApp.Api.Common;
+﻿
+namespace RestaurantApp.Shared.Common;
 
 public class Result
 {
@@ -60,27 +59,3 @@ public class Result<T> : Result
 }
 
 // Extension methods dla konwersji Result na IActionResult
-public static class ResultExtensions
-{
-    public static IActionResult ToActionResult<T>(this Result<T> result, ControllerBase controller)
-    {
-        if (result.IsSuccess)
-        {
-            return controller.StatusCode(result.StatusCode, result.Value);
-        }
-        
-        var errorResponse = new { error = result.Error };
-        return controller.StatusCode(result.StatusCode, errorResponse);
-    }
-    
-    public static IActionResult ToActionResult(this Result result, ControllerBase controller)
-    {
-        if (result.IsSuccess)
-        {
-            return controller.StatusCode(result.StatusCode);
-        }
-        
-        var errorResponse = new { error = result.Error };
-        return controller.StatusCode(result.StatusCode, errorResponse);
-    }
-}
