@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -22,53 +24,36 @@ public class RestaurantSettingsController : ControllerBase
         _restaurantService = restaurantService;
         _logger = logger;
     }
-    
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<RestaurantSettings>>> GetAll()
-    {
-        try
-        {
-            var settings = await _restaurantSettingsService.GetAllAsync();
-            return Ok(settings);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting all restaurant settings");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
-    }
-    
-    [HttpGet("{id}")]
-    public async Task<ActionResult<RestaurantSettings>> GetById(int id)
-    {
-        try
-        {
-            var settings = await _restaurantSettingsService.GetByIdAsync(id);
-            if (settings == null)
-            {
-                return NotFound($"Restaurant settings with ID {id} not found");
-            }
 
-            return Ok(settings);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting restaurant settings with id {Id}", id);
-            return StatusCode(500, "An error occurred while processing your request");
-        }
-    }
-    
-    [HttpPost]
-    public async Task<ActionResult<RestaurantSettings>> Create([FromBody] CreateRestaurantSettingsDto restaurantSettingsDto)
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
     {
-        try
-        {
+        var result = await _restaurantSettingsService.GetAllAsync();
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _restaurantSettingsService.GetByIdAsync(id);
+        return result.ToActionResult(this);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateRestaurantSettingsDto restaurantSettingsDto)
+    {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            
+
             var restaurant = await _restaurantService.GetByIdAsync(restaurantSettingsDto.RestaurantId);
+
+            if (restaurant.IsFailure)
+            {
+                return restaurant.ToActionResult(this);
+            }
             
             RestaurantSettings restaurantSettings = new RestaurantSettings
             {
@@ -78,77 +63,42 @@ public class RestaurantSettingsController : ControllerBase
             };
 
             var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettings);
-            return CreatedAtAction(nameof(GetById), new { id = createdSettings.Id }, createdSettings);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while creating restaurant settings");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
+            return createdSettings.ToActionResult(this);
+
     }
-    
+
     [HttpPut("{id}")]
-    public async Task<ActionResult<RestaurantSettings>> Update(int id, [FromBody] RestaurantSettings restaurantSettings)
+    public async Task<IActionResult> Update(int id, [FromBody] RestaurantSettings restaurantSettings)
     {
-        try
-        {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             var updatedSettings = await _restaurantSettingsService.UpdateAsync(id, restaurantSettings);
-            if (updatedSettings == null)
-            {
-                return NotFound($"Restaurant settings with ID {id} not found");
-            }
 
-            return Ok(updatedSettings);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while updating restaurant settings with id {Id}", id);
-            return StatusCode(500, "An error occurred while processing your request");
-        }
+            return updatedSettings.ToActionResult(this);
+
     }
-    
+
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        try
-        {
+
             var deleted = await _restaurantSettingsService.DeleteAsync(id);
-            if (!deleted)
-            {
-                return NotFound($"Restaurant settings with ID {id} not found");
-            }
 
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while deleting restaurant settings with id {Id}", id);
-            return StatusCode(500, "An error occurred while processing your request");
-        }
+            return deleted.ToActionResult(this);
     }
-    
-    [HttpHead("{id}")]
-    public async Task<ActionResult> Exists(int id)
-    {
-        try
-        {
-            var exists = await _restaurantSettingsService.ExistsAsync(id);
-            if (!exists)
-            {
-                return NotFound();
-            }
 
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while checking if restaurant settings exists with id {Id}", id);
-            return StatusCode(500);
-        }
+    [HttpHead("{id}")]
+    public async Task<IActionResult> Exists(int id)
+    {
+
+            var exists = await _restaurantSettingsService.ExistsAsync(id);
+
+
+            return exists.ToActionResult(this);
+
+
     }
 }
