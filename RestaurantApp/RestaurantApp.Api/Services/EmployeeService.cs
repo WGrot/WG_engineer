@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services;
@@ -105,14 +106,14 @@ public class EmployeeService : IEmployeeService
     public async Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto)
     {
         var restaurantResult = await _restaurantService.GetByIdAsync(dto.RestaurantId);
-        if (restaurantResult == null)
-            return Result<RestaurantEmployee>.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
+        if (restaurantResult.IsFailure)
+            return Result<RestaurantEmployee>.Failure(restaurantResult.Error);
 
         var employee = new RestaurantEmployee
         {
             UserId = dto.UserId,
             RestaurantId = dto.RestaurantId,
-            Restaurant = restaurantResult,
+            Restaurant = restaurantResult.Value,
             Role = dto.Role,
             Permissions = new List<RestaurantPermission>(),
             CreatedAt = DateTime.UtcNow,

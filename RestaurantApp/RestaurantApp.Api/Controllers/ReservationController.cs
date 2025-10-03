@@ -89,7 +89,7 @@ public class ReservationController : ControllerBase
             
             return CreatedAtAction(
                 nameof(GetReservation), 
-                new { id = reservation.Id }, 
+                new { id = reservation.Value.Id }, 
                 reservation
             );
         }
@@ -302,10 +302,9 @@ public class ReservationController : ControllerBase
                 searchParams.ReservationDateTo,
                 searchParams.Notes
             );
+            
 
-            _logger.LogInformation($"Znaleziono {reservations.Count()} rezerwacji dla kryteriów wyszukiwania.");
-
-            return Ok(reservations);
+            return Ok(reservations.Value);
         }
         catch (Exception ex)
         {

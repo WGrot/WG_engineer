@@ -1,4 +1,7 @@
-﻿using RestaurantApp.Api.Models.DTOs;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models;
+using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
@@ -9,7 +12,7 @@ public interface IReservationService
     Task<IEnumerable<ReservationBase>> GetReservationsByRestaurantIdAsync(int restaurantId);
     
     Task<IEnumerable<ReservationBase>> GetReservationsByUserIdAsync(string userId);
-    Task<ReservationBase> CreateReservationAsync(ReservationDto reservationDto);
+    Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto);
     Task UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
     Task DeleteReservationAsync(int reservationId);
     
@@ -29,8 +32,7 @@ public interface IReservationService
     Task UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
 
 
-    Task<IEnumerable<ReservationBase>> SearchReservationsAsync(
-        int? restaurantId = null,
+    Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(int? restaurantId = null,
         string? userId = null,
         ReservationStatus? status = null,
         string? customerName = null,

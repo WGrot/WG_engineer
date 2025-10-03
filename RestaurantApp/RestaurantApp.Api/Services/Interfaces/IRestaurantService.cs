@@ -1,20 +1,22 @@
-﻿using RestaurantApp.Api.Models.DTOs;
+﻿using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IRestaurantService
 {
-    Task<IEnumerable<Restaurant>> GetAllAsync();
-    Task<Restaurant?> GetByIdAsync(int id);
-    Task<IEnumerable<Restaurant>> SearchAsync(string? name, string? address);
-    Task<IEnumerable<Table>> GetTablesAsync(int restaurantId);
-    Task<IEnumerable<Restaurant>> GetOpenNowAsync();
-    Task<OpenStatusDto> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null);
-    Task<Restaurant> CreateAsync(RestaurantDto restaurantDto);
-    Task UpdateAsync(int id, RestaurantDto restaurantDto);
-    Task UpdateAddressAsync(int id, string address);
-    Task UpdateNameAsync(int id, string name);
-    Task UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
-    Task DeleteAsync(int id);
+    Task<Result<IEnumerable<Restaurant>>> GetAllAsync();
+    Task<Result<Restaurant>> GetByIdAsync(int id);
+    Task<Result<IEnumerable<Restaurant>>> SearchAsync(string? name, string? address);
+    Task<Result<IEnumerable<Table>>> GetTablesAsync(int restaurantId);
+    Task<Result<IEnumerable<Restaurant>>> GetOpenNowAsync();
+    Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null);
+    Task<Result<Restaurant>> CreateAsync(RestaurantDto restaurantDto);
+    Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto);
+    Task<Result> UpdateAddressAsync(int id, string address);
+    Task<Result> UpdateNameAsync(int id, string name);
+    Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
+    Task<Result> DeleteAsync(int id);
 }

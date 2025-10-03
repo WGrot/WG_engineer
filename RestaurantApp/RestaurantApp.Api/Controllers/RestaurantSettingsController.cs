@@ -68,13 +68,13 @@ public class RestaurantSettingsController : ControllerBase
                 return BadRequest(ModelState);
             }
             
-            Restaurant restaurant = await _restaurantService.GetByIdAsync(restaurantSettingsDto.RestaurantId);
+            var restaurant = await _restaurantService.GetByIdAsync(restaurantSettingsDto.RestaurantId);
             
             RestaurantSettings restaurantSettings = new RestaurantSettings
             {
                 RestaurantId = restaurantSettingsDto.RestaurantId,
                 ReservationsNeedConfirmation = restaurantSettingsDto.ReservationsNeedConfirmation,
-                Restaurant = restaurant
+                Restaurant = restaurant.Value
             };
 
             var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettings);
