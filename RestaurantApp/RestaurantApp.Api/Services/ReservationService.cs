@@ -20,35 +20,44 @@ public class ReservationService : IReservationService
         _restaurantService = restaurantService;
     }
 
-    public async Task<ReservationBase?> GetReservationByIdAsync(int reservationId)
+    public async Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId)
     {
-        return await _context.Reservations
+        var result = await _context.Reservations
             .Include(r => r.Restaurant)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+        return result == null 
+            ? Result<ReservationBase>.NotFound("Reservation not found") 
+            : Result<ReservationBase>.Success(result);
     }
 
-    public async Task<IEnumerable<ReservationBase>> GetReservationsByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId)
     {
-        return await _context.Reservations
+        var result = await _context.Reservations
             .Include(r => r.Restaurant)
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
+
+        return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
-    public async Task<IEnumerable<ReservationBase>> GetReservationsByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(string userId)
     {
-        return await _context.Reservations
+        var result = await _context.Reservations
             .Include(r => r.Restaurant)
             .Where(r => r.UserId == userId)
             .ToListAsync();
+        return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
-    public async Task<IEnumerable<ReservationBase>> GetReservationsByTableIdAsync(int tableId)
+    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId)
     {
-        return await _context.TableReservations
+        var result = await _context.TableReservations
             .Include(r => r.Restaurant)
             .Where(r => r.TableId == tableId)
             .ToListAsync();
+        
+        return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
     public async Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto)
@@ -56,7 +65,7 @@ public class ReservationService : IReservationService
         var restaurant = await _restaurantService.GetByIdAsync(reservationDto.RestaurantId);
         if (restaurant.IsFailure)
         {
-            return Result<ReservationBase>.Failure(restaurant.Error);
+            return Result<ReservationBase>.Failure(restaurant.Error, restaurant.StatusCode);
         }
 
         var reservation = new ReservationBase
@@ -82,11 +91,14 @@ public class ReservationService : IReservationService
         return Result<ReservationBase>.Success(reservation);
     }
 
-    public async Task UpdateReservationAsync(int reservationId, ReservationDto reservationDto)
+    public async Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto)
     {
         var existing = await _context.Reservations.FindAsync(reservationId);
         if (existing == null)
-            throw new KeyNotFoundException($"Reservation {reservationId} not found");
+        {
+            return Result.NotFound($"Reservation {reservationId} not found");
+        }
+
 
         existing.RestaurantId = reservationDto.RestaurantId;
         existing.UserId = reservationDto.UserId;
@@ -101,19 +113,23 @@ public class ReservationService : IReservationService
 
         _context.Reservations.Update(existing);
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
-    public async Task DeleteReservationAsync(int reservationId)
+    public async Task<Result> DeleteReservationAsync(int reservationId)
     {
         var existing = await _context.Reservations.FindAsync(reservationId);
         if (existing == null)
-            throw new KeyNotFoundException($"Reservation {reservationId} not found");
+        {
+            return Result.NotFound($"Reservation {reservationId} not found");
+        }
 
         _context.Reservations.Remove(existing);
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
-    public async Task<List<ReservationBase>> GetReservationsToManage(string userId)
+    public async Task<Result<List<ReservationBase>>> GetReservationsToManage(string userId)
     {
         var restaurantEmployeesId = await _context.RestaurantEmployees
             .Where(re => re.UserId == userId)
@@ -131,20 +147,24 @@ public class ReservationService : IReservationService
             reservations.AddRange(restaurantReservations);
         }
 
-        return reservations;
+        return Result<List<ReservationBase>>.Success(reservations);
     }
 
     // ===== METODY DLA TABLE RESERVATIONS - UŻYWAJĄ TableReservations DbSet =====
 
-    public async Task<TableReservation?> GetTableReservationByIdAsync(int reservationId)
+    public async Task<Result<TableReservation>> GetTableReservationByIdAsync(int reservationId)
     {
-        return await _context.TableReservations
+        var result = await _context.TableReservations
             .Include(r => r.Restaurant)
             .Include(r => r.Table)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+        return result == null 
+            ? Result<TableReservation>.NotFound("Table reservation not found") 
+            : Result<TableReservation>.Success(result);
     }
 
-    public async Task<TableReservation> CreateTableReservationAsync(TableReservationDto tableReservationDto)
+    public async Task<Result<TableReservation>> CreateTableReservationAsync(TableReservationDto tableReservationDto)
     {
         // Sprawdzenie czy stolik istnieje i jest dostępny
         var tableExists = await _context.Tables
@@ -153,8 +173,7 @@ public class ReservationService : IReservationService
 
         if (!tableExists)
         {
-            throw new InvalidOperationException(
-                $"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
+            return Result<TableReservation>.NotFound($"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
         }
 
         // Sprawdzenie czy stolik nie jest już zarezerwowany w tym czasie
@@ -170,8 +189,7 @@ public class ReservationService : IReservationService
 
         if (conflictingReservation)
         {
-            throw new InvalidOperationException(
-                $"Table {tableReservationDto.TableId} is already reserved for this time period");
+            return Result<TableReservation>.Failure("Table is already reserved for this time period", 409);
         }
 
         var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
@@ -197,16 +215,18 @@ public class ReservationService : IReservationService
         _context.TableReservations.Add(reservation);
         await _context.SaveChangesAsync();
 
-        return await GetTableReservationByIdAsync(reservation.Id) ?? reservation;
+        return Result<TableReservation>.Success(reservation);
     }
 
-    public async Task UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto)
+    public async Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto)
     {
         var existing = await _context.TableReservations
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         if (existing == null)
-            throw new KeyNotFoundException($"Table reservation {reservationId} not found");
+        { 
+            return Result.NotFound($"Reservation with id {reservationId} not found");
+        }
 
         // Jeśli zmienia się stolik lub czas, sprawdź dostępność
         if (existing.TableId != tableReservationDto.TableId ||
@@ -228,8 +248,7 @@ public class ReservationService : IReservationService
 
             if (conflictingReservation)
             {
-                throw new InvalidOperationException(
-                    $"Table {tableReservationDto.TableId} is already reserved for this time period");
+                return Result.Failure("Table is already reserved for this time period", 409);
             }
         }
 
@@ -248,23 +267,28 @@ public class ReservationService : IReservationService
 
         _context.TableReservations.Update(existing);
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
-    public async Task DeleteTableReservationAsync(int reservationId)
+    public async Task<Result> DeleteTableReservationAsync(int reservationId)
     {
         var existing = await _context.TableReservations
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         if (existing == null)
-            throw new KeyNotFoundException($"Table reservation {reservationId} not found");
+        {
+            return Result.NotFound($"Reservation with id {reservationId} not found");
+        }
 
         _context.TableReservations.Remove(existing);
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
     // ===== METODY POMOCNICZE =====
 
-    public async Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime,
+    public async Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime,
+        TimeOnly endTime,
         int? excludeReservationId = null)
     {
         var query = _context.TableReservations
@@ -285,15 +309,18 @@ public class ReservationService : IReservationService
         return !hasConflict;
     }
 
-    public async Task UpdateReservationStatusAsync(int reservationId, ReservationStatus status)
+    public async Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status)
     {
         var reservation = await _context.Reservations.FindAsync(reservationId);
         if (reservation == null)
-            throw new KeyNotFoundException($"Reservation {reservationId} not found");
+        {
+            return Result.NotFound($"Reservation with id {reservationId} not found");
+        }
 
         reservation.Status = status;
         _context.Reservations.Update(reservation);
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
     public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(int? restaurantId = null,
@@ -302,6 +329,13 @@ public class ReservationService : IReservationService
         DateTime? reservationDate = null, DateTime? reservationDateFrom = null, DateTime? reservationDateTo = null,
         string? notes = null)
     {
+        
+        if (reservationDateFrom.HasValue &&
+            reservationDateTo.HasValue &&
+            reservationDateFrom > reservationDateTo)
+        {
+            return Result<IEnumerable<ReservationBase>>.Failure($"Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
+        }
         var query = _context.Reservations
             .Include(r => r.Restaurant)
             .AsQueryable();

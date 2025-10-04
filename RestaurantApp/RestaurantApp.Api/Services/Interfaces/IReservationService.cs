@@ -8,28 +8,29 @@ namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IReservationService
 {
-    Task<ReservationBase?> GetReservationByIdAsync(int reservationId);
-    Task<IEnumerable<ReservationBase>> GetReservationsByRestaurantIdAsync(int restaurantId);
+    Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId);
+    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId);
     
-    Task<IEnumerable<ReservationBase>> GetReservationsByUserIdAsync(string userId);
+    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(string userId);
     Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto);
-    Task UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
-    Task DeleteReservationAsync(int reservationId);
+    Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
+    Task<Result> DeleteReservationAsync(int reservationId);
     
-    Task<List<ReservationBase>> GetReservationsToManage(string userId);
+    Task<Result<List<ReservationBase>>> GetReservationsToManage(string userId);
 
     // Operacje na rezerwacjach stolików
-    Task<TableReservation?> GetTableReservationByIdAsync(int reservationId);
-    Task<TableReservation> CreateTableReservationAsync(TableReservationDto tableReservationDto);
-    Task UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
-    Task DeleteTableReservationAsync(int reservationId);
+    Task<Result<TableReservation>> GetTableReservationByIdAsync(int reservationId);
+    Task<Result<TableReservation>> CreateTableReservationAsync(TableReservationDto tableReservationDto);
+    Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
+    Task<Result> DeleteTableReservationAsync(int reservationId);
 
   
-    Task<IEnumerable<ReservationBase>> GetReservationsByTableIdAsync(int tableId);
+    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId);
 
     // Metody pomocnicze
-    Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime, int? excludeReservationId = null);
-    Task UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
+    Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime,
+        int? excludeReservationId = null);
+    Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
 
 
     Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(int? restaurantId = null,
