@@ -5,7 +5,7 @@ public class Result
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public string? Error { get; }
+    public string? Error { get; set; }
     public int StatusCode { get; }
     
     protected Result(bool isSuccess, string? error, int statusCode = 200)

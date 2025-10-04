@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
-
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -12,51 +12,22 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IConfiguration _configuration;
-    private readonly IJwtService _jwtService;
+    private readonly IAuthService _authService;
 
     public AuthController(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        IConfiguration configuration,
-        IJwtService jwtService)
+        IAuthService authService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _configuration = configuration;
-        _jwtService = jwtService;
+        _authService = authService;
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            EmailConfirmed = true // Ustaw na false jeśli chcesz potwierdzenie emaila
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-
-        if (result.Succeeded)
-        {
-            return Ok(new { Message = "Użytkownik został pomyślnie zarejestrowany" });
-        }
-
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError(string.Empty, error.Description);
-        }
-
-        return BadRequest(ModelState);
+        var result = await _authService.RegisterAsync(request);
+        return result.ToActionResult(this);
     }
 
     [HttpPost("login")]
@@ -65,132 +36,44 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
-            return Unauthorized(new { Message = "Nieprawidłowy email lub hasło" });
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-        
-        if (result.Succeeded)
-        {
-            var token = await _jwtService.GenerateJwtTokenAsync(user);
-            return Ok(new LoginResponse 
-            { 
-                Token = token,
-                ResponseUser = new ResponseUserDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName
-                }
-            });
-        }
-
-        return Unauthorized(new { Message = "Nieprawidłowy email lub hasło" });
+        var result = await _authService.LoginAsync(request);
+        return result.ToActionResult(this);
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
-        return Ok(new { Message = "Wylogowano pomyślnie" });
+        var result = await _authService.LogoutAsync();
+        return result.ToActionResult(this);
     }
-    
-    
-    [HttpGet("debug-auth")]
 
+
+    [HttpGet("debug-auth")]
     public IActionResult DebugAuth()
     {
-        return Ok(new { 
+        return Ok(new
+        {
             Message = "Autoryzacja działa!",
             IsAuthenticated = User.Identity.IsAuthenticated,
             AuthenticationType = User.Identity.AuthenticationType,
             Claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList()
         });
     }
-    
+
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
- 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(new { Message = "Nie znaleziono identyfikatora użytkownika" });
-        }
-        
-        var user = await _userManager.FindByIdAsync(userId);
-    
-        if (user == null)
-        {
-            return NotFound(new { Message = "Użytkownik nie został znaleziony" });
-        }
-        
-        return Ok(new ResponseUserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber
-        });
+        var result = await _authService.GetCurrentUserAsync(userId);
+        return result.ToActionResult(this);
     }
-    
+
     [HttpGet("users")]
- // Opcjonalnie - możesz wymagać autoryzacji
+    // Opcjonalnie - możesz wymagać autoryzacji
     public async Task<IActionResult> GetAllUsers()
     {
-        try
-        {
-            // Pobierz wszystkich użytkowników z bazy
-            var users = _userManager.Users.ToList();
-        
-            // Mapuj na DTO żeby nie zwracać wrażliwych danych
-            var userDtos = users.Select(user => new ResponseUserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber
-            }).ToList();
-        
-            return Ok(new 
-            { 
-                Message = "Pobrano listę użytkowników",
-                Count = userDtos.Count,
-                Users = userDtos 
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Message = "Błąd podczas pobierania użytkowników", Error = ex.Message });
-        }
+        var result = await _authService.GetAllUsersAsync();
+        return result.ToActionResult(this);
     }
-
-    
 }
-
-public class RegisterRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-}
-
-public class LoginRequest
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-}
-
-public class LoginResponse
-{
-    public string Token { get; set; } = string.Empty;
-    public ResponseUserDto ResponseUser { get; set; } = new();
-}
-
