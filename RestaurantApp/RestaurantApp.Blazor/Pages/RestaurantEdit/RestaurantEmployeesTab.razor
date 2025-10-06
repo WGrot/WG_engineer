@@ -10,12 +10,19 @@
 
 <button @onclick="OpenAddEmployeeModal" class="btn btn-primary mb-3">Add new employee</button>
 
-<!-- Wydzielony modal komponent -->
-<AddEmployeeModal 
-    @bind-IsVisible="showAddEmployeeModal" 
+<!-- Modal dodawania pracownika -->
+<AddEmployeeModal
+    @bind-IsVisible="showAddEmployeeModal"
     RestaurantId="Id"
     OnEmployeeAdded="HandleEmployeeAdded"
     Title="Dodaj nowego pracownika" />
+
+<!-- Modal zarządzania uprawnieniami -->
+<ManagePermissionsModal
+    @bind-IsVisible="showPermissionsModal"
+    Employee="selectedEmployee"
+    RestaurantId="Id"
+    OnPermissionsUpdated="HandlePermissionsUpdated" />
 
 <GenericModal @bind-IsVisible="showSuccessModal"
               Title="Pracownik dodany pomyślnie!"
@@ -47,56 +54,100 @@
 
 @if (isLoading)
 {
-    <p>Loading employees...</p>
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading employees...</span>
+        </div>
+    </div>
 }
 else if (error != null)
 {
-    <p>Error: @error</p>
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle-fill"></i> Error: @error
+    </div>
 }
 else if (employees == null || !employees.Any())
 {
-    <p>You don't have any employees yet.</p>
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle-fill"></i> You don't have any employees yet.
+    </div>
 }
 else
 {
-    <ul class="list-unstyled">
+    <div class="row">
         @foreach (var employee in employees)
         {
-            <li>
-                <div>
-                    <strong>@employee.LastName @employee.FirstName</strong><br/>
-                    Email: @employee.Email<br/>
-                    PhoneNumber: @employee.PhoneNumber<br/>
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-person-fill"></i> @employee.FirstName @employee.LastName
+                        </h5>
+                        <div class="card-text">
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i>
+                                <small>@employee.Email</small>
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-telephone"></i>
+                                <small>@(employee.PhoneNumber ?? "No phone number")</small>
+                            </p>
+                            @if (!string.IsNullOrEmpty(employee.Role.ToString()))
+                            {
+                                <p class="mb-2">
+                                    <span class="badge bg-secondary">@employee.Role</span>
+                                </p>
+                            }
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary flex-fill"
+                                    @onclick="() => OpenPermissionsModal(employee)">
+                                <i class="bi bi-shield-lock"></i> Manage Permissions
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => RemoveEmployee(employee)"
+                                    title="Delete Employee">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <hr/>
-            </li>
+            </div>
         }
-    </ul>
+    </div>
 }
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
-    
+
     private bool isLoading = true;
     private string? error;
     private List<ResponseRestaurantEmployeeDto> employees = new List<ResponseRestaurantEmployeeDto>();
-    
+
     // Modal visibility states
     private bool showAddEmployeeModal = false;
     private bool showSuccessModal = false;
+    private bool showPermissionsModal = false;
+
+    // Selected data
     private CreateUserResponse? newEmployeeResponse;
+    private ResponseRestaurantEmployeeDto? selectedEmployee;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadEmployees();
     }
-    
+
     private async Task LoadEmployees()
     {
+        isLoading = true;
+        error = null;
+
         try
         {
-            employees = await Http.GetFromJsonAsync<List<ResponseRestaurantEmployeeDto>>($"api/Employees/restaurant/{Id}");
+            employees = await Http.GetFromJsonAsync<List<ResponseRestaurantEmployeeDto>>($"api/Employees/restaurant/{Id}")
+                        ?? new List<ResponseRestaurantEmployeeDto>();
         }
         catch (Exception ex)
         {
@@ -108,13 +159,17 @@ else
             isLoading = false;
         }
     }
-    
+
     private void OpenAddEmployeeModal()
     {
         showAddEmployeeModal = true;
     }
-    
-    
+
+    private void OpenPermissionsModal(ResponseRestaurantEmployeeDto employee)
+    {
+        selectedEmployee = employee;
+        showPermissionsModal = true;
+    }
 
     private async Task HandleEmployeeAdded(CreateUserResponse response)
     {
@@ -122,5 +177,52 @@ else
         await LoadEmployees();
         newEmployeeResponse = response;
         showSuccessModal = true;
+    }
+
+    private async Task HandlePermissionsUpdated()
+    {
+        // Reload employees list after permissions are updated
+        await LoadEmployees();
+    }
+
+    private async Task RemoveEmployee(ResponseRestaurantEmployeeDto employee)
+    {
+        // TODO: Dodaj potwierdzenie przed usunięciem
+        if (!await ConfirmRemoval(employee))
+            return;
+
+        try
+        {
+            // TODO: Zastąp rzeczywistym API call
+            // var response = await Http.DeleteAsync($"api/Employees/{employee.Id}");
+
+            // Symulacja usuwania
+            await Task.Delay(500);
+
+            // if (response.IsSuccessStatusCode)
+            // {
+            await LoadEmployees();
+            // }
+            // else
+            // {
+            //     error = "Nie udało się usunąć pracownika";
+            // }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing employee: {ex.Message}");
+            error = "Wystąpił błąd podczas usuwania pracownika";
+        }
+    }
+
+    private async Task<bool> ConfirmRemoval(ResponseRestaurantEmployeeDto employee)
+    {
+        // TODO: Implementacja rzeczywistego dialogu potwierdzenia
+        // Na razie zwracamy false aby zapobiec przypadkowemu usunięciu
+        return false;
+
+        // Przykład implementacji z użyciem JavaScript interop:
+        // return await JSRuntime.InvokeAsync<bool>("confirm", 
+        //     $"Czy na pewno chcesz usunąć pracownika {employee.FirstName} {employee.LastName}?");
     }
 }

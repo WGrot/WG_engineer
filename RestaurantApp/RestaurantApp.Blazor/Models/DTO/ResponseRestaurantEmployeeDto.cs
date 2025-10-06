@@ -4,7 +4,7 @@ namespace RestaurantApp.Blazor.Models.Response;
 
 public class ResponseRestaurantEmployeeDto
 {
-    public string Id { get; set; } = string.Empty;
+    public int Id { get; set; }
     public string? Email { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

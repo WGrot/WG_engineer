@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -51,6 +52,13 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> CheckPermission(int employeeId, PermissionType permission)
     {
         var result = await _permissionService.HasPermissionAsync(employeeId, permission);
+        return result.ToActionResult(this);
+    }
+
+    [HttpPut("employee/update-permissions")]
+    public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto)
+    {
+        var result = await _permissionService.UpdateEmployeePermisions(dto);
         return result.ToActionResult(this);
     }
 

@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Api.Common;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
@@ -13,5 +14,7 @@ public interface IRestaurantPermissionService
     Task<Result<RestaurantPermission>> CreateAsync(RestaurantPermission permission);
     Task<Result<RestaurantPermission>> UpdateAsync(RestaurantPermission permission);
     Task<Result> DeleteAsync(int id);
-    Task<Result<bool>> HasPermissionAsync(int employeeId, PermissionType permission);
+    Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionType permission);
+
+    Task<Result> UpdateEmployeePermisions(UpdateEmployeePermisionsDto dto);
 }
