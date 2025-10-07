@@ -10,19 +10,16 @@ public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRe
         AuthorizationHandlerContext context,
         SpecificRestaurantEmployeeRequirement requirement)
     {
-        // Pobierz HttpContext
         var httpContext = context.Resource as HttpContext;
         if (httpContext == null)
         {
             context.Fail();
             return Task.CompletedTask;
         }
-        
-        var user = context.User;
 
-        // Pobierz restaurantId z route
-        var restaurantIdValue = httpContext.GetRouteValue("restaurantId")?.ToString();
-        if (string.IsNullOrEmpty(restaurantIdValue) || !int.TryParse(restaurantIdValue, out var restaurantId))
+
+        var restaurantIdHeader = httpContext.Request.Headers["X-Restaurant-Id"].FirstOrDefault();
+        if (string.IsNullOrEmpty(restaurantIdHeader) || !int.TryParse(restaurantIdHeader, out var restaurantId))
         {
             context.Fail();
             return Task.CompletedTask;
@@ -31,7 +28,6 @@ public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRe
         var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
 
-        // Sprawdź czy użytkownik jest pracownikiem tej restauracji
         var isEmployee = context.User.Claims.Any(c =>
             c.Type == "restaurant_employee" &&
             c.Value == restaurantId.ToString());
@@ -43,7 +39,6 @@ public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRe
         }
 
 
-        // Sprawdź uprawnienia jeśli wymagane
         if (requirement.RequiredPermissions?.Any() == true)
         {
             var userPermissions = context.User.Claims
@@ -51,7 +46,6 @@ public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRe
                 .Select(c => c.Value)
                 .ToList();
 
-            // Sprawdź czy ma wszystkie wymagane uprawnienia
             foreach (var permission in requirement.RequiredPermissions)
             {
                 if (!userPermissions.Contains(permission.ToString()))
