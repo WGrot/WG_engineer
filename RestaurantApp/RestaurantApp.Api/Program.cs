@@ -58,6 +58,8 @@ builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
+
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -134,30 +136,25 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    // Podstawowy dostęp do konkretnej restauracji
-    options.AddPolicy("SpecificRestaurantEmployee", policy =>
+    options.AddPolicy("RestaurantEmployee", policy =>
         policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement()));
 
-    // Manager konkretnej restauracji
-    options.AddPolicy("SpecificRestaurantManager", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
-        {
-            MinimumRole = RestaurantRole.Manager
-        }));
-
-    // Konkretne uprawnienia w konkretnej restauracji
-    options.AddPolicy("CanManageReservationsInRestaurant", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
-        {
-            RequiredPermissions = new[] { PermissionType.ManageReservations }
-        }));
-
-    // Właściciel konkretnej restauracji
-    options.AddPolicy("SpecificRestaurantOwner", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement
-        {
-            MinimumRole = RestaurantRole.Owner
-        }));
+    // Sprawdzanie konkretnych uprawnień
+    options.AddPolicy("ManageReservations", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageReservations)));
+    
+    options.AddPolicy("ManageMenu", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageMenu)));
+    
+    options.AddPolicy("ManageTables", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageTables)));
+    
+    options.AddPolicy("ManageEmployees", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageEmployees)));
+    
+    options.AddPolicy("ViewReports", policy =>
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ViewReports)));
+    
 });
 
 var app = builder.Build();

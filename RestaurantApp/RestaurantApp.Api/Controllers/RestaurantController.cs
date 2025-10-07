@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
@@ -118,13 +119,14 @@ public class RestaurantController : ControllerBase
     }
 
     // PATCH: api/Restaurant/5/address
-    [HttpPatch("{id}/address")]
+    [HttpPatch("{restaurantId}/address")]
+    [Authorize(Policy = "ManageMenu")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateAddress(int id, [FromBody] string address)
+    public async Task<IActionResult> UpdateAddress(int restaurantId, [FromBody] string address)
     {
-            var result = await _restaurantService.UpdateAddressAsync(id, address);
+            var result = await _restaurantService.UpdateAddressAsync(restaurantId, address);
             return result.ToActionResult(this);
     }
 

@@ -1,77 +1,60 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization;
 
-public class SpecificRestaurantEmployeeHandler: AuthorizationHandler<SpecificRestaurantEmployeeRequirement>
+public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRestaurantEmployeeRequirement>
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public SpecificRestaurantEmployeeHandler(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         SpecificRestaurantEmployeeRequirement requirement)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
+        // Pobierz HttpContext
+        var httpContext = context.Resource as HttpContext;
+        if (httpContext == null)
+        {
+            context.Fail();
+            return Task.CompletedTask;
+        }
+        
         var user = context.User;
 
         // Pobierz restaurantId z route
-        var restaurantId = httpContext.GetRouteValue("restaurantId")?.ToString();
-        
-        if (string.IsNullOrEmpty(restaurantId))
-        {
-            // Spróbuj pobrać z query string jako fallback
-            restaurantId = httpContext.Request.Query["restaurantId"].FirstOrDefault();
-        }
-
-        if (string.IsNullOrEmpty(restaurantId))
+        var restaurantIdValue = httpContext.GetRouteValue("restaurantId")?.ToString();
+        if (string.IsNullOrEmpty(restaurantIdValue) || !int.TryParse(restaurantIdValue, out var restaurantId))
         {
             context.Fail();
             return Task.CompletedTask;
         }
 
-        // Sprawdź czy użytkownik ma dostęp do TEJ KONKRETNEJ restauracji
-        var restaurantClaim = user.Claims
-            .FirstOrDefault(c => c.Type == "RestaurantAccess" && 
-                                 c.Value.StartsWith($"{restaurantId}:"));
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (restaurantClaim == null)
+
+        // Sprawdź czy użytkownik jest pracownikiem tej restauracji
+        var isEmployee = context.User.Claims.Any(c =>
+            c.Type == "restaurant_employee" &&
+            c.Value == restaurantId.ToString());
+
+        if (!isEmployee)
         {
             context.Fail();
             return Task.CompletedTask;
         }
 
-        // Parsuj rolę użytkownika w tej restauracji
-        var parts = restaurantClaim.Value.Split(':');
-        if (!Enum.TryParse<RestaurantRole>(parts[1], out var userRole))
-        {
-            context.Fail();
-            return Task.CompletedTask;
-        }
 
-        // Sprawdź minimalną rolę jeśli wymagana
-        if (requirement.MinimumRole.HasValue && userRole > requirement.MinimumRole.Value)
-        {
-            context.Fail();
-            return Task.CompletedTask;
-        }
-
-        // Sprawdź konkretne uprawnienia jeśli wymagane
+        // Sprawdź uprawnienia jeśli wymagane
         if (requirement.RequiredPermissions?.Any() == true)
         {
-            var userPermissions = user.Claims
-                .Where(c => c.Type == "RestaurantPermission" && 
-                           c.Value.StartsWith($"{restaurantId}:"))
-                .Select(c => c.Value.Split(':')[1])
+            var userPermissions = context.User.Claims
+                .Where(c => c.Type == $"restaurant:{restaurantId}:permission")
+                .Select(c => c.Value)
                 .ToList();
 
-            foreach (var requiredPermission in requirement.RequiredPermissions)
+            // Sprawdź czy ma wszystkie wymagane uprawnienia
+            foreach (var permission in requirement.RequiredPermissions)
             {
-                if (!userPermissions.Contains(requiredPermission.ToString()))
+                if (!userPermissions.Contains(permission.ToString()))
                 {
                     context.Fail();
                     return Task.CompletedTask;

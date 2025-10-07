@@ -6,5 +6,13 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization;
 public class SpecificRestaurantEmployeeRequirement : IAuthorizationRequirement
 {
     public PermissionType[] RequiredPermissions { get; set; }
-    public RestaurantRole? MinimumRole { get; set; }
+    
+    public SpecificRestaurantEmployeeRequirement(params PermissionType[] permissions)
+    {
+        RequiredPermissions = permissions;
+    }
+    public SpecificRestaurantEmployeeRequirement()
+    {
+
+    }
 }
