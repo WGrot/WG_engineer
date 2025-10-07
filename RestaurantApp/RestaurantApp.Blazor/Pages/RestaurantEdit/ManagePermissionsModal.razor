@@ -11,7 +11,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Zarządzaj uprawnieniami - @Employee?.FirstName @Employee?.LastName</h5>
+                    <h5 class="modal-title">Manage permissions - @Employee?.FirstName @Employee?.LastName</h5>
                     <button type="button" class="btn-close" @onclick="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -28,20 +28,20 @@
                     {
                         <div class="text-center">
                             <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Ładowanie uprawnień...</span>
+                                <span class="visually-hidden">Loading permissions...</span>
                             </div>
                         </div>
                     }
                     else
                     {
                         <div class="mb-4">
-                            <h6>Informacje o pracowniku</h6>
+                            <h6>employee info</h6>
                             <div class="card">
                                 <div class="card-body">
-                                    <p class="mb-1"><strong>Imię i nazwisko:</strong> @Employee?.FirstName @Employee?.LastName</p>
+                                    <p class="mb-1"><strong>Full name:</strong> @Employee?.FirstName @Employee?.LastName</p>
                                     <p class="mb-1"><strong>Email:</strong> @Employee?.Email</p>
-                                    <p class="mb-1"><strong>Telefon:</strong> @Employee?.PhoneNumber</p>
-                                    <p class="mb-0"><strong>Obecna rola:</strong> 
+                                    <p class="mb-1"><strong>Phone:</strong> @Employee?.PhoneNumber</p>
+                                    <p class="mb-0"><strong>Current role:</strong> 
                                         <span class="badge bg-primary">@currentRole</span>
                                     </p>
                                 </div>
@@ -49,7 +49,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <h6>Zmień rolę</h6>
+                            <h6>Change employee role</h6>
                             <select class="form-control" @bind="selectedRole">
                                 @foreach (var role in Enum.GetValues<RestaurantRole>())
                                 {
@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <h6>Szczegółowe uprawnienia</h6>
+                            <h6>Employee permissions</h6>
                             <div class="card">
                                 <div class="card-body">
                                     @foreach (var permission in Enum.GetValues<PermissionType>())
@@ -80,20 +80,17 @@
                         </div>
 
                         <div class="mb-4">
-                            <h6>Dodatkowe opcje</h6>
+                            <h6>Extra settings</h6>
                             <div class="card">
                                 <div class="card-body">
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" @bind="isActive" id="isActive">
                                         <label class="form-check-label" for="isActive">
-                                            Konto aktywne
+                                            Account active
                                         </label>
                                     </div>
                                     <button type="button" class="btn btn-warning btn-sm mt-2" @onclick="ResetPassword">
-                                        <i class="bi bi-key"></i> Resetuj hasło
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm mt-2 ms-2" @onclick="SetPermissionsByRole">
-                                        <i class="bi bi-arrow-clockwise"></i> Przywróć domyślne dla roli
+                                        <i class="bi bi-key"></i> Reset employee password
                                     </button>
                                 </div>
                             </div>
@@ -101,16 +98,16 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Close">Anuluj</button>
-                    <button type="button" class="btn btn-primary" @onclick="SavePermissions" disabled="@(isSaving || isLoadingPermissions)">
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveChanges" disabled="@(isSaving || isLoadingPermissions)">
                         @if (isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            <span>Zapisywanie...</span>
+                            <span>Saving...</span>
                         }
                         else
                         {
-                            <span>Zapisz zmiany</span>
+                            <span>Save changes</span>
                         }
                     </button>
                 </div>
@@ -135,6 +132,7 @@
     private RestaurantRole currentRole = RestaurantRole.Employee;
     private RestaurantRole selectedRole = RestaurantRole.Employee;
     private HashSet<PermissionType> selectedPermissions = new HashSet<PermissionType>();
+    private List<RestaurantPermission> permissionsResponse = new List<RestaurantPermission>();
     private bool isActive = true;
 
     protected override async Task OnParametersSetAsync()
@@ -152,11 +150,10 @@
         
         try
         {
-            var permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermission>>($"api/Permissions/employee/{Employee.Id}/");
-            
+            permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermission>>($"api/Permissions/employee/{Employee.Id}/");
             // Przykładowe dane - zastąp danymi z API
             currentRole = Employee.Role;
-            selectedRole = currentRole;
+            selectedRole = Employee.Role;
             isActive = Employee.IsActive;
             selectedPermissions.Clear();
             
@@ -208,52 +205,120 @@
         };
     }
     
-
-    private void SetPermissionsByRole()
+    private async Task SaveChanges()
     {
-        selectedPermissions.Clear();
-        
-        // Domyślne uprawnienia dla każdej roli
-        switch (selectedRole)
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+    
+        bool allSuccess = true;
+    
+        // Zapisz uprawnienia
+        await SavePermissions();
+        if (!string.IsNullOrEmpty(errorMessage))
         {
-            case RestaurantRole.Owner:
-                // Właściciel ma wszystkie uprawnienia
-                foreach (var permission in Enum.GetValues<PermissionType>())
+            allSuccess = false;
+        }
+    
+        // Zapisz rolę
+        bool roleSuccess = await SaveRole();
+        if (!roleSuccess)
+        {
+            allSuccess = false;
+        }
+    
+        // Zapisz dodatkowe szczegóły
+        await SaveExtraDetails();
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            allSuccess = false;
+        }
+    
+        isSaving = false;
+    
+        // Zamknij modal tylko jeśli wszystko się udało
+        if (allSuccess)
+        {
+            await OnPermissionsUpdated.InvokeAsync();
+            await Close();
+        }
+    }
+
+    private async Task<bool> SaveRole()
+    {
+        if (Employee == null) return false;
+        if (selectedRole == currentRole) return true; // Brak zmian - sukces
+    
+        try
+        {
+            var response = await Http.PatchAsJsonAsync(
+                $"api/Employees/{Employee.Id}/update-role", 
+                selectedRole  
+            );
+        
+            if (response.IsSuccessStatusCode)
+            {
+                // Aktualizuj currentRole TYLKO po udanym zapisie
+                currentRole = selectedRole;
+            
+                // Aktualizuj także właściwość Employee
+                Employee.Role = selectedRole;
+            
+                // Dodaj komunikat sukcesu
+                if (string.IsNullOrEmpty(successMessage))
                 {
-                    selectedPermissions.Add(permission);
+                    successMessage = "Role has been updated";
                 }
-                break;
-                
-            case RestaurantRole.Manager:
-                // Manager ma większość uprawnień oprócz finansów
-                selectedPermissions.Add(PermissionType.ViewReservations);
-                selectedPermissions.Add(PermissionType.ManageReservations);
-                selectedPermissions.Add(PermissionType.ManageTables);
-                selectedPermissions.Add(PermissionType.ManageMenu);
-                selectedPermissions.Add(PermissionType.ManageEmployees);
-                selectedPermissions.Add(PermissionType.ViewReports);
-                selectedPermissions.Add(PermissionType.ManageRestaurantSettings);
-                break;
-                
-            case RestaurantRole.Employee:
-                // Pracownik ma podstawowe uprawnienia
-                selectedPermissions.Add(PermissionType.ViewReservations);
-                selectedPermissions.Add(PermissionType.ManageReservations);
-                break;
-                
-            default:
-                // Brak uprawnień
-                break;
+                else
+                {
+                    successMessage += " Role has been updated.";
+                }
+            
+                return true;
+            }
+            else
+            {
+                // W przypadku błędu przywróć poprzednią wartość
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = string.IsNullOrEmpty(errorMessage) 
+                    ? $"Error in role update: {error}"
+                    : errorMessage + $"\nError in role update: {error}";
+            
+                // Przywróć selectedRole do currentRole
+                selectedRole = currentRole;
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = string.IsNullOrEmpty(errorMessage)
+                ? $"Error in role update: {ex.Message}"
+                : errorMessage + $"\nError in role update: {ex.Message}";
+        
+            // Przywróć selectedRole do currentRole
+            selectedRole = currentRole;
+            return false;
+        }
+    }
+
+    private async Task SaveExtraDetails()
+    {
+        if (Employee == null) return;
+        if (isActive == Employee.IsActive) return;
+        var response = await Http.PatchAsJsonAsync(
+            $"api/Employees/{Employee.Id}/update-active-status", 
+            isActive  
+        );
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            errorMessage = await response.Content.ReadAsStringAsync();
         }
     }
 
     private async Task SavePermissions()
     {
         if (Employee == null) return;
-        
-        isSaving = true;
-        errorMessage = null;
-        successMessage = null;
         
         try
         {
@@ -266,19 +331,20 @@
             };
 
              var response = await Http.PutAsJsonAsync($"api/Permissions/employee/update-permissions", updatePermissionsDto);
+
+             foreach (RestaurantPermission permission in permissionsResponse)
+             {
+                 if (!selectedPermissions.Contains(permission.Permission))
+                 {
+                     response = await Http.DeleteAsync($"api/Permissions/{permission.Id}");
+                 }
+                 
+             }
              
-            
              if (response.IsSuccessStatusCode)
             {
                 successMessage = "Uprawnienia zostały zaktualizowane pomyślnie!";
-                currentRole = selectedRole;
                 
-                // Notify parent component
-                await OnPermissionsUpdated.InvokeAsync();
-                
-                // Auto-close modal after 2 seconds
-                await Task.Delay(2000);
-                await Close();
             }
             else
             {
@@ -290,10 +356,6 @@
         {
             errorMessage = $"Wystąpił błąd: {ex.Message}";
             Console.WriteLine($"Error saving permissions: {ex}");
-        }
-        finally
-        {
-            isSaving = false;
         }
     }
 

@@ -45,7 +45,11 @@ public class EmployeesController : ControllerBase
     public async Task<IActionResult> Delete(int id)
         => (await _employeeService.DeleteAsync(id)).ToActionResult(this);
 
-    [HttpPatch("{id}/deactivate")]
-    public async Task<IActionResult> Deactivate(int id)
-        => (await _employeeService.DeactivateAsync(id)).ToActionResult(this);
+    [HttpPatch("{id}/update-active-status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] bool isActive)
+        => (await _employeeService.UpdateActiveStatusAsync(id, isActive)).ToActionResult(this);
+    
+    [HttpPatch("{id}/update-role")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] RestaurantRole newRole)
+        => (await _employeeService.UpdateEmployeeRoleAsync(id, newRole)).ToActionResult(this);
 }

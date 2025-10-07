@@ -103,6 +103,18 @@ public class EmployeeService : IEmployeeService
         return Result<IEnumerable<ResponseRestaurantEmployeeDto>>.Success(dtoList);
     }
 
+    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole)
+    {
+        var employee = _context.RestaurantEmployees.Find(employeeId);
+        if (employee == null)
+        {
+            return Result.NotFound($"Employee with ID {employeeId} not found.");
+        }
+        employee.Role = newRole;
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
     public async Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto)
     {
         var restaurantResult = await _restaurantService.GetByIdAsync(dto.RestaurantId);
@@ -151,14 +163,15 @@ public class EmployeeService : IEmployeeService
         return Result.Success();
     }
 
-    public async Task<Result> DeactivateAsync(int id)
+    public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive)
     {
         var employee = await _context.RestaurantEmployees.FindAsync(id);
         if (employee == null)
             return Result.NotFound($"Employee with ID {id} not found.");
 
-        employee.IsActive = false;
+        employee.IsActive = isActive;
         await _context.SaveChangesAsync();
+    
         return Result.Success();
     }
 }

@@ -14,9 +14,11 @@ public interface IEmployeeService
 
     // Nowa metoda zwracająca od razu DTO
     Task<Result<IEnumerable<ResponseRestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId);
+    
+    Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole);
 
     Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto);
     Task<Result<RestaurantEmployee>> UpdateAsync(int id, UpdateEmployeeDto dto);
     Task<Result> DeleteAsync(int id);
-    Task<Result> DeactivateAsync(int id);
+    Task<Result> UpdateActiveStatusAsync(int id, bool isActive);
 }
