@@ -1,4 +1,5 @@
-﻿@using RestaurantApp.Blazor.Models.DTO
+﻿@using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
 <h3>BasicInfoTab</h3>
@@ -26,8 +27,8 @@
     @if (changesMade)
     {
         <div class="action-buttons">
-            <button  @onclick="CancelChanges">Cancel</button>
-            <button  @onclick="SaveChanges">
+            <button @onclick="CancelChanges">Cancel</button>
+            <button @onclick="SaveChanges">
                 Save Changes
             </button>
         </div>
@@ -52,8 +53,9 @@ else
     {
         try
         {
-            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/name", restaurant.Name);
-            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/address", restaurant.Address);
+            await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/name", restaurant.Name, "X-Restaurant-Id", Id.ToString());
+            await Http.RequestWithHeaderAsync(HttpMethod.Patch,$"api/restaurant/{Id}/address", restaurant.Address, "X-Restaurant-Id", Id.ToString());
+
             changesMade = false;
         }
         catch (Exception e)
