@@ -40,10 +40,10 @@ public class ReservationController : ControllerBase
 
     // GET: api/reservation/client/{clientId}
     [Authorize]
-    [HttpGet("client/{userId}")]
-    public async Task<IActionResult> GetReservationsByUserId(string userId)
+    [HttpGet("client/")]
+    public async Task<IActionResult> GetReservationsByUserId([FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.GetReservationsByUserIdAsync(userId);
+        var reservations = await _reservationService.GetReservationsByUserIdAsync(searchParams);
         return reservations.ToActionResult(this);
     }
 
@@ -156,17 +156,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> SearchReservations(
         [FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.SearchReservationsAsync(
-            searchParams.RestaurantId,
-            searchParams.UserId,
-            searchParams.Status,
-            searchParams.CustomerName,
-            searchParams.CustomerEmail,
-            searchParams.CustomerPhone,
-            searchParams.ReservationDate,
-            searchParams.ReservationDateFrom,
-            searchParams.ReservationDateTo,
-            searchParams.Notes
+        var reservations = await _reservationService.SearchReservationsAsync(searchParams
         );
         
         return reservations.ToActionResult(this);

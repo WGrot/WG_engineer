@@ -21,6 +21,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true; // opcjonalne - dla ładniejszego JSON
 });
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -48,6 +49,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+
+
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
@@ -59,6 +62,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
+
 
 // NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

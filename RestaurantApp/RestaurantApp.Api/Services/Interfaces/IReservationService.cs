@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Models;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
@@ -11,7 +12,7 @@ public interface IReservationService
     Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId);
     Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId);
     
-    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(string userId);
+    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(ReservationSearchParameters searchParams);
     Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto);
     Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
     Task<Result> DeleteReservationAsync(int reservationId);
@@ -33,14 +34,5 @@ public interface IReservationService
     Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
 
 
-    Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(int? restaurantId = null,
-        string? userId = null,
-        ReservationStatus? status = null,
-        string? customerName = null,
-        string? customerEmail = null,
-        string? customerPhone = null,
-        DateTime? reservationDate = null,
-        DateTime? reservationDateFrom = null,
-        DateTime? reservationDateTo = null,
-        string? notes = null);
+    Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(ReservationSearchParameters searchParams);
 }

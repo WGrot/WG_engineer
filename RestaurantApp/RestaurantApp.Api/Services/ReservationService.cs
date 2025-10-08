@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
+using Microsoft.AspNetCore.Http;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Api.Services;
 
@@ -12,12 +15,14 @@ public class ReservationService : IReservationService
 {
     private readonly ApiDbContext _context;
     private readonly IRestaurantService _restaurantService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-    public ReservationService(ApiDbContext context, IRestaurantService restaurantService)
+    public ReservationService(ApiDbContext context, IRestaurantService restaurantService, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _restaurantService = restaurantService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId)
@@ -41,13 +46,24 @@ public class ReservationService : IReservationService
         return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(
+        ReservationSearchParameters searchParams)
     {
-        var result = await _context.Reservations
-            .Include(r => r.Restaurant)
-            .Where(r => r.UserId == userId)
-            .ToListAsync();
-        return Result<IEnumerable<ReservationBase>>.Success(result);
+        var user = _httpContextAccessor.HttpContext?.User;
+
+        if (user == null || !user.Identity?.IsAuthenticated == true)
+            return Result<IEnumerable<ReservationBase>>.Failure("User is not authenticated.");
+
+        var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+            return Result<IEnumerable<ReservationBase>>.Failure("User ID not found in token claims.");
+
+        // użyj userId do filtrowania
+        searchParams.UserId = userId;
+
+        var result = await SearchReservationsAsync(searchParams);
+        return Result<IEnumerable<ReservationBase>>.Success(result.Value);
     }
 
     public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId)
@@ -323,32 +339,29 @@ public class ReservationService : IReservationService
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(int? restaurantId = null,
-        string? userId = null, ReservationStatus? status = null,
-        string? customerName = null, string? customerEmail = null, string? customerPhone = null,
-        DateTime? reservationDate = null, DateTime? reservationDateFrom = null, DateTime? reservationDateTo = null,
-        string? notes = null)
+    public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(
+        ReservationSearchParameters searchParams)
     {
         
-        if (reservationDateFrom.HasValue &&
-            reservationDateTo.HasValue &&
-            reservationDateFrom > reservationDateTo)
+        if (searchParams.ReservationDate.HasValue &&
+            searchParams.ReservationDateTo.HasValue &&
+            searchParams.ReservationDateFrom > searchParams.ReservationDateTo)
         {
             return Result<IEnumerable<ReservationBase>>.Failure($"Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
         }
 
         //Spraewdzenie i ustawienie DateTimeKind na Utc dla dat
-        if (reservationDate.HasValue)
+        if (searchParams.ReservationDate.HasValue)
         {
-            reservationDate = DateTime.SpecifyKind((DateTime)reservationDate, DateTimeKind.Utc);
+            searchParams.ReservationDate = DateTime.SpecifyKind((DateTime)searchParams.ReservationDate, DateTimeKind.Utc);
         }
-        if (reservationDateFrom.HasValue)
+        if (searchParams.ReservationDateFrom.HasValue)
         {
-            reservationDateFrom = DateTime.SpecifyKind((DateTime)reservationDateFrom, DateTimeKind.Utc);
+            searchParams.ReservationDateFrom = DateTime.SpecifyKind((DateTime)searchParams.ReservationDateFrom, DateTimeKind.Utc);
         }
-        if (reservationDateTo.HasValue)
+        if (searchParams.ReservationDateTo.HasValue)
         {
-            reservationDateTo = DateTime.SpecifyKind((DateTime)reservationDateTo, DateTimeKind.Utc);
+            searchParams.ReservationDateTo = DateTime.SpecifyKind((DateTime)searchParams.ReservationDateTo, DateTimeKind.Utc);
         }
         
         var query = _context.Reservations
@@ -356,65 +369,65 @@ public class ReservationService : IReservationService
             .AsQueryable();
 
         // Filtrowanie po ID restauracji
-        if (restaurantId.HasValue)
+        if (searchParams.RestaurantId.HasValue)
         {
-            query = query.Where(r => r.RestaurantId == restaurantId.Value);
+            query = query.Where(r => r.RestaurantId == searchParams.RestaurantId.Value);
         }
 
         // Filtrowanie po ID użytkownika
-        if (!string.IsNullOrWhiteSpace(userId))
+        if (!string.IsNullOrWhiteSpace(searchParams.UserId))
         {
-            query = query.Where(r => r.UserId == userId);
+            query = query.Where(r => r.UserId == searchParams.UserId);
         }
 
         // Filtrowanie po statusie
-        if (status.HasValue)
+        if (searchParams.Status.HasValue)
         {
-            query = query.Where(r => r.Status == status.Value);
+            query = query.Where(r => r.Status == searchParams.Status.Value);
         }
 
         // Filtrowanie po nazwisku klienta (case-insensitive)
-        if (!string.IsNullOrWhiteSpace(customerName))
+        if (!string.IsNullOrWhiteSpace(searchParams.CustomerName))
         {
-            query = query.Where(r => r.CustomerName.ToLower().Contains(customerName.ToLower()));
+            query = query.Where(r => r.CustomerName.ToLower().Contains(searchParams.CustomerName.ToLower()));
         }
 
         // Filtrowanie po emailu klienta (case-insensitive)
-        if (!string.IsNullOrWhiteSpace(customerEmail))
+        if (!string.IsNullOrWhiteSpace(searchParams.CustomerEmail))
         {
-            query = query.Where(r => r.CustomerEmail.ToLower().Contains(customerEmail.ToLower()));
+            query = query.Where(r => r.CustomerEmail.ToLower().Contains(searchParams.CustomerEmail.ToLower()));
         }
 
         // Filtrowanie po numerze telefonu klienta
-        if (!string.IsNullOrWhiteSpace(customerPhone))
+        if (!string.IsNullOrWhiteSpace(searchParams.CustomerPhone))
         {
             // Usuwamy spacje i myślniki z numeru telefonu dla lepszego dopasowania
-            var normalizedPhone = customerPhone.Replace(" ", "").Replace("-", "");
+            var normalizedPhone = searchParams.CustomerPhone.Replace(" ", "").Replace("-", "");
             query = query.Where(r => r.CustomerPhone.Replace(" ", "").Replace("-", "").Contains(normalizedPhone));
         }
 
         // Filtrowanie po konkretnej dacie rezerwacji
-        if (reservationDate.HasValue)
+        if (searchParams.ReservationDate.HasValue)
         {
-            var dateOnly = reservationDate.Value.Date;
+            var dateOnly = searchParams.ReservationDate.Value.Date;
             query = query.Where(r => r.ReservationDate.Date == dateOnly);
         }
 
         // Alternatywnie: filtrowanie po zakresie dat
-        if (reservationDateFrom.HasValue)
+        if (searchParams.ReservationDateFrom.HasValue)
         {
-            query = query.Where(r => r.ReservationDate >= reservationDateFrom.Value);
+            query = query.Where(r => r.ReservationDate >= searchParams.ReservationDateFrom.Value);
         }
 
-        if (reservationDateTo.HasValue)
+        if (searchParams.ReservationDateTo.HasValue)
         {
-            query = query.Where(r => r.ReservationDate <= reservationDateTo.Value);
+            query = query.Where(r => r.ReservationDate <= searchParams.ReservationDateTo.Value);
         }
 
         // Filtrowanie po notatkach (case-insensitive)
-        if (!string.IsNullOrWhiteSpace(notes))
+        if (!string.IsNullOrWhiteSpace(searchParams.Notes))
         {
-            query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(notes.ToLower()));
+            query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(searchParams.Notes.ToLower()));
         }
 
         // Sortowanie po dacie rezerwacji (od najnowszych)
