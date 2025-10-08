@@ -1,6 +1,6 @@
 ﻿using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Api.Models.DTOs;
+namespace RestaurantApp.Shared.DTOs;
 
 public class CreateUserDto
 {

@@ -1,6 +1,6 @@
 ﻿using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Api;
+namespace RestaurantApp.Shared.DTOs.SearchParameters;
 
 public class ReservationSearchParameters
 {

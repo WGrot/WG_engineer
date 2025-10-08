@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Blazor.Models.DTO;
+﻿namespace RestaurantApp.Shared.DTOs;
 
 public class CreateTableDto
 {
@@ -6,5 +6,5 @@ public class CreateTableDto
     public int Capacity { get; set; }
     public string? Location { get; set; }
     public int RestaurantId { get; set; }
-    public int SeatCount { get; set; } // To pole jest wymagane!
+    public int SeatCount { get; set; } = 0;
 }

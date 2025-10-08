@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
 @using System.Text
+@using RestaurantApp.Shared.DTOs
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -173,11 +174,4 @@
         public string ConfirmPassword { get; set; } = string.Empty;
     }
     
-    public class RegisterRequest
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-    }
 }

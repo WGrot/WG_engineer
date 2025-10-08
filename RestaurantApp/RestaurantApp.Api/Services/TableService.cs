@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services;

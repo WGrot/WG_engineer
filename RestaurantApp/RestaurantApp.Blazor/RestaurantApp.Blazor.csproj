@@ -15,4 +15,8 @@
       <ProjectReference Include="..\RestaurantApp.Shared\RestaurantApp.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models\Response\" />
+    </ItemGroup>
+
 </Project>

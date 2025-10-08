@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
 using RestaurantApp.Blazor.Extensions;
+using RestaurantApp.Shared.DTOs.SearchParameters;
+
 namespace RestaurantApp.Blazor.Pages;
 
 partial class ManageReservationsPage
@@ -264,22 +266,6 @@ private void OpenReservationModal(ReservationBase reservation)
         {
             isProcessing = false;
         }
-    }
-
-    
-    
-    public class ReservationSearchParameters
-    {
-        public int? RestaurantId { get; set; }
-        public string? UserId { get; set; }
-        public ReservationStatus? Status { get; set; }
-        public string? CustomerName { get; set; }
-        public string? CustomerEmail { get; set; }
-        public string? CustomerPhone { get; set; }
-        public DateTime? ReservationDate { get; set; }
-        public DateTime? ReservationDateFrom { get; set; }
-        public DateTime? ReservationDateTo { get; set; }
-        public string? Notes { get; set; }
     }
 
 }

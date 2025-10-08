@@ -1,5 +1,6 @@
 ﻿@page "/TestAuth"
 @using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.DTOs
 @using Services
 @inject HttpClient Http
 @inject AuthService AuthService
@@ -30,7 +31,7 @@ else
 
 @code {
     private bool _isAuthenticated;
-    private UserDto? _currentUser;
+    private ResponseUserDto? _currentUser;
     private string _apiResponse = "";
 
     protected override async Task OnInitializedAsync()

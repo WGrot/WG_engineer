@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Api.Controllers
 {

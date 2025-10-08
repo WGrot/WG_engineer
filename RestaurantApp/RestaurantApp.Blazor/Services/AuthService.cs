@@ -1,8 +1,8 @@
-﻿using RestaurantApp.Blazor.Models.Response;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using RestaurantApp.Blazor.Models.DTO;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Blazor.Services;
 
@@ -44,7 +44,7 @@ public class AuthService
 
                     // Zapisz dane użytkownika
                     await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY,
-                        JsonSerializer.Serialize(loginResponse.User));
+                        JsonSerializer.Serialize(loginResponse.ResponseUser));
 
                     // Ustaw token w domyślnych nagłówkach
                     _httpClient.DefaultRequestHeaders.Authorization =
@@ -81,14 +81,14 @@ public class AuthService
         return !string.IsNullOrEmpty(token);
     }
     
-    public async Task<UserDto?> GetCurrentUserAsync()
+    public async Task<ResponseUserDto?> GetCurrentUserAsync()
     {
         try
         {
             var userJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", USER_KEY);
             if (!string.IsNullOrEmpty(userJson))
             {
-                return JsonSerializer.Deserialize<UserDto>(userJson, 
+                return JsonSerializer.Deserialize<ResponseUserDto>(userJson, 
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
         }

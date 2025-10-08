@@ -3,6 +3,7 @@
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Authorization
 @using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.DTOs
 @attribute [Authorize]
 @inject HttpClient Http
 
@@ -56,7 +57,7 @@ else
         try
         {
             
-            var userDto = await Http.GetFromJsonAsync<UserDto>($"api/Auth/me");;
+            var userDto = await Http.GetFromJsonAsync<ResponseUserDto>($"api/Auth/me");;
 
             if (userDto != null)
             {

@@ -1,5 +1,6 @@
 ﻿@using RestaurantApp.Blazor.Services
 @using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.DTOs
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @implements IDisposable
@@ -136,7 +137,7 @@
     private bool isMenuOpen = false;
     private bool isUserMenuOpen = false;
     private bool _isAuthenticated = false;
-    private UserDto? _currentUser;
+    private ResponseUserDto? _currentUser;
     private Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync()

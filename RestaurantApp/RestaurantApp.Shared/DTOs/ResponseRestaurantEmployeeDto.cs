@@ -1,10 +1,10 @@
 ﻿using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Api.Models.DTOs;
+namespace RestaurantApp.Shared.DTOs;
 
 public class ResponseRestaurantEmployeeDto
 {
-    public string Id { get; set; } = string.Empty;
+    public int Id { get; set; }
     public string? Email { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

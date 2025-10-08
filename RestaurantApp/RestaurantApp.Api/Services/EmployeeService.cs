@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services;
@@ -83,7 +84,7 @@ public class EmployeeService : IEmployeeService
 
             var dto = new ResponseRestaurantEmployeeDto
             {
-                Id = employee.Id.ToString(),
+                Id = employee.Id,
                 UserId = employee.UserId,
                 RestaurantId = employee.RestaurantId,
                 Restaurant = employee.Restaurant,

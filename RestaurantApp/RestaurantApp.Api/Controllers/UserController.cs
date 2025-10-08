@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -73,10 +74,4 @@ public class UserController : ControllerBase
         
         return result.ToActionResult(this);
     }
-}
-
-// Extension methods dla ułatwienia obsługi Result w kontrolerach
-public static class ControllerExtensions
-{
-    
 }

@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using RestaurantApp.Shared.DTOs
 @using Services
 @inject AuthService AuthService
 @inject NavigationManager Navigation
@@ -15,16 +16,16 @@
                 </div>
             }
 
-            <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
+            <EditForm Model="@_loginRequest" OnValidSubmit="@HandleLogin">
                 <div class="form-group">
                     <label for="email">e-mail</label>
-                    <InputText id="email" @bind-Value="_loginModel.Email"
+                    <InputText id="email" @bind-Value="_loginRequest.Email"
                                class="form-control" placeholder="email@example.com" />
                 </div>
 
                 <div class="form-group">
                     <label for="password">password</label>
-                    <InputText id="password" @bind-Value="_loginModel.Password"
+                    <InputText id="password" @bind-Value="_loginRequest.Password"
                                type="password" class="form-control" />
                 </div>
 
@@ -56,7 +57,7 @@
 </div>
 
 @code {
-    private LoginModel _loginModel = new();
+    private LoginRequest _loginRequest = new();
     private bool _isLoading = false;
     private string _errorMessage = string.Empty;
 
@@ -68,7 +69,7 @@
 
         try
         {
-            var success = await AuthService.LoginAsync(_loginModel.Email, _loginModel.Password);
+            var success = await AuthService.LoginAsync(_loginRequest.Email, _loginRequest.Password);
 
             if (success)
             {
@@ -94,10 +95,5 @@
             StateHasChanged();
         }
     }
-
-    public class LoginModel
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    
 }

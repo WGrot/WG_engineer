@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 

@@ -248,6 +248,20 @@ public class RestaurantPermissionService : IRestaurantPermissionService
                 return Result.Failure(result.Error);
             }
         }
+        
+        var permissionsResponse = (await GetByEmployeeIdAsync(dto.EmployeeId)).Value;
+        
+        if(permissionsResponse == null)
+            return Result.Success();
+        
+        foreach (RestaurantPermission permission in permissionsResponse)
+        {
+            if (!dto.Permissions.Contains(permission.Permission))
+            {
+               await DeleteAsync(permission.Id);
+            }
+                 
+        }
 
         return Result.Success();
     }
