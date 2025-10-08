@@ -1,7 +1,74 @@
-﻿@using RestaurantApp.Shared.Models
+﻿@using System.Net
+@using RestaurantApp.Shared.DTOs
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
 <h3>RestaurantSettingsTab</h3>
-Tutaj będą ustawienia restauracji
+
+@if(settings != null){
+    <div class="form-check form-switch mb-2">
+        <input class="form-check-input"
+               type="checkbox"
+               id ="needConfirmationCheckbox"
+               checked="@settings.ReservationsNeedConfirmation"
+               @onchange="@((ChangeEventArgs e) => ToggleNeedConfirmation())">
+        <label class="form-check-label" for="needConfirmationCheckbox">
+            Does Reservations need confirmation?
+        </label>
+    </div>
+}
+else
+{
+    <div>
+        loading      
+    </div>
+
+}
+
+
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
+    private RestaurantSettings settings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+    }
+    
+    private async Task LoadSettings()
+    {
+        if (restaurant.Settings == null)
+        {
+            Console.WriteLine("nie ma settingow");
+        }
+
+        settings = await Http.GetFromJsonAsync<RestaurantSettings>($"api/RestaurantSettings/{Id}/get-restaurant-settings");
+    }
+    
+    private void ToggleNeedConfirmation()
+    {
+        settings.ReservationsNeedConfirmation = !settings.ReservationsNeedConfirmation;
+        UpdateSettings();
+    }
+    
+    private async Task UpdateSettings()
+    {
+        UpdateRestaurantSettingsDto dto = new UpdateRestaurantSettingsDto
+        {
+            ReservationsNeedConfirmation = settings.ReservationsNeedConfirmation,
+            Id = settings.Id,
+            RestaurantId = settings.RestaurantId
+        }; 
+        
+        var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Ustawienia zaktualizowane pomyślnie.");
+        }
+        else
+        {
+            Console.WriteLine($"Błąd podczas aktualizacji ustawień: {response.StatusCode}");
+        }
+    }
+
 }

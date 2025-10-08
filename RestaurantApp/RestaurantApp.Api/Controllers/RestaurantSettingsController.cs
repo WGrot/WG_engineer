@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -73,9 +74,16 @@ public class RestaurantSettingsController : ControllerBase
         var result = await _restaurantSettingsService.NeedConfirmation(restaurantId);
         return result.ToActionResult(this);
     }
+    
+    [HttpGet("{restaurantId}/get-restaurant-settings")]
+    public async Task<IActionResult> GetByRestaurantId(int restaurantId)
+    {
+        var result = await _restaurantSettingsService.GetByRestaurantId(restaurantId);
+        return result.ToActionResult(this);
+    }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] RestaurantSettings restaurantSettings)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateRestaurantSettingsDto restaurantSettings)
     {
             if (!ModelState.IsValid)
             {

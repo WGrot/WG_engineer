@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services;
@@ -41,7 +42,7 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<RestaurantSettings>.Success(restaurantSettings);
     }
 
-    public async Task<Result<RestaurantSettings>> UpdateAsync(int id, RestaurantSettings restaurantSettings)
+    public async Task<Result<RestaurantSettings>> UpdateAsync(int id, UpdateRestaurantSettingsDto restaurantSettings)
     {
         var existingSettings = await _context.RestaurantSettings.FindAsync(id);
         if (existingSettings == null)
@@ -89,5 +90,16 @@ public class RestaurantSettingsService : IRestaurantSettingsService
             return Result<bool>.NotFound($"Restaurant settings with id {restaurantId} not found");
         }
         return Result<bool>.Success(result.ReservationsNeedConfirmation);
+    }
+
+    public async Task<Result<RestaurantSettings>> GetByRestaurantId(int restaurantId)
+    {
+        var result = await _context.RestaurantSettings.Where(r =>r.RestaurantId == restaurantId)
+            .FirstOrDefaultAsync();
+        if (result == null)
+        {
+            return Result<RestaurantSettings>.NotFound($"Restaurant settings with id {restaurantId} not found");
+        }
+        return Result<RestaurantSettings>.Success(result);
     }
 }
