@@ -336,6 +336,21 @@ public class ReservationService : IReservationService
         {
             return Result<IEnumerable<ReservationBase>>.Failure($"Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
         }
+
+        //Spraewdzenie i ustawienie DateTimeKind na Utc dla dat
+        if (reservationDate.HasValue)
+        {
+            reservationDate = DateTime.SpecifyKind((DateTime)reservationDate, DateTimeKind.Utc);
+        }
+        if (reservationDateFrom.HasValue)
+        {
+            reservationDateFrom = DateTime.SpecifyKind((DateTime)reservationDateFrom, DateTimeKind.Utc);
+        }
+        if (reservationDateTo.HasValue)
+        {
+            reservationDateTo = DateTime.SpecifyKind((DateTime)reservationDateTo, DateTimeKind.Utc);
+        }
+        
         var query = _context.Reservations
             .Include(r => r.Restaurant)
             .AsQueryable();

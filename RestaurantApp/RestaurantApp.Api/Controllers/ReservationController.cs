@@ -48,6 +48,7 @@ public class ReservationController : ControllerBase
 
     // POST: api/reservation
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateReservation([FromBody] ReservationDto reservationDto)
     {
         if (!ModelState.IsValid)
@@ -62,6 +63,7 @@ public class ReservationController : ControllerBase
 
     // PUT: api/reservation/{id}
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto)
     {
         if (!ModelState.IsValid)
@@ -75,6 +77,7 @@ public class ReservationController : ControllerBase
 
     // DELETE: api/reservation/{id}
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteReservation(int id)
     {
         var result = await _reservationService.DeleteReservationAsync(id);
@@ -101,6 +104,7 @@ public class ReservationController : ControllerBase
 
     // POST: api/reservation/table
     [HttpPost("table")]
+    [Authorize]
     public async Task<IActionResult> CreateTableReservation(
         [FromBody] TableReservationDto tableReservationDto)
     {
@@ -116,6 +120,7 @@ public class ReservationController : ControllerBase
 
     // PUT: api/reservation/table/{id}
     [HttpPut("table/{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto tableReservationDto)
     {
         if (!ModelState.IsValid)
@@ -164,5 +169,18 @@ public class ReservationController : ControllerBase
         );
         
         return reservations.ToActionResult(this);
+    }
+    
+    [HttpPut("manage/{id}/change-status")]
+    [Authorize(Policy = "ManageReservations")]
+    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatus status)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _reservationService.UpdateReservationStatusAsync(id, status);
+        return result.ToActionResult(this);
     }
 }
