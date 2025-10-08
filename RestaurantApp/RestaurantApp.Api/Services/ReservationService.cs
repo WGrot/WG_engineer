@@ -7,6 +7,7 @@ using RestaurantApp.Api.Common;
 using Microsoft.AspNetCore.Http;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Api.Services;
@@ -209,7 +210,14 @@ public class ReservationService : IReservationService
         }
 
         var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
+        
+        ReservationStatus initialStatus = ReservationStatus.Confirmed;
 
+        if (tableReservationDto.requiresConfirmation)
+        {
+            initialStatus = ReservationStatus.Pending;
+        }
+        
         var reservation = new TableReservation
         {
             RestaurantId = tableReservationDto.RestaurantId,
@@ -223,7 +231,7 @@ public class ReservationService : IReservationService
             EndTime = tableReservationDto.EndTime,
             Notes = tableReservationDto.Notes,
             TableId = tableReservationDto.TableId,
-            Status = ReservationStatus.Pending,
+            Status = initialStatus,
             CreatedAt = DateTime.UtcNow,
             NeedsConfirmation = restaurant.Value.Settings?.ReservationsNeedConfirmation == true
         };

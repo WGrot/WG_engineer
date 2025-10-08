@@ -78,4 +78,16 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         }
         return Result.Success(result);
     }
+
+    public async Task<Result<bool>> NeedConfirmation(int restaurantId)
+    {
+        var result = await _context.RestaurantSettings.Where(r =>r.RestaurantId == restaurantId)
+            .FirstOrDefaultAsync();
+
+        if (result == null)
+        {
+            return Result<bool>.NotFound($"Restaurant settings with id {restaurantId} not found");
+        }
+        return Result<bool>.Success(result.ReservationsNeedConfirmation);
+    }
 }

@@ -11,4 +11,6 @@ public interface IRestaurantSettingsService
     Task<Result<RestaurantSettings>> UpdateAsync(int id, RestaurantSettings restaurantSettings);
     Task<Result> DeleteAsync(int id);
     Task<Result> ExistsAsync(int id); 
+    
+    Task<Result<bool>> NeedConfirmation(int restaurantId);
 }

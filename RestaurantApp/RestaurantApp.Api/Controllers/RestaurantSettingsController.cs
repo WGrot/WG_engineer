@@ -67,6 +67,13 @@ public class RestaurantSettingsController : ControllerBase
 
     }
 
+    [HttpGet("{restaurantId}/needs-confirmation")]
+    public async Task<IActionResult> GetNeedsConfirmation(int restaurantId)
+    {
+        var result = await _restaurantSettingsService.NeedConfirmation(restaurantId);
+        return result.ToActionResult(this);
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] RestaurantSettings restaurantSettings)
     {

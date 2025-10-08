@@ -153,6 +153,7 @@
     [Parameter] public int RestaurantId { get; set; }
 
     private Restaurant? restaurant;
+    private bool reservationNeedConfirmation = false;
     private List<Table>? allTables;
     private List<Table>? availableTables;
 
@@ -189,6 +190,7 @@
             isLoadingRestaurant = true;
             restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{RestaurantId}");
             allTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{RestaurantId}");
+            reservationNeedConfirmation = await Http.GetFromJsonAsync<bool>($"/api/RestaurantSettings/{RestaurantId}/needs-confirmation");
         }
         catch (Exception ex)
         {
@@ -336,7 +338,7 @@
                 userId = currentUser.Id;
             }
 
-            var reservation = new TableReservation
+            var reservation = new TableReservationDto
             {
                 TableId = selectedTableId,
                 RestaurantId = RestaurantId,
@@ -348,7 +350,7 @@
                 EndTime = TimeOnly.FromDateTime(endTime.Value),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                Status = ReservationStatus.Pending,
+                requiresConfirmation = restaurant.Settings.ReservationsNeedConfirmation,
                 UserId = userId // This should be replaced with actual user ID from authentication
             };
 

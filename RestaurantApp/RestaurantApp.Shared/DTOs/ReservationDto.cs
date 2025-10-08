@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Models.DTOs;
+﻿namespace RestaurantApp.Shared.DTOs;
 
 public class ReservationDto
 {
@@ -17,6 +17,7 @@ public class ReservationDto
     // Powiązanie z użytkownikiem
     public string UserId { get; set; }
     
+    public bool requiresConfirmation { get; set; } = false;
     //Powiązanie z restauracją
     public int RestaurantId { get; set; }
 }
