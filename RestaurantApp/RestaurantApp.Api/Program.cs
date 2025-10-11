@@ -1,12 +1,15 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
@@ -49,7 +52,26 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+builder.Services.Configure<StorageConfiguration>(
+    builder.Configuration.GetSection("MinIO"));
 
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<StorageConfiguration>>().Value;
+    
+    var s3Config = new AmazonS3Config
+    {
+        ServiceURL = $"http://{config.Endpoint}",
+        ForcePathStyle = true, // Important for MinIO
+        UseHttp = !config.UseSSL
+    };
+
+    return new AmazonS3Client(
+        config.AccessKey,
+        config.SecretKey,
+        s3Config
+    );
+});
 
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<ITableService, TableService>();
@@ -62,6 +84,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
+builder.Services.AddScoped<IStorageService, StorageService>();
 
 
 // NAJPIERW Identity
@@ -162,6 +185,18 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+
+// Initialize MinIO buckets on startup
+using (var scope = app.Services.CreateScope())
+{
+    var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+    var config = scope.ServiceProvider.GetRequiredService<IOptions<StorageConfiguration>>().Value;
+    
+    // Create default buckets
+    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.Images);
+    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.Documents);
+    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.TempFiles);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
