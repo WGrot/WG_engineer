@@ -2,7 +2,7 @@
 services:
   restaurantapp.api:
     build:
-      context: "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp"
+      context: "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp"
       dockerfile: "RestaurantApp.Api/Dockerfile"
       target: "base"
     command: []
@@ -15,7 +15,7 @@ services:
     image: "restaurantapp.api:dev"
     ports: []
     volumes:
-    - "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp\\RestaurantApp.Api:/app:rw"
-    - "F:\\wojte\\Projects\\Engineer\\codename-scorpio\\RestaurantApp:/src:rw"
+    - "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp\\RestaurantApp.Api:/app:rw"
+    - "C:\\Users\\wojte\\Documents\\GitHub\\codename-scorpio\\RestaurantApp:/src:rw"
     - "C:\\Users\\wojte\\.nuget\\packages:/home/app/.nuget/packages"
     working_dir: "/app"
