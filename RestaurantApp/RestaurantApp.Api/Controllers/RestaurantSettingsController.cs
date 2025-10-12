@@ -60,7 +60,6 @@ public class RestaurantSettingsController : ControllerBase
             {
                 RestaurantId = restaurantSettingsDto.RestaurantId,
                 ReservationsNeedConfirmation = restaurantSettingsDto.ReservationsNeedConfirmation,
-                Restaurant = restaurant.Value
             };
 
             var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettings);

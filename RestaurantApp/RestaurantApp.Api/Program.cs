@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services;
@@ -54,6 +55,8 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 builder.Services.Configure<StorageConfiguration>(
     builder.Configuration.GetSection("MinIO"));
+builder.Services.Configure<ImageSettings>(
+    builder.Configuration.GetSection("ImageSettings"));
 
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {

@@ -126,7 +126,6 @@ public class EmployeeService : IEmployeeService
         {
             UserId = dto.UserId,
             RestaurantId = dto.RestaurantId,
-            Restaurant = restaurantResult.Value,
             Role = dto.Role,
             Permissions = new List<RestaurantPermission>(),
             CreatedAt = DateTime.UtcNow,

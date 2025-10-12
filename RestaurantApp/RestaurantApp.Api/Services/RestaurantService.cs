@@ -12,11 +12,13 @@ public class RestaurantService : IRestaurantService
 {
     private readonly ApiDbContext _context;
     private readonly ILogger<RestaurantService> _logger;
+    private readonly IStorageService _storageService;
 
-    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger)
+    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService)
     {
         _context = context;
         _logger = logger;
+        _storageService = storageService;
     }
 
     public async Task<Result<IEnumerable<Restaurant>>> GetAllAsync()
@@ -345,6 +347,114 @@ public class RestaurantService : IRestaurantService
 
         // Explicit tracking for EF Core
         await Task.CompletedTask;
+    }
+    
+    public async Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId)
+    {
+        try
+        {
+            // Sprawdź uprawnienia i pobierz restaurację
+            var restaurant = await _context.Restaurants
+                .Include(r => r.Settings)
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+            if (restaurant == null)
+            {
+                return Result<ImageUploadResult>.NotFound("Restaurant not found");
+            }
+            
+            // Usuń stare logo jeśli istnieje
+            if (!string.IsNullOrEmpty(restaurant.profileUrl))
+            {
+                await DeleteOldImage(restaurant.profileUrl, "logo");
+            }
+
+            // Upload nowego logo
+            var stream = file.OpenReadStream();
+            var uploadResult = await _storageService.UploadImageAsync(
+                stream,
+                file.FileName,
+                ImageType.RestaurantProfile,
+                restaurantId,
+                generateThumbnail: true
+            );
+
+            // Zaktualizuj URL w bazie danych
+            restaurant.profileUrl = uploadResult.OriginalUrl;
+            restaurant.profileThumbnailUrl = uploadResult.ThumbnailUrl;
+
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Logo uploaded successfully for restaurant {restaurantId}");
+
+            return Result<ImageUploadResult>.Success(uploadResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error uploading logo for restaurant {restaurantId}");
+            return Result<ImageUploadResult>.Failure("An error occurred while uploading the logo.");
+        }
+    }
+
+    
+    public async Task<Result> DeleteRestaurantImage(int restaurantId, string imageUrl, ImageType imageType)
+    {
+        try
+        {
+            var restaurant = await _context.Restaurants
+                .Include(r => r.Settings)
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+            if (restaurant == null)
+            {
+                return Result.Failure("Restaurant not found.");
+            }
+
+            // Usuń z storage
+            string bucketName = "images";
+            var deleted = await _storageService.DeleteImageWithThumbnailAsync(imageUrl, bucketName);
+            
+            if (!deleted)
+            {
+                return Result.Failure("Failed to delete image from storage.");
+            }
+
+            // Zaktualizuj bazę danych w zależności od typu
+            switch (imageType)
+            {
+                case ImageType.RestaurantProfile:
+                    restaurant.profileUrl = null;
+                    restaurant.profileThumbnailUrl = null;
+                    break;
+            }
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Image deleted successfully for restaurant {restaurantId}");
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting image for restaurant {restaurantId}");
+            return Result.Failure("An error occurred while deleting the image.");
+        }
+    }
+    
+    private async Task DeleteOldImage(string imageUrl, string imageType)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(imageUrl)) return;
+
+            var bucketName = "images";
+            await _storageService.DeleteImageWithThumbnailAsync(imageUrl, bucketName);
+            
+            _logger.LogInformation($"Deleted old {imageType}: {imageUrl}");
+        }
+        catch (Exception ex)
+        {
+            // Nie przerywaj procesu jeśli usunięcie starego zdjęcia się nie powiodło
+            _logger.LogWarning(ex, $"Failed to delete old {imageType}: {imageUrl}");
+        }
     }
 
     private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)

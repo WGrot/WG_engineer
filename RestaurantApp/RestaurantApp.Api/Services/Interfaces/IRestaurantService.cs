@@ -19,4 +19,5 @@ public interface IRestaurantService
     Task<Result> UpdateNameAsync(int id, string name);
     Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
     Task<Result> DeleteAsync(int id);
+    Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId);
 }

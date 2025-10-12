@@ -53,7 +53,7 @@ public class FilesController : ControllerBase
                 file.ContentType);
 
             // Generate presigned URL for immediate access
-            var url = await _storageService.GetPresignedUrlAsync(fileName, bucketName, 60);
+            var url = await _storageService.GetPresignedUrlAsync(fileName, bucketName);
 
             return Ok(new
             {

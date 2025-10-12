@@ -13,5 +13,8 @@ public class Restaurant
     public List<RestaurantEmployee> Employees { get; set; }
     
     public RestaurantSettings? Settings { get; set; }
+    
+    public string profileUrl { get; set; }
+    public string profileThumbnailUrl { get; set; }
 
 }
