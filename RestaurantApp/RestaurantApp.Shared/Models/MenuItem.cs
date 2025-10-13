@@ -7,7 +7,9 @@ public class MenuItem
     public string Description { get; set; } = string.Empty;
     public MenuItemPrice Price { get; set; } = new MenuItemPrice();
     
-    public string? ImagePath { get; set; }
+    public string? ImageUrl { get; set; }
+    
+    public string? ThumbnailUrl { get; set; }
     public int? MenuId { get; set; }
     public Menu? Menu { get; set; }
     
