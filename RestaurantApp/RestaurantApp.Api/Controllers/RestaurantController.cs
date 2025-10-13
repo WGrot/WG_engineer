@@ -178,4 +178,18 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.UploadRestaurantPhotos(imageList, id);
         return result.ToActionResult(this);
     }
+
+    [HttpDelete("{id}/delete-profile-photo")]
+    public async Task<IActionResult> DeleteProfilePhoto(int id)
+    {
+        var result = await _restaurantService.DeleteRestaurantProfilePicture(id);
+        return result.ToActionResult(this);
+    }
+    
+    [HttpDelete("{id}/delete-photo")]
+    public async Task<IActionResult> DeleteProfilePhoto(int id, int photoIndex)
+    {
+        var result = await _restaurantService.DeleteRestaurantPhoto(id, photoIndex);
+        return result.ToActionResult(this);
+    }
 }

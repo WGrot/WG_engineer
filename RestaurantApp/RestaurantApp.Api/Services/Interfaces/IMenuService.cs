@@ -35,4 +35,6 @@ public interface IMenuService
     Task<Result> DeleteMenuItemAsync(int itemId);
     Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null);
     Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId);
+    Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, IFormFile imageFile);
+    Task<Result> DeleteMenuItemImageAsync(int itemId);
 }

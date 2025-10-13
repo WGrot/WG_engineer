@@ -151,7 +151,7 @@ public class RestaurantService : IRestaurantService
 
         Result validationResult = await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
         // Walidacja biznesowa
-        if(validationResult.IsFailure)
+        if (validationResult.IsFailure)
         {
             return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
         }
@@ -188,9 +188,10 @@ public class RestaurantService : IRestaurantService
         // Walidacja biznesowa
         if (existingRestaurant.Name != restaurantDto.Name || existingRestaurant.Address != restaurantDto.Address)
         {
-            Result validationResult = await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
-            
-            if(validationResult.IsFailure)
+            Result validationResult =
+                await ValidateRestaurantUniquenessAsync(restaurantDto.Name, restaurantDto.Address);
+
+            if (validationResult.IsFailure)
             {
                 return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
             }
@@ -220,7 +221,8 @@ public class RestaurantService : IRestaurantService
         var restaurant = await _context.Restaurants.FindAsync(id);
         if (restaurant == null)
         {
-            return Result.NotFound($"Restaurant with ID {id} not found.");;
+            return Result.NotFound($"Restaurant with ID {id} not found.");
+            ;
         }
 
         restaurant.Address = address;
@@ -306,6 +308,7 @@ public class RestaurantService : IRestaurantService
         {
             return Result.Failure($"Restaurant with name '{name}' and address '{address}' already exists.");
         }
+
         return Result.Success();
     }
 
@@ -348,7 +351,7 @@ public class RestaurantService : IRestaurantService
         // Explicit tracking for EF Core
         await Task.CompletedTask;
     }
-    
+
     public async Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId)
     {
         try
@@ -361,11 +364,12 @@ public class RestaurantService : IRestaurantService
             {
                 return Result<ImageUploadResult>.NotFound("Restaurant not found");
             }
-            
+
             // Usuń stare logo jeśli istnieje
             if (!string.IsNullOrEmpty(restaurant.profileUrl))
             {
-                await DeleteOldImage(restaurant.profileUrl, "logo");
+                await _storageService.DeleteFileByUrlAsync(restaurant.profileUrl);
+                await _storageService.DeleteFileByUrlAsync(restaurant.profileThumbnailUrl);
             }
 
             // Upload nowego logo
@@ -382,7 +386,7 @@ public class RestaurantService : IRestaurantService
             restaurant.profileUrl = uploadResult.OriginalUrl;
             restaurant.profileThumbnailUrl = uploadResult.ThumbnailUrl;
 
-            
+
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Logo uploaded successfully for restaurant {restaurantId}");
@@ -400,7 +404,7 @@ public class RestaurantService : IRestaurantService
     {
         try
         {
-            List <ImageUploadResult> uploadResults = new List<ImageUploadResult>();
+            List<ImageUploadResult> uploadResults = new List<ImageUploadResult>();
             // Sprawdź uprawnienia i pobierz restaurację
             var restaurant = await _context.Restaurants
                 .Include(r => r.Settings)
@@ -414,12 +418,13 @@ public class RestaurantService : IRestaurantService
             {
                 restaurant.photosUrls = new List<string>();
             }
+
             if (restaurant.photosThumbnailsUrls == null)
             {
                 restaurant.photosThumbnailsUrls = new List<string>();
             }
 
-            foreach(var image in imageList)
+            foreach (var image in imageList)
             {
                 // Upload nowego logo
                 var stream = image.OpenReadStream();
@@ -434,7 +439,7 @@ public class RestaurantService : IRestaurantService
                 restaurant.photosThumbnailsUrls.Add(uploadResult.ThumbnailUrl);
                 uploadResults.Add(uploadResult);
             }
-            
+
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Logo uploaded successfully for restaurant {id}");
@@ -449,7 +454,7 @@ public class RestaurantService : IRestaurantService
     }
 
 
-    public async Task<Result> DeleteRestaurantImage(int restaurantId, string imageUrl, ImageType imageType)
+    public async Task<Result> DeleteRestaurantProfilePicture(int restaurantId)
     {
         try
         {
@@ -463,22 +468,19 @@ public class RestaurantService : IRestaurantService
 
             // Usuń z storage
             string bucketName = "images";
-            var deleted = await _storageService.DeleteImageWithThumbnailAsync(imageUrl, bucketName);
-            
-            if (!deleted)
+            var deletedImage = await _storageService.DeleteFileByUrlAsync(restaurant.profileUrl);
+            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(restaurant.profileThumbnailUrl);
+
+            if (!deletedImage || !deletedThumbnail)
             {
                 return Result.Failure("Failed to delete image from storage.");
             }
 
-            // Zaktualizuj bazę danych w zależności od typu
-            switch (imageType)
-            {
-                case ImageType.RestaurantProfile:
-                    restaurant.profileUrl = null;
-                    restaurant.profileThumbnailUrl = null;
-                    break;
-            }
-            
+
+            restaurant.profileUrl = null;
+            restaurant.profileThumbnailUrl = null;
+
+
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Image deleted successfully for restaurant {restaurantId}");
@@ -490,24 +492,45 @@ public class RestaurantService : IRestaurantService
             return Result.Failure("An error occurred while deleting the image.");
         }
     }
-    
-    private async Task DeleteOldImage(string imageUrl, string imageType)
+
+    public async Task<Result> DeleteRestaurantPhoto(int restaurantId, int photoIndex)
     {
         try
         {
-            if (string.IsNullOrEmpty(imageUrl)) return;
+            var restaurant = await _context.Restaurants
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+            if (restaurant == null)
+            {
+                return Result.Failure("Restaurant not found.");
+            }
 
-            var bucketName = "images";
-            await _storageService.DeleteImageWithThumbnailAsync(imageUrl, bucketName);
-            
-            _logger.LogInformation($"Deleted old {imageType}: {imageUrl}");
+            // Usuń z storage
+            string bucketName = "images";
+            var deletedImage = await _storageService.DeleteFileByUrlAsync(restaurant.photosUrls[photoIndex]);
+            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(restaurant.photosThumbnailsUrls[photoIndex]);
+
+            if (!deletedImage || !deletedThumbnail)
+            {
+                return Result.Failure("Failed to delete image from storage.");
+            }
+
+
+            restaurant.photosUrls.RemoveAt(photoIndex);
+            restaurant.photosThumbnailsUrls.RemoveAt(photoIndex);
+
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Image deleted successfully for restaurant {restaurantId}");
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            // Nie przerywaj procesu jeśli usunięcie starego zdjęcia się nie powiodło
-            _logger.LogWarning(ex, $"Failed to delete old {imageType}: {imageUrl}");
+            _logger.LogError(ex, $"Error deleting image for restaurant {restaurantId}");
+            return Result.Failure("An error occurred while deleting the image.");
         }
     }
+
 
     private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
     {

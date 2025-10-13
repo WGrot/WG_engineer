@@ -114,4 +114,12 @@ public class MenuController : ControllerBase
     [HttpPatch("item/{itemId}/move")]
     public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int categoryId) =>
         (await _menuService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult(this);
+    
+    [HttpPost("item/{itemId}/upload-image")]
+    public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile imageFile)
+        => (await _menuService.UploadMenuItemImageAsync(itemId, imageFile)).ToActionResult(this);
+    
+    [HttpDelete("item/{itemId}/delete-image")]
+    public async Task<IActionResult> DeleteMenuItemImage(int itemId)
+        => (await _menuService.DeleteMenuItemImageAsync(itemId)).ToActionResult(this);
 }

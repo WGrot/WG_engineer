@@ -21,4 +21,6 @@ public interface IRestaurantService
     Task<Result> DeleteAsync(int id);
     Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId);
     Task<Result<List<ImageUploadResult>>> UploadRestaurantPhotos(List<IFormFile> imageList, int id);
+    Task<Result> DeleteRestaurantProfilePicture(int restaurantId);
+    Task<Result> DeleteRestaurantPhoto(int restaurantId, int photoIndex);
 }

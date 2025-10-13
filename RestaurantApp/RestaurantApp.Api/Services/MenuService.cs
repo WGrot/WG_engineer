@@ -12,11 +12,13 @@ public class MenuService : IMenuService
 {
     private readonly ApiDbContext _context;
     private readonly ILogger<MenuService> _logger;
+    private readonly IStorageService _storageService;
 
-    public MenuService(ApiDbContext context, ILogger<MenuService> logger)
+    public MenuService(ApiDbContext context, ILogger<MenuService> logger, IStorageService storageService)
     {
         _context = context;
         _logger = logger;
+        _storageService = storageService;
     }
 
     // ===== MENU OPERATIONS =====
@@ -25,10 +27,10 @@ public class MenuService : IMenuService
     {
         var menu = await _context.Menus
             .Include(m => m.Categories)
-                .ThenInclude(c => c.Items)
+            .ThenInclude(c => c.Items)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
             .FirstOrDefaultAsync(m => m.Id == menuId);
-        
+
         return menu == null
             ? Result<Menu>.NotFound($"Menu with ID {menuId} not found.")
             : Result.Success(menu);
@@ -38,7 +40,7 @@ public class MenuService : IMenuService
     {
         var menu = await _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
-                .ThenInclude(c => c.Items)
+            .ThenInclude(c => c.Items)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
             .FirstOrDefaultAsync();
@@ -67,7 +69,7 @@ public class MenuService : IMenuService
             Description = menuDto.Description,
             IsActive = menuDto.IsActive
         };
-        
+
         menu.RestaurantId = restaurantId;
         _context.Menus.Add(menu);
         await _context.SaveChangesAsync();
@@ -92,7 +94,7 @@ public class MenuService : IMenuService
         existingMenu.Description = menuDto.Description;
         existingMenu.IsActive = menuDto.IsActive;
         await _context.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
@@ -100,7 +102,7 @@ public class MenuService : IMenuService
     {
         var menu = await _context.Menus
             .Include(m => m.Categories)
-                .ThenInclude(c => c.Items)
+            .ThenInclude(c => c.Items)
             .Include(m => m.Items)
             .FirstOrDefaultAsync(m => m.Id == menuId);
 
@@ -116,7 +118,7 @@ public class MenuService : IMenuService
 
         _context.Menus.Remove(menu);
         await _context.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
@@ -132,7 +134,7 @@ public class MenuService : IMenuService
 
         menu.IsActive = true;
         await _context.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
@@ -146,7 +148,7 @@ public class MenuService : IMenuService
 
         menu.IsActive = false;
         await _context.SaveChangesAsync();
-        
+
         _logger.LogInformation("Deactivated menu {MenuId}", menuId);
         return Result.Success();
     }
@@ -173,7 +175,7 @@ public class MenuService : IMenuService
             .ToListAsync();
         return categories.Any()
             ? Result<IEnumerable<MenuCategory>>.Success(categories)
-            : Result<IEnumerable<MenuCategory>>.NotFound($"No active categories found for menu ID {menuId}."); 
+            : Result<IEnumerable<MenuCategory>>.NotFound($"No active categories found for menu ID {menuId}.");
     }
 
     public async Task<Result<MenuCategory>> CreateCategoryAsync(int menuId, MenuCategoryDto categoryDto)
@@ -192,7 +194,7 @@ public class MenuService : IMenuService
                 .MaxAsync(c => (int?)c.DisplayOrder) ?? 0;
             categoryDto.DisplayOrder = maxOrder + 1;
         }
-        
+
         MenuCategory category = new MenuCategory
         {
             Name = categoryDto.Name,
@@ -201,10 +203,10 @@ public class MenuService : IMenuService
             DisplayOrder = categoryDto.DisplayOrder
         };
         category.MenuId = menuId;
-        
+
         _context.MenuCategories.Add(category);
         await _context.SaveChangesAsync();
-        
+
         return Result<MenuCategory>.Success(category);
     }
 
@@ -272,13 +274,13 @@ public class MenuService : IMenuService
 
     public async Task<Result<MenuItem>> GetMenuItemByIdAsync(int itemId)
     {
-        var item =  await _context.MenuItems
+        var item = await _context.MenuItems
             .Include(mi => mi.Menu)
             .Include(mi => mi.Category)
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
-        
-        return item == null 
-            ? Result<MenuItem>.NotFound($"Menu item with ID {itemId} not found.") 
+
+        return item == null
+            ? Result<MenuItem>.NotFound($"Menu item with ID {itemId} not found.")
             : Result<MenuItem>.Success(item);
     }
 
@@ -290,7 +292,6 @@ public class MenuService : IMenuService
             .ToListAsync();
 
         return Result<IEnumerable<MenuItem>>.Success(items);
-
     }
 
     public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId)
@@ -300,7 +301,6 @@ public class MenuService : IMenuService
             .ToListAsync();
 
         return Result<IEnumerable<MenuItem>>.Success(items);
-
     }
 
     public async Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId)
@@ -308,7 +308,7 @@ public class MenuService : IMenuService
         var items = await _context.MenuItems
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
-        
+
         return Result<IEnumerable<MenuItem>>.Success(items);
     }
 
@@ -329,14 +329,14 @@ public class MenuService : IMenuService
                 Price = itemDto.Price,
                 CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
             },
-            ImagePath = itemDto.ImagePath
+            ImageUrl = itemDto.ImagePath
         };
-        
+
         item.MenuId = menuId;
-        item.CategoryId = null; 
+        item.CategoryId = null;
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
-        
+
         return Result<MenuItem>.Success(item);
     }
 
@@ -345,13 +345,14 @@ public class MenuService : IMenuService
         var category = await _context.MenuCategories
             .Include(c => c.Menu)
             .FirstOrDefaultAsync(c => c.Id == categoryId);
-            
+
         if (category == null)
         {
             return Result<MenuItem>.NotFound($"Category with ID {categoryId} not found.");
         }
-        
-        MenuItem item = new MenuItem{
+
+        MenuItem item = new MenuItem
+        {
             Name = itemDto.Name,
             Description = itemDto.Description,
             Price = new MenuItemPrice
@@ -359,14 +360,14 @@ public class MenuService : IMenuService
                 Price = itemDto.Price,
                 CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
             },
-            ImagePath = itemDto.ImagePath
+            ImageUrl = itemDto.ImagePath
         };
 
         item.CategoryId = categoryId;
         item.MenuId = null; // Relacja przez kategorię
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
-        
+
         return Result<MenuItem>.Success(item);
     }
 
@@ -385,7 +386,7 @@ public class MenuService : IMenuService
             Price = itemDto.Price,
             CurrencyCode = itemDto.CurrencyCode ?? existingItem.Price.CurrencyCode
         };
-        existingItem.ImagePath = itemDto.ImagePath;
+        existingItem.ImageUrl = itemDto.ImagePath;
 
         await _context.SaveChangesAsync();
         return Result.Success();
@@ -401,7 +402,7 @@ public class MenuService : IMenuService
 
         _context.MenuItems.Remove(item);
         await _context.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
@@ -428,7 +429,7 @@ public class MenuService : IMenuService
         var item = await _context.MenuItems
             .Include(i => i.Category)
             .FirstOrDefaultAsync(i => i.Id == itemId);
-            
+
         if (item == null)
         {
             return Result.NotFound($"Item with ID {itemId} not found");
@@ -462,6 +463,84 @@ public class MenuService : IMenuService
         return Result.Success();
     }
 
+    public async Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, IFormFile imageFile)
+    {
+        try
+        {
+            // Sprawdź uprawnienia i pobierz restaurację
+            var item = await _context.MenuItems
+                .FirstOrDefaultAsync(i => i.Id == itemId);
+            if (item == null)
+            {
+                return Result<ImageUploadResult>.NotFound("Menu Item not found");
+            }
+
+            // Usuń stare logo jeśli istnieje
+            if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                await _storageService.DeleteFileByUrlAsync(item.ImageUrl);
+                await _storageService.DeleteFileByUrlAsync(item.ThumbnailUrl);
+            }
+
+            // Upload nowego logo
+            var stream = imageFile.OpenReadStream();
+            var uploadResult = await _storageService.UploadImageAsync(
+                stream,
+                imageFile.FileName,
+                ImageType.MenuItem,
+                itemId,
+                generateThumbnail: true
+            );
+
+            // Zaktualizuj URL w bazie danych
+            item.ImageUrl = uploadResult.OriginalUrl;
+            item.ThumbnailUrl = uploadResult.ThumbnailUrl;
+
+
+            await _context.SaveChangesAsync();
+
+            return Result<ImageUploadResult>.Success(uploadResult);
+        }
+        catch (Exception ex)
+        {
+            return Result<ImageUploadResult>.Failure("An error occurred while uploading the logo.");
+        }
+    }
+
+    public async Task<Result> DeleteMenuItemImageAsync(int itemId)
+    {
+        try
+        {
+            var item = await _context.MenuItems
+                .FirstOrDefaultAsync(i => i.Id == itemId);
+            if (item == null)
+            {
+                return Result<ImageUploadResult>.NotFound("Menu Item not found");
+            }
+
+            string bucketName = "images";
+            var deletedImage = await _storageService.DeleteFileByUrlAsync(item.ImageUrl);
+            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(item.ThumbnailUrl);
+
+            if (!deletedImage && !deletedThumbnail)
+            {
+                return Result.Failure("Failed to delete image from storage.");
+            }
+
+            item.ImageUrl = null;
+            item.ThumbnailUrl = null;
+
+            await _context.SaveChangesAsync();
+
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure("An error occurred while deleting the image.");
+        }
+    }
+
     // ===== PRIVATE HELPER METHODS =====
 
     private async Task DeactivateAllMenusForRestaurantAsync(int restaurantId)
@@ -478,7 +557,7 @@ public class MenuService : IMenuService
         if (activeMenus.Any())
         {
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Deactivated {Count} menus for restaurant {RestaurantId}", 
+            _logger.LogInformation("Deactivated {Count} menus for restaurant {RestaurantId}",
                 activeMenus.Count, restaurantId);
         }
     }
