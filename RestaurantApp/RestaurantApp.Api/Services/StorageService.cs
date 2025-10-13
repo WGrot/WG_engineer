@@ -87,7 +87,7 @@ public class StorageService : IStorageService
             var result = new ImageUploadResult
             {
                 FileName = fullPath,
-                OriginalUrl = await GetPresignedUrlAsync(fullPath, bucketName),
+                OriginalUrl = GetPublicUrl(fullPath, bucketName),
                 FileSize = fileSize,
                 Metadata = metadata
             };
@@ -96,7 +96,7 @@ public class StorageService : IStorageService
             if (generateThumbnail)
             {
                 var thumbnailPath = await GenerateThumbnailAsync(originalBitmap, uniqueFileName, imageSettings.ThumbnailSize);
-                result.ThumbnailUrl = await GetPresignedUrlAsync(thumbnailPath, bucketName);
+                result.ThumbnailUrl = GetPublicUrl(thumbnailPath, bucketName);
             }
 
             // Cleanup
@@ -488,6 +488,34 @@ public class StorageService : IStorageService
             throw;
         }
     }
+    
+    public string GetPublicUrl(string fileName, string bucketName)
+    {
+        try
+        {
+            // Budowanie publicznego URL-a
+            var protocol = _config.UseSSL ? "https" : "http";
+            var endpoint = _config.Endpoint;
+        
+            // Usuń trailing slash jeśli istnieje
+            endpoint = endpoint.TrimEnd('/');
+        
+            // Zakoduj nazwę pliku dla URL
+            var encodedFileName = Uri.EscapeDataString(fileName);
+        
+            // Format: http://localhost:9000/bucket-name/path/to/file.jpg
+            var publicUrl = $"{protocol}://{endpoint}/{bucketName}/{encodedFileName}";
+        
+            _logger.LogDebug($"Generated public URL: {publicUrl}");
+        
+            return publicUrl;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error generating public URL for {fileName}");
+            throw;
+        }
+    }
 
     public async Task<bool> CreateBucketIfNotExistsAsync(string bucketName)
     {
@@ -497,6 +525,7 @@ public class StorageService : IStorageService
 
             if (!bucketExists)
             {
+                // Tworzenie bucketa
                 await _s3Client.PutBucketAsync(new PutBucketRequest
                 {
                     BucketName = bucketName
@@ -505,12 +534,50 @@ public class StorageService : IStorageService
                 _logger.LogInformation($"Created bucket: {bucketName}");
             }
 
+            // Ustaw publiczną politykę dostępu (dla nowych i istniejących bucketów)
+            await SetBucketPublicReadPolicyAsync(bucketName);
+
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error creating bucket {bucketName}");
+            _logger.LogError(ex, $"Error creating/configuring bucket {bucketName}");
             return false;
+        }
+    }
+
+    private async Task SetBucketPublicReadPolicyAsync(string bucketName)
+    {
+        try
+        {
+            // Polityka pozwalająca na publiczny odczyt
+            var bucketPolicy = $@"{{
+            ""Version"": ""2012-10-17"",
+            ""Statement"": [
+                {{
+                    ""Sid"": ""PublicReadGetObject"",
+                    ""Effect"": ""Allow"",
+                    ""Principal"": {{
+                        ""AWS"": ""*""
+                    }},
+                    ""Action"": ""s3:GetObject"",
+                    ""Resource"": ""arn:aws:s3:::{bucketName}/*""
+                }}
+            ]
+        }}";
+
+            await _s3Client.PutBucketPolicyAsync(new PutBucketPolicyRequest
+            {
+                BucketName = bucketName,
+                Policy = bucketPolicy
+            });
+
+            _logger.LogInformation($"Set public read policy for bucket: {bucketName}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error setting bucket policy for {bucketName}");
+            throw;
         }
     }
 }

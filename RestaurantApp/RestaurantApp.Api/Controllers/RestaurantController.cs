@@ -171,4 +171,11 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.UploadRestaurantProfilePhoto(image, id);
         return result.ToActionResult(this);
     }
+    
+    [HttpPost("{id}/upload-restaurant-photos")]
+    public async Task <IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
+    {
+        var result = await _restaurantService.UploadRestaurantPhotos(imageList, id);
+        return result.ToActionResult(this);
+    }
 }

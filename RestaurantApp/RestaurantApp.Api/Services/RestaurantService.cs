@@ -396,7 +396,59 @@ public class RestaurantService : IRestaurantService
         }
     }
 
-    
+    public async Task<Result<List<ImageUploadResult>>> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
+    {
+        try
+        {
+            List <ImageUploadResult> uploadResults = new List<ImageUploadResult>();
+            // Sprawdź uprawnienia i pobierz restaurację
+            var restaurant = await _context.Restaurants
+                .Include(r => r.Settings)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            if (restaurant == null)
+            {
+                return Result<List<ImageUploadResult>>.NotFound("Restaurant not found");
+            }
+
+            if (restaurant.photosUrls == null)
+            {
+                restaurant.photosUrls = new List<string>();
+            }
+            if (restaurant.photosThumbnailsUrls == null)
+            {
+                restaurant.photosThumbnailsUrls = new List<string>();
+            }
+
+            foreach(var image in imageList)
+            {
+                // Upload nowego logo
+                var stream = image.OpenReadStream();
+                var uploadResult = await _storageService.UploadImageAsync(
+                    stream,
+                    image.FileName,
+                    ImageType.RestaurantPhotos,
+                    id,
+                    generateThumbnail: true
+                );
+                restaurant.photosUrls.Add(uploadResult.OriginalUrl);
+                restaurant.photosThumbnailsUrls.Add(uploadResult.ThumbnailUrl);
+                uploadResults.Add(uploadResult);
+            }
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Logo uploaded successfully for restaurant {id}");
+
+            return Result<List<ImageUploadResult>>.Success(uploadResults);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error uploading logo for restaurant {id}");
+            return Result<List<ImageUploadResult>>.Failure("An error occurred while uploading the logo.");
+        }
+    }
+
+
     public async Task<Result> DeleteRestaurantImage(int restaurantId, string imageUrl, ImageType imageType)
     {
         try
