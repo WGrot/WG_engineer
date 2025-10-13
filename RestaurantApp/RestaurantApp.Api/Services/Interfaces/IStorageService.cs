@@ -26,7 +26,6 @@ public interface IStorageService
     Task<Stream> DownloadFileAsync(string fileName, string bucketName);
     Task<bool> DeleteFileAsync(string fileName, string bucketName);
     Task<IEnumerable<S3Object>> ListFilesAsync(string bucketName, string prefix = null);
-    Task<string> GetPresignedUrlAsync(string fileName, string bucketName, int expirationInMinutes = 60);
     public string GetImagesBucketName();
     Task<bool> CreateBucketIfNotExistsAsync(string bucketName);
     Task<bool> DeleteFileByUrlAsync(string fileUrl);

@@ -87,6 +87,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
+
+builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 
 

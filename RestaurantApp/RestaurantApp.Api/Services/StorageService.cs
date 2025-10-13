@@ -14,17 +14,19 @@ namespace RestaurantApp.Api.Services;
 public class StorageService : IStorageService
 {
     private readonly IAmazonS3 _s3Client;
+    private readonly IUrlBuilder _urlBuilder;
     private readonly StorageConfiguration _config;
     private readonly ImageSettings _imageSettings;
     private readonly ILogger<StorageService> _logger;
 
     public StorageService(IAmazonS3 s3Client, IOptions<StorageConfiguration> config,
-        ILogger<StorageService> logger, IOptions<ImageSettings> imageSettings)
+        ILogger<StorageService> logger, IOptions<ImageSettings> imageSettings, IUrlBuilder urlBuilder)
     {
         _s3Client = s3Client;
         _config = config.Value;
         _logger = logger;
         _imageSettings = imageSettings.Value;
+        _urlBuilder = urlBuilder;
     }
 
     public async Task<ImageUploadResult> UploadImageAsync(
@@ -88,7 +90,7 @@ public class StorageService : IStorageService
             var result = new ImageUploadResult
             {
                 FileName = fullPath,
-                OriginalUrl = GetPublicUrl(fullPath, bucketName),
+                OriginalUrl = _urlBuilder.GetPublicUrl(fullPath, bucketName),
                 FileSize = fileSize,
                 Metadata = metadata
             };
@@ -97,7 +99,7 @@ public class StorageService : IStorageService
             if (generateThumbnail)
             {
                 var thumbnailPath = await GenerateThumbnailAsync(originalBitmap, uniqueFileName, imageSettings.ThumbnailSize);
-                result.ThumbnailUrl = GetPublicUrl(thumbnailPath, bucketName);
+                result.ThumbnailUrl = _urlBuilder.GetPublicUrl(thumbnailPath, bucketName);
             }
 
             // Cleanup
@@ -308,7 +310,7 @@ public class StorageService : IStorageService
             results.Add(new ImageUploadResult
             {
                 FileName = obj.Key,
-                OriginalUrl = await GetPresignedUrlAsync(obj.Key, bucketName),
+                OriginalUrl = await _urlBuilder.GetPresignedUrlAsync(obj.Key, bucketName),
                 FileSize = obj.Size,
                 Metadata = metadata
             });
@@ -451,7 +453,7 @@ public class StorageService : IStorageService
     {
         try
         {
-            var (bucketName, key) = ParseS3OrMinioUrl(fileUrl);
+            var (bucketName, key) = _urlBuilder.ParseS3OrMinioUrl(fileUrl);
         
             var request = new DeleteObjectRequest
             {
@@ -476,32 +478,6 @@ public class StorageService : IStorageService
         }
     }
     
-    private (string bucketName, string key) ParseS3OrMinioUrl(string fileUrl)
-    {
-        if (string.IsNullOrWhiteSpace(fileUrl))
-            throw new ArgumentException("URL cannot be null or empty", nameof(fileUrl));
-
-        var uri = new Uri(fileUrl);
-    
-        // Sprawdzenie czy to URL AWS S3
-        if (uri.Host.Contains("amazonaws.com"))
-        {
-            var s3Uri = new AmazonS3Uri(fileUrl);
-            return (s3Uri.Bucket, s3Uri.Key);
-        }
-    
-        // Obsługa MinIO i innych S3-compatible storage
-        // Format: http://localhost:9000/bucket-name/path/to/file.jpg
-        var pathParts = uri.AbsolutePath.TrimStart('/').Split('/', 2);
-    
-        if (pathParts.Length < 2)
-            throw new ArgumentException($"Invalid URL format. Expected: http://host/bucket/key, got: {fileUrl}");
-    
-        var bucketName = pathParts[0];
-        var key = Uri.UnescapeDataString(pathParts[1]); // Dekodowanie %2F na / itp.
-    
-        return (bucketName, key);
-    }
 
     public async Task<IEnumerable<S3Object>> ListFilesAsync(string bucketName, string prefix = null)
     {
@@ -523,56 +499,8 @@ public class StorageService : IStorageService
             return new List<S3Object>();
         }
     }
-
-    public async Task<string> GetPresignedUrlAsync(string fileName, string bucketName, int expirationInMinutes = 60)
-    {
-        try
-        {
-            var request = new GetPreSignedUrlRequest
-            {
-                BucketName = bucketName,
-                Key = fileName,
-                Verb = HttpVerb.GET,
-                Expires = DateTime.UtcNow.AddMinutes(expirationInMinutes),
-                Protocol = _config.UseSSL ? Protocol.HTTPS : Protocol.HTTP
-            };
-
-            return await _s3Client.GetPreSignedURLAsync(request);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error generating presigned URL for {fileName}");
-            throw;
-        }
-    }
     
-    public string GetPublicUrl(string fileName, string bucketName)
-    {
-        try
-        {
-            // Budowanie publicznego URL-a
-            var protocol = _config.UseSSL ? "https" : "http";
-            var endpoint = _config.Endpoint;
-        
-            // Usuń trailing slash jeśli istnieje
-            endpoint = endpoint.TrimEnd('/');
-        
-            // Zakoduj nazwę pliku dla URL
-            var encodedFileName = Uri.EscapeDataString(fileName);
-        
-            // Format: http://localhost:9000/bucket-name/path/to/file.jpg
-            var publicUrl = $"{protocol}://{endpoint}/{bucketName}/{encodedFileName}";
-        
-            _logger.LogDebug($"Generated public URL: {publicUrl}");
-        
-            return publicUrl;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error generating public URL for {fileName}");
-            throw;
-        }
-    }
+    
 
     public async Task<bool> CreateBucketIfNotExistsAsync(string bucketName)
     {
