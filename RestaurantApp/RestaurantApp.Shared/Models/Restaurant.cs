@@ -16,5 +16,8 @@ public class Restaurant
     
     public string profileUrl { get; set; }
     public string profileThumbnailUrl { get; set; }
+    
+    public List<string>? photosUrls { get; set; }
+    public List<string>? photosThumbnailsUrls { get; set; }
 
 }
