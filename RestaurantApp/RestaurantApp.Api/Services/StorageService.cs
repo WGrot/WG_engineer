@@ -15,18 +15,20 @@ public class StorageService : IStorageService
 {
     private readonly IAmazonS3 _s3Client;
     private readonly IUrlBuilder _urlBuilder;
+    private readonly IImageProcessor _imageProcessor;
     private readonly StorageConfiguration _config;
     private readonly ImageSettings _imageSettings;
     private readonly ILogger<StorageService> _logger;
 
     public StorageService(IAmazonS3 s3Client, IOptions<StorageConfiguration> config,
-        ILogger<StorageService> logger, IOptions<ImageSettings> imageSettings, IUrlBuilder urlBuilder)
+        ILogger<StorageService> logger, IOptions<ImageSettings> imageSettings, IUrlBuilder urlBuilder, IImageProcessor imageProcessor)
     {
         _s3Client = s3Client;
         _config = config.Value;
         _logger = logger;
         _imageSettings = imageSettings.Value;
         _urlBuilder = urlBuilder;
+        _imageProcessor = imageProcessor;
     }
 
     public async Task<ImageUploadResult> UploadImageAsync(
@@ -49,7 +51,7 @@ public class StorageService : IStorageService
             var prefix = GetPrefixForImageType(imageType, entityId);
             
             // Walidacja i przetwarzanie obrazu
-            using var originalBitmap = SKBitmap.Decode(memoryStream);
+            using var originalBitmap = _imageProcessor.Decode(memoryStream);
             if (originalBitmap == null)
             {
                 throw new InvalidOperationException("Invalid image format or corrupted file");
@@ -64,7 +66,7 @@ public class StorageService : IStorageService
             
             if (needsResize)
             {
-                processedBitmap = ResizeImage(originalBitmap, imageSettings.MaxWidth, imageSettings.MaxHeight);
+                processedBitmap = _imageProcessor.ResizeImage(originalBitmap, imageSettings.MaxWidth, imageSettings.MaxHeight);
             }
 
             // Zapisz główny obraz
@@ -72,7 +74,7 @@ public class StorageService : IStorageService
             var fullPath = $"{prefix}{uniqueFileName}";
             
             using var processedStream = new MemoryStream();
-            SaveImageAsJpeg(processedBitmap, processedStream, 85);
+            _imageProcessor.SaveImageAsJpeg(processedBitmap, processedStream, 85);
             processedStream.Position = 0;
 
             var metadata = new Dictionary<string, string>
@@ -118,61 +120,6 @@ public class StorageService : IStorageService
         }
     }
     
-    private SKBitmap ResizeImage(SKBitmap original, int maxWidth, int maxHeight)
-    {
-        // Oblicz proporcje
-        var ratioX = (float)maxWidth / original.Width;
-        var ratioY = (float)maxHeight / original.Height;
-        var ratio = Math.Min(ratioX, ratioY);
-
-        var newWidth = (int)(original.Width * ratio);
-        var newHeight = (int)(original.Height * ratio);
-
-        // Resize z wysoką jakością
-        var resized = original.Resize(new SKImageInfo(newWidth, newHeight), SKFilterQuality.High);
-        
-        if (resized == null)
-        {
-            throw new InvalidOperationException("Failed to resize image");
-        }
-
-        return resized;
-    }
-    
-    private SKBitmap CreateSquareThumbnail(SKBitmap original, int size)
-    {
-        // Oblicz kwadratowy crop
-        int sourceSize = Math.Min(original.Width, original.Height);
-        int xOffset = (original.Width - sourceSize) / 2;
-        int yOffset = (original.Height - sourceSize) / 2;
-
-        // Najpierw cropuj do kwadratu
-        var cropped = new SKBitmap(sourceSize, sourceSize);
-        using (var canvas = new SKCanvas(cropped))
-        {
-            var sourceRect = SKRect.Create(xOffset, yOffset, sourceSize, sourceSize);
-            var destRect = SKRect.Create(0, 0, sourceSize, sourceSize);
-            canvas.DrawBitmap(original, sourceRect, destRect);
-        }
-
-        // Następnie zmniejsz do docelowego rozmiaru
-        var thumbnail = cropped.Resize(new SKImageInfo(size, size), SKFilterQuality.High);
-        cropped.Dispose();
-
-        if (thumbnail == null)
-        {
-            throw new InvalidOperationException("Failed to create thumbnail");
-        }
-
-        return thumbnail;
-    }
-
-    private void SaveImageAsJpeg(SKBitmap bitmap, Stream stream, int quality)
-    {
-        using var image = SKImage.FromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Jpeg, quality);
-        data.SaveTo(stream);
-    }
 
     private async Task<string> GenerateThumbnailAsync(SKBitmap originalBitmap, string fileName, int size)
     {
@@ -180,10 +127,10 @@ public class StorageService : IStorageService
         var thumbnailPath = $"thumbnails/{fileName}";
 
         // Utwórz kwadratową miniaturkę
-        using var thumbnail = CreateSquareThumbnail(originalBitmap, size);
+        using var thumbnail = _imageProcessor.CreateSquareThumbnail(originalBitmap, size);
         
         using var thumbnailStream = new MemoryStream();
-        SaveImageAsJpeg(thumbnail, thumbnailStream, 75);
+        _imageProcessor.SaveImageAsJpeg(thumbnail, thumbnailStream, 75);
         thumbnailStream.Position = 0;
 
         await UploadWithMetadataAsync(
