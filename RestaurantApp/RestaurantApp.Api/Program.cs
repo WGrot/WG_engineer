@@ -88,6 +88,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 
+builder.Services.AddScoped<IBucketService, BucketService>();
 builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
 builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
 builder.Services.AddScoped<IStorageService, StorageService>();
@@ -195,13 +196,8 @@ var app = builder.Build();
 // Initialize MinIO buckets on startup
 using (var scope = app.Services.CreateScope())
 {
-    var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-    var config = scope.ServiceProvider.GetRequiredService<IOptions<StorageConfiguration>>().Value;
-    
-    // Create default buckets
-    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.Images);
-    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.Documents);
-    await storageService.CreateBucketIfNotExistsAsync(config.BucketNames.TempFiles);
+    var bucketService = scope.ServiceProvider.GetRequiredService<IBucketService>();
+    await bucketService.InitializeDefaultBucketsAsync();
 }
 
 // Configure the HTTP request pipeline.

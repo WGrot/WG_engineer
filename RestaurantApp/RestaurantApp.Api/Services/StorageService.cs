@@ -41,7 +41,6 @@ public class StorageService : IStorageService
         try
         {
             var bucketName = _config.BucketNames.Images;
-            await CreateBucketIfNotExistsAsync(bucketName);
             
             using var memoryStream = new MemoryStream();
             await imageStream.CopyToAsync(memoryStream);
@@ -284,10 +283,6 @@ public class StorageService : IStorageService
             return new Dictionary<string, string>();
         }
     }
-    public string GetImagesBucketName()
-    {
-        return _config.BucketNames.Images;
-    }
 
     // Metoda do czyszczenia starych plików tymczasowych
     public async Task CleanupOldTempFilesAsync(int daysOld = 7)
@@ -316,8 +311,7 @@ public class StorageService : IStorageService
     {
         try
         {
-            // Ensure bucket exists
-            await CreateBucketIfNotExistsAsync(bucketName);
+            
 
             // Generate unique file name to avoid conflicts
             var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
@@ -447,69 +441,4 @@ public class StorageService : IStorageService
         }
     }
     
-    
-
-    public async Task<bool> CreateBucketIfNotExistsAsync(string bucketName)
-    {
-        try
-        {
-            var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
-
-            if (!bucketExists)
-            {
-                // Tworzenie bucketa
-                await _s3Client.PutBucketAsync(new PutBucketRequest
-                {
-                    BucketName = bucketName
-                });
-
-                _logger.LogInformation($"Created bucket: {bucketName}");
-            }
-
-            // Ustaw publiczną politykę dostępu (dla nowych i istniejących bucketów)
-            await SetBucketPublicReadPolicyAsync(bucketName);
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error creating/configuring bucket {bucketName}");
-            return false;
-        }
-    }
-
-    private async Task SetBucketPublicReadPolicyAsync(string bucketName)
-    {
-        try
-        {
-            // Polityka pozwalająca na publiczny odczyt
-            var bucketPolicy = $@"{{
-            ""Version"": ""2012-10-17"",
-            ""Statement"": [
-                {{
-                    ""Sid"": ""PublicReadGetObject"",
-                    ""Effect"": ""Allow"",
-                    ""Principal"": {{
-                        ""AWS"": ""*""
-                    }},
-                    ""Action"": ""s3:GetObject"",
-                    ""Resource"": ""arn:aws:s3:::{bucketName}/*""
-                }}
-            ]
-        }}";
-
-            await _s3Client.PutBucketPolicyAsync(new PutBucketPolicyRequest
-            {
-                BucketName = bucketName,
-                Policy = bucketPolicy
-            });
-
-            _logger.LogInformation($"Set public read policy for bucket: {bucketName}");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error setting bucket policy for {bucketName}");
-            throw;
-        }
-    }
 }
