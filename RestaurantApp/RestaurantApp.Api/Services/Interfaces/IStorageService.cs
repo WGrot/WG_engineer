@@ -29,5 +29,6 @@ public interface IStorageService
     Task<string> GetPresignedUrlAsync(string fileName, string bucketName, int expirationInMinutes = 60);
     public string GetImagesBucketName();
     Task<bool> CreateBucketIfNotExistsAsync(string bucketName);
-    
+    Task<bool> DeleteFileByUrlAsync(string fileUrl);
+
 }

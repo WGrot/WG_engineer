@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Configuration;
@@ -444,6 +445,62 @@ public class StorageService : IStorageService
             _logger.LogError(ex, $"Error deleting file {fileName} from bucket {bucketName}");
             return false;
         }
+    }
+    
+    public async Task<bool> DeleteFileByUrlAsync(string fileUrl)
+    {
+        try
+        {
+            var (bucketName, key) = ParseS3OrMinioUrl(fileUrl);
+        
+            var request = new DeleteObjectRequest
+            {
+                BucketName = bucketName,
+                Key = key
+            };
+
+            var response = await _s3Client.DeleteObjectAsync(request);
+
+            _logger.LogInformation($"File {key} deleted from bucket {bucketName}");
+            return response.HttpStatusCode == System.Net.HttpStatusCode.NoContent;
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning($"File not found: {fileUrl}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting file from URL: {fileUrl}");
+            return false;
+        }
+    }
+    
+    private (string bucketName, string key) ParseS3OrMinioUrl(string fileUrl)
+    {
+        if (string.IsNullOrWhiteSpace(fileUrl))
+            throw new ArgumentException("URL cannot be null or empty", nameof(fileUrl));
+
+        var uri = new Uri(fileUrl);
+    
+        // Sprawdzenie czy to URL AWS S3
+        if (uri.Host.Contains("amazonaws.com"))
+        {
+            var s3Uri = new AmazonS3Uri(fileUrl);
+            return (s3Uri.Bucket, s3Uri.Key);
+        }
+    
+        // Obsługa MinIO i innych S3-compatible storage
+        // Format: http://localhost:9000/bucket-name/path/to/file.jpg
+        var pathParts = uri.AbsolutePath.TrimStart('/').Split('/', 2);
+    
+        if (pathParts.Length < 2)
+            throw new ArgumentException($"Invalid URL format. Expected: http://host/bucket/key, got: {fileUrl}");
+    
+        var bucketName = pathParts[0];
+        var key = Uri.UnescapeDataString(pathParts[1]); // Dekodowanie %2F na / itp.
+    
+        return (bucketName, key);
     }
 
     public async Task<IEnumerable<S3Object>> ListFilesAsync(string bucketName, string prefix = null)
