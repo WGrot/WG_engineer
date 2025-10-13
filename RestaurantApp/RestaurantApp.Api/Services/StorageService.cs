@@ -14,24 +14,16 @@ public class StorageService : IStorageService
 {
     private readonly IAmazonS3 _s3Client;
     private readonly StorageConfiguration _config;
+    private readonly ImageSettings _imageSettings;
     private readonly ILogger<StorageService> _logger;
-    
-    // Konfiguracja rozmiarów dla różnych typów zdjęć
-    private readonly Dictionary<ImageType, (int maxWidth, int maxHeight, int thumbnailSize)> _imageSizes = new()
-    {
-        { ImageType.UserProfile, (800, 800, 150) },
-        { ImageType.RestaurantProfile, (1200, 1200, 200) },
-        { ImageType.RestaurantBackground, (1920, 1080, 300) },
-        { ImageType.MenuItem, (1000, 1000, 250) },
-        { ImageType.RestaurantPhotos, (1200, 1200, 200) }
-    };
 
     public StorageService(IAmazonS3 s3Client, IOptions<StorageConfiguration> config,
-        ILogger<StorageService> logger)
+        ILogger<StorageService> logger, IOptions<ImageSettings> imageSettings)
     {
         _s3Client = s3Client;
         _config = config.Value;
         _logger = logger;
+        _imageSettings = imageSettings.Value;
     }
 
     public async Task<ImageUploadResult> UploadImageAsync(
@@ -61,15 +53,15 @@ public class StorageService : IStorageService
             }
             
             // Pobierz konfigurację rozmiarów
-            var (maxWidth, maxHeight, thumbnailSize) = _imageSizes[imageType];
+            var imageSettings = _imageSettings.GetConfig(imageType);
             
             // Resize jeśli za duży
             SKBitmap processedBitmap = originalBitmap;
-            var needsResize = originalBitmap.Width > maxWidth || originalBitmap.Height > maxHeight;
+            var needsResize = originalBitmap.Width > imageSettings.MaxWidth || originalBitmap.Height > imageSettings.MaxHeight;
             
             if (needsResize)
             {
-                processedBitmap = ResizeImage(originalBitmap, maxWidth, maxHeight);
+                processedBitmap = ResizeImage(originalBitmap, imageSettings.MaxWidth, imageSettings.MaxHeight);
             }
 
             // Zapisz główny obraz
@@ -103,7 +95,7 @@ public class StorageService : IStorageService
             // Generuj miniaturkę jeśli wymagana
             if (generateThumbnail)
             {
-                var thumbnailPath = await GenerateThumbnailAsync(originalBitmap, uniqueFileName, thumbnailSize);
+                var thumbnailPath = await GenerateThumbnailAsync(originalBitmap, uniqueFileName, imageSettings.ThumbnailSize);
                 result.ThumbnailUrl = await GetPresignedUrlAsync(thumbnailPath, bucketName);
             }
 
