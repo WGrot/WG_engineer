@@ -76,7 +76,7 @@
                                     <input type="text" @bind="item.Description" />
                                     <input type="number" @bind="item.Price.Price" />
                                     <input type="text" @bind="item.Price.CurrencyCode" />
-                                    <input type="text" @bind="item.ImagePath" />
+                                    <input type="text" @bind="item.ImageUrl" />
                                     <button @onclick="() => SaveItem(item)">Save</button>
                                     <button @onclick="() => editingItemId = null">Cancel</button>
                                 }
@@ -146,7 +146,7 @@
                                 <input type="text" @bind="item.Description" />
                                 <input type="number" @bind="item.Price.Price" />
                                 <input type="text" @bind="item.Price.CurrencyCode" />
-                                <input type="text" @bind="item.ImagePath" />
+                                <input type="text" @bind="item.ImageUrl" />
                                 <button @onclick="() => SaveItem(item)">Save</button>
                                 <button @onclick="() => editingItemId = null">Cancel</button>
                             }
@@ -368,7 +368,7 @@ else
                 Description = item.Description,
                 Price = item.Price.Price,
                 CurrencyCode = item.Price.CurrencyCode,
-                ImagePath = item.ImagePath
+                ImagePath = item.ImageUrl
             };
 
             var response = await Http.PutAsJsonAsync($"api/Menu/item/{item.Id}", dto);

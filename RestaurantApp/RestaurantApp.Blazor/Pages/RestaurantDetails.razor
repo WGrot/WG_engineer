@@ -144,6 +144,15 @@
                 <button @onclick="BookTable">Book Table</button>
                 <button @onclick="GoBack">Go Back</button>
             </div>
+            @if (restaurant.photosUrls != null && restaurant.photosUrls.Any())
+            {
+                @foreach (string imageUrl in restaurant.photosUrls)
+                {
+                    <img src="@imageUrl" 
+                         alt="@restaurant.Name" />
+                }
+            }
+
         </div>
     }
 </div>
