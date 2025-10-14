@@ -1,0 +1,45 @@
+﻿@using RestaurantApp.Shared.Models
+
+<div class="card shadow-sm border-0 rounded-3 table-card h-100">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center rounded-top-3">
+        <strong>Table @Table.TableNumber</strong>
+        
+    </div>
+
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Seats</span>
+            <span class="fw-semibold">@Table.Capacity
+            <i class="bi bi-people-fill text-secondary"></i>
+            </span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Table.Location))
+        {
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Location</span>
+                <span class="fw-semibold">@Table.Location</span>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .table-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .table-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+    }
+
+    .table-card .card-header {
+        font-size: 1.05rem;
+    }
+
+    .table-card .card-body span {
+        font-size: 0.95rem;
+    }
+</style>
