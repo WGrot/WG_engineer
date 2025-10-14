@@ -43,7 +43,7 @@ public class MenuService : IMenuService
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
             .ThenInclude(c => c.Items)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
-            .Where(m => m.RestaurantId == restaurantId && m.IsActive)
+            .Where(m => m.RestaurantId == restaurantId)
             .FirstOrDefaultAsync();
 
         return menu == null
@@ -540,6 +540,20 @@ public class MenuService : IMenuService
         {
             return Result.Failure("An error occurred while deleting the image.");
         }
+    }
+
+    public async Task<Result<Menu>> GetActiveMenuByRestaurantIdAsync(int restaurantId)
+    {
+        var menu = await _context.Menus
+            .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
+            .ThenInclude(c => c.Items)
+            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Where(m => m.RestaurantId == restaurantId && m.IsActive)
+            .FirstOrDefaultAsync();
+
+        return menu == null
+            ? Result<Menu>.NotFound($"Active menu for restaurant ID {restaurantId} not found.")
+            : Result.Success(menu);
     }
 
     // ===== PRIVATE HELPER METHODS =====

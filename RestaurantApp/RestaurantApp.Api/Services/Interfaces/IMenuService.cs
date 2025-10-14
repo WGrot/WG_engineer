@@ -38,4 +38,5 @@ public interface IMenuService
     Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId);
     Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, IFormFile imageFile);
     Task<Result> DeleteMenuItemImageAsync(int itemId);
+    Task<Result<Menu>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
 }

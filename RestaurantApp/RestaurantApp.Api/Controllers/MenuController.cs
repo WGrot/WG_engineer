@@ -27,6 +27,10 @@ public class MenuController : ControllerBase
     [HttpGet("restaurant/{restaurantId}")]
     public async Task<IActionResult> GetMenuByRestaurant(int restaurantId) =>
         (await _menuService.GetMenuByRestaurantIdAsync(restaurantId)).ToActionResult(this);
+    
+    [HttpGet("restaurant/{restaurantId}/active-menu")]
+    public async Task<IActionResult> GetActiveMenuByRestaurant(int restaurantId) =>
+        (await _menuService.GetActiveMenuByRestaurantIdAsync(restaurantId)).ToActionResult(this);
 
     [HttpPost("restaurant/{restaurantId}")]
     public async Task<IActionResult> CreateMenu(int restaurantId, [FromBody] MenuDto menuDto) =>
