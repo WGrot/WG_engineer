@@ -75,6 +75,14 @@
                             Tables
                         </button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "reviews" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "reviews")"
+                                type="button">
+                            <i class="bi bi-star-half me-2"></i>
+                            Reviews
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -97,6 +105,11 @@
                     case "tables":
                         <div class="tab-pane fade show active">
                             <RestaurantTablesTab Id=@Id restaurant=@restaurant/>
+                        </div>
+                        break;
+                    case "reviews":
+                        <div class="tab-pane fade show active">
+                            <RestaurantReviewsTab Id=@Id restaurant=@restaurant/>
                         </div>
                         break;
                 }
