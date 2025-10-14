@@ -1,0 +1,133 @@
+﻿@page "/restaurant/{id:int}"
+@using RestaurantApp.Shared.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="restaurant-details-container">
+    @if (restaurant == null)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Ładowanie...</p>
+        </div>
+    }
+    else
+    {
+        <div class="tabs-navigation">
+            <button class="tab-button @(activeTab == "info" ? "active" : "")"
+                    @onclick="@(e => activeTab = "info")">
+                General
+            </button>
+            <button class="tab-button @(activeTab == "menu" ? "active" : "")"
+                    @onclick="@(e => activeTab = "menu")">
+                Menu
+            </button>
+            <button class="tab-button @(activeTab == "tables" ? "active" : "")"
+                    @onclick="@(e => activeTab = "tables")">
+                Tables
+            </button>
+        </div>
+
+        @switch (activeTab)
+        {
+            case "info":
+                <RestaurantInfoTab Id=@Id restaurant=@restaurant/>
+                break;
+            case "tables":
+                <RestaurantTablesTab Id=@Id restaurant=@restaurant/>
+                break;
+            case "menu":
+                <RestaurantMenuTab Id=@Id restaurant=@restaurant/>
+                break;
+            
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    string activeTab = "info";
+    
+    private Restaurant? restaurant;
+    private List<Table>? tables;
+    private Menu? menu;
+    private bool isLoading = false;
+    private bool isLoadingTables = false;
+    private bool isLoadingMenu = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRestaurant();
+    }
+
+    private async Task LoadRestaurant()
+    {
+        try
+        {
+            isLoading = true;
+            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading restaurant: {ex.Message}");
+            restaurant = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadTables()
+    {
+        if (tables != null) return; // Already loaded
+
+        try
+        {
+            isLoadingTables = true;
+            tables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tables: {ex.Message}");
+            tables = new List<Table>();
+        }
+        finally
+        {
+            isLoadingTables = false;
+        }
+    }
+
+    private async Task LoadMenu()
+    {
+        if (menu != null) return; // Already loaded
+
+        try
+        {
+            isLoadingMenu = true;
+            menu = await Http.GetFromJsonAsync<Menu>($"api/Menu/restaurant/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading menu: {ex.Message}");
+            menu = null;
+        }
+        finally
+        {
+            isLoadingMenu = false;
+        }
+    }
+    
+    private void BookTable()
+    {
+        Navigation.NavigateTo($"/booking/table/{Id}");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/restaurants");
+    }
+}

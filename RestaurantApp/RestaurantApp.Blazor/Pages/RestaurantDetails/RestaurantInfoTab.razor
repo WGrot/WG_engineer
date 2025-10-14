@@ -1,0 +1,47 @@
+﻿@using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+<h3>Restaurant Info</h3>
+
+@if (restaurant != null)
+{
+    <div class="edit-content">
+        @if (restaurant.Address != null)
+        {
+            <h3>Location:</h3>
+            <div>@restaurant.Address</div>
+        }
+        
+        @if (restaurant.Description != null)
+        {
+            <h3>About:</h3>
+            <div>@restaurant.Description</div>
+        }
+        
+        @if (restaurant.OpeningHours != null && restaurant.OpeningHours.Any())
+        {
+            <div class="opening-hours">
+                <h3>Opening Hours</h3>
+                @foreach (var hours in restaurant.OpeningHours.OrderBy(h => h.DayOfWeek))
+                {
+                    <div class="hours-item">
+                        <span><strong>@hours.DayOfWeek:</strong></span>
+                        @if (hours.IsClosed)
+                        {
+                            <span>Closed</span>
+                        }
+                        else
+                        {
+                            <span>@hours.OpenTime.ToString("HH:mm") - @hours.CloseTime.ToString("HH:mm")</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    
+}
+else
+{
+    <div class="loading">Loading restaurant data...</div>
+}
