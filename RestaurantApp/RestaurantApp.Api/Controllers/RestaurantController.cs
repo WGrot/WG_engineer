@@ -187,7 +187,7 @@ public class RestaurantController : ControllerBase
     }
     
     [HttpDelete("{id}/delete-photo")]
-    public async Task<IActionResult> DeleteProfilePhoto(int id, int photoIndex)
+    public async Task<IActionResult> DeleteRestaurantPhoto(int id, int photoIndex)
     {
         var result = await _restaurantService.DeleteRestaurantPhoto(id, photoIndex);
         return result.ToActionResult(this);

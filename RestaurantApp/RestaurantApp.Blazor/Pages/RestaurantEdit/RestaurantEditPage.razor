@@ -53,27 +53,34 @@
                     @onclick="@(e => activeTab = "settings")">
                 Restaurant settings
             </button>
+            <button class="tab-button @(activeTab == "appearance" ? "active" : "")"
+                    @onclick="@(e => activeTab = "appearance")">
+                Appearance
+            </button>
         </div>
-        
-        @switch(activeTab)
+
+        @switch (activeTab)
         {
             case "basic":
-                <BasicInfoTab Id=@Id restaurant=@restaurant />
+                <BasicInfoTab Id=@Id restaurant=@restaurant/>
                 break;
             case "tables":
-                <TablesTab Id=@Id restaurant=@restaurant />
+                <TablesTab Id=@Id restaurant=@restaurant/>
                 break;
             case "hours":
-                <OpeningHoursTab Id=@Id restaurant=@restaurant />
+                <OpeningHoursTab Id=@Id restaurant=@restaurant/>
                 break;
             case "settings":
-                <RestaurantSettingsTab Id=@Id restaurant=@restaurant />
+                <RestaurantSettingsTab Id=@Id restaurant=@restaurant/>
                 break;
             case "employees":
-                <RestaurantEmployeesTab Id=@Id restaurant=@restaurant />
+                <RestaurantEmployeesTab Id=@Id restaurant=@restaurant/>
                 break;
             case "menu":
-                <MenuTab Id=@Id restaurant=@restaurant />
+                <MenuTab Id=@Id restaurant=@restaurant/>
+                break;
+            case "appearance":
+                <AppearanceTab Id=@Id restaurant=@restaurant/>
                 break;
         }
     }
@@ -89,7 +96,7 @@
     {
         await LoadRestaurant();
     }
-    
+
     private async Task LoadRestaurant()
     {
         try
@@ -105,10 +112,10 @@
             isLoading = false;
         }
     }
-    
+
     private void GoBack()
     {
         Navigation.NavigateTo("/restaurants");
     }
-}
+
 }

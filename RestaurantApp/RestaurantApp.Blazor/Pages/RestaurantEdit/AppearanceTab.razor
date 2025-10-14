@@ -1,0 +1,92 @@
+﻿@using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient Http
+
+<h3>Appearance Tab</h3>
+
+@if (restaurant != null)
+{
+    <div>
+        <h4>Profile Photo</h4>
+        @if (!string.IsNullOrEmpty(restaurant.profileUrl))
+        {
+            <div>
+                <img src="@restaurant.profileUrl" alt="Profile" style="max-width: 300px; max-height: 300px;" />
+            </div>
+        }
+        else
+        {
+            <div>No profile photo</div>
+        }
+        
+        <div>
+            <InputFile OnChange="@OnProfilePhotoSelected" accept="image/*" />
+            @if (isUploadingProfile)
+            {
+                <span>Uploading...</span>
+            }
+        </div>
+        
+        @if (!string.IsNullOrEmpty(restaurant.profileUrl))
+        {
+            <div>
+                <button @onclick="DeleteProfilePhoto" disabled="@isDeletingProfile">
+                    @(isDeletingProfile ? "Deleting..." : "Delete Profile Photo")
+                </button>
+            </div>
+        }
+    </div>
+
+    <hr />
+
+    <div>
+        <h4>Restaurant Photos</h4>
+        
+        @if (restaurant.photosUrls != null && restaurant.photosUrls.Any())
+        {
+            @for (int i = 0; i < restaurant.photosUrls.Count; i++)
+            {
+                var index = i;
+                var photoUrl = restaurant.photosUrls[i];
+                <div style="margin-bottom: 20px;">
+                    <img src="@photoUrl" alt="Restaurant photo @(i+1)" style="max-width: 300px; max-height: 300px;" />
+                    <button @onclick="() => DeleteRestaurantPhoto(index)" disabled="@isDeletingPhotos">
+                        Delete
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <div>No restaurant photos</div>
+        }
+        
+        <div>
+            <InputFile OnChange="@OnRestaurantPhotosSelected" accept="image/*" multiple />
+            @if (isUploadingPhotos)
+            {
+                <span>Uploading...</span>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div style="color: red; margin-top: 20px;">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div style="color: green; margin-top: 20px;">
+            @successMessage
+        </div>
+    }
+}
+else
+{
+    <div class="loading">Loading restaurant data...</div>
+}
