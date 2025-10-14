@@ -1,0 +1,18 @@
+﻿<h3>MenuItemComponent</h3>
+
+@if (!string.IsNullOrEmpty(Item.ImageUrl))
+{
+    <div>
+        <img src="@Item.ImageUrl" alt="@Item.Name" width="100" style="border-radius:8px; margin:5px;" />
+        <br />
+    </div>
+}
+else
+{
+    <p><em>No photo</em></p>
+}
+
+<strong>@Item.Name</strong>  @Item.Price.Price @Item.Price.CurrencyCode
+<br />
+@Item.Description
+<br />

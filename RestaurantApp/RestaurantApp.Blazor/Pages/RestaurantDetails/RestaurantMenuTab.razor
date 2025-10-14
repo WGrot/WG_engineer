@@ -1,0 +1,65 @@
+﻿@using RestaurantApp.Shared.Models
+<h3>RestaurantMenuTab</h3>
+
+@if (menu != null)
+{
+    <div>
+        
+        @foreach (var category in menu.Categories.OrderBy(c => c.DisplayOrder))
+        {
+            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+               
+                    <h4>
+                        @category.Name
+                        <button @onclick="() => ToggleCategory(category.Id)">
+                            @(expandedCategories.Contains(category.Id) ? "Collapse" : "Expand")
+                        </button>
+                    </h4>
+                    @if (!string.IsNullOrEmpty(category.Description))
+                    {
+                        <p>@category.Description</p>
+                    }
+
+                @if (expandedCategories.Contains(category.Id))
+                {
+                    <div style="margin-left: 20px;">
+                        
+                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                        {
+                            <div style="border: 1px solid #ddd; margin: 5px; padding: 5px;">
+                                <MenuItemComponent
+                                    Item="item"/>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Pozycje bez kategorii -->
+        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+            <h4>
+                Uncategorized Items
+                <button @onclick="ToggleUncategorized">
+                    @(showUncategorized ? "Collapse" : "Expand")
+                </button>
+            </h4>
+
+            @if (showUncategorized)
+            {
+                <div style="margin-left: 20px;">
+
+                    @foreach (var item in uncategorizedItems)
+                    {
+                        <MenuItemComponent
+                            Item="item"/>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div>Loading menu data...</div>
+}
