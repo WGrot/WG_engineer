@@ -1,16 +1,66 @@
-﻿@if (!string.IsNullOrEmpty(Item.ImageUrl))
-{
-    <div>
-        <img src="@Item.ImageUrl" alt="@Item.Name" width="100" style="border-radius:8px; margin:5px;" />
-        <br />
-    </div>
-}
-else
-{
-    <p><em>No photo</em></p>
-}
+﻿
+<div class="card mb-2 border-0 shadow-sm menu-item-card">
+    <div class="row g-0 align-items-center">
 
-<strong>@Item.Name</strong>  @Item.Price.Price @Item.Price.CurrencyCode
-<br />
-@Item.Description
-<br />
+        <div class="col-auto">
+            @if (!string.IsNullOrEmpty(Item.ThumbnailUrl))
+            {
+                <img src="@Item.ThumbnailUrl" alt="@Item.Name"
+                     class="img-fluid rounded-start"
+                     style="width: 100px; height: 100px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="d-flex justify-content-center align-items-center bg-light text-muted rounded-start"
+                     style="width: 100px; height: 100px;">
+                    <i class="bi bi-image" style="font-size: 1.5rem;"></i>
+                </div>
+            }
+        </div>
+
+
+        <div class="col">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex justify-content-between align-items-center h-100">
+                    <div>
+                        <h5 class="card-title mb-0 text-capitalize">@Item.Name</h5>
+                        @if (!string.IsNullOrEmpty(Item.Description))
+                        {
+                            <p class="card-text text-muted small mb-1">@Item.Description</p>
+                        }
+                    </div>
+
+
+                    <div class="d-flex align-items-center h-100">
+                        <span class="badge bg-success fs-6 px-3 py-2">
+                            @Item.Price.Price.ToString("0.00") @Item.Price.CurrencyCode
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .menu-item-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        border-radius: 10px;
+    }
+
+    .menu-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+    }
+
+    .menu-item-card img {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .menu-item-card .card-body {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+</style>
