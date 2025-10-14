@@ -1,1 +1,121 @@
-﻿
+﻿.restaurant-header {
+    background: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%);
+    position: relative;
+}
+
+.restaurant-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid white;
+}
+
+.restaurant-logo-placeholder {
+    width: 80px;
+    height: 80px;
+    border: 3px solid white;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    background-color: transparent;
+    border: none;
+    position: relative;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: white;
+    border-bottom: 3px solid #667eea;
+}
+
+.nav-tabs .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #667eea;
+}
+
+.sticky-top {
+    z-index: 1020;
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: translateY(10px);
+     }
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .restaurant-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .restaurant-logo,
+    .restaurant-logo-placeholder {
+        width: 60px;
+        height: 60px;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    .nav-tabs .nav-link i {
+        display: none;
+    }
+}
+
+/* Additional Bootstrap override for better tab appearance */
+.nav-tabs {
+    border-bottom: none !important;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

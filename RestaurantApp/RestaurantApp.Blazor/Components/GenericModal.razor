@@ -35,7 +35,8 @@
         Small,
         Default,
         Large,
-        ExtraLarge
+        ExtraLarge,
+        Fullscreeen
     }
 
     [Parameter] public bool IsVisible { get; set; }
@@ -61,6 +62,7 @@
             ModalSize.Small => "modal-sm",
             ModalSize.Large => "modal-lg",
             ModalSize.ExtraLarge => "modal-xl",
+            ModalSize.Fullscreeen => "modal-fullscreen",
             _ => ""
         };
     }
