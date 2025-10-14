@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -116,8 +117,8 @@ public class MenuController : ControllerBase
         (await _menuService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult(this);
     
     [HttpPost("item/{itemId}/upload-image")]
-    public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile imageFile)
-        => (await _menuService.UploadMenuItemImageAsync(itemId, imageFile)).ToActionResult(this);
+    public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile image)
+        => (await _menuService.UploadMenuItemImageAsync(itemId, image)).ToActionResult(this);
     
     [HttpDelete("item/{itemId}/delete-image")]
     public async Task<IActionResult> DeleteMenuItemImage(int itemId)

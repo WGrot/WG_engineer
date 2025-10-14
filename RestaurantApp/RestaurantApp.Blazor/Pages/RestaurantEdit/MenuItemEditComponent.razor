@@ -1,0 +1,56 @@
+﻿@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Models.DTO
+@inject HttpClient Http
+
+<div style="border: 1px solid #ddd; margin: 5px; padding: 5px;">
+    @if (Editing)
+    {
+        <input type="text" @bind="Item.Name" placeholder="Name" />
+        <input type="text" @bind="Item.Description" placeholder="Description" />
+        <input type="number" @bind="Item.Price.Price" placeholder="Price" />
+        <input type="text" @bind="Item.Price.CurrencyCode" placeholder="Currency" />
+        <input type="text" @bind="Item.ImageUrl" placeholder="Image URL" />
+
+        <button @onclick="OnSaveClicked">Save</button>
+        <button @onclick="OnCancelClicked">Cancel</button>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Item.ImageUrl))
+        {
+            <div>
+                <img src="@Item.ImageUrl" alt="@Item.Name" width="100" style="border-radius:8px; margin:5px;" />
+                <br />
+                <button @onclick="() => DeleteItemImage(Item.Id)">Delete image</button>
+            </div>
+        }
+        else
+        {
+            <p><em>No photo</em></p>
+        }
+
+        <InputFile OnChange="(e) => UploadItemImage(e, Item.Id)" />
+
+        <strong>@Item.Name</strong>  @Item.Price.Price @Item.Price.CurrencyCode
+        <br />
+        @Item.Description
+        <br />
+
+        <button @onclick="OnEditClicked">Edit</button>
+        <button @onclick="() => OnDelete.InvokeAsync(Item.Id)">Delete</button>
+        <button @onclick="OnMoveClicked">Move to Category</button>
+    }
+
+    @if (ShowMoveDropdown)
+    {
+        <select @onchange="(e) => MoveItem(Item.Id, e.Value?.ToString())">
+            <option value="">Select category...</option>
+            <option value="uncategorized">No category</option>
+            @foreach (var cat in Categories)
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+        <button @onclick="() => ShowMoveDropdown = false">Cancel</button>
+    }
+</div>

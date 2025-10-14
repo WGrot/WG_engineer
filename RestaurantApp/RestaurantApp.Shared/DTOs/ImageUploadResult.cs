@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Common;
+﻿namespace RestaurantApp.Shared.DTOs;
 
 public class ImageUploadResult
 {

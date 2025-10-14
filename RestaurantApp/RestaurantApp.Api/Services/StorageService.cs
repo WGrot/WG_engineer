@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 using SkiaSharp;
 

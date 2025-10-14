@@ -5,6 +5,7 @@ using RestaurantApp.Api.Controllers;
 using RestaurantApp.Shared.Models;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Api.Services;
 
