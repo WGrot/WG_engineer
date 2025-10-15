@@ -7,12 +7,18 @@
         <div class="row g-3">
             @foreach (var table in loadedTables)
             {
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3" @onclick="() => ShowTableDetails(table)">
                     <TableComponent Table="table" />
                 </div>
             }
         </div>
         
+        
+        <TableDetailsModal
+            @bind-IsVisible="showTableDetails"
+            RestaurantId="Id"
+            Table="selectedTable"
+            />
 
     }
     else
@@ -24,6 +30,4 @@
     }
 </div>
 
-<div style="width: 100%;">
-    <AvailabilityMap Availability="@availabilityMap" StartTime="@DateTime.Today" />
-</div>
+

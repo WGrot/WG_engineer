@@ -1,24 +1,128 @@
 ﻿@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.DTOs
 
 @inject HttpClient Http
 
 @if (IsVisible)
 {
-    
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Table @Table.TableNumber details</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div>
+                        <p><strong>Table Number:</strong> @Table.TableNumber</p>
+                        <p><strong>Seats:</strong> @Table.Capacity</p>
+                        <p><strong>Location:</strong> @Table.Location</p>
+                    </div>
+
+
+                    <div class="d-flex align-items-center justify-content-center my-3 mb-4">
+                        <button class="arrow-btn me-3" @onclick="PreviousDay">
+                            <i class="bi bi-chevron-left fs-4"></i>
+                        </button>
+
+                        <div class="d-flex flex-column align-items-center">
+                            <strong>@chosenDate.ToString("dddd")</strong>
+                            <input type="date" class="form-control text-center"
+                                   style="max-width: 200px;"
+                                   value="@chosenDate.ToString("yyyy-MM-dd")"
+                                   @onchange="OnDateChanged"/>
+                        </div>
+
+                        <button class="arrow-btn ms-3" @onclick="NextDay">
+                            <i class="bi bi-chevron-right fs-4"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="width: 100%;">
+                        <AvailabilityMap Availability="@TableAvailibilitymap" StartTime="@chosenDate"/>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 }
+
+<style>
+
+    .arrow-btn {
+        background-color: transparent;
+        border: none;
+        color: #6c757d; /* szary jak secondary */
+        transition: color 0.2s, transform 0.1s;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .arrow-btn:active {
+        color: #ffffff; /* np. niebieski przy kliknięciu */
+        transform: scale(0.95); /* delikatny efekt wciśnięcia */
+    }
+
+    .arrow-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
+</style>
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public int RestaurantId { get; set; }
-    //[Parameter] public EventCallback<CreateUserResponse> OnEmployeeAdded { get; set; }
-    //[Parameter] public string Title { get; set; } = "Dodaj nowego pracownika";
-    private string TableAvailibilitymap = ""; 
+    [Parameter] public Table Table { get; set; }
 
+    private string TableAvailibilitymap = new string('2', 96);
+    private DateTime chosenDate = DateTime.Today;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && Table != null)
+        {
+            await LoadTableAvailability();
+        }
+    }
+
+    private async Task LoadTableAvailability()
+    {
+        var url = $"/api/Table/{Table.Id}/availability-map?date={chosenDate.Date.AddHours(12).ToUniversalTime():O}";
+        var response = await Http.GetFromJsonAsync<TableAvailability>(url);
+        if (response != null)
+        {
+            TableAvailibilitymap = response.availabilityMap;
+        }
+    }
+
+    private async Task PreviousDay()
+    {
+        chosenDate = chosenDate.AddDays(-1);
+        await LoadTableAvailability();
+    }
+
+    private async Task NextDay()
+    {
+        chosenDate = chosenDate.AddDays(1);
+        await LoadTableAvailability();
+    }
+
+    private async Task OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var newDate))
+        {
+            chosenDate = newDate;
+            await LoadTableAvailability();
+        }
+    }
 
     private async Task Close()
     {
         await IsVisibleChanged.InvokeAsync(false);
     }
-    
+
 }

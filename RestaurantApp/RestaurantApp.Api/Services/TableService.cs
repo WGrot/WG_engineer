@@ -173,19 +173,16 @@ public class TableService : ITableService
         return Result.Success();
     }
 
-    public async Task<Result<string>> GetTableAvailabilityMapAsync(int tableId, DateTime date)
+    public async Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date)
     {
         var reservations = await GetTableReservationsForDate(tableId, date);
 
         if (!reservations.IsSuccess)
-            return Result<string>.Failure(reservations.Error);
+            return Result<TableAvailability>.Failure(reservations.Error);
 
         char[] timeSlots = new char[96]; // 48 slots for 30-minute intervals in a day
 
-        for (int i = 0; i < 96; i++)
-        {
-            timeSlots[i] = '1'; // 1 = dostępne
-        }
+        Array.Fill(timeSlots, '1');
 
         foreach (var reservation in reservations.Value)
         {
@@ -209,19 +206,27 @@ public class TableService : ITableService
         int openIndex = (int)Math.Ceiling((openingHoursToday.OpenTime.Hour * 60 + openingHoursToday.OpenTime.Minute) / 15f);
         int closeIndex = (openingHoursToday.CloseTime.Hour * 60 + openingHoursToday.CloseTime.Minute) / 15;
 
-        for (int i = 0 ; i< openIndex; i++)
+        if (openingHoursToday.IsClosed)
         {
-            timeSlots[i] = '2'; 
+            Array.Fill(timeSlots, '2');
         }
-        for(int i = closeIndex; i < 96; i++)
+        else
         {
-            timeSlots[i] = '2'; 
+            for (int i = 0 ; i< openIndex; i++)
+            {
+                timeSlots[i] = '2'; 
+            }
+            for(int i = closeIndex; i < 96; i++)
+            {
+                timeSlots[i] = '2'; 
+            }
         }
+        string availabilityMap = new string(timeSlots); 
 
-        
-        string availabilityMap = new string(timeSlots); // true = dostępne
-
-        return Result<string>.Success(availabilityMap);
+        return Result<TableAvailability>.Success(new TableAvailability
+        {
+            availabilityMap = availabilityMap
+        });
     }
 
     private async Task<Result<List<TableReservation>>> GetTableReservationsForDate(int tableId, DateTime date)

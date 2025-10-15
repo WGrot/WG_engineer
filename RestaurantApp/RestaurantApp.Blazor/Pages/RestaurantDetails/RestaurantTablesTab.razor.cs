@@ -12,7 +12,8 @@ public partial class RestaurantTablesTab : ComponentBase
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
     private List<Table> loadedTables = new();
-    private string availabilityMap = "222222222222222222222222222222222222222211100000011111110000111111111111111111111111111122222222";
+    private Table selectedTable = null;
+    private bool showTableDetails = false;
     protected override async Task OnInitializedAsync()
     {
         await LoadTables();
@@ -32,5 +33,11 @@ public partial class RestaurantTablesTab : ComponentBase
         {
             Console.WriteLine($"Error loading tables: {ex.Message}");
         }
+    }
+    
+    private void ShowTableDetails(Table table)
+    {
+        showTableDetails = true;
+        selectedTable = table;
     }
 }
