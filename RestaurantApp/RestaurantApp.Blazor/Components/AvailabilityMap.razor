@@ -1,0 +1,61 @@
+﻿@using System.Globalization
+
+<div class="availability-map">
+    @if (!string.IsNullOrEmpty(TrimmedAvailability))
+    {
+        @for (int i = 0; i < TrimmedAvailability.Length; i++)
+        {
+            char state = TrimmedAvailability[i];
+            var time = StartTime.AddMinutes(i * 15 + leading2s * 15);
+            bool isHourMark = time.Minute == 0;
+
+            string slotClass = state switch
+            {
+                '1' => "available",
+                '2' => "closed",
+                _ => "unavailable"
+            };
+
+            <div class="slot-container">
+                @if (isHourMark)
+                {
+                    <div class="hour-marker" title="@time.ToString("HH:mm")">
+                        <div class="hour-label">@time.ToString("HH:mm")</div>
+                    </div>
+                }
+                <div class="slot @slotClass"
+                     title="@($"{time:HH:mm} - {slotClass}")">
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string? Availability { get; set; }
+    [Parameter] public DateTime StartTime { get; set; } = DateTime.Today;
+
+    private string? TrimmedAvailability;
+    private int leading2s = 0;
+    private DateTime adjustedStartTime;
+
+    protected override void OnParametersSet()
+    {
+        TrimmedAvailability = TrimEdges(Availability);
+        adjustedStartTime = StartTime.AddMinutes(leading2s * 15);
+    }
+
+    private string? TrimEdges(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        leading2s = input.TakeWhile(c => c == '2').Count();
+        
+        if(leading2s > 95) // all '2's
+            return input;
+        
+        return input.Trim('2');
+    }
+}
+

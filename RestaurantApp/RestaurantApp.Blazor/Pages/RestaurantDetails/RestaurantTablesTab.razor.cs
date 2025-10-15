@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Components;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
@@ -11,7 +12,7 @@ public partial class RestaurantTablesTab : ComponentBase
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
     private List<Table> loadedTables = new();
-    
+    private string availabilityMap = "222222222222222222222222222222222222222211100000011111110000111111111111111111111111111122222222";
     protected override async Task OnInitializedAsync()
     {
         await LoadTables();

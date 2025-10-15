@@ -1,0 +1,24 @@
+﻿@using RestaurantApp.Shared.Models
+
+@inject HttpClient Http
+
+@if (IsVisible)
+{
+    
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public int RestaurantId { get; set; }
+    //[Parameter] public EventCallback<CreateUserResponse> OnEmployeeAdded { get; set; }
+    //[Parameter] public string Title { get; set; } = "Dodaj nowego pracownika";
+    private string TableAvailibilitymap = ""; 
+
+
+    private async Task Close()
+    {
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+    
+}

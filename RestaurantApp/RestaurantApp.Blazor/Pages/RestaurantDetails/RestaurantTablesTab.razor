@@ -1,4 +1,5 @@
-﻿<h3 class="mb-4">Tables</h3>
+﻿@using RestaurantApp.Blazor.Components
+<h3 class="mb-4">Tables</h3>
 
 <div class="container-fluid">
     @if (loadedTables != null && loadedTables.Any())
@@ -11,6 +12,8 @@
                 </div>
             }
         </div>
+        
+
     }
     else
     {
@@ -19,4 +22,8 @@
             <p class="mb-0">No tables configured — please add some.</p>
         </div>
     }
+</div>
+
+<div style="width: 100%;">
+    <AvailabilityMap Availability="@availabilityMap" StartTime="@DateTime.Today" />
 </div>

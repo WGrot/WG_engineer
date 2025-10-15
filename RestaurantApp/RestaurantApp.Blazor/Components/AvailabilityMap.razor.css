@@ -1,0 +1,54 @@
+﻿.availability-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4px, 1fr));
+    gap: 1px;
+    width: 100%;
+    height: 40px;
+    position: relative;
+}
+
+.slot-container {
+    position: relative;
+}
+
+.slot {
+    height: 100%;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+}
+
+.slot.available {
+    background-color: #ccc; /* zielony */
+}
+
+.slot.closed {
+    background-color: #666; /* ciemnoszary */
+}
+
+.slot.unavailable {
+    background-color: #3f2ae3; /* jasnoszary */
+}
+
+.slot:hover {
+    filter: brightness(1.2);
+}
+
+.hour-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+}
+
+.hour-label {
+    position: absolute;
+    top: -18px;
+    left: -10px;
+    font-size: 10px;
+    color: #333;
+    user-select: none;
+}
