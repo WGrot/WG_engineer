@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.Authorization;
 using RestaurantApp.Blazor;
 using RestaurantApp.Blazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Dodaj autoryzację
+builder.Services.AddAuthorizationCore();
 
 // Zarejestruj handler
 builder.Services.AddScoped<AuthorizedHttpMessageHandler>();
@@ -21,8 +25,19 @@ builder.Services.AddScoped(sp =>
     return httpClient;
 });
 
-
 // Zarejestruj AuthService
 builder.Services.AddScoped<AuthService>();
 
-await builder.Build().RunAsync();
+// Zarejestruj JwtAuthenticationStateProvider
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<JwtAuthenticationStateProvider>());
+
+// Połącz AuthService z JwtAuthenticationStateProvider
+var host = builder.Build();
+
+var authService = host.Services.GetRequiredService<AuthService>();
+var authStateProvider = host.Services.GetRequiredService<JwtAuthenticationStateProvider>();
+authService.SetAuthenticationStateProvider(authStateProvider);
+
+await host.RunAsync();

@@ -10,13 +10,19 @@ public class AuthService
 {
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _jsRuntime;
+    private JwtAuthenticationStateProvider? _authStateProvider;
     private const string TOKEN_KEY = "authToken";
     private const string USER_KEY = "userInfo";
+
 
     public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
     {
         _httpClient = httpClient;
         _jsRuntime = jsRuntime;
+    }
+    public void SetAuthenticationStateProvider(JwtAuthenticationStateProvider authStateProvider)
+    {
+        _authStateProvider = authStateProvider;
     }
 
     public async Task<bool> LoginAsync(string email, string password)
@@ -39,16 +45,15 @@ public class AuthService
 
                 if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
                 {
-                    // Zapisz token w localStorage (w WASM możemy używać localStorage)
                     await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TOKEN_KEY, loginResponse.Token);
-
-                    // Zapisz dane użytkownika
                     await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY,
                         JsonSerializer.Serialize(loginResponse.ResponseUser));
 
-                    // Ustaw token w domyślnych nagłówkach
                     _httpClient.DefaultRequestHeaders.Authorization =
                         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.Token);
+
+                    // Powiadom o zalogowaniu
+                    _authStateProvider?.NotifyUserAuthentication(loginResponse.Token);
 
                     return true;
                 }
@@ -73,6 +78,9 @@ public class AuthService
         await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TOKEN_KEY);
         await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", USER_KEY);
         _httpClient.DefaultRequestHeaders.Authorization = null;
+        
+        // Powiadom o wylogowaniu
+        _authStateProvider?.NotifyUserLogout();
     }
 
     public async Task<bool> IsAuthenticatedAsync()
