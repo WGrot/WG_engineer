@@ -16,4 +16,6 @@ public interface ITableService
     Task<Result> UpdateTableAsync(int id, UpdateTableDto dto);
     Task<Result> UpdateTableCapacityAsync(int id, int capacity);
     Task<Result> DeleteTableAsync(int id);
+    
+    Task<Result<string>> GetTableAvailabilityMapAsync(int restaurantId, DateTime date);
 }

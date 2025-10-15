@@ -54,5 +54,9 @@ namespace RestaurantApp.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTable(int id)
             => (await _tableService.DeleteTableAsync(id)).ToActionResult(this);
+        
+        [HttpGet("{id}/availability-map")]
+        public async Task<IActionResult> GetAvaibilityMap(int id, DateTime date)
+            => (await _tableService.GetTableAvailabilityMapAsync(id, date)).ToActionResult(this);
     }
 }

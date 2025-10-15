@@ -172,4 +172,49 @@ public class TableService : ITableService
 
         return Result.Success();
     }
+
+    public async Task<Result<string>> GetTableAvailabilityMapAsync(int tableId, DateTime date)
+    {
+        var reservations = await GetTableReservationsForDate(tableId, date);
+        
+        if (!reservations.IsSuccess)
+            return Result<string>.Failure(reservations.Error);
+
+        char[] timeSlots = new char[96]; // 48 slots for 30-minute intervals in a day
+        
+        for (int i = 0; i < 96; i++)
+        {
+            timeSlots[i] = '1'; // 1 = dostępne
+        }
+
+        foreach (var reservation in reservations.Value)
+        {
+            double startIndexDec = (reservation.StartTime.Hour * 60 + reservation.StartTime.Minute) / 15f;
+            double endIndexDec = (reservation.EndTime.Hour * 60+ reservation.EndTime.Minute) / 15f;
+            
+            int startIndex = (int)Math.Max(0, Math.Min(95, startIndexDec)); 
+            double endIndex = Math.Ceiling(Math.Max(0, Math.Min(96, endIndexDec)));
+            
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                timeSlots[i] = '0'; // 0 = niedostępne
+            }
+        }
+        string availabilityMap = new string(timeSlots); // true = dostępne
+        
+        return Result<string>.Success(availabilityMap);
+    }
+    
+    private async Task<Result<List<TableReservation>>> GetTableReservationsForDate(int tableId, DateTime date)
+    {
+        var reservations = await _context.Reservations
+            .OfType<TableReservation>()
+            .Where(r=>r.TableId == tableId&&
+                        r.ReservationDate == date.Date)
+            .ToListAsync();
+
+        return Result<List<TableReservation>>.Success(reservations);
+    }
+    
+    
 }
