@@ -1,5 +1,6 @@
 ﻿@using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Models
 @using RestaurantApp.Shared.DTOs
 
 @inject HttpClient Http
@@ -39,11 +40,21 @@
                             <i class="bi bi-chevron-right fs-4"></i>
                         </button>
                     </div>
-                    
-                    <div style="width: 100%;">
-                        <AvailabilityMap Availability="@TableAvailibilitymap" StartTime="@chosenDate"/>
-                    </div>
 
+                    <div style="width: 100%;">
+                        <AvailabilityMap Availability="@TableAvailibilitymap" StartTime="@chosenDate"
+                                         OnSlotClicked="@HandleSlotClicked"/>
+                    </div>
+                    @if (startTimeSelected)
+                    {
+                        <TableReservationSection
+                            Table="Table"
+                            Date="chosenDate"
+                            StartTime="StartTime"
+                            EndTime="EndTime"
+                            
+                        />
+                    }
                 </div>
             </div>
         </div>
@@ -80,6 +91,10 @@
 
     private string TableAvailibilitymap = new string('2', 96);
     private DateTime chosenDate = DateTime.Today;
+    private DateTime StartTime;
+    private DateTime EndTime;
+    private bool startTimeSelected = false;
+    private bool firstClick = true;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -102,17 +117,20 @@
     private async Task PreviousDay()
     {
         chosenDate = chosenDate.AddDays(-1);
+        ClearReservationData();
         await LoadTableAvailability();
     }
 
     private async Task NextDay()
     {
         chosenDate = chosenDate.AddDays(1);
+        ClearReservationData();
         await LoadTableAvailability();
     }
 
     private async Task OnDateChanged(ChangeEventArgs e)
     {
+        ClearReservationData();
         if (DateTime.TryParse(e.Value?.ToString(), out var newDate))
         {
             chosenDate = newDate;
@@ -122,7 +140,37 @@
 
     private async Task Close()
     {
+        ClearReservationData();
         await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private void HandleSlotClicked(SlotClickedArgs args)
+    {
+        if (args.Status != "available")
+        {
+            return;
+        }
+
+        if (firstClick)
+        {
+            StartTime = args.Time;
+            startTimeSelected = true;
+            firstClick = false;
+        }
+        else
+        {
+                EndTime = args.Time;
+                firstClick = true;
+        }
+        
+    }
+    
+    private void ClearReservationData()
+    {
+        startTimeSelected = false;
+        firstClick = true;
+        StartTime = DateTime.MinValue;
+        EndTime = DateTime.MinValue;
     }
 
 }

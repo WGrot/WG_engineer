@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using RestaurantApp.Blazor.Models
 
 <div class="availability-map">
     @if (!string.IsNullOrEmpty(TrimmedAvailability))
@@ -16,7 +17,7 @@
                 _ => "unavailable"
             };
 
-            <div class="slot-container">
+            <div class="slot-container" @onclick="() => OnSlotClick(time, slotClass)">
                 @if (isHourMark)
                 {
                     <div class="hour-marker" title="@time.ToString("HH:mm")">
@@ -34,7 +35,9 @@
 @code {
     [Parameter] public string? Availability { get; set; }
     [Parameter] public DateTime StartTime { get; set; } = DateTime.Today;
-
+    [Parameter] public EventCallback<SlotClickedArgs> OnSlotClicked { get; set; }
+    
+    
     private string? TrimmedAvailability;
     private int leading2s = 0;
     private DateTime adjustedStartTime;
@@ -56,6 +59,16 @@
             return input;
         
         return input.Trim('2');
+    }
+    
+    
+    private async Task OnSlotClick(DateTime time, string status)
+    {
+        await OnSlotClicked.InvokeAsync(new SlotClickedArgs 
+        { 
+            Time = time, 
+            Status = status 
+        });
     }
 }
 

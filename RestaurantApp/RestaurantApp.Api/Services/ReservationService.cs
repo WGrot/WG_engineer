@@ -193,6 +193,16 @@ public class ReservationService : IReservationService
             return Result<TableReservation>.NotFound($"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
         }
 
+        if (tableReservationDto.StartTime > tableReservationDto.EndTime)
+        {
+            return Result<TableReservation>.Failure("Start Date > End Date", 400);
+        }
+        
+        if (tableReservationDto.StartTime == tableReservationDto.EndTime)
+        {
+            return Result<TableReservation>.Failure("Start Date == End Date", 400);
+        }
+
         // Sprawdzenie czy stolik nie jest już zarezerwowany w tym czasie
         var conflictingReservation = await _context.TableReservations
             .AnyAsync(r => r.TableId == tableReservationDto.TableId &&

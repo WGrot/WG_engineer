@@ -1,5 +1,76 @@
 ﻿<h3>TableReservationSection</h3>
 
-@code {
+
+    <div>
+        <div>
+            <label for="startTime">Start Time:</label>
+            <input type="time" id="startTime" @bind="StartTime" @bind:event="oninput"/>
+        </div>
+
+        <div>
+            <label for="endTime">End Time:</label>
+            <input type="time" id="endTime" @bind="EndTime" @bind:event="oninput" min="@(StartTime.ToString("HH:mm"))"/>
+        </div>
+
+        <div>
+            <label for="guests">Number of Guests:</label>
+            <input type="number" id="guests" @bind="numberOfGuests" min="1" max="@Table.Capacity"/>
+        </div>
+
+        <h3>Customer Information</h3>
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" id="name" @bind="customerName" placeholder="Your name"/>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" @bind="customerEmail" placeholder="your.email@example.com"/>
+        </div>
+        <div>
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" @bind="customerPhone" placeholder="+48 123 456 789"/>
+        </div>
+        <div>
+            <label for="notes">Special Requests (optional):</label>
+            <textarea id="notes" @bind="specialRequests" rows="3"></textarea>
+        </div>
+
+        @if (StartTime < EndTime )
+        {
+            <button @onclick="MakeReservation" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>Processing...</span>
+                }
+                else
+                {
+                    <span>Confirm Reservation</span>
+                }
+            </button>
+        }
+        else
+        {
+            <div>
+                Make sure the end time is after the start time.
+            </div>
+        }
+        
+    </div>
     
-}
+    <div>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">
+                <p>@errorMessage</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="success-message">
+                <p>@successMessage</p>
+            </div>
+        }
+    </div>
+
+
