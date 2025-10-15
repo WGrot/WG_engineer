@@ -21,6 +21,7 @@ builder.Services.AddScoped(sp =>
     return httpClient;
 });
 
+
 // Zarejestruj AuthService
 builder.Services.AddScoped<AuthService>();
 
