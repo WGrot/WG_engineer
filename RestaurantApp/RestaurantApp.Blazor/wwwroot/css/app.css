@@ -112,3 +112,39 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.base-button {
+    background: #667eea;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    margin-right: 4px;
+}
+
+.base-button:hover {
+    background: #5a67d8;
+    transform: scale(1.02);
+}
+
+.base-button:active {
+    transform: scale(0.98);
+}
+
+.base-button.lg {
+    font-size: 1.4rem;       /* większy tekst */
+    padding: 0.9rem 1.8rem;  /* więcej przestrzeni */
+    border-radius: 10px;     /* opcjonalnie bardziej zaokrąglony */
+}
+
+.nav-tabs .nav-link.active {
+    
+    /*border-bottom: 3px solid #667eea !important;
+    color: #fff !important;
+    border-radius: 8px 8px 0 0; */
+}

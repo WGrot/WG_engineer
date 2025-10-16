@@ -1,76 +1,157 @@
-﻿<h3>TableReservationSection</h3>
-
-
-    <div>
-        <div>
-            <label for="startTime">Start Time:</label>
-            <input type="time" id="startTime" @bind="StartTime" @bind:event="oninput"/>
-        </div>
-
-        <div>
-            <label for="endTime">End Time:</label>
-            <input type="time" id="endTime" @bind="EndTime" @bind:event="oninput" min="@(StartTime.ToString("HH:mm"))"/>
-        </div>
-
-        <div>
-            <label for="guests">Number of Guests:</label>
-            <input type="number" id="guests" @bind="numberOfGuests" min="1" max="@Table.Capacity"/>
-        </div>
-
-        <h3>Customer Information</h3>
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" @bind="customerName" placeholder="Your name"/>
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="email" @bind="customerEmail" placeholder="your.email@example.com"/>
-        </div>
-        <div>
-            <label for="phone">Phone:</label>
-            <input type="tel" id="phone" @bind="customerPhone" placeholder="+48 123 456 789"/>
-        </div>
-        <div>
-            <label for="notes">Special Requests (optional):</label>
-            <textarea id="notes" @bind="specialRequests" rows="3"></textarea>
-        </div>
-
-        @if (StartTime < EndTime )
-        {
-            <button @onclick="MakeReservation" disabled="@isSubmitting">
-                @if (isSubmitting)
-                {
-                    <span>Processing...</span>
-                }
-                else
-                {
-                    <span>Confirm Reservation</span>
-                }
-            </button>
-        }
-        else
-        {
+﻿<div class="container mt-4">
+    <div class="row justify-content-evenly">
+        <div class="col-lg-8 col-12 w-100">
             <div>
-                Make sure the end time is after the start time.
-            </div>
-        }
-        
-    </div>
-    
-    <div>
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="error-message">
-                <p>@errorMessage</p>
-            </div>
-        }
+                <hr class="my-4">
+                <div class="text-center w-100">
+                    <h3 class="mb-3">Book Table</h3>
+                </div>
 
-        @if (!string.IsNullOrEmpty(successMessage))
-        {
-            <div class="success-message">
-                <p>@successMessage</p>
+                <div class>
+                    <!-- Time Selection Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <label for="startTime" class="form-label">
+                                <i class="bi bi-clock"></i> Start Time:
+                            </label>
+                            <input type="time"
+                                   class="form-control"
+                                   id="startTime"
+                                   @bind="StartTime"
+                                   @bind:event="oninput"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="endTime" class="form-label">
+                                <i class="bi bi-clock-fill"></i> End Time:
+                            </label>
+                            <input type="time"
+                                   class="form-control"
+                                   id="endTime"
+                                   @bind="EndTime"
+                                   @bind:event="oninput"
+                                   min="@(StartTime.ToString("HH:mm"))"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="guests" class="form-label">
+                                <i class="bi bi-people"></i> Number of Guests:
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="guests"
+                                   @bind="numberOfGuests"
+                                   min="1"
+                                   max="@Table.Capacity"/>
+                            <small class="text-muted">Max capacity: @Table.Capacity</small>
+                        </div>
+                    </div>
+
+
+                    <!-- Customer Information Section -->
+                    <h4 class="mb-3 text-center">Customer Information</h4>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-person"></i> Name: <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="name"
+                                   @bind="customerName"
+                                   placeholder="Your name"
+                                   required/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">
+                                <i class="bi bi-telephone"></i> Phone: <span class="text-danger">*</span>
+                            </label>
+                            <input type="tel"
+                                   class="form-control"
+                                   id="phone"
+                                   @bind="customerPhone"
+                                   placeholder="+48 123 456 789"
+                                   required/>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email: <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               class="form-control"
+                               id="email"
+                               @bind="customerEmail"
+                               placeholder="your.email@example.com"
+                               required/>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-chat-text"></i> Special Requests (optional):
+                        </label>
+                        <textarea class="form-control"
+                                  id="notes"
+                                  @bind="specialRequests"
+                                  rows="3"
+                                  placeholder="Any dietary restrictions, special occasions, or other requests..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    @if (StartTime < EndTime)
+                    {
+                        <div class="d-grid gap-2">
+                            <button class="btn base-button"
+                                    @onclick="MakeReservation"
+                                    disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Processing...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Confirm Reservation</span>
+                                }
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div>
+                                Make sure the end time is after the start time.
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-        }
+
+            <!-- Messages Section -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Error!</strong> @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>Success!</strong> @successMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
     </div>
+</div>
 
 

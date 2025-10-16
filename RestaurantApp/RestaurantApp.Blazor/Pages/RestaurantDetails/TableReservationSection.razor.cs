@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
@@ -10,6 +11,9 @@ public partial class TableReservationSection : ComponentBase
 {
     [Inject]
     private HttpClient Http { get; set; } = null!;
+    
+    [Inject]
+    public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public DateTime StartTime { get; set; }
     [Parameter] public DateTime Date { get; set; }
     [Parameter] public Table Table { get; set; }
@@ -27,14 +31,23 @@ public partial class TableReservationSection : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        currentUser = await Http.GetFromJsonAsync<ResponseUserDto>($"api/Auth/me");
-        
-        if (currentUser != null)
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+    
+        if (user.Identity?.IsAuthenticated == true)
         {
-            customerName = $"{currentUser.FirstName} {currentUser.LastName}";
-            customerEmail = currentUser.Email;
-            customerPhone = currentUser.PhoneNumber ?? "";
-            userId = currentUser.Id;
+            currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
+            if (currentUser != null)
+            {
+                customerName = currentUser.FirstName + " " +currentUser.LastName;
+                customerEmail = currentUser.Email;
+                customerPhone = currentUser.PhoneNumber;
+                userId = currentUser.Id;
+            }
+        }
+        else
+        {
+            currentUser = null;
         }
     }
     

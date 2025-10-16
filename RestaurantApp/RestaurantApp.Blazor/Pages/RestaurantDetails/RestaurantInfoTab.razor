@@ -5,9 +5,9 @@
 
 @if (restaurant != null)
 {
-    <div class="container-fluid py-4">
-        <div class="row g-4">
-            <div class="col-12">
+    <div class="container my-4">
+        <div class="row g-3">
+            <div class="col-11">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         @if (!string.IsNullOrEmpty(restaurant.Address))
@@ -60,7 +60,7 @@
 
             @if (restaurant.photosThumbnailsUrls != null && restaurant.photosThumbnailsUrls.Any())
             {
-                <div class="col-12">
+                <div class="col-11">
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title mb-3">

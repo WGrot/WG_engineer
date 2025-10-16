@@ -36,12 +36,17 @@
                             </div>
                         }
                     </div>
-                    <div class="col">
+                    <div class="col-auto">
                         <h1 class="h2 mb-1">@restaurant.Name</h1>
                         <p class="mb-0 opacity-75">
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             @restaurant.Address
                         </p>
+                    </div>
+                    <div class="col-auto ms-1">
+                        <button class="base-button lg" @onclick="BookTable">
+                            Book Table
+                        </button>
                     </div>
                 </div>
             </div>
