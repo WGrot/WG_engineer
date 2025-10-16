@@ -20,5 +20,7 @@ public class Restaurant
     
     public List<string>? photosUrls { get; set; }
     public List<string>? photosThumbnailsUrls { get; set; }
+    
+    public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
 
 }

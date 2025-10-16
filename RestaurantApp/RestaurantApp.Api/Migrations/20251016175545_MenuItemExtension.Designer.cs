@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantApp.Api;
@@ -12,9 +13,11 @@ using RestaurantApp.Api;
 namespace RestaurantApp.Api.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016175545_MenuItemExtension")]
+    partial class MenuItemExtension
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -392,12 +395,7 @@ namespace RestaurantApp.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RestaurantId");
 
                     b.ToTable("MenuItemTags");
                 });
@@ -813,17 +811,6 @@ namespace RestaurantApp.Api.Migrations
                     b.Navigation("Menu");
                 });
 
-            modelBuilder.Entity("RestaurantApp.Shared.Models.MenuItemTag", b =>
-                {
-                    b.HasOne("RestaurantApp.Shared.Models.Restaurant", "Restaurant")
-                        .WithMany("MenuItemTags")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
             modelBuilder.Entity("RestaurantApp.Shared.Models.MenuItemVariant", b =>
                 {
                     b.HasOne("RestaurantApp.Shared.Models.MenuItem", "MenuItem")
@@ -954,8 +941,6 @@ namespace RestaurantApp.Api.Migrations
                     b.Navigation("Employees");
 
                     b.Navigation("Menu");
-
-                    b.Navigation("MenuItemTags");
 
                     b.Navigation("OpeningHours");
 

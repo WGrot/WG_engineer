@@ -28,6 +28,9 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<RestaurantSettings> RestaurantSettings { get; set; }
     public DbSet<RestaurantPermission> RestaurantPermissions { get; set; }
     public DbSet<MenuCategory> MenuCategories { get; set; }
+    
+    public DbSet<MenuItemVariant> MenuItemVariants => Set<MenuItemVariant>();
+    public DbSet<MenuItemTag> MenuItemTags => Set<MenuItemTag>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -41,5 +44,18 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(rs => rs.Restaurant)
             .WithOne(r => r.Settings)
             .HasForeignKey<RestaurantSettings>(rs => rs.RestaurantId);
+        
+        // Relacja N:N (MenuItem <-> Tag)
+        builder.Entity<MenuItem>()
+            .HasMany(mi => mi.Tags)
+            .WithMany(tag => tag.MenuItems)
+            .UsingEntity(j => j.ToTable("MenuItemTagsJoin"));
+        
+        // Ustawienia kaskadowania
+        builder.Entity<MenuItem>()
+            .HasMany(mi => mi.Variants)
+            .WithOne(v => v.MenuItem)
+            .HasForeignKey(v => v.MenuItemId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
