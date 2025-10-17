@@ -10,6 +10,7 @@ public class MenuItemVariant
 
     public bool IsAvailable { get; set; } = true;
 
+    public string Description { get; set; } = string.Empty;
 
     public int MenuItemId { get; set; }
     public virtual MenuItem MenuItem { get; set; } = null!;
