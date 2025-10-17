@@ -10,6 +10,7 @@ public class MenuItemVariantDto
 
     public bool IsAvailable { get; set; } = true;
 
+    public string Description { get; set; } = string.Empty;
 
     public int MenuItemId { get; set; }
 }

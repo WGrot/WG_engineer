@@ -14,7 +14,8 @@ public static class MenuItemVariantMapper
             Name = entity.Name,
             Price = entity.Price,
             IsAvailable = entity.IsAvailable,
-            MenuItemId = entity.MenuItemId
+            MenuItemId = entity.MenuItemId,
+            Description = entity.Description
         };
     }
 
@@ -27,7 +28,8 @@ public static class MenuItemVariantMapper
             Name = dto.Name,
             Price = dto.Price,
             IsAvailable = dto.IsAvailable,
-            MenuItemId = dto.MenuItemId
+            MenuItemId = dto.MenuItemId,
+            Description = dto.Description
         };
     }
 
@@ -38,6 +40,7 @@ public static class MenuItemVariantMapper
         entity.Price = dto.Price;
         entity.IsAvailable = dto.IsAvailable;
         entity.MenuItemId = dto.MenuItemId;
+        entity.Description = dto.Description;
         // Id zazwyczaj nie aktualizujemy
     }
 

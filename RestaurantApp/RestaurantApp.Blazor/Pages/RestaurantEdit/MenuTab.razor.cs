@@ -84,6 +84,7 @@ public partial class MenuTab : ComponentBase
             tags = response;
         }
     }
+    
 
     private void ShowAddCategoryForm()
     {

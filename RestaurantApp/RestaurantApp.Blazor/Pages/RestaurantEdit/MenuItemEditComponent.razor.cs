@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using RestaurantApp.Shared.Common.Mappers;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
@@ -11,6 +12,8 @@ public partial class MenuItemEditComponent : ComponentBase
 {
     [Parameter] public MenuItem Item { get; set; } = default!;
     [Parameter] public IEnumerable<MenuItemTagDto> Tags { get; set; } = default!;
+
+    [Parameter] public List<MenuItemVariantDto> Variants { get; set; } = default!;
     [Parameter] public IEnumerable<MenuCategory> Categories { get; set; } = Enumerable.Empty<MenuCategory>();
     [Parameter] public EventCallback<MenuItem> OnSave { get; set; }
     [Parameter] public EventCallback<int> OnDelete { get; set; }
@@ -19,11 +22,21 @@ public partial class MenuItemEditComponent : ComponentBase
     private bool Editing = false;
     private bool ShowMoveDropdown = false;
     private bool ShowTagDropdown = false;
+    private bool ShowVariants = false;
 
+    private bool isAddingNew = false;
+    private int? editingVariantId = null;
+    private MenuItemVariantDto newVariant = new MenuItemVariantDto();
+    private MenuItemVariantDto editVariant = new MenuItemVariantDto();
     private void OnEditClicked() => Editing = true;
     private void OnCancelClicked() => Editing = false;
     private void OnMoveClicked() => ShowMoveDropdown = true;
-    
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        LoadVariants();
+    }
 
     private async Task OnSaveClicked()
     {
@@ -36,11 +49,22 @@ public partial class MenuItemEditComponent : ComponentBase
         await OnMove.InvokeAsync((itemId, targetCategoryId));
         ShowMoveDropdown = false;
     }
-    
+
     private async Task AddTag(int itemId, string? targetTagId)
     {
         await Http.PostAsJsonAsync($"/api/MenuItem/{itemId}/tags/{targetTagId}", targetTagId);
         ShowTagDropdown = false;
+    }
+
+    private async Task LoadVariants()
+    {
+        var response =
+            await Http.GetFromJsonAsync<List<MenuItemVariantDto>>(
+                $"/api/MenuItemVariants/get-all-item-variants/{Item.Id}");
+        if (response != null)
+        {
+            Variants = response;
+        }
     }
 
     protected async Task UploadItemImage(InputFileChangeEventArgs e, int itemId)
@@ -84,7 +108,6 @@ public partial class MenuItemEditComponent : ComponentBase
             var response = await Http.DeleteAsync($"/api/Menu/item/{itemId}/delete-image");
             if (!response.IsSuccessStatusCode)
             {
-
                 Console.WriteLine($"Failed to delete image: {response.StatusCode}");
             }
             else
@@ -97,5 +120,81 @@ public partial class MenuItemEditComponent : ComponentBase
         {
             Console.WriteLine($"Error deleting image: {ex.Message}");
         }
+    }
+
+
+    private void StartEdit(MenuItemVariantDto variant)
+    {
+        editingVariantId = variant.Id;
+        editVariant = new MenuItemVariantDto
+        {
+            MenuItemId = Item.Id,
+            Name = variant.Name,
+            Price = variant.Price,
+            Description = variant.Description
+        };
+    }
+
+    private async Task SaveVariantEdit(int variantId)
+    {
+        var response = await Http.PutAsJsonAsync($"api/MenuItemVariants/{variantId}", editVariant);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var variant = Variants.FirstOrDefault(v => v.Id == variantId);
+            if (variant != null)
+            {
+                variant.Name = editVariant.Name;
+                variant.Price = editVariant.Price;
+                variant.Description = editVariant.Description;
+            }
+
+            editingVariantId = null;
+            editVariant = new MenuItemVariantDto();
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editingVariantId = null;
+        editVariant = new MenuItemVariantDto();
+    }
+
+    private void StartAddNew()
+    {
+        isAddingNew = true;
+        newVariant = new MenuItemVariantDto
+        {
+            MenuItemId = Item.Id
+        };
+    }
+
+    private async Task AddNewVariant()
+    {
+        var response = await Http.PostAsJsonAsync($"api/MenuItemVariants", newVariant);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var addedVariant = await response.Content.ReadFromJsonAsync<MenuItemVariantDto>();
+            Variants.Add(addedVariant);
+
+            isAddingNew = false;
+            newVariant = new MenuItemVariantDto();
+        }
+    }
+
+    private void CancelAddNew()
+    {
+        isAddingNew = false;
+        newVariant = new MenuItemVariantDto
+        {
+            MenuItemId = Item.Id
+        };
+    }
+
+    private async Task DeleteVariant(int variantId)
+    {
+        var response = await Http.DeleteAsync($"/api/MenuItemVariants/{variantId}");
+        
     }
 }

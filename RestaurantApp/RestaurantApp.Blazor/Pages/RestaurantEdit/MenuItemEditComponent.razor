@@ -71,4 +71,55 @@
         </select>
         <button @onclick="() => ShowMoveDropdown = false">Cancel</button>
     }
+    
+    @if (ShowVariants)
+    {
+        @foreach (var variant in Variants)
+        {
+            <div>
+                @if (editingVariantId == variant.Id)
+                {
+                    <div>
+                        <input @bind="editVariant.Name" placeholder="Nazwa" />
+                        <input type="number" @bind="editVariant.Price" placeholder="Cena" />
+                        <input @bind="editVariant.Description" placeholder="Opis" />
+                        <button @onclick="() => SaveVariantEdit(variant.Id)">Zapisz</button>
+                        <button @onclick="CancelEdit">Anuluj</button>
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <strong>@variant.Name</strong> @variant.Price @Item.Price.CurrencyCode
+                        <br />
+                        @variant.Description
+                        <br />
+                        <button @onclick="() => StartEdit(variant)">Edytuj</button>
+                        <button @onclick="() => DeleteVariant(variant.Id)">Usuń</button>
+                    </div>
+                }
+                <hr />
+            </div>
+        }
+    
+        @if (isAddingNew)
+        {
+            <div>
+                <h4>Nowy wariant</h4>
+                <input @bind="newVariant.Name" placeholder="Nazwa" />
+                <input type="number" @bind="newVariant.Price" placeholder="Cena" />
+                <input @bind="newVariant.Description" placeholder="Opis" />
+                <button @onclick="AddNewVariant">Dodaj</button>
+                <button @onclick="CancelAddNew">Anuluj</button>
+            </div>
+        }
+        else
+        {
+            <button @onclick="StartAddNew">+ Dodaj nowy wariant</button>
+        }
+    }
+    else
+    {
+        <button @onclick="() => ShowVariants = true">Show variants</button>
+    }
 </div>
