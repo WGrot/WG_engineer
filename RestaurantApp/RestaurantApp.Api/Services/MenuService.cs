@@ -279,6 +279,7 @@ public class MenuService : IMenuService
             .Include(mi => mi.Menu)
             .Include(mi => mi.Tags)
             .Include(mi => mi.Category)
+            .Include(mi => mi.Variants)
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
 
         return item == null
@@ -291,6 +292,7 @@ public class MenuService : IMenuService
         var items = await _context.MenuItems
             .Include(mi => mi.Category)
             .Include(mi => mi.Tags)
+            .Include(mi => mi.Variants)
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
 
@@ -301,7 +303,7 @@ public class MenuService : IMenuService
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
-            .Include(mi => mi.Tags)
+            .Include(mi => mi.Variants)
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
 
@@ -312,7 +314,7 @@ public class MenuService : IMenuService
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
-            .Include(mi => mi.Tags)
+            .Include(mi => mi.Variants)
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
 
@@ -552,7 +554,11 @@ public class MenuService : IMenuService
     {
         var menu = await _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
-            .ThenInclude(c => c.Items)
+                .ThenInclude(c => c.Items)
+                    .ThenInclude(i => i.Tags)
+            .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
+                .ThenInclude(c => c.Items)
+                    .ThenInclude(i => i.Variants)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
             .FirstOrDefaultAsync();
