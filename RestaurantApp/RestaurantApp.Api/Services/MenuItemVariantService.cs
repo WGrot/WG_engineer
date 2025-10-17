@@ -26,6 +26,15 @@ public class MenuItemVariantService : IMenuItemVariantService
         return Result<IEnumerable<MenuItemVariantDto>>.Success(variants.ToDtoList());
     }
 
+    public async Task<Result<IEnumerable<MenuItemVariantDto>>> GetMenuItemVariantsAsync(int id)
+    {
+        var result = await _context.MenuItemVariants
+            .Where(v => v.MenuItemId == id)
+            .ToListAsync();
+        
+        return Result<IEnumerable<MenuItemVariantDto>>.Success(result.ToDtoList());
+    }
+
     public async Task<Result<MenuItemVariantDto?>> GetVariantByIdAsync(int id)
     {
         var variant = await _context.MenuItemVariants
@@ -40,7 +49,7 @@ public class MenuItemVariantService : IMenuItemVariantService
 
     public async Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant)
     {
-        var menuItem = await _context.MenuItems.AnyAsync(i => i.Id == variant.Id);
+        var menuItem = await _context.MenuItems.AnyAsync(i => i.Id == variant.MenuItemId);
         if (!menuItem)
         {
             return Result<MenuItemVariantDto>.Failure($"Restaurant with id {variant.Id} does not exist");

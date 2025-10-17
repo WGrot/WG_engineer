@@ -29,6 +29,13 @@ public class MenuItemVariantsController : ControllerBase
         var result = await _menuItemVariantService.GetVariantByIdAsync(id);
         return result.ToActionResult(this);
     }
+    
+    [HttpGet("get-all-item-variants/{id}")]
+    public async Task<IActionResult> GetManuItemVariantsById(int id)
+    {
+        var result = await _menuItemVariantService.GetMenuItemVariantsAsync(id);
+        return result.ToActionResult(this);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateVariant([FromBody] MenuItemVariantDto variantDto)
