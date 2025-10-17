@@ -18,6 +18,7 @@ public partial class MenuTab : ComponentBase
     private List<MenuCategory> categories = new();
     private Dictionary<int, List<MenuItem>> categoryItems = new();
     private List<MenuItem> uncategorizedItems = new();
+    private List<MenuItemTagDto> tags = new();
     private HashSet<int> expandedCategories = new();
 
     private bool showAddCategory = false;
@@ -31,37 +32,56 @@ public partial class MenuTab : ComponentBase
     private MenuCategoryDto newCategory = new();
     private MenuItemDto newItem = new();
 
+    
+    private MenuItemTagDto newTag = new();
+    private bool showAddTag = false;
+
+    private void ShowAddTagForm()
+    {
+        showAddTag = true;
+        newTag = new MenuItemTagDto 
+        { 
+            ColorHex = "#FFFFFF",
+            RestaurantId = Id // ustaw odpowiednie ID restauracji
+        };
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadMenu();
+        await LoadTags();
     }
 
     private async Task LoadMenu()
     {
         try
         {
-            // Pobierz menu dla restauracji
             menu = await Http.GetFromJsonAsync<Menu>($"api/Menu/restaurant/{Id}");
 
             if (menu != null)
             {
-                // Pobierz kategorie
                 categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
-
-                // Pobierz items dla każdej kategorii
+                
                 foreach (var category in categories)
                 {
                     var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/category/{category.Id}/items");
                     categoryItems[category.Id] = items ?? new();
                 }
-
-                // Pobierz items bez kategorii
+                
                 uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/{menu.Id}/items/uncategorized")) ?? new();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading menu: {ex.Message}");
+        }
+    }
+    
+    private async Task LoadTags()
+    {
+        var response = await Http.GetFromJsonAsync<List<MenuItemTagDto>>($"api/MenuItemTag/restaurant/{Id}");
+        if (response != null)
+        {
+            tags = response;
         }
     }
 
@@ -301,4 +321,26 @@ public partial class MenuTab : ComponentBase
     {
         await MoveItem(moveData.ItemId, moveData.CategoryId);
     }
+    
+    private async Task AddTag()
+    {
+        // Wywołanie API do utworzenia tagu
+        var response = await Http.PostAsJsonAsync("api/MenuItemTag", newTag);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadTags(); // Odśwież listę tagów
+            showAddTag = false;
+            newTag = new();
+        }
+    }
+
+    private async Task DeleteTag(int tagId)
+    {
+        var response = await Http.DeleteAsync($"api/MenuItemTag/{tagId}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadTags(); // Odśwież listę tagów
+        }
+    }
+    
 }

@@ -35,10 +35,16 @@
         <br />
         @Item.Description
         <br />
+        
+        @foreach (var tag in Item.Tags)
+        {
+            <span style="background-color: @tag.ColorHex; padding: 5px;">@tag.Name</span>
+        }
 
         <button @onclick="OnEditClicked">Edit</button>
         <button @onclick="() => OnDelete.InvokeAsync(Item.Id)">Delete</button>
         <button @onclick="OnMoveClicked">Move to Category</button>
+        <button @onclick="() => ShowTagDropdown = true">Move to Category</button>
     }
 
     @if (ShowMoveDropdown)
@@ -49,6 +55,18 @@
             @foreach (var cat in Categories)
             {
                 <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+        <button @onclick="() => ShowMoveDropdown = false">Cancel</button>
+    }
+
+    @if (ShowTagDropdown)
+    {
+        <select @onchange="(e) => AddTag(Item.Id, e.Value?.ToString())">
+            <option value="">Select tag...</option>
+            @foreach (var tag in Tags)
+            {
+                <option value="@tag.Id">@tag.Name</option>
             }
         </select>
         <button @onclick="() => ShowMoveDropdown = false">Cancel</button>

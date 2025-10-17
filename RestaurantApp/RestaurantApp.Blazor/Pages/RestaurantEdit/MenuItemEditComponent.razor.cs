@@ -10,6 +10,7 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 public partial class MenuItemEditComponent : ComponentBase
 {
     [Parameter] public MenuItem Item { get; set; } = default!;
+    [Parameter] public IEnumerable<MenuItemTagDto> Tags { get; set; } = default!;
     [Parameter] public IEnumerable<MenuCategory> Categories { get; set; } = Enumerable.Empty<MenuCategory>();
     [Parameter] public EventCallback<MenuItem> OnSave { get; set; }
     [Parameter] public EventCallback<int> OnDelete { get; set; }
@@ -17,10 +18,12 @@ public partial class MenuItemEditComponent : ComponentBase
 
     private bool Editing = false;
     private bool ShowMoveDropdown = false;
+    private bool ShowTagDropdown = false;
 
     private void OnEditClicked() => Editing = true;
     private void OnCancelClicked() => Editing = false;
     private void OnMoveClicked() => ShowMoveDropdown = true;
+    
 
     private async Task OnSaveClicked()
     {
@@ -32,6 +35,12 @@ public partial class MenuItemEditComponent : ComponentBase
     {
         await OnMove.InvokeAsync((itemId, targetCategoryId));
         ShowMoveDropdown = false;
+    }
+    
+    private async Task AddTag(int itemId, string? targetTagId)
+    {
+        await Http.PostAsJsonAsync($"/api/MenuItem/{itemId}/tags/{targetTagId}", targetTagId);
+        ShowTagDropdown = false;
     }
 
     protected async Task UploadItemImage(InputFileChangeEventArgs e, int itemId)

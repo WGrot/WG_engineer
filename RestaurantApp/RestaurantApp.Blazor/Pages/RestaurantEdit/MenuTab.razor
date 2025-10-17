@@ -6,6 +6,35 @@
 @if (menu != null)
 {
     <div>
+        <!-- Tags Section -->
+        <div>
+            <h4>Tags Management</h4>
+            <button @onclick="ShowAddTagForm">Add New Tag</button>
+
+            @if (showAddTag)
+            {
+                <div>
+                    <input type="text" @bind="newTag.Name" placeholder="Tag Name" />
+                    <input type="color" @bind="newTag.ColorHex" />
+                    <button @onclick="AddTag">Add</button>
+                    <button @onclick="() => showAddTag = false">Cancel</button>
+                </div>
+            }
+
+            <div>
+                @foreach (var tag in tags)
+                {
+                    <div>
+                        <span style="background-color: @tag.ColorHex; padding: 5px;">@tag.Name</span>
+                        <button @onclick="() => DeleteTag(tag.Id)">Delete</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- Categories Section -->
         <button @onclick="ShowAddCategoryForm">Add New Category</button>
 
         @if (showAddCategory)
@@ -72,6 +101,7 @@
                                 <MenuItemEditComponent
                                     Item="item"
                                     Categories="categories"
+                                    Tags="tags"
                                     OnSave="SaveItem"
                                     OnDelete="DeleteItem"
                                     OnMove="HandleMoveItem" />

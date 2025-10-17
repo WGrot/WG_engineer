@@ -10,6 +10,7 @@ public static class MenuItemTagMapper
     {
         return new MenuItemTagDto
         {
+            Id = entity.Id,
             Name = entity.Name,
             ColorHex = entity.ColorHex,
             RestaurantId = entity.RestaurantId
@@ -21,6 +22,7 @@ public static class MenuItemTagMapper
     {
         return new MenuItemTag
         {
+            Id = dto.Id,
             Name = dto.Name,
             ColorHex = dto.ColorHex,
             RestaurantId = dto.RestaurantId
@@ -30,6 +32,7 @@ public static class MenuItemTagMapper
     // Aktualizacja istniejącej encji z DTO
     public static void UpdateFromDto(this MenuItemTag entity, MenuItemTagDto dto)
     {
+        entity.Id = dto.Id;
         entity.Name = dto.Name;
         entity.ColorHex = dto.ColorHex;
         entity.RestaurantId = dto.RestaurantId;

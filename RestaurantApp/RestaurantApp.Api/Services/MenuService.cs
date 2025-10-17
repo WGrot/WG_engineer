@@ -277,6 +277,7 @@ public class MenuService : IMenuService
     {
         var item = await _context.MenuItems
             .Include(mi => mi.Menu)
+            .Include(mi => mi.Tags)
             .Include(mi => mi.Category)
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
 
@@ -289,6 +290,7 @@ public class MenuService : IMenuService
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Category)
+            .Include(mi => mi.Tags)
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
 
@@ -298,6 +300,8 @@ public class MenuService : IMenuService
     public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId)
     {
         var items = await _context.MenuItems
+            .Include(mi => mi.Tags)
+            .Include(mi => mi.Tags)
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
 
@@ -307,6 +311,8 @@ public class MenuService : IMenuService
     public async Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId)
     {
         var items = await _context.MenuItems
+            .Include(mi => mi.Tags)
+            .Include(mi => mi.Tags)
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
 
