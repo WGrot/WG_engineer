@@ -1,4 +1,5 @@
 ﻿@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
 
 <h3 class="mb-4">Menu</h3>
 
@@ -28,7 +29,8 @@
                     <div class="card-body bg-white">
                         @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
                         {
-                            <MenuItemComponent Item="item"/>
+                            <MenuItemComponent Item="item"
+                                               OnItemClick="HandleMenuItemClick"/>
                         }
                     </div>
                 </div>
@@ -59,6 +61,17 @@
             </div>
         }
     </div>
+    
+    @if(showItemDetailsModal)
+    {
+        <div>
+            <MenuItemDetailsModal
+                @bind-IsVisible="showItemDetailsModal"
+                Item="selectedMenuItem"/>
+        </div> 
+    }
+
+    
 }
 else
 {

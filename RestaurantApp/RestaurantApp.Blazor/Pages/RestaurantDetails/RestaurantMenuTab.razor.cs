@@ -14,7 +14,9 @@ public partial class RestaurantMenuTab : ComponentBase
     private List<MenuItem> uncategorizedItems = new();
     private HashSet<int> expandedCategories = new();
     private bool showUncategorized = false;
-
+    
+    private bool showItemDetailsModal = false;
+    private MenuItem selectedMenuItem = null!;
     private Menu menu { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -61,5 +63,14 @@ public partial class RestaurantMenuTab : ComponentBase
         {
             Console.WriteLine($"Error loading menu: {ex.Message}");
         }
+    }
+    
+    private async Task HandleMenuItemClick(MenuItem clickedItem)
+    {
+        // Tutaj możesz wykonać dowolną logikę
+        Console.WriteLine($"Kliknięto: {clickedItem.Name}");
+    
+        selectedMenuItem = clickedItem;
+        showItemDetailsModal = true;
     }
 }

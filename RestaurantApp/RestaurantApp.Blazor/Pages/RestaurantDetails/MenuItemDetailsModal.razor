@@ -1,0 +1,182 @@
+﻿@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Models
+@using RestaurantApp.Shared.DTOs
+
+@inject HttpClient Http
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background: #667eea;">
+                    <h5 class="modal-title fw-bold">
+                        @Item.Name Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <div class="col-auto">
+                            <div class="text-center mb-3">
+                                @if (!string.IsNullOrEmpty(Item.ImageUrl))
+                                {
+                                    <div class="image-wrapper">
+                                        <img src="@Item.ThumbnailUrl" alt="@Item.Name"
+                                             class="img-fluid rounded image-bordered" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex justify-content-center align-items-center bg-light text-muted rounded shadow-sm"
+                                         style="width: 100%; height: 250px;">
+                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var tag in Item.Tags)
+                                    {
+                                        <span class="badge rounded-pill shadow-sm"
+                                              style="background-color: @tag.ColorHex; padding: 8px 16px; font-size: 0.875rem;">
+                                            @tag.Name
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            @* <div class="card bg-light border-0 mb-3"> *@
+                            @*     <div class="card-body text-center"> *@
+                            @*         <h3 class="text mb-0" style="color: #667eea"> *@
+                            @*             <strong>@Item.Price.Price @Item.Price.CurrencyCode</strong> *@
+                            @*         </h3> *@
+                            @*     </div> *@
+                            @* </div> *@
+
+                            
+                        </div>
+                        
+                        <div class="col mb-5">
+                            <div class="mb-4">
+                                <h6 class=" text-muted small mb-2">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description
+                                </h6>
+                                <p class="lead">@Item.Description</p>
+                            </div>
+
+
+                            
+                            <div>
+                                <h6 class=" text-muted small mb-3">
+                                    <i class="bi bi-list-ul me-1"></i>
+                                    Available Variants
+                                </h6>
+                                <div class="row g-3">
+
+                                    <div class="col-12">
+                                        <div class="card border-start border-4 border-secondary h-100 shadow-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="card-title mb-1 text-dark">
+                                                            Classic
+                                                        </h6>
+                                                    </div>
+                                                    <div class="ms-3">
+                                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                                                @Item.Price.Price @Item.Price.CurrencyCode
+                                                            </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    @foreach (var variant in Item.Variants.Where(v => v.IsAvailable))
+                                    {
+                                        <div class="col-12">
+                                            <div class="card border-start border-4 border-secondary h-100 shadow-sm">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="card-title mb-1 text-dark">
+                                                                @variant.Name
+                                                            </h6>
+                                                            <p class="card-text text-muted small mb-0">
+                                                                @variant.Description
+                                                            </p>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                                                @variant.Price @Item.Price.CurrencyCode
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @* @if (!Item.Variants.Any(v => v.IsAvailable)) *@
+                                    @* { *@
+                                    @*     <div class="col-12"> *@
+                                    @*         <div class="alert alert-info d-flex align-items-center" role="alert"> *@
+                                    @*             <i class="bi bi-info-circle-fill me-2"></i> *@
+                                    @*             <div>No variants currently available</div> *@
+                                    @*         </div> *@
+                                    @*     </div> *@
+                                    @* } *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Animacja pojawiania się modala */
+    .modal.show {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+   
+
+    /* Hover effect na kartach wariantów */
+    .card:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease-in-out;
+    }
+
+
+    .image-wrapper {
+        display: inline-block; /* Zapobiega rozciąganiu kontenera */
+        border: 5px solid #667eea; /* Kolor ramki */
+        border-radius: 8px; /* Dopasowane do .rounded */
+        padding: 4px;
+    }
+
+    .image-bordered {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+
+    .lead {
+        font-size: 1rem;
+    }
+
+    .col-auto {
+        max-width: 300px; /* np. ograniczenie szerokości */
+    }
+</style>

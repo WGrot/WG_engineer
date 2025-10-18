@@ -148,3 +148,21 @@ code {
     color: #fff !important;
     border-radius: 8px 8px 0 0; */
 }
+
+
+:root {
+    /* Kolory główne aplikacji */
+    --primary-color: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%);
+    --secondary-color: #667eea;
+    
+}
+
+.alert-info {
+    --bs-alert-color: #ffffff; /* ciemny fiolet na tekst */
+    --bs-alert-bg: #667eea; /* jasny fiolet na tło */
+    --bs-alert-border-color: rgba(74, 58, 246, 0); /* fiolet na border */
+}
+
+.modal-custom {
+    --modal-primary-color: var(--primary-color);
+}

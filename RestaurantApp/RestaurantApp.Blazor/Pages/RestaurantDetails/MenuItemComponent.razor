@@ -1,7 +1,5 @@
-﻿
-<div class="card mb-2 border-0 shadow-sm menu-item-card">
-    <div class="row g-0 align-items-center">
-
+﻿<div class="card mb-2 border-0 shadow-sm menu-item-card">
+    <div class="row g-0 align-items-center" @onclick="HandleClick">
         <div class="col-auto">
             @if (!string.IsNullOrEmpty(Item.ThumbnailUrl))
             {
@@ -18,7 +16,6 @@
             }
         </div>
 
-
         <div class="col">
             <div class="card-body py-2 px-3">
                 <div class="d-flex justify-content-between align-items-center h-100">
@@ -30,7 +27,6 @@
                         }
                     </div>
 
-
                     <div class="d-flex align-items-center h-100">
                         <span class="badge bg-success fs-6 px-3 py-2">
                             @Item.Price.Price.ToString("0.00") @Item.Price.CurrencyCode
@@ -41,6 +37,8 @@
         </div>
     </div>
 </div>
+
+
 
 <style>
     .menu-item-card {
