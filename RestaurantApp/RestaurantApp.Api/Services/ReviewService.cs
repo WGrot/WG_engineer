@@ -89,9 +89,12 @@ public class ReviewService : IReviewService
 
         var review = createReviewDto.ToEntity(userId, userName, restaurant);
 
+
         _context.Reviews.Add(review);
         await _context.SaveChangesAsync();
-
+        
+        await RecalculateScores(restaurant.Id);
+        
         return Result.Success<ReviewDto>(review.ToDto());
     }
 
@@ -167,5 +170,30 @@ public class ReviewService : IReviewService
         await _context.SaveChangesAsync();
 
         return Result.Success();
+    }
+
+    private async Task RecalculateScores(int restaurantId)
+    {
+        var reviews = await _context.Reviews
+            .Where(r => r.RestaurantId == restaurantId && r.IsActive)
+            .ToListAsync();
+        
+        var restaurant = await _context.Restaurants.FindAsync(restaurantId);
+
+        double sum = 0f;
+        int[] ratingCounts = new int[5];
+        foreach (var review in reviews)
+        {
+            sum += review.Rating;
+            ratingCounts[review.Rating - 1]++;
+        }
+        restaurant.AverageRating = reviews.Count > 0 ? sum / reviews.Count : 0;
+        restaurant.TotalRatings1Star = ratingCounts[0];
+        restaurant.TotalRatings2Star = ratingCounts[1];
+        restaurant.TotalRatings3Star = ratingCounts[2];
+        restaurant.TotalRatings4Star = ratingCounts[3];
+        restaurant.TotalRatings5Star = ratingCounts[4];
+        
+        await _context.SaveChangesAsync();
     }
 }
