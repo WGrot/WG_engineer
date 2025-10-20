@@ -40,22 +40,19 @@ public partial class RestaurantMenuTab : ComponentBase
     {
         try
         {
-            // Pobierz menu dla restauracji
             menu = await Http.GetFromJsonAsync<Menu>($"api/Menu/restaurant/{Id}/active-menu");
 
             if (menu != null)
             {
-                // Pobierz kategorie
-                categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
 
-                // Pobierz items dla każdej kategorii
+                categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
+                
                 foreach (var category in categories)
                 {
-                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/category/{category.Id}/items");
+                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/category/{category.Id}/items");
                     categoryItems[category.Id] = items ?? new();
                 }
 
-                // Pobierz items bez kategorii
                 uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/{menu.Id}/items/uncategorized")) ?? new();
             }
         }
@@ -67,9 +64,6 @@ public partial class RestaurantMenuTab : ComponentBase
     
     private async Task HandleMenuItemClick(MenuItem clickedItem)
     {
-        // Tutaj możesz wykonać dowolną logikę
-        Console.WriteLine($"Kliknięto: {clickedItem.Name}");
-    
         selectedMenuItem = clickedItem;
         showItemDetailsModal = true;
     }

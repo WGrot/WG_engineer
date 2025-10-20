@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -15,16 +17,14 @@ public class MenuItemController : ControllerBase
     {
         _menuItemService = tagService;
     }
-
-
+    
     [HttpGet("{id}/tags")]
     public async Task<IActionResult> GetMenuItemTags(int id)
     {
         var tags = await _menuItemService.GetMenuItemTagsAsync(id);
         return tags.ToActionResult(this);
     }
-
-// POST: api/MenuItem/5/tags/3
+    
     [HttpPost("{menuItemId}/tags/{tagId}")]
     public async Task<IActionResult> AddTagToMenuItem(int menuItemId, int tagId)
     {
@@ -32,7 +32,7 @@ public class MenuItemController : ControllerBase
         return menuItem.ToActionResult(this);
     }
 
-// DELETE: api/MenuItem/5/tags/3
+
     [HttpDelete("{menuItemId}/tags/{tagId}")]
     public async Task<IActionResult> RemoveTagFromMenuItem(int menuItemId, int tagId)
     {
@@ -40,4 +40,52 @@ public class MenuItemController : ControllerBase
 
         return menuItem.ToActionResult(this);
     }
+    
+        [HttpGet("{menuId}/items")]
+    public async Task<IActionResult> GetMenuItems(int menuId) =>
+        (await _menuItemService.GetMenuItemsAsync(menuId)).ToActionResult(this);
+
+    [HttpGet("{menuId}/items/uncategorized")]
+    public async Task<IActionResult> GetUncategorizedItems(int menuId) =>
+        (await _menuItemService.GetUncategorizedMenuItemsAsync(menuId)).ToActionResult(this);
+
+    [HttpGet("category/{categoryId}/items")]
+    public async Task<IActionResult> GetCategoryItems(int categoryId) =>
+        (await _menuItemService.GetMenuItemsByCategoryAsync(categoryId)).ToActionResult(this);
+
+    [HttpGet("item/{itemId}")]
+    public async Task<IActionResult> GetMenuItem(int itemId) =>
+        (await _menuItemService.GetMenuItemByIdAsync(itemId)).ToActionResult(this);
+
+    [HttpPost("{menuId}/items")]
+    public async Task<IActionResult> AddMenuItem(int menuId, [FromBody] MenuItemDto itemDto) =>
+        (await _menuItemService.AddMenuItemAsync(menuId, itemDto)).ToActionResult(this);
+
+    [HttpPost("category/{categoryId}/items")]
+    public async Task<IActionResult> AddMenuItemToCategory(int categoryId, [FromBody] MenuItemDto itemDto) =>
+        (await _menuItemService.AddMenuItemToCategoryAsync(categoryId, itemDto)).ToActionResult(this);
+
+    [HttpPut("item/{itemId}")]
+    public async Task<IActionResult> UpdateMenuItem(int itemId, [FromBody] MenuItemDto itemDto) =>
+        (await _menuItemService.UpdateMenuItemAsync(itemId, itemDto)).ToActionResult(this);
+
+    [HttpDelete("item/{itemId}")]
+    public async Task<IActionResult> DeleteMenuItem(int itemId) =>
+        (await _menuItemService.DeleteMenuItemAsync(itemId)).ToActionResult(this);
+
+    [HttpPatch("item/{itemId}/price")]
+    public async Task<IActionResult> UpdateMenuItemPrice(int itemId, [FromBody] UpdatePriceDto priceDto) =>
+        (await _menuItemService.UpdateMenuItemPriceAsync(itemId, priceDto.Price, priceDto.CurrencyCode)).ToActionResult(this);
+
+    [HttpPatch("item/{itemId}/move")]
+    public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int categoryId) =>
+        (await _menuItemService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult(this);
+    
+    [HttpPost("item/{itemId}/upload-image")]
+    public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile image)
+        => (await _menuItemService.UploadMenuItemImageAsync(itemId, image)).ToActionResult(this);
+    
+    [HttpDelete("item/{itemId}/delete-image")]
+    public async Task<IActionResult> DeleteMenuItemImage(int itemId)
+        => (await _menuItemService.DeleteMenuItemImageAsync(itemId)).ToActionResult(this);
 }

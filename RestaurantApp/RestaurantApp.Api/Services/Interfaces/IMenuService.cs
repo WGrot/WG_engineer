@@ -25,18 +25,6 @@ public interface IMenuService
     Task<Result> DeleteCategoryAsync(int categoryId);
     Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder);
     
-    // MenuItem operations
-    Task<Result<MenuItem>> GetMenuItemByIdAsync(int itemId);
-    Task<Result<IEnumerable<MenuItem>>> GetMenuItemsAsync(int menuId);
-    Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId);
-    Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId);
-    Task<Result<MenuItem>> AddMenuItemAsync(int menuId, MenuItemDto itemDto);
-    Task<Result<MenuItem>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto);
-    Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto);
-    Task<Result> DeleteMenuItemAsync(int itemId);
-    Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null);
-    Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId);
-    Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, IFormFile imageFile);
-    Task<Result> DeleteMenuItemImageAsync(int itemId);
+
     Task<Result<Menu>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
 }

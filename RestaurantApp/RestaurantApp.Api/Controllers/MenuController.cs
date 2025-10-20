@@ -80,51 +80,5 @@ public class MenuController : ControllerBase
 
     // ===== MENU ITEM ENDPOINTS =====
 
-    [HttpGet("{menuId}/items")]
-    public async Task<IActionResult> GetMenuItems(int menuId) =>
-        (await _menuService.GetMenuItemsAsync(menuId)).ToActionResult(this);
 
-    [HttpGet("{menuId}/items/uncategorized")]
-    public async Task<IActionResult> GetUncategorizedItems(int menuId) =>
-        (await _menuService.GetUncategorizedMenuItemsAsync(menuId)).ToActionResult(this);
-
-    [HttpGet("category/{categoryId}/items")]
-    public async Task<IActionResult> GetCategoryItems(int categoryId) =>
-        (await _menuService.GetMenuItemsByCategoryAsync(categoryId)).ToActionResult(this);
-
-    [HttpGet("item/{itemId}")]
-    public async Task<IActionResult> GetMenuItem(int itemId) =>
-        (await _menuService.GetMenuItemByIdAsync(itemId)).ToActionResult(this);
-
-    [HttpPost("{menuId}/items")]
-    public async Task<IActionResult> AddMenuItem(int menuId, [FromBody] MenuItemDto itemDto) =>
-        (await _menuService.AddMenuItemAsync(menuId, itemDto)).ToActionResult(this);
-
-    [HttpPost("category/{categoryId}/items")]
-    public async Task<IActionResult> AddMenuItemToCategory(int categoryId, [FromBody] MenuItemDto itemDto) =>
-        (await _menuService.AddMenuItemToCategoryAsync(categoryId, itemDto)).ToActionResult(this);
-
-    [HttpPut("item/{itemId}")]
-    public async Task<IActionResult> UpdateMenuItem(int itemId, [FromBody] MenuItemDto itemDto) =>
-        (await _menuService.UpdateMenuItemAsync(itemId, itemDto)).ToActionResult(this);
-
-    [HttpDelete("item/{itemId}")]
-    public async Task<IActionResult> DeleteMenuItem(int itemId) =>
-        (await _menuService.DeleteMenuItemAsync(itemId)).ToActionResult(this);
-
-    [HttpPatch("item/{itemId}/price")]
-    public async Task<IActionResult> UpdateMenuItemPrice(int itemId, [FromBody] UpdatePriceDto priceDto) =>
-        (await _menuService.UpdateMenuItemPriceAsync(itemId, priceDto.Price, priceDto.CurrencyCode)).ToActionResult(this);
-
-    [HttpPatch("item/{itemId}/move")]
-    public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int categoryId) =>
-        (await _menuService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult(this);
-    
-    [HttpPost("item/{itemId}/upload-image")]
-    public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile image)
-        => (await _menuService.UploadMenuItemImageAsync(itemId, image)).ToActionResult(this);
-    
-    [HttpDelete("item/{itemId}/delete-image")]
-    public async Task<IActionResult> DeleteMenuItemImage(int itemId)
-        => (await _menuService.DeleteMenuItemImageAsync(itemId)).ToActionResult(this);
 }
