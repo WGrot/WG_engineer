@@ -96,6 +96,7 @@ builder.Services.AddScoped<IBucketService, BucketService>();
 builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
 builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 
 // NAJPIERW Identity
