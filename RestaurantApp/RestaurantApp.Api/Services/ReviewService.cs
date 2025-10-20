@@ -74,18 +74,18 @@ public class ReviewService : IReviewService
 
         var restaurant = await _context.Restaurants.FindAsync(createReviewDto.RestaurantId);
         if (restaurant == null)
-            Result.Failure($"Restaurant with ID {createReviewDto.RestaurantId} not found");
+            return Result<ReviewDto>.Failure($"Restaurant with ID {createReviewDto.RestaurantId} not found");
 
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         string userName = _context.Users.FirstOrDefault(u => u.Id == userId).UserName;
-        
+
         // Sprawdź czy użytkownik już nie dodał recenzji dla tej restauracji
         var existingReview = await _context.Reviews
             .FirstOrDefaultAsync(r => r.RestaurantId == createReviewDto.RestaurantId
                                       && r.UserId == userId && r.IsActive);
 
         if (existingReview != null)
-            Result.Failure("User already submitted review for this restaurant");
+            return Result<ReviewDto>.Failure("User already submitted review for this restaurant");
 
         var review = createReviewDto.ToEntity(userId, userName, restaurant);
 
@@ -104,7 +104,7 @@ public class ReviewService : IReviewService
 
         if (review == null)
             return Result<ReviewDto>.NotFound($"Review with ID {id} not found.");
-        
+
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         string userName = _context.Users.FirstOrDefault(u => u.Id == userId).UserName;
 
