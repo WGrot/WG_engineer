@@ -279,7 +279,7 @@ public class MenuService : IMenuService
             .Include(mi => mi.Menu)
             .Include(mi => mi.Tags)
             .Include(mi => mi.Category)
-            .Include(mi => mi.Variants)
+
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
 
         return item == null
@@ -292,7 +292,7 @@ public class MenuService : IMenuService
         var items = await _context.MenuItems
             .Include(mi => mi.Category)
             .Include(mi => mi.Tags)
-            .Include(mi => mi.Variants)
+
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
 
@@ -303,7 +303,7 @@ public class MenuService : IMenuService
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
-            .Include(mi => mi.Variants)
+
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
 
@@ -314,7 +314,7 @@ public class MenuService : IMenuService
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
-            .Include(mi => mi.Variants)
+
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
 
@@ -367,13 +367,13 @@ public class MenuService : IMenuService
             Price = new MenuItemPrice
             {
                 Price = itemDto.Price,
-                CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
+                CurrencyCode = itemDto.CurrencyCode ?? "USD" 
             },
             ImageUrl = itemDto.ImagePath
         };
 
         item.CategoryId = categoryId;
-        item.MenuId = null; // Relacja przez kategorię
+        item.MenuId = null; 
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
 
@@ -457,7 +457,6 @@ public class MenuService : IMenuService
         }
         else
         {
-            // Przenieś do menu bez kategorii
             var menuId = item.Category?.MenuId ?? item.MenuId;
             if (!menuId.HasValue)
             {
@@ -556,9 +555,6 @@ public class MenuService : IMenuService
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
                 .ThenInclude(c => c.Items)
                     .ThenInclude(i => i.Tags)
-            .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
-                .ThenInclude(c => c.Items)
-                    .ThenInclude(i => i.Variants)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
             .FirstOrDefaultAsync();

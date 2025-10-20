@@ -80,7 +80,7 @@
                                 <div class="row g-3">
 
                                     <div class="col-12">
-                                        <div class="card border-start border-4 border-secondary h-100 shadow-sm">
+                                        <div class="card h-100 shadow-sm">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start">
                                                     <div class="flex-grow-1">
@@ -98,10 +98,10 @@
                                         </div>
                                     </div>
                                     
-                                    @foreach (var variant in Item.Variants.Where(v => v.IsAvailable))
+                                    @foreach (var variant in Variants.Where(v => v.IsAvailable))
                                     {
                                         <div class="col-12">
-                                            <div class="card border-start border-4 border-secondary h-100 shadow-sm">
+                                            <div class="card h-100 shadow-sm">
                                                 <div class="card-body">
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div class="flex-grow-1">
@@ -147,15 +147,6 @@
     .modal.show {
         animation: fadeIn 0.3s ease-in-out;
     }
-
-   
-
-    /* Hover effect na kartach wariantów */
-    .card:hover {
-        transform: translateY(-2px);
-        transition: transform 0.2s ease-in-out;
-    }
-
 
     .image-wrapper {
         display: inline-block; /* Zapobiega rozciąganiu kontenera */

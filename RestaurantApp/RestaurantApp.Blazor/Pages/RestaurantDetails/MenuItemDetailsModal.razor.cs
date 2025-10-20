@@ -19,10 +19,19 @@ public partial class MenuItemDetailsModal : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-
+        await LoadVariants();
     }
     
-
+    private async Task LoadVariants()
+    {
+        var response = await Http.GetFromJsonAsync<List<MenuItemVariantDto>>($"/api/MenuItemVariants/get-all-item-variants/{Item.Id}");
+        
+        if (response != null)
+        {
+            Variants = response;
+        }
+    }
+    
     private async Task Close()
     {
         await IsVisibleChanged.InvokeAsync(false);
