@@ -22,5 +22,15 @@ public class Restaurant
     public List<string>? photosThumbnailsUrls { get; set; }
     
     public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
+    
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    
+    public double AverageRating { get; set; } = 0;
+    public int TotalReviews { get; set; } = 0;
+    public int TotalRatings1Star { get; set; } = 0;
+    public int TotalRatings2Star { get; set; } = 0;
+    public int TotalRatings3Star { get; set; } = 0;
+    public int TotalRatings4Star { get; set; } = 0;
+    public int TotalRatings5Star { get; set; } = 0;
 
 }

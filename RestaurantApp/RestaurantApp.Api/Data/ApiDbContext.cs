@@ -31,6 +31,9 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
     
     public DbSet<MenuItemVariant> MenuItemVariants => Set<MenuItemVariant>();
     public DbSet<MenuItemTag> MenuItemTags => Set<MenuItemTag>();
+    
+    public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<RestaurantReviewResponse> RestaurantResponses => Set<RestaurantReviewResponse>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

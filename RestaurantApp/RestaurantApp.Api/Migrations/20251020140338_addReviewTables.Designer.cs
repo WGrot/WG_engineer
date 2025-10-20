@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantApp.Api;
@@ -12,9 +13,11 @@ using RestaurantApp.Api;
 namespace RestaurantApp.Api.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020140338_addReviewTables")]
+    partial class addReviewTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -717,8 +720,8 @@ namespace RestaurantApp.Api.Migrations
                     b.PrimitiveCollection<List<string>>("PhotosUrls")
                         .HasColumnType("text[]");
 
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
+                    b.Property<double>("Rating")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("RestaurantId")
                         .HasColumnType("integer");
