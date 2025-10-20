@@ -1,6 +1,239 @@
-﻿<h3>RestaurantReviewsTab</h3>
+﻿<div class="container-fluid px-0">
+    @if (!string.IsNullOrEmpty(errorInfo))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @errorInfo
+            <button type="button" class="btn-close" @onclick="() => errorInfo = string.Empty"></button>
+        </div>
+    }
 
-@code {
+    @if (successMessage)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Your review has been added successfully!
+            <button type="button" class="btn-close" @onclick="() => successMessage = false"></button>
+        </div>
+    }
+
+    <!-- Add Review Section -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>Write a Review
+            </h5>
+        </div>
+        <div class="card-body">
+            <form @onsubmit:preventDefault="true">
+                <!-- Star Rating -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Your Rating</label>
+                    <div class="star-rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            var starValue = i;
+                            <span class="star @(starValue <= newReview.Rating ? "filled" : "")"
+                                  @onclick="() => SetRating(starValue)"
+                                  style="cursor: pointer; font-size: 2rem; color: @(starValue <= newReview.Rating ? "#4c63d2" : "#dee2e6")">
+                                <i class="bi @(starValue <= newReview.Rating ? "bi-star-fill" : "bi-star")"></i>
+                            </span>
+                        }
+                        <span class="ms-2 text-muted">(@newReview.Rating / 5.0)</span>
+                    </div>
+                </div>
+
+                <!-- Review Content -->
+                <div class="mb-3">
+                    <label for="reviewContent" class="form-label fw-bold">Your Review</label>
+                    <textarea class="form-control"
+                              id="reviewContent"
+                              rows="4"
+                              @bind="newReview.Content"
+                              @oninput="StateHasChanged"
+                              placeholder="Share your experience at this restaurant..."
+                              maxlength="1000"></textarea>
+
+                    <small class="text-muted">@newReview.Content?.Length / 1000 characters</small>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="button"
+                        class="base-button"
+                        @onclick="CreateReview"
+                        disabled="@(isSubmitting)">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Posting...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-send-fill me-2"></i>
+                        <span>Post Review</span>
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">
+                <i class="bi bi-chat-dots me-2"></i>
+                Customer Reviews
+                @if (reviews != null)
+                {
+                    <span class="badge bg-secondary ms-2">@reviews.Count</span>
+                }
+            </h4>
+            @if (reviews != null && reviews.Any())
+            {
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown">
+                        <i class="bi bi-funnel me-1"></i>Sort by: @sortOption
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" @onclick="@(() => SortReviews("Newest"))">Newest First</a></li>
+                        <li><a class="dropdown-item" @onclick="@(() => SortReviews("Oldest"))">Oldest First</a></li>
+                        <li><a class="dropdown-item" @onclick="@(() => SortReviews("Highest"))">Highest Rating</a></li>
+                        <li><a class="dropdown-item" @onclick="@(() => SortReviews("Lowest"))">Lowest Rating</a></li>
+                    </ul>
+                </div>
+            }
+        </div>
+
+        @if (reviews != null)
+        {
+            @if (reviews.Any())
+            {
+                <div class="card mb-4 bg-light">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <h2 class="mb-0">@restaurant.AverageRating.ToString("F1")</h2>
+                                <div class="mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= Math.Round(restaurant.AverageRating) ? "bi-star-fill" : "bi-star") text-warning"></i>
+                                    }
+                                </div>
+                                <small class="text-muted">Based on @reviews.Count review(s)</small>
+                            </div>
+                            <div class="col-md-8">
+                                @foreach (var rating in ratingDistribution.OrderByDescending(x => x.Key))
+                                {
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="me-2">@rating.Key <i class="bi bi-star-fill text-warning small"></i></span>
+                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                            <div class="progress-bar bg-warning"
+                                                 style="width: @((rating.Value * 100 / reviews.Count))%"></div>
+                                        </div>
+                                        <span class="ms-2 small text-muted">@rating.Value</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
-}
+                @foreach (var review in displayedReviews)
+                {
+                    <div class="card mb-3 review-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="bi bi-person-circle me-2"></i>@review.UserName
+                                        @if (review.IsVerified)
+                                        {
+                                            <span class="badge bg-success ms-2" title="Verified Review">
+                                                <i class="bi bi-check-circle"></i> Verified
+                                            </span>
+                                        }
+                                    </h5>
+                                    <div class="mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star") text-warning"></i>
+                                        }
+                                        <span class="ms-2 text-muted small">@review.Rating.0 / 5.0</span>
+                                    </div>
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    @review.CreatedAt.ToString("MMM dd, yyyy")
+                                    @if (review.UpdatedAt.HasValue)
+                                    {
+                                        <span class="badge bg-secondary ms-1">Edited</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <p class="card-text">@review.Content</p>
+
+                            
+                        </div>
+                    </div>
+                }
+
+                @if (hasMoreReviews)
+                {
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary" @onclick="LoadMoreReviews">
+                            <i class="bi bi-arrow-down-circle me-2"></i>Load More Reviews
+                        </button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This restaurant doesn't have any reviews yet. Be the first to share your experience!
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading reviews...</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .review-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .review-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        border-left-color: var(--primary-color);
+    }
+
+    .star-rating {
+        display: inline-block;
+    }
+
+    .star {
+        transition: all 0.2s ease;
+    }
+
+    .star:hover {
+        transform: scale(1.2);
+    }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+</style>

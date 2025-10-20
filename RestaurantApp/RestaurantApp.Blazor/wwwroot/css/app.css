@@ -149,10 +149,13 @@ code {
     border-radius: 8px 8px 0 0; */
 }
 
+.bg-primary {
+    background: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%) !important;
+}
 
 :root {
     /* Kolory główne aplikacji */
-    --primary-color: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%);
+    --primary-color: #4c63d2;
     --secondary-color: #667eea;
     
 }
