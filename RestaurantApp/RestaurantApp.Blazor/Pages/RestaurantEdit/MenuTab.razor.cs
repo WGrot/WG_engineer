@@ -63,11 +63,11 @@ public partial class MenuTab : ComponentBase
                 
                 foreach (var category in categories)
                 {
-                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/category/{category.Id}/items");
+                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/category/{category.Id}/items");
                     categoryItems[category.Id] = items ?? new();
                 }
                 
-                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/{menu.Id}/items/uncategorized")) ?? new();
+                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/{menu.Id}/items/uncategorized")) ?? new();
             }
         }
         catch (Exception ex)
@@ -76,6 +76,8 @@ public partial class MenuTab : ComponentBase
         }
     }
     
+    
+
     private async Task LoadTags()
     {
         var response = await Http.GetFromJsonAsync<List<MenuItemTagDto>>($"api/MenuItemTag/restaurant/{Id}");
@@ -119,7 +121,7 @@ public partial class MenuTab : ComponentBase
 
     private async Task AddCategory()
     {
-        if (menu == null || string.IsNullOrEmpty(newCategory.Name)) return;
+        if (string.IsNullOrEmpty(newCategory.Name)) return;
 
         try
         {
@@ -136,6 +138,28 @@ public partial class MenuTab : ComponentBase
         }
     }
 
+    
+    private async Task CreateMenu()
+    {
+        try
+        {
+            var newMenuDto = new MenuDto
+            {
+                Name = "Default Menu",
+                Description = "This is the default menu."
+            };
+
+            var response = await Http.PostAsJsonAsync($"api/Menu/restaurant/{Id}", newMenuDto);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadMenu();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating menu: {ex.Message}");
+        }
+    }
     private async Task SaveCategory(MenuCategory category)
     {
         try
@@ -186,11 +210,11 @@ public partial class MenuTab : ComponentBase
             HttpResponseMessage response;
             if (categoryId.HasValue)
             {
-                response = await Http.PostAsJsonAsync($"api/Menu/category/{categoryId}/items", newItem);
+                response = await Http.PostAsJsonAsync($"api/MenuItem/category/{categoryId}/items", newItem);
             }
             else
             {
-                response = await Http.PostAsJsonAsync($"api/Menu/{menu.Id}/items", newItem);
+                response = await Http.PostAsJsonAsync($"api/MenuItem/{menu.Id}/items", newItem);
             }
 
             if (response.IsSuccessStatusCode)
@@ -218,7 +242,7 @@ public partial class MenuTab : ComponentBase
                 ImagePath = item.ImageUrl
             };
 
-            var response = await Http.PutAsJsonAsync($"api/Menu/item/{item.Id}", dto);
+            var response = await Http.PutAsJsonAsync($"api/MenuItem/item/{item.Id}", dto);
             if (response.IsSuccessStatusCode)
             {
                 editingItemId = null;
@@ -235,7 +259,7 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            var response = await Http.DeleteAsync($"api/Menu/item/{itemId}");
+            var response = await Http.DeleteAsync($"api/MenuItem/item/{itemId}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadMenu();
@@ -255,7 +279,7 @@ public partial class MenuTab : ComponentBase
         {
             int? categoryId = targetCategoryId == "uncategorized" ? null : int.Parse(targetCategoryId);
             
-            var response = await Http.PatchAsJsonAsync($"api/Menu/item/{itemId}/move", categoryId);
+            var response = await Http.PatchAsJsonAsync($"api/MenuItem/item/{itemId}/move", categoryId);
 
             if (response.IsSuccessStatusCode)
             {
@@ -281,7 +305,7 @@ public partial class MenuTab : ComponentBase
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
             content.Add(streamContent, "image", file.Name);
 
-            var response = await Http.PostAsync($"/api/Menu/item/{itemId}/upload-image", content);
+            var response = await Http.PostAsync($"/api/MenuItem/item/{itemId}/upload-image", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -302,7 +326,7 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            var response = await Http.DeleteAsync($"/api/Menu/item/{itemId}/delete-image");
+            var response = await Http.DeleteAsync($"/api/MenuItem/item/{itemId}/delete-image");
             if (response.IsSuccessStatusCode)
             {
                 await LoadMenu();

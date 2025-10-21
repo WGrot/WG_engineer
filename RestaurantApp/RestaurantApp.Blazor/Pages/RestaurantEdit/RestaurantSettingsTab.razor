@@ -42,7 +42,16 @@ else
             Console.WriteLine("nie ma settingow");
         }
 
-        settings = await Http.GetFromJsonAsync<RestaurantSettings>($"api/RestaurantSettings/{Id}/get-restaurant-settings");
+        var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
+        if (response.IsSuccessStatusCode)
+        {
+            settings = await response.Content.ReadFromJsonAsync<RestaurantSettings>();
+        }
+        else
+        {
+            settings = new RestaurantSettings();
+            await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
+        }
     }
     
     private void ToggleNeedConfirmation()

@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
@@ -17,7 +18,7 @@ public partial class RestaurantMenuTab : ComponentBase
     
     private bool showItemDetailsModal = false;
     private MenuItem selectedMenuItem = null!;
-    private Menu menu { get; set; }
+    private Menu? menu { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -47,13 +48,13 @@ public partial class RestaurantMenuTab : ComponentBase
 
                 categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
                 
-                foreach (var category in categories)
-                {
-                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/category/{category.Id}/items");
-                    categoryItems[category.Id] = items ?? new();
-                }
+                 foreach (var category in categories)
+                 {
+                     var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/category/{category.Id}/items");
+                     categoryItems[category.Id] = items ?? new();
+                 }
 
-                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/Menu/{menu.Id}/items/uncategorized")) ?? new();
+                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/{menu.Id}/items/uncategorized")) ?? new();
             }
         }
         catch (Exception ex)
@@ -67,4 +68,5 @@ public partial class RestaurantMenuTab : ComponentBase
         selectedMenuItem = clickedItem;
         showItemDetailsModal = true;
     }
+    
 }

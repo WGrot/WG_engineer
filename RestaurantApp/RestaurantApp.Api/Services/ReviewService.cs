@@ -174,26 +174,43 @@ public class ReviewService : IReviewService
 
     private async Task RecalculateScores(int restaurantId)
     {
-        var reviews = await _context.Reviews
-            .Where(r => r.RestaurantId == restaurantId && r.IsActive)
-            .ToListAsync();
-        
         var restaurant = await _context.Restaurants.FindAsync(restaurantId);
+        if (restaurant == null) return;
 
-        double sum = 0f;
-        int[] ratingCounts = new int[5];
-        foreach (var review in reviews)
+        var stats = await _context.Reviews
+            .Where(r => r.RestaurantId == restaurantId && r.IsActive)
+            .GroupBy(r => 1)
+            .Select(g => new
+            {
+                Average = g.Average(r => r.Rating),
+                Count = g.Count(),
+                Stars1 = g.Count(r => r.Rating == 1),
+                Stars2 = g.Count(r => r.Rating == 2),
+                Stars3 = g.Count(r => r.Rating == 3),
+                Stars4 = g.Count(r => r.Rating == 4),
+                Stars5 = g.Count(r => r.Rating == 5)
+            })
+            .FirstOrDefaultAsync();
+
+        if (stats != null)
         {
-            sum += review.Rating;
-            ratingCounts[review.Rating - 1]++;
+            restaurant.AverageRating = stats.Average;
+            restaurant.TotalRatings1Star = stats.Stars1;
+            restaurant.TotalRatings2Star = stats.Stars2;
+            restaurant.TotalRatings3Star = stats.Stars3;
+            restaurant.TotalRatings4Star = stats.Stars4;
+            restaurant.TotalRatings5Star = stats.Stars5;
         }
-        restaurant.AverageRating = reviews.Count > 0 ? sum / reviews.Count : 0;
-        restaurant.TotalRatings1Star = ratingCounts[0];
-        restaurant.TotalRatings2Star = ratingCounts[1];
-        restaurant.TotalRatings3Star = ratingCounts[2];
-        restaurant.TotalRatings4Star = ratingCounts[3];
-        restaurant.TotalRatings5Star = ratingCounts[4];
-        
+        else
+        {
+            restaurant.AverageRating = 0;
+            restaurant.TotalRatings1Star = 0;
+            restaurant.TotalRatings2Star = 0;
+            restaurant.TotalRatings3Star = 0;
+            restaurant.TotalRatings4Star = 0;
+            restaurant.TotalRatings5Star = 0;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

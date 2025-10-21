@@ -157,12 +157,14 @@ public class RestaurantService : IRestaurantService
             return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
         }
 
-        var restaurant = new Restaurant
+        Restaurant restaurant = new Restaurant
         {
             Name = restaurantDto.Name,
             Address = restaurantDto.Address
         };
 
+        InitializedOpeningHours(restaurant);
+        
         // Add opening hours if provided
         if (restaurantDto.OpeningHours?.Any() == true)
         {
@@ -543,5 +545,24 @@ public class RestaurantService : IRestaurantService
             IsClosed = oh.IsClosed,
             RestaurantId = restaurantId ?? 0
         }).ToList();
+    }
+    
+    private void InitializedOpeningHours(Restaurant restaurant)
+    {
+        restaurant.OpeningHours = new List<OpeningHours>();
+        
+        foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            var hours = new OpeningHours
+            {
+                DayOfWeek = day,
+                OpenTime = new TimeOnly(10, 0),
+                CloseTime = new TimeOnly(22, 0),
+                RestaurantId = restaurant.Id
+            };
+            restaurant.OpeningHours ??= new List<OpeningHours>();
+            restaurant.OpeningHours.Add(hours);
+        }
+        
     }
 }
