@@ -1,0 +1,42 @@
+﻿@using System.Drawing
+@using RestaurantApp.Shared.Models
+@if(Restaurant != null){
+    <div class="star-rating">
+        @for (int i = 1; i <= 5; i++)
+        {
+            var starValue = i;
+            var isFull = starValue <= Restaurant.AverageRating;
+            var isHalf = !isFull && (starValue - 0.5) <= Restaurant.AverageRating;
+
+            <span class="star"
+                  style="font-size: @StarSize; position: relative; display: inline-block;">
+                @if (isFull)
+                {
+                    <i class="bi bi-star-fill" style="color: @StarColor;"></i>
+                }
+                else if (isHalf)
+                {
+                    <i class="bi bi-star-half" style="color: @StarColor;"></i>
+                }
+                else
+                {
+                    <i class="bi bi-star" style="color: @EmptyStarColor;"></i>
+                }
+            </span>
+        }
+        <span class="ms-2 text-uppercase" style="color: @TextColor">
+            (@Restaurant.AverageRating.ToString("F1") / @MaxStars)
+        </span>
+    </div>
+}
+
+@code {
+    [Parameter] public Restaurant? Restaurant { get; set; }
+    
+    [Parameter] public string StarColor { get; set; } = "#dee2e6"; 
+    [Parameter] public string EmptyStarColor { get; set; } = "#dee2e6"; 
+    [Parameter] public string TextColor { get; set; } = "#dee2e6"; 
+    [Parameter] public string StarSize { get; set; } = "2rem"; 
+    [Parameter] public int MaxStars { get; set; } = 5; 
+    [Parameter] public bool ShowText { get; set; } = true; 
+}

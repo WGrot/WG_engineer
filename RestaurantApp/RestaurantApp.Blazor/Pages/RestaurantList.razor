@@ -2,6 +2,7 @@
 @page "/restaurants/search"
 @using RestaurantApp.Shared.Models
 @using System.Net.Http.Json
+@using RestaurantApp.Blazor.Components
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
@@ -71,8 +72,13 @@
                         </div>
                         
                         <div class="restaurant-info">
-                            <h3 class="restaurant-name">@restaurant.Name</h3>
-                            
+                            <h3 class="restaurant-name mb-1">@restaurant.Name</h3>
+                            <StarRating 
+                                Restaurant="restaurant"
+                                StarColor="var(--primary-color)"
+                                EmptyStarColor="var(--primary-color)"
+                                TextColor="#555"
+                                StarSize="1.5rem" />
                             <div class="restaurant-details">
                                 <div class="detail-item">
                                     <i class="bi bi-geo-alt-fill"></i>
