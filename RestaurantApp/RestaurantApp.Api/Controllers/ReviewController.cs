@@ -45,6 +45,23 @@ public class ReviewsController : ControllerBase
         var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId);
         return reviews.ToActionResult(this);
     }
+    
+    [HttpGet("restaurant/{restaurantId}/paginated")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetByRestaurantPaginated(
+        int restaurantId, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 5,
+        [FromQuery] string sortBy = "newest")
+    {
+        var result = await _reviewService.GetByRestaurantIdPaginatedAsync(
+            restaurantId, 
+            page, 
+            pageSize, 
+            sortBy);
+    
+        return result.ToActionResult(this);
+    }
 
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetByUser(string userId)

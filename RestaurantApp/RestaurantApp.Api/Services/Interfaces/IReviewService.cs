@@ -15,4 +15,9 @@ public interface IReviewService
     Task<Result> DeleteAsync(int id);
     Task<Result> ToggleActiveStatusAsync(int id);
     Task<Result> VerifyReviewAsync(int id);
+
+    Task<Result<PaginatedReviewsDto>> GetByRestaurantIdPaginatedAsync(int restaurantId,
+        int page,
+        int pageSize,
+        string sortBy);
 }

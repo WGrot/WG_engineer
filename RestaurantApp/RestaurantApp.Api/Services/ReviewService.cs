@@ -172,45 +172,66 @@ public class ReviewService : IReviewService
         return Result.Success();
     }
 
+    public async Task<Result<PaginatedReviewsDto>> GetByRestaurantIdPaginatedAsync(int restaurantId, int page, int pageSize, string sortBy)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 5;
+        if (pageSize > 50) pageSize = 50; 
+    
+        var query = _context.Reviews
+            .Include(r => r.RestaurantResponse)
+            .Where(r => r.RestaurantId == restaurantId && r.IsActive);
+        
+        query = sortBy?.ToLower() switch
+        {
+            "oldest" => query.OrderBy(r => r.CreatedAt),
+            "highest" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+            "lowest" => query.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+            _ => query.OrderByDescending(r => r.CreatedAt) // "newest" jako domyślne
+        };
+        
+        var totalCount = await query.CountAsync();
+        
+        var reviews = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    
+        var result = new PaginatedReviewsDto
+        {
+            Reviews = reviews.ToDtoList(),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            HasMore = page * pageSize < totalCount,
+        };
+    
+        return Result.Success(result);
+    }
+
     private async Task RecalculateScores(int restaurantId)
     {
-        var restaurant = await _context.Restaurants.FindAsync(restaurantId);
-        if (restaurant == null) return;
-
-        var stats = await _context.Reviews
+        var reviews = await _context.Reviews
             .Where(r => r.RestaurantId == restaurantId && r.IsActive)
-            .GroupBy(r => 1)
-            .Select(g => new
-            {
-                Average = g.Average(r => r.Rating),
-                Count = g.Count(),
-                Stars1 = g.Count(r => r.Rating == 1),
-                Stars2 = g.Count(r => r.Rating == 2),
-                Stars3 = g.Count(r => r.Rating == 3),
-                Stars4 = g.Count(r => r.Rating == 4),
-                Stars5 = g.Count(r => r.Rating == 5)
-            })
-            .FirstOrDefaultAsync();
+            .ToListAsync();
+    
+        var restaurant = await _context.Restaurants.FindAsync(restaurantId);
 
-        if (stats != null)
+        double sum = 0f;
+        int[] ratingCounts = new int[5];
+        foreach (var review in reviews)
         {
-            restaurant.AverageRating = stats.Average;
-            restaurant.TotalRatings1Star = stats.Stars1;
-            restaurant.TotalRatings2Star = stats.Stars2;
-            restaurant.TotalRatings3Star = stats.Stars3;
-            restaurant.TotalRatings4Star = stats.Stars4;
-            restaurant.TotalRatings5Star = stats.Stars5;
+            sum += review.Rating;
+            ratingCounts[review.Rating - 1]++;
         }
-        else
-        {
-            restaurant.AverageRating = 0;
-            restaurant.TotalRatings1Star = 0;
-            restaurant.TotalRatings2Star = 0;
-            restaurant.TotalRatings3Star = 0;
-            restaurant.TotalRatings4Star = 0;
-            restaurant.TotalRatings5Star = 0;
-        }
-
+        restaurant.AverageRating = reviews.Count > 0 ? sum / reviews.Count : 0;
+        restaurant.TotalRatings1Star = ratingCounts[0];
+        restaurant.TotalRatings2Star = ratingCounts[1];
+        restaurant.TotalRatings3Star = ratingCounts[2];
+        restaurant.TotalRatings4Star = ratingCounts[3];
+        restaurant.TotalRatings5Star = ratingCounts[4];
+        restaurant.TotalReviews = reviews.Count;
         await _context.SaveChangesAsync();
     }
 }
