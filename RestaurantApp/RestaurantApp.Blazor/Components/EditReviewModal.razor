@@ -11,7 +11,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="HandleCancel"></button>
                 </div>
-                
+
                 <div class="modal-body">
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">
@@ -19,7 +19,7 @@
                             @Review.RestaurantName
                         </h6>
                     </div>
-                    
+
                     <form @onsubmit:preventDefault="true">
                         <!-- Rating Section -->
                         <div class="mb-3">
@@ -59,36 +59,12 @@
                         }
                     </form>
                 </div>
-                
-                <div class="modal-footer">
-                    <button type="button" 
-                            class="btn btn-secondary" 
-                            @onclick="HandleCancel"
-                            disabled="@isSubmitting">
-                        <i class="bi bi-x-circle me-1"></i>
-                        Cancel
-                    </button>
-                    
-                    <button type="button"
-                            class="btn btn-danger"
-                            @onclick="HandleDelete"
-                            disabled="@(isSubmitting || isDeleting)">
-                        @if (isDeleting)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            <span>Deleting...</span>
-                        }
-                        else
-                        {
-                            <i class="bi bi-trash me-2"></i>
-                            <span>Delete Review</span>
-                        }
-                    </button>
-                    
-                    <button type="button"
-                            class="btn btn-primary"
-                            @onclick="HandleUpdate"
-                            disabled="@(isSubmitting || isDeleting || tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))">
+
+                <div class="modal-footer d-flex justify-content-between">
+                    <button
+                        class="base-button"
+                        @onclick="HandleUpdate"
+                        disabled="@(isSubmitting || isDeleting || tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))">
                         @if (isSubmitting)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -100,6 +76,32 @@
                             <span>Update Review</span>
                         }
                     </button>
+
+                    <div class="ms-auto d-flex gap-2">
+                        <button
+                            class="btn btn-danger"
+                            @onclick="HandleDelete"
+                            disabled="@(isSubmitting || isDeleting)">
+                            @if (isDeleting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Deleting...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-trash me-2"></i>
+                                <span>Delete Review</span>
+                            }
+                        </button>
+
+                        <button
+                            class="btn btn-secondary"
+                            @onclick="HandleCancel"
+                            disabled="@isSubmitting">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,7 +116,7 @@
     .star-rating .star {
         transition: color 0.2s ease;
     }
-    
+
     .star-rating .star:hover {
         transform: scale(1.1);
     }

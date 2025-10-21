@@ -24,8 +24,8 @@ else
 {
     @foreach (var review in reviews)
     {
-        <div class="card mb-3 review-card">
-            <div class="card-body">
+        <div class="card mb-3 review-card w-75 mx-auto">
+            <div class="card-body "  @onclick="() => OpenEditModal(review)">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <!-- Left section - restaurant name and rating -->
                     <div class="flex-grow-1" style="min-width: 0; max-width: 60%;">
@@ -60,30 +60,6 @@ else
                                 <span class="badge bg-secondary ms-1">Edited</span>
                             }
                         </div>
-
-                        @if (review.UserId == loggedUserId)
-                        {
-                            <div class="dropdown">
-                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown"
-                                        aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="#" @onclick:preventDefault="true"
-                                           @onclick="() => OpenEditModal(review)">
-                                            <i class="bi bi-pencil me-2"></i>Edit
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger" href="#" @onclick:preventDefault="true"
-                                           @onclick="() => DeleteMyReview(review.Id)">
-                                            <i class="bi bi-trash me-2"></i>Delete
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
                     </div>
                 </div>
                 <p class="card-text">@review.Content</p>
@@ -102,11 +78,14 @@ else
 
 <style>
     .review-card {
-        transition: box-shadow 0.3s ease;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
     }
 
     .review-card:hover {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        border-left-color: var(--primary-color);
     }
 
     .dropdown-menu {
