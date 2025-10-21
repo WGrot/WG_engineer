@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Json;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -9,6 +11,9 @@ namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 public partial class RestaurantReviewsTab : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
+    
+    [Inject]
+    public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
 
@@ -16,13 +21,18 @@ public partial class RestaurantReviewsTab : ComponentBase
     private CreateReviewDto newReview { get; set; } = new() { Rating = 5 };
 
     private string errorInfo { get; set; } = string.Empty;
-    private bool successMessage { get; set; }
+    
+    private string loggedUserId { get; set; } = string.Empty;
+    private string successMessage { get; set; }
     private bool isSubmitting { get; set; }
+    private bool IsDeletting { get; set; }
     private bool isLoadingMore { get; set; }
     private bool isInitialLoading { get; set; } = true;
     private bool hasMoreReviews { get; set; }
 
     private string sortOption { get; set; } = "newest";
+    
+    private ReviewDto? existingUserReview { get; set; } = null;
     private Dictionary<int, int> ratingDistribution { get; set; } = new();
 
     private int currentPage = 1;
@@ -32,7 +42,16 @@ public partial class RestaurantReviewsTab : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            loggedUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
         await LoadInitialReviews();
+
+        
     }
 
     private async Task LoadInitialReviews()
@@ -44,6 +63,7 @@ public partial class RestaurantReviewsTab : ComponentBase
         try
         {
             await LoadReviewsPage();
+            await CheckIfUserHasReview();
         }
         catch (Exception ex)
         {
@@ -129,7 +149,7 @@ public partial class RestaurantReviewsTab : ComponentBase
 
         isSubmitting = true;
         errorInfo = string.Empty;
-        successMessage = false;
+        successMessage = String.Empty;
 
         try
         {
@@ -140,7 +160,7 @@ public partial class RestaurantReviewsTab : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = true;
+                successMessage = "Your review has been added successfully!";
                 newReview = new CreateReviewDto
                 {
                     RestaurantId = Id,
@@ -167,8 +187,58 @@ public partial class RestaurantReviewsTab : ComponentBase
         }
     }
 
-    private void SetRating(int rating)
+    private async Task DeleteMyReview(int id)
+    {
+        IsDeletting = true;
+        successMessage = string.Empty;
+        var response =await Http.DeleteAsync($"/api/Reviews/{id}");
+        if(response.IsSuccessStatusCode)
+        {
+            await LoadInitialReviews();
+            IsDeletting = false;
+            successMessage = "Review has been deleted successfully!";
+        }
+    }
+    
+    private void SetRatingForCreating(int rating)
     {
         newReview.Rating = rating;
+    }
+    
+    private void SetRatingForEditing(int rating)
+    {
+        existingUserReview.Rating = rating;
+    }
+    
+    private async Task<bool> CheckIfUserHasReview()
+    {
+        if (string.IsNullOrEmpty(loggedUserId)) return false;
+
+        var response = await Http.GetFromJsonAsync<List<ReviewDto>>($"/api/Reviews/user/{loggedUserId}");
+        if (response != null)
+        {
+            existingUserReview = response.FirstOrDefault(r => r.RestaurantId == Id);
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task UpdateReview()
+    {
+        successMessage = string.Empty;
+        UpdateReviewDto dto = new UpdateReviewDto
+        {
+            Rating = existingUserReview!.Rating,
+            Content = existingUserReview.Content,
+            PhotosUrls = existingUserReview.PhotosUrls
+        };
+        var response = await Http.PutAsJsonAsync($"/api/Reviews/{existingUserReview!.Id}", dto);
+        if(response.IsSuccessStatusCode)
+        {
+            await LoadInitialReviews();
+            successMessage = "Review has been updated successfully!";
+        }
+        
     }
 }

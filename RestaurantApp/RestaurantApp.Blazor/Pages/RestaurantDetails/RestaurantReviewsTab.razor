@@ -1,4 +1,5 @@
-﻿@* RestaurantReviewsTab.razor *@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
 
 <div class="container-fluid px-0">
     @if (!string.IsNullOrEmpty(errorInfo))
@@ -10,72 +11,155 @@
         </div>
     }
 
-    @if (successMessage)
+    @if (!String.IsNullOrEmpty(successMessage))
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
-            Your review has been added successfully!
-            <button type="button" class="btn-close" @onclick="() => successMessage = false"></button>
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = String.Empty"></button>
         </div>
     }
 
-    <!-- Add Review Section -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-pencil-square me-2"></i>Write a Review
-            </h5>
-        </div>
-        <div class="card-body">
-            <form @onsubmit:preventDefault="true">
-                <!-- Star Rating -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Your Rating</label>
-                    <div class="star-rating">
-                        @for (int i = 1; i <= 5; i++)
-                        {
-                            var starValue = i;
-                            <span class="star @(starValue <= newReview.Rating ? "filled" : "")"
-                                  @onclick="() => SetRating(starValue)"
-                                  style="cursor: pointer; font-size: 2rem; color: @(starValue <= newReview.Rating ? "#4c63d2" : "#dee2e6")">
-                                <i class="bi @(starValue <= newReview.Rating ? "bi-star-fill" : "bi-star")"></i>
-                            </span>
-                        }
-                        <span class="ms-2 text-muted">(@newReview.Rating / 5.0)</span>
+    <AuthorizeView>
+        <Authorized>
+            @if (existingUserReview != null)
+            {
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>Your Review
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form @onsubmit:preventDefault="true">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Your Rating</label>
+                                <div class="star-rating">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        var starValue = i;
+                                        <span class="star @(starValue <= existingUserReview.Rating ? "filled" : "")"
+                                              @onclick="() => SetRatingForEditing(starValue)"
+                                              style="cursor: pointer; font-size: 2rem; color: @(starValue <= existingUserReview.Rating ? "#4c63d2" : "#dee2e6")">
+                                        <i class="bi @(starValue <= existingUserReview.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                    </span>
+                                    }
+                                    <span class="ms-2 text-muted">(@existingUserReview.Rating / 5.0)</span>
+                                </div>
+                            </div>
+
+                            <!-- Review Content -->
+                            <div class="mb-3">
+                                <label for="reviewContent" class="form-label fw-bold">Your Review</label>
+                                <textarea class="form-control"
+                                          id="reviewContent"
+                                          rows="4"
+                                          @bind="existingUserReview.Content"
+                                          placeholder="Share your experience at this restaurant..."
+                                          maxlength="1000"></textarea>
+                                <small class="text-muted">@(existingUserReview.Content?.Length ?? 0) / 1000
+                                    characters</small>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex gap-2">
+                                <button type="button"
+                                        class="base-button"
+                                        @onclick="UpdateReview"
+                                        disabled="@(isSubmitting || IsDeletting)">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span>Updating...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-arrow-up-right me-2"></i>
+                                        <span>Update Review</span>
+                                    }
+                                </button>
+                                <button type="button"
+                                        class="base-button"
+                                        @onclick="()=>DeleteMyReview(existingUserReview.Id)"
+                                        disabled="@(isSubmitting || IsDeletting)">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span>Deleting...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-trash me-2"></i>
+                                        <span>Delete Review</span>
+                                    }
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+            }
+            else
+            {
+                <!-- Add Review Section -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>Write a Review
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form @onsubmit:preventDefault="true">
+                            <!-- Star Rating -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Your Rating</label>
+                                <div class="star-rating">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        var starValue = i;
+                                        <span class="star @(starValue <= newReview.Rating ? "filled" : "")"
+                                              @onclick="() => SetRatingForCreating(starValue)"
+                                              style="cursor: pointer; font-size: 2rem; color: @(starValue <= newReview.Rating ? "#4c63d2" : "#dee2e6")">
+                                            <i class="bi @(starValue <= newReview.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                        </span>
+                                    }
+                                    <span class="ms-2 text-muted">(@newReview.Rating / 5.0)</span>
+                                </div>
+                            </div>
 
-                <!-- Review Content -->
-                <div class="mb-3">
-                    <label for="reviewContent" class="form-label fw-bold">Your Review</label>
-                    <textarea class="form-control"
-                              id="reviewContent"
-                              rows="4"
-                              @bind="newReview.Content"
-                              placeholder="Share your experience at this restaurant..."
-                              maxlength="1000"></textarea>
-                    <small class="text-muted">@(newReview.Content?.Length ?? 0) / 1000 characters</small>
+                            <!-- Review Content -->
+                            <div class="mb-3">
+                                <label for="reviewContent" class="form-label fw-bold">Your Review</label>
+                                <textarea class="form-control"
+                                          id="reviewContent"
+                                          rows="4"
+                                          @bind="newReview.Content"
+                                          placeholder="Share your experience at this restaurant..."
+                                          maxlength="1000"></textarea>
+                                <small class="text-muted">@(newReview.Content?.Length ?? 0) / 1000 characters</small>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="button"
+                                    class="base-button"
+                                    @onclick="CreateReview"
+                                    disabled="@(isSubmitting)">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Posting...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-send-fill me-2"></i>
+                                    <span>Post Review</span>
+                                }
+                            </button>
+                        </form>
+                    </div>
                 </div>
-
-                <!-- Submit Button -->
-                <button type="button"
-                        class="base-button"
-                        @onclick="CreateReview"
-                        disabled="@(isSubmitting)">
-                    @if (isSubmitting)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        <span>Posting...</span>
-                    }
-                    else
-                    {
-                        <i class="bi bi-send-fill me-2"></i>
-                        <span>Post Review</span>
-                    }
-                </button>
-            </form>
-        </div>
-    </div>
+            }
+        </Authorized>
+    </AuthorizeView>
 
     <!-- Reviews List -->
     <div class="reviews-section">
@@ -134,7 +218,8 @@
                             @foreach (var rating in ratingDistribution.OrderByDescending(x => x.Key))
                             {
                                 <div class="d-flex align-items-center mb-1">
-                                    <span class="me-2">@rating.Key <i class="bi bi-star-fill text-warning small"></i></span>
+                                    <span class="me-2">@rating.Key <i
+                                            class="bi bi-star-fill text-warning small"></i></span>
                                     <div class="progress flex-grow-1" style="height: 8px;">
                                         <div class="progress-bar bg-warning"
                                              style="width: @((rating.Value * 100 / totalReviewCount))%"></div>
@@ -153,12 +238,16 @@
                 <div class="card mb-3 review-card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h5 class="mb-1">
-                                    <i class="bi bi-person-circle me-2"></i>@review.UserName
+                            <!-- Left section - username and rating (with max-width) -->
+                            <div class="flex-grow-1" style="min-width: 0; max-width: 60%;">
+                                <h5 class="mb-1 d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-2 flex-shrink-0"></i>
+                                    <span class="text-truncate" style="max-width: 200px;" title="@review.UserName">
+                                        @("@" + review.UserName)
+                                    </span>
                                     @if (review.IsVerified)
                                     {
-                                        <span class="badge bg-success ms-2" title="Verified Review">
+                                        <span class="badge bg-success ms-2 flex-shrink-0" title="Verified Review">
                                             <i class="bi bi-check-circle"></i> Verified
                                         </span>
                                     }
@@ -171,12 +260,31 @@
                                     <span class="ms-2 text-muted small">@review.Rating.0 / 5.0</span>
                                 </div>
                             </div>
-                            <div class="text-muted small">
-                                <i class="bi bi-calendar3 me-1"></i>
-                                @review.CreatedAt.ToString("MMM dd, yyyy")
-                                @if (review.UpdatedAt.HasValue)
+
+                            <!-- Right section - date and actions (fixed position) -->
+                            <div class="text-muted small d-flex align-items-center gap-2 flex-shrink-0 ms-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span class="text-nowrap">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    @if (review.UpdatedAt.HasValue)
+                                    {
+                                        <span class="badge bg-secondary ms-1">Edited</span>
+                                    }
+                                </div>
+
+                                @if (review.UserId == loggedUserId)
                                 {
-                                    <span class="badge bg-secondary ms-1">Edited</span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">Edit</a></li>
+                                            <li><a class="dropdown-item" @onclick="() => DeleteMyReview(review.Id)">Delete</a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 }
                             </div>
                         </div>
@@ -231,7 +339,7 @@
 
     .review-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
         border-left-color: var(--primary-color);
     }
 

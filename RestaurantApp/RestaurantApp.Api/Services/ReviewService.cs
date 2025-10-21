@@ -77,7 +77,7 @@ public class ReviewService : IReviewService
             return Result<ReviewDto>.Failure($"Restaurant with ID {createReviewDto.RestaurantId} not found");
 
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        string userName = _context.Users.FirstOrDefault(u => u.Id == userId).UserName;
+        string userName = _context.Users.FirstOrDefault(u => u.Id == userId).FirstName;
 
         // Sprawdź czy użytkownik już nie dodał recenzji dla tej restauracji
         var existingReview = await _context.Reviews
@@ -119,6 +119,7 @@ public class ReviewService : IReviewService
             return Result.Failure<ReviewDto>("Review rating must be between 1 and 5.");
 
         review.UpdateEntity(updateReviewDto);
+        await RecalculateScores(review.RestaurantId);
 
         await _context.SaveChangesAsync();
 
