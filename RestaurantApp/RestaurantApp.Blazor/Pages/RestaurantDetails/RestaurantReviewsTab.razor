@@ -222,7 +222,7 @@
                                             class="bi bi-star-fill text-warning small"></i></span>
                                     <div class="progress flex-grow-1" style="height: 8px;">
                                         <div class="progress-bar bg-warning"
-                                             style="width: @((rating.Value * 100 / totalReviewCount))%"></div>
+                                             style="width: @((totalReviewCount > 0 ? (rating.Value * 100 / totalReviewCount) : 0))%"></div>
                                     </div>
                                     <span class="ms-2 small text-muted">@rating.Value</span>
                                 </div>

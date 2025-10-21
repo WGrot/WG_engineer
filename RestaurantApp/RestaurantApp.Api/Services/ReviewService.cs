@@ -58,12 +58,25 @@ public class ReviewService : IReviewService
     public async Task<Result<List<ReviewDto>>> GetByUserIdAsync(string userId)
     {
         var reviews = await _context.Reviews
-            .Include(r => r.RestaurantResponse)
             .Where(r => r.UserId == userId && r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new ReviewDto
+            {
+                Id = r.Id,
+                RestaurantId = r.RestaurantId,
+                RestaurantName = r.Restaurant.Name, 
+                UserId = r.UserId,
+                UserName = r.UserName,
+                Rating = r.Rating,
+                Content = r.Content,
+                CreatedAt = r.CreatedAt,
+                UpdatedAt = r.UpdatedAt,
+                PhotosUrls = r.PhotosUrls,
+                IsVerified = r.IsVerified,
+            })
             .ToListAsync();
 
-        return Result.Success(reviews.ToDtoList());
+        return Result.Success(reviews);
     }
 
     public async Task<Result<ReviewDto>> CreateAsync(CreateReviewDto createReviewDto)

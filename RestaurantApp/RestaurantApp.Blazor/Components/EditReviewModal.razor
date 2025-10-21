@@ -1,0 +1,121 @@
+﻿@using RestaurantApp.Blazor.Models
+
+@if (IsVisible && Review != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Your Review
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="HandleCancel"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">
+                            <i class="bi bi-house-door me-1"></i>
+                            @Review.RestaurantName
+                        </h6>
+                    </div>
+                    
+                    <form @onsubmit:preventDefault="true">
+                        <!-- Rating Section -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Rating</label>
+                            <div class="star-rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    var starValue = i;
+                                    <span class="star @(starValue <= tempRating ? "filled" : "")"
+                                          @onclick="() => SetRating(starValue)"
+                                          style="cursor: pointer; font-size: 2rem; color: @(starValue <= tempRating ? "#4c63d2" : "#dee2e6")">
+                                        <i class="bi @(starValue <= tempRating ? "bi-star-fill" : "bi-star")"></i>
+                                    </span>
+                                }
+                                <span class="ms-2 text-muted">(@tempRating / 5.0)</span>
+                            </div>
+                        </div>
+
+                        <!-- Review Content -->
+                        <div class="mb-3">
+                            <label for="reviewContent" class="form-label fw-bold">Your Review</label>
+                            <textarea class="form-control"
+                                      id="reviewContent"
+                                      rows="6"
+                                      @bind="tempContent"
+                                      placeholder="Share your experience at this restaurant..."
+                                      maxlength="1000"></textarea>
+                            <small class="text-muted">@(tempContent?.Length ?? 0) / 1000 characters</small>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                @errorMessage
+                            </div>
+                        }
+                    </form>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            @onclick="HandleCancel"
+                            disabled="@isSubmitting">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancel
+                    </button>
+                    
+                    <button type="button"
+                            class="btn btn-danger"
+                            @onclick="HandleDelete"
+                            disabled="@(isSubmitting || isDeleting)">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Deleting...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-trash me-2"></i>
+                            <span>Delete Review</span>
+                        }
+                    </button>
+                    
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="HandleUpdate"
+                            disabled="@(isSubmitting || isDeleting || tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))">
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Updating...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-check-circle me-2"></i>
+                            <span>Update Review</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+}
+
+<style>
+    .star-rating .star {
+        transition: color 0.2s ease;
+    }
+    
+    .star-rating .star:hover {
+        transform: scale(1.1);
+    }
+</style>
