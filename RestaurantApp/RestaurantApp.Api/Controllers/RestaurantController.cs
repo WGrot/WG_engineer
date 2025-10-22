@@ -46,9 +46,12 @@ public class RestaurantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Search(
         [FromQuery] string? name = null,
-        [FromQuery] string? address = null)
+        [FromQuery] string? address = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 5,
+        [FromQuery] string sortBy = "newest")
     {
-        var restaurants = await _restaurantService.SearchAsync(name, address);
+        var restaurants = await _restaurantService.SearchAsync(name, address, page, pageSize, sortBy);
         return restaurants.ToActionResult();
     }
 
@@ -126,8 +129,8 @@ public class RestaurantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAddress(int restaurantId, [FromBody] string address)
     {
-            var result = await _restaurantService.UpdateAddressAsync(restaurantId, address);
-            return result.ToActionResult();
+        var result = await _restaurantService.UpdateAddressAsync(restaurantId, address);
+        return result.ToActionResult();
     }
 
     // PATCH: api/Restaurant/5/address
@@ -137,8 +140,8 @@ public class RestaurantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateName(int id, [FromBody] string name)
     {
-            var result = await _restaurantService.UpdateNameAsync(id, name);
-            return result.ToActionResult();
+        var result = await _restaurantService.UpdateNameAsync(id, name);
+        return result.ToActionResult();
     }
 
     // PATCH: api/Restaurant/5/opening-hours
@@ -148,10 +151,8 @@ public class RestaurantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
-
-            var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
-            return result.ToActionResult();
-
+        var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
+        return result.ToActionResult();
     }
 
     // DELETE: api/Restaurant/5
@@ -161,19 +162,19 @@ public class RestaurantController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id)
     {
-            var result = await _restaurantService.DeleteAsync(id);
-            return result.ToActionResult();
+        var result = await _restaurantService.DeleteAsync(id);
+        return result.ToActionResult();
     }
-    
+
     [HttpPost("{id}/upload-profile-photo")]
-    public async Task <IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
+    public async Task<IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
     {
         var result = await _restaurantService.UploadRestaurantProfilePhoto(image, id);
         return result.ToActionResult();
     }
-    
+
     [HttpPost("{id}/upload-restaurant-photos")]
-    public async Task <IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
+    public async Task<IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
     {
         var result = await _restaurantService.UploadRestaurantPhotos(imageList, id);
         return result.ToActionResult();
@@ -185,7 +186,7 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.DeleteRestaurantProfilePicture(id);
         return result.ToActionResult();
     }
-    
+
     [HttpDelete("{id}/delete-photo")]
     public async Task<IActionResult> DeleteRestaurantPhoto(int id, int photoIndex)
     {

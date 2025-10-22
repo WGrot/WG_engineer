@@ -153,6 +153,18 @@ code {
     background: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%) !important;
 }
 
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-radius: 8px;
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
 :root {
     /* Kolory główne aplikacji */
     --primary-color: #4c63d2;

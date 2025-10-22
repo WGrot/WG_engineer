@@ -10,7 +10,8 @@ public interface IRestaurantService
 {
     Task<Result<IEnumerable<Restaurant>>> GetAllAsync();
     Task<Result<Restaurant>> GetByIdAsync(int id);
-    Task<Result<IEnumerable<Restaurant>>> SearchAsync(string? name, string? address);
+    Task<Result<PaginatedRestaurantsDto>> SearchAsync(string? name, string? address, int page, int pageSize,
+        string sortBy);
     Task<Result<IEnumerable<Table>>> GetTablesAsync(int restaurantId);
     Task<Result<IEnumerable<Restaurant>>> GetOpenNowAsync();
     Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null);

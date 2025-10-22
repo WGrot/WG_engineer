@@ -47,12 +47,18 @@ public class RestaurantService : IRestaurantService
             : Result<Restaurant>.Success(restaurant);
     }
 
-    public async Task<Result<IEnumerable<Restaurant>>> SearchAsync(string? name, string? address)
+    public async Task<Result<PaginatedRestaurantsDto>> SearchAsync(string? name, string? address, int page,
+        int pageSize, string sortBy)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 50) pageSize = 50; 
+        
         var query = _context.Restaurants
             .Include(r => r.Menu)
             .Include(r => r.OpeningHours)
             .AsQueryable();
+        
 
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -63,10 +69,35 @@ public class RestaurantService : IRestaurantService
         {
             query = query.Where(r => r.Address.ToLower().Contains(address.ToLower()));
         }
+        
+        query = sortBy?.ToLower() switch
+        {
+            "name_ascending" => query.OrderBy(r => r.Name),
+            "name_descending" => query.OrderByDescending(r => r.Name),
+            "worst" => query.OrderBy(r => r.AverageRating),
+            "best" => query.OrderByDescending(r => r.AverageRating),
+            _ => query.OrderBy(r => r.Name) // domyślnie sortuj po nazwie
+        };
 
-        var restaurants = await query.ToListAsync();
+        var totalCount = await query.CountAsync();
+    
+        // Paginacja
+        var restaurants = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-        return Result<IEnumerable<Restaurant>>.Success(restaurants);
+        var result = new PaginatedRestaurantsDto
+        {
+            Restaurants = restaurants, // lub restaurants.ToDtoList() jeśli masz mapowanie na DTO
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            HasMore = page * pageSize < totalCount
+        };
+
+        return Result<PaginatedRestaurantsDto>.Success(result);
     }
 
     public async Task<Result<IEnumerable<Table>>> GetTablesAsync(int restaurantId)
