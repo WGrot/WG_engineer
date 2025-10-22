@@ -29,6 +29,9 @@ public partial class RestaurantReviewsTab : ComponentBase
     private bool isLoadingMore { get; set; }
     private bool isInitialLoading { get; set; } = true;
     private bool hasMoreReviews { get; set; }
+    
+    private bool isEditReviewExpanded = false;
+    private bool isAddReviewExpanded = false;
 
     private string sortOption { get; set; } = "newest";
     
