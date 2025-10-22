@@ -62,7 +62,20 @@
                 <div class="results-info">
                     <p>Found <strong>@displayedRestaurants.Count()</strong> restaurant(s) @(!string.IsNullOrEmpty(searchName) || !string.IsNullOrEmpty(searchLocation) ? "matching your criteria" : "")</p>
                 </div>
-                <div>
+                <div class="d-flex flex-row justify-content-end">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown">
+                            Restaurants per page: @pageSize
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" @onclick='() => SetPageSize(10)'>10</a></li>
+                            <li><a class="dropdown-item" @onclick='() => SetPageSize(25)'>25</a></li>
+                            <li><a class="dropdown-item" @onclick='() => SetPageSize(50)'>50</a></li>
+
+                        </ul>
+                    </div>
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
                                 type="button"
@@ -76,7 +89,7 @@
                             <li><a class="dropdown-item" @onclick='() => SortRestaurants("worst")'>Lowest Rating</a></li>
                         </ul>
                     </div>
-                    
+
                 </div>
                 
             </div>
@@ -293,6 +306,12 @@
         if (sortOption == option) return;
 
         sortOption = option.ToLower();
+        await LoadInitialRestaurants();
+    }
+    
+    private async Task SetPageSize(int size)
+    {
+        pageSize = size;
         await LoadInitialRestaurants();
     }
 
