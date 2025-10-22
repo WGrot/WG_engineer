@@ -65,6 +65,7 @@ public class ReviewService : IReviewService
                 Id = r.Id,
                 RestaurantId = r.RestaurantId,
                 RestaurantName = r.Restaurant.Name, 
+                RestaurantAddress = r.Restaurant.Address,
                 UserId = r.UserId,
                 UserName = r.UserName,
                 Rating = r.Rating,
