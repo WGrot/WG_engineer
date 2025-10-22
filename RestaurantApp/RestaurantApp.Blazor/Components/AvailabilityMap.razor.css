@@ -26,9 +26,22 @@
 }
 
 .slot.unavailable {
-    background-color: #3f2ae3; /* jasnoszary */
+    background-color: var(--secondary-color); /* jasnoszary */
 }
 
+.slot.selected {
+    background-color: var(--primary-color-strong) !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+.slot.unavailable.selected {
+    background-color: #ff9900 !important; /* pomarańczowy lub dowolny inny kolor */
+}
+
+.slot.closed.selected {
+    background-color: #ff9900 !important; /* pomarańczowy lub dowolny inny kolor */
+}
 .slot:hover {
     filter: brightness(1.2);
 }

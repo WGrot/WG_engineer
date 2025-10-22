@@ -156,6 +156,7 @@ code {
 :root {
     /* Kolory główne aplikacji */
     --primary-color: #4c63d2;
+    --primary-color-strong: #3f2ae3;
     --secondary-color: #667eea;
     
 }

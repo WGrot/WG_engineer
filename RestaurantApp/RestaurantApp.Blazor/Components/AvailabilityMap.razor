@@ -9,6 +9,7 @@
             char state = TrimmedAvailability[i];
             var time = StartTime.AddMinutes(i * 15 + leading2s * 15);
             bool isHourMark = time.Minute == 0;
+            bool isSelected = IsTimeInSelectedRange(time);
 
             string slotClass = state switch
             {
@@ -16,6 +17,11 @@
                 '2' => "closed",
                 _ => "unavailable"
             };
+
+            if (isSelected)
+            {
+                slotClass += " selected";
+            }
 
             <div class="slot-container" @onclick="() => OnSlotClick(time, slotClass)">
                 @if (isHourMark)
@@ -32,12 +38,14 @@
     }
 </div>
 
+
 @code {
     [Parameter] public string? Availability { get; set; }
     [Parameter] public DateTime StartTime { get; set; } = DateTime.Today;
+    [Parameter] public DateTime SelectedStartTime { get; set; }
+    [Parameter] public DateTime SelectedEndTime { get; set; }
     [Parameter] public EventCallback<SlotClickedArgs> OnSlotClicked { get; set; }
-    
-    
+
     private string? TrimmedAvailability;
     private int leading2s = 0;
     private DateTime adjustedStartTime;
@@ -54,21 +62,36 @@
             return input;
 
         leading2s = input.TakeWhile(c => c == '2').Count();
-        
+
         if(leading2s > 95) // all '2's
             return input;
-        
+
         return input.Trim('2');
     }
-    
-    
+
+    private bool IsTimeInSelectedRange(DateTime time)
+    {
+        // Jeśli nic nie wybrano
+        if (SelectedStartTime == DateTime.MinValue)
+            return false;
+
+        // Jeśli wybrano tylko start (jeden klik)
+        if (SelectedEndTime == DateTime.MinValue)
+            return time == SelectedStartTime;
+
+        // Jeśli wybrano oba (zaznacz zakres włącznie z końcem)
+        var min = SelectedStartTime < SelectedEndTime ? SelectedStartTime : SelectedEndTime;
+        var max = SelectedStartTime > SelectedEndTime ? SelectedStartTime : SelectedEndTime;
+
+        return time >= min && time < max;
+    }
+
     private async Task OnSlotClick(DateTime time, string status)
     {
-        await OnSlotClicked.InvokeAsync(new SlotClickedArgs 
-        { 
-            Time = time, 
-            Status = status 
+        await OnSlotClicked.InvokeAsync(new SlotClickedArgs
+        {
+            Time = time,
+            Status = status
         });
     }
 }
-

@@ -10,7 +10,7 @@
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary" style="color: #FFFFFF">
                     <h5 class="modal-title">Table @Table.TableNumber details</h5>
                     <button type="button" class="btn-close" @onclick="Close"></button>
                 </div>
@@ -42,7 +42,10 @@
                     </div>
 
                     <div style="width: 100%;">
-                        <AvailabilityMap Availability="@TableAvailibilitymap" StartTime="@chosenDate"
+                        <AvailabilityMap Availability="@TableAvailibilitymap"
+                                         StartTime="@chosenDate"
+                                         SelectedStartTime="@StartTime"
+                                         SelectedEndTime="@EndTime"
                                          OnSlotClicked="@HandleSlotClicked"/>
                     </div>
                     @if (startTimeSelected)
@@ -146,20 +149,26 @@
 
     private void HandleSlotClicked(SlotClickedArgs args)
     {
-        if (args.Status != "available")
+        if (args.Status.Contains("available") == false)
         {
             return;
         }
 
         if (firstClick)
         {
+            EndTime = DateTime.MinValue;
             StartTime = args.Time;
             startTimeSelected = true;
             firstClick = false;
         }
         else
         {
-                EndTime = args.Time;
+            EndTime = args.Time.AddMinutes(15);
+            if (args.Time < StartTime)
+            {
+                EndTime = StartTime;
+                StartTime = args.Time.AddMinutes(15);
+            }
                 firstClick = true;
         }
         
