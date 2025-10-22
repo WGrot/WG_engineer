@@ -3,15 +3,19 @@
 @using System.Net.Http.Json
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.DTOs
+@using RestaurantApp.Blazor.Pages.RestaurantDetails
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Services
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
 <div class="booking-container">
-    <h1>Book a Table</h1>
-
     @if (isLoadingRestaurant)
     {
-        <p>Loading restaurant details...</p>
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
     }
     else if (restaurant == null)
     {
@@ -22,144 +26,292 @@
     }
     else
     {
-        <h2>@restaurant.Name</h2>
-        <p>@restaurant.Address</p>
-
-        <div class="booking-form">
-            <div class="form-group">
-                <label for="date">Select Date:</label>
-                <input type="date" id="date" @bind="selectedDate" @bind:event="oninput" @onchange="OnDateTimeChanged" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-            </div>
-
-            <div class="form-group">
-                <label for="startTime">Start Time:</label>
-                <input type="time" id="startTime" @bind="startTime" @bind:event="oninput" @onchange="OnDateTimeChanged" />
-            </div>
-
-            <div class="form-group">
-                <label for="endTime">End Time:</label>
-                <input type="time" id="endTime" @bind="endTime" @bind:event="oninput" min="@(startTime?.ToString("HH:mm"))" />
-            </div>
-
-            <div class="form-group">
-                <label for="guests">Number of Guests:</label>
-                <input type="number" id="guests" @bind="numberOfGuests" min="1" max="20" />
-            </div>
-
-            @if (selectedDate != null && startTime != null && endTime != null)
-            {
-                <button @onclick="CheckAvailability" disabled="@isCheckingAvailability">
-                    @if (isCheckingAvailability)
-                    {
-                        <span>Checking...</span>
-                    }
-                    else
-                    {
-                        <span>Check Available Tables</span>
-                    }
-                </button>
-            }
-
-            @if (availableTables != null)
-            {
-                <div class="available-tables">
-                    <h3>Available Tables</h3>
-                    @if (!availableTables.Any())
-                    {
-                        <p>No tables available for selected date and time. Please try different time.</p>
-                    }
-                    else
-                    {
-                        <div class="tables-grid">
-                            @foreach (var table in availableTables.OrderBy(t => t.TableNumber))
-                            {
-                                <div class="table-card @(selectedTableId == table.Id ? "selected" : "")" @onclick="() => SelectTable(table.Id)">
-                                    <h4>Table @table.TableNumber</h4>
-                                    <p>Capacity: @table.Capacity guests</p>
-                                    @if (!string.IsNullOrEmpty(table.Location))
-                                    {
-                                        <p>Location: @table.Location</p>
-                                    }
-                                </div>
-                            }
-                        </div>
-
-                        @if (selectedTableId > 0)
+        <div class="restaurant-header bg-primary text-white">
+            <div class="container py-4">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
                         {
-                            @if (currentUser == null) 
-                            {
-                                <div class="customer-info">
-                                    <h3>Customer Information</h3>
-                                    <div class="form-group">
-                                        <label for="name">Name:</label>
-                                        <input type="text" id="name" @bind="customerName" placeholder="Your name" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">Email:</label>
-                                        <input type="email" id="email" @bind="customerEmail" placeholder="your.email@example.com" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="phone">Phone:</label>
-                                        <input type="tel" id="phone" @bind="customerPhone" placeholder="+48 123 456 789" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="notes">Special Requests (optional):</label>
-                                        <textarea id="notes" @bind="specialRequests" rows="3"></textarea>
-                                    </div>
-                                </div> 
-                            }
-                            
-                            @if (!string.IsNullOrEmpty(customerName) && !string.IsNullOrEmpty(customerEmail) && !string.IsNullOrEmpty(customerPhone) || currentUser != null)
-                            {
-                                <button @onclick="MakeReservation" disabled="@isSubmitting" class="submit-btn">
-                                    @if (isSubmitting)
-                                    {
-                                        <span>Processing...</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Confirm Reservation</span>
-                                    }
-                                </button>
-                            }
+                            <img src="@restaurant.profileThumbnailUrl"
+                                 alt="@restaurant.Name"
+                                 class="restaurant-logo rounded shadow-sm">
                         }
-                    }
+                        else
+                        {
+                            <div
+                                class="restaurant-logo-placeholder rounded shadow-sm d-flex align-items-center justify-content-center bg-white text-primary">
+                                <i class="bi bi-shop fs-1"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-auto">
+                        <StarRating
+                            Restaurant="restaurant"/>
+                        <h1 class="h2 mb-1">@restaurant.Name</h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            @restaurant.Address
+                        </p>
+                    </div>
                 </div>
-            }
-
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="error-message">
-                    <p>@errorMessage</p>
-                </div>
-            }
-
-            @if (!string.IsNullOrEmpty(successMessage))
-            {
-                <div class="success-message">
-                    <p>@successMessage</p>
-                </div>
-            }
+            </div>
         </div>
 
-        <div class="actions">
-            <button @onclick="GoBack">Back to Restaurant</button>
+        <div class="container mt-4">
+            <div class="row justify-content-evenly">
+                <!-- Messages Section -->
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <strong>Error!</strong> @errorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Success!</strong> @successMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                <div class="col-lg-8 col-12 w-100">
+                    <div>
+
+                        <div class="text-center w-100">
+                            <h3 class="mb-3">Check table availability at @restaurant.Name</h3>
+                        </div>
+
+                        <div class>
+                            <div class="row mb-4">
+                                <div class="d-flex align-items-center justify-content-center my-3 mb-4">
+                                    <button class="arrow-btn me-3" @onclick="PreviousDay">
+                                        <i class="bi bi-chevron-left fs-4"></i>
+                                    </button>
+
+                                    <div class="d-flex flex-column align-items-center">
+                                        <strong>@selectedDate.ToString("dddd")</strong>
+                                        <input type="date" class="form-control text-center"
+                                               style="max-width: 200px;"
+                                               value="@selectedDate.ToString("yyyy-MM-dd")"
+                                               @onchange="OnDateTimeChanged"/>
+                                    </div>
+
+                                    <button class="arrow-btn ms-3" @onclick="NextDay">
+                                        <i class="bi bi-chevron-right fs-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            .
+                            <!-- Time Selection Section -->
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3">
+                                    <label for="startTime" class="form-label">
+                                        <i class="bi bi-clock"></i> Start Time:
+                                    </label>
+                                    <input type="time"
+                                           class="form-control"
+                                           id="startTime"
+                                           @bind="startTime"
+                                           @bind:event="oninput"/>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="endTime" class="form-label">
+                                        <i class="bi bi-clock-fill"></i> End Time:
+                                    </label>
+                                    <input type="time"
+                                           class="form-control"
+                                           id="endTime"
+                                           @bind="endTime"
+                                           @bind:event="oninput"/>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="guests" class="form-label">
+                                        <i class="bi bi-people"></i> Number of Guests:
+                                    </label>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="guests"
+                                           @bind="numberOfGuests"
+                                           min="1"
+                                           max=99/>
+                                </div>
+                            </div>
+
+
+                            <!-- Customer Information Section -->
+
+
+                        </div>
+                    </div>
+
+
+                    <div class="row mb-4">
+
+                        @if (selectedDate != null && startTime != null && endTime != null)
+                        {
+                            <button class="base-button" @onclick="CheckAvailability" disabled="@isCheckingAvailability">
+                                @if (isCheckingAvailability)
+                                {
+                                    <span>Checking...</span>
+                                }
+                                else
+                                {
+                                    <span>Check Available Tables</span>
+                                }
+                            </button>
+                        }
+
+                        @if (availableTables != null)
+                        {
+                            <hr class="my-4">
+                            <div class="available-tables">
+                                <h3>Available Tables</h3>
+                                @if (!availableTables.Any())
+                                {
+                                    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        No tables available for selected date and time. Please try different time.
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"  aria-label="Close"></button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row g-3">
+                                        @foreach (var table in availableTables.OrderBy(t => t.TableNumber))
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3"
+                                                 @onclick="() => selectedTableId = table.Id">
+                                                <TableComponent Table="table"/>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (selectedTableId > 0)
+                                    {
+                                        <hr class="my-4">
+                                        <h4 class="mb-3 text-center">Customer Information</h4>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="name" class="form-label">
+                                                    <i class="bi bi-person"></i> Name:
+                                                    <span
+                                                        class="text-danger">*</span>
+                                                </label>
+                                                <input type="text"
+                                                       class="form-control"
+                                                       id="name"
+                                                       @bind="customerName"
+                                                       placeholder="Your name"
+                                                       required/>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="phone" class="form-label">
+                                                    <i class="bi bi-telephone"></i> Phone:
+                                                    <span
+                                                        class="text-danger">*</span>
+                                                </label>
+                                                <input type="tel"
+                                                       class="form-control"
+                                                       id="phone"
+                                                       @bind="customerPhone"
+                                                       placeholder="+48 123 456 789"
+                                                       required/>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">
+                                                <i class="bi bi-envelope"></i> Email: <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="email"
+                                                   class="form-control"
+                                                   id="email"
+                                                   @bind="customerEmail"
+                                                   placeholder="your.email@example.com"
+                                                   required/>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="notes" class="form-label">
+                                                <i class="bi bi-chat-text"></i> Special Requests (optional):
+                                            </label>
+                                            <textarea class="form-control"
+                                                      id="notes"
+                                                      @bind="specialRequests"
+                                                      rows="3"
+                                                      placeholder="Any dietary restrictions, special occasions, or other requests..."></textarea>
+                                        </div>
+
+
+                                        @if (!string.IsNullOrEmpty(customerName) && !string.IsNullOrEmpty(customerEmail) && !string.IsNullOrEmpty(customerPhone) || currentUser != null)
+                                        {
+                                            <div class="row mb-4">
+                                                <button class="base-button" @onclick="MakeReservation"
+                                                        disabled="@isSubmitting">
+                                                    @if (isSubmitting)
+                                                    {
+                                                        <span>Processing...</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Confirm Reservation</span>
+                                                    }
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>
 
+<style>
+    .arrow-btn {
+        background-color: transparent;
+        border: none;
+        color: #6c757d; /* szary jak secondary */
+        transition: color 0.2s, transform 0.1s;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .arrow-btn:active {
+        color: #ffffff; /* np. niebieski przy kliknięciu */
+        transform: scale(0.95); /* delikatny efekt wciśnięcia */
+    }
+
+    .arrow-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    
+</style>
 
 @code {
     [Parameter] public int RestaurantId { get; set; }
+
+    [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
     private Restaurant? restaurant;
     private bool reservationNeedConfirmation = false;
     private List<Table>? allTables;
     private List<Table>? availableTables;
 
-    private DateTime? selectedDate = DateTime.Now.Date;
-    private DateTime? startTime;
-    private DateTime? endTime;
+    private DateTime selectedDate = DateTime.Now.Date;
+    private DateTime startTime = DateTime.Now;
+    private DateTime endTime = DateTime.Now.AddHours(1);
     private int numberOfGuests = 2;
     private int selectedTableId = 0;
     ResponseUserDto? currentUser = new ResponseUserDto();
@@ -180,7 +332,24 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadRestaurantData();
-        currentUser = await Http.GetFromJsonAsync<ResponseUserDto>($"api/Auth/me");
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
+            if (currentUser != null)
+            {
+                customerName = currentUser.FirstName + " " + currentUser.LastName;
+                customerEmail = currentUser.Email;
+                customerPhone = currentUser.PhoneNumber;
+                userId = currentUser.Id;
+            }
+        }
+        else
+        {
+            currentUser = null;
+        }
     }
 
     private async Task LoadRestaurantData()
@@ -212,6 +381,18 @@
         successMessage = "";
     }
 
+    private async Task PreviousDay()
+    {
+        selectedDate = selectedDate.AddDays(-1);
+        OnDateTimeChanged();
+    }
+
+    private async Task NextDay()
+    {
+        selectedDate = selectedDate.AddDays(1);
+        OnDateTimeChanged();
+    }
+
     private async Task CheckAvailability()
     {
         if (selectedDate == null || startTime == null || endTime == null || allTables == null)
@@ -232,11 +413,11 @@
             }
 
             // Create TimeOnly from DateTime
-            var startTimeOnly = TimeOnly.FromDateTime(startTime.Value);
-            var endTimeOnly = TimeOnly.FromDateTime(endTime.Value);
+            var startTimeOnly = TimeOnly.FromDateTime(startTime);
+            var endTimeOnly = TimeOnly.FromDateTime(endTime);
 
             // Check if the restaurant is open at this time
-            var dayOfWeek = selectedDate.Value.DayOfWeek;
+            var dayOfWeek = selectedDate.DayOfWeek;
             var openingHours = restaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == dayOfWeek);
 
             if (openingHours != null && openingHours.IsClosed)
@@ -258,7 +439,7 @@
 
             foreach (var table in allTables.Where(t => t.Capacity >= numberOfGuests))
             {
-                var isAvailable = await IsTableAvailable(table.Id, selectedDate.Value, startTimeOnly, endTimeOnly);
+                var isAvailable = await IsTableAvailable(table.Id, selectedDate, startTimeOnly, endTimeOnly);
                 if (isAvailable)
                 {
                     availableTablesList.Add(table);
@@ -323,7 +504,7 @@
     {
         if (selectedTableId <= 0 || selectedDate == null || startTime == null || endTime == null)
             return;
-        
+
         try
         {
             isSubmitting = true;
@@ -345,9 +526,9 @@
                 CustomerName = customerName,
                 CustomerEmail = customerEmail,
                 CustomerPhone = customerPhone,
-                ReservationDate = DateTime.SpecifyKind(selectedDate.Value, DateTimeKind.Utc),
-                StartTime = TimeOnly.FromDateTime(startTime.Value),
-                EndTime = TimeOnly.FromDateTime(endTime.Value),
+                ReservationDate = DateTime.SpecifyKind(selectedDate, DateTimeKind.Utc),
+                StartTime = TimeOnly.FromDateTime(startTime),
+                EndTime = TimeOnly.FromDateTime(endTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
                 requiresConfirmation = restaurant.Settings.ReservationsNeedConfirmation,
@@ -385,4 +566,6 @@
     {
         Navigation.NavigateTo($"/restaurant/{RestaurantId}");
     }
+
 }
+

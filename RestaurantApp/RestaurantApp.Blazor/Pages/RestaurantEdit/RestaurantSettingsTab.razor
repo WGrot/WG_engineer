@@ -39,7 +39,7 @@ else
     {
         if (restaurant.Settings == null)
         {
-            Console.WriteLine("nie ma settingow");
+            await CreateSettingsForRestuarant();
         }
 
         var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
@@ -54,10 +54,29 @@ else
         }
     }
     
-    private void ToggleNeedConfirmation()
+    private async Task ToggleNeedConfirmation()
     {
         settings.ReservationsNeedConfirmation = !settings.ReservationsNeedConfirmation;
-        UpdateSettings();
+        await UpdateSettings();
+    }
+
+    private async Task CreateSettingsForRestuarant()
+    {
+        CreateRestaurantSettingsDto dto = new CreateRestaurantSettingsDto
+        {
+            ReservationsNeedConfirmation = false,
+            RestaurantId = Id
+        };
+        
+        var response = await Http.PostAsJsonAsync($"api/RestaurantSettings/", dto);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Ustawienia zaktualizowane pomyślnie.");
+        }
+        else
+        {
+            Console.WriteLine($"Błąd podczas aktualizacji ustawień: {response.StatusCode}");
+        }
     }
     
     private async Task UpdateSettings()
