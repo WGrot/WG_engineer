@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantApp.Api;
@@ -12,9 +13,11 @@ using RestaurantApp.Api;
 namespace RestaurantApp.Api.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251022161350_CascadingRestaurantRemoval")]
+    partial class CascadingRestaurantRemoval
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -901,8 +904,7 @@ namespace RestaurantApp.Api.Migrations
                 {
                     b.HasOne("RestaurantApp.Shared.Models.MenuCategory", "Category")
                         .WithMany("Items")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("RestaurantApp.Shared.Models.Menu", "Menu")
                         .WithMany("Items")
@@ -954,7 +956,7 @@ namespace RestaurantApp.Api.Migrations
                         .HasForeignKey("ApplicationUserId");
 
                     b.HasOne("RestaurantApp.Shared.Models.Restaurant", "Restaurant")
-                        .WithMany("Reservations")
+                        .WithMany()
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1031,7 +1033,7 @@ namespace RestaurantApp.Api.Migrations
             modelBuilder.Entity("RestaurantApp.Shared.Models.Table", b =>
                 {
                     b.HasOne("RestaurantApp.Shared.Models.Restaurant", "Restaurant")
-                        .WithMany("Tables")
+                        .WithMany()
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1082,13 +1084,9 @@ namespace RestaurantApp.Api.Migrations
 
                     b.Navigation("OpeningHours");
 
-                    b.Navigation("Reservations");
-
                     b.Navigation("Reviews");
 
                     b.Navigation("Settings");
-
-                    b.Navigation("Tables");
                 });
 
             modelBuilder.Entity("RestaurantApp.Shared.Models.RestaurantEmployee", b =>

@@ -25,6 +25,12 @@ public class Restaurant
     
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     
+    // DODANE: Relacja do stołów
+    public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
+    
+    // DODANE: Relacja do rezerwacji
+    public virtual ICollection<ReservationBase> Reservations { get; set; } = new List<ReservationBase>();
+    
     public double AverageRating { get; set; } = 0;
     public int TotalReviews { get; set; } = 0;
     public int TotalRatings1Star { get; set; } = 0;

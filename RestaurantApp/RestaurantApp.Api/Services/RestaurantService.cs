@@ -318,24 +318,24 @@ public class RestaurantService : IRestaurantService
     private async Task<Result> ValidateRestaurantDeletionAsync(int id, Restaurant restaurant)
     {
         // Check if restaurant has any tables
-        var hasTables = await _context.Tables.AnyAsync(t => t.RestaurantId == id);
-        if (hasTables)
-        {
-            return Result.Failure($"Cannot delete restaurant with tables.");
-        }
-
-        // Check if restaurant has active menu items
-        if (restaurant.Menu != null)
-        {
-            var hasActiveMenu = await _context.Menus
-                .Where(m => m.RestaurantId == id && m.IsActive)
-                .AnyAsync();
-
-            if (hasActiveMenu)
-            {
-                return Result.Failure($"Cannot delete restaurant with active menu.");
-            }
-        }
+        // var hasTables = await _context.Tables.AnyAsync(t => t.RestaurantId == id);
+        // if (hasTables)
+        // {
+        //     return Result.Failure($"Cannot delete restaurant with tables.");
+        // }
+        //
+        // // Check if restaurant has active menu items
+        // if (restaurant.Menu != null)
+        // {
+        //     var hasActiveMenu = await _context.Menus
+        //         .Where(m => m.RestaurantId == id && m.IsActive)
+        //         .AnyAsync();
+        //
+        //     if (hasActiveMenu)
+        //     {
+        //         return Result.Failure($"Cannot delete restaurant with active menu.");
+        //     }
+        // }
 
         return Result.Success();
     }
