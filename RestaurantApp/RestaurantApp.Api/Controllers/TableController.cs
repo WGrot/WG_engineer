@@ -25,38 +25,38 @@ namespace RestaurantApp.Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetTables()
-            => (await _tableService.GetTablesAsync()).ToActionResult(this);
+            => (await _tableService.GetTablesAsync()).ToActionResult();
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTable(int id)
-            => (await _tableService.GetTableByIdAsync(id)).ToActionResult(this);
+            => (await _tableService.GetTableByIdAsync(id)).ToActionResult();
 
         [HttpGet("restaurant/{restaurantId}")]
         public async Task<IActionResult> GetTablesByRestaurant(int restaurantId)
-            => (await _tableService.GetTablesByRestaurantAsync(restaurantId)).ToActionResult(this);
+            => (await _tableService.GetTablesByRestaurantAsync(restaurantId)).ToActionResult();
 
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailableTables([FromQuery] int? minCapacity = null)
-            => (await _tableService.GetAvailableTablesAsync(minCapacity)).ToActionResult(this);
+            => (await _tableService.GetAvailableTablesAsync(minCapacity)).ToActionResult();
 
         [HttpPost]
         public async Task<IActionResult> CreateTable([FromBody] CreateTableDto dto)
-            => (await _tableService.CreateTableAsync(dto)).ToActionResult(this);
+            => (await _tableService.CreateTableAsync(dto)).ToActionResult();
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTable(int id, [FromBody] UpdateTableDto dto)
-            => (await _tableService.UpdateTableAsync(id, dto)).ToActionResult(this);
+            => (await _tableService.UpdateTableAsync(id, dto)).ToActionResult();
 
         [HttpPatch("{id}/capacity")]
         public async Task<IActionResult> UpdateTableCapacity(int id, [FromBody] int capacity)
-            => (await _tableService.UpdateTableCapacityAsync(id, capacity)).ToActionResult(this);
+            => (await _tableService.UpdateTableCapacityAsync(id, capacity)).ToActionResult();
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTable(int id)
-            => (await _tableService.DeleteTableAsync(id)).ToActionResult(this);
+            => (await _tableService.DeleteTableAsync(id)).ToActionResult();
         
         [HttpGet("{id}/availability-map")]
         public async Task<IActionResult> GetAvaibilityMap(int id, [FromQuery] DateTime date)
-            => (await _tableService.GetTableAvailabilityMapAsync(id, date)).ToActionResult(this);
+            => (await _tableService.GetTableAvailabilityMapAsync(id, date)).ToActionResult();
     }
 }

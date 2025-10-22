@@ -30,14 +30,14 @@ public class RestaurantSettingsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await _restaurantSettingsService.GetAllAsync();
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _restaurantSettingsService.GetByIdAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPost]
@@ -53,7 +53,7 @@ public class RestaurantSettingsController : ControllerBase
 
             if (restaurant.IsFailure)
             {
-                return restaurant.ToActionResult(this);
+                return restaurant.ToActionResult();
             }
             
             RestaurantSettings restaurantSettings = new RestaurantSettings
@@ -63,7 +63,7 @@ public class RestaurantSettingsController : ControllerBase
             };
 
             var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettings);
-            return createdSettings.ToActionResult(this);
+            return createdSettings.ToActionResult();
 
     }
 
@@ -71,14 +71,14 @@ public class RestaurantSettingsController : ControllerBase
     public async Task<IActionResult> GetNeedsConfirmation(int restaurantId)
     {
         var result = await _restaurantSettingsService.NeedConfirmation(restaurantId);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
     
     [HttpGet("{restaurantId}/get-restaurant-settings")]
     public async Task<IActionResult> GetByRestaurantId(int restaurantId)
     {
         var result = await _restaurantSettingsService.GetByRestaurantId(restaurantId);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPut("{id}")]
@@ -91,7 +91,7 @@ public class RestaurantSettingsController : ControllerBase
 
             var updatedSettings = await _restaurantSettingsService.UpdateAsync(id, restaurantSettings);
 
-            return updatedSettings.ToActionResult(this);
+            return updatedSettings.ToActionResult();
 
     }
 
@@ -101,7 +101,7 @@ public class RestaurantSettingsController : ControllerBase
 
             var deleted = await _restaurantSettingsService.DeleteAsync(id);
 
-            return deleted.ToActionResult(this);
+            return deleted.ToActionResult();
     }
 
     [HttpHead("{id}")]
@@ -111,7 +111,7 @@ public class RestaurantSettingsController : ControllerBase
             var exists = await _restaurantSettingsService.ExistsAsync(id);
 
 
-            return exists.ToActionResult(this);
+            return exists.ToActionResult();
 
 
     }

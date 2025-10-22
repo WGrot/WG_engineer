@@ -24,42 +24,42 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await _permissionService.GetAllAsync();
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _permissionService.GetByIdAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("employee/{employeeId}")]
     public async Task<IActionResult> GetByEmployee(int employeeId)
     {
         var result = await _permissionService.GetByEmployeeIdAsync(employeeId);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("restaurant/{restaurantId}")]
     public async Task<IActionResult> GetByRestaurant(int restaurantId)
     {
         var result = await _permissionService.GetByRestaurantIdAsync(restaurantId);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("employee/{employeeId}/check/{permission}")]
     public async Task<IActionResult> CheckPermission(int employeeId, PermissionType permission)
     {
         var result = await _permissionService.HasPermissionAsync(employeeId, permission);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPut("employee/update-permissions")]
     public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto)
     {
         var result = await _permissionService.UpdateEmployeePermisions(dto);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPost]
@@ -87,7 +87,7 @@ public class PermissionsController : ControllerBase
             return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
         
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPut("{id}")]
@@ -100,7 +100,7 @@ public class PermissionsController : ControllerBase
             return BadRequest(ModelState);
 
         var result = await _permissionService.UpdateAsync(permission);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpDelete("{id}")]
@@ -111,6 +111,6 @@ public class PermissionsController : ControllerBase
         if (result.IsSuccess)
             return NoContent();
             
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }

@@ -28,7 +28,7 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
 
         var result = await _authService.RegisterAsync(request);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPost("login")]
@@ -38,14 +38,14 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
 
         var result = await _authService.LoginAsync(request);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         var result = await _authService.LogoutAsync();
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
 
@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var result = await _authService.GetCurrentUserAsync(userId);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("users")]
@@ -75,6 +75,6 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> GetAllUsers()
     {
         var result = await _authService.GetAllUsersAsync();
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }

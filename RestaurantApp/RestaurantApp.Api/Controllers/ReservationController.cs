@@ -28,7 +28,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetReservation(int id)
     {
         var reservation = await _reservationService.GetReservationByIdAsync(id);
-        return reservation.ToActionResult(this);
+        return reservation.ToActionResult();
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
@@ -36,7 +36,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetReservationsByRestaurant(int userId)
     {
         var reservations = await _reservationService.GetReservationsByRestaurantIdAsync(userId);
-        return reservations.ToActionResult(this);
+        return reservations.ToActionResult();
     }
 
     // GET: api/reservation/client/{clientId}
@@ -45,7 +45,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetReservationsByUserId([FromQuery] ReservationSearchParameters searchParams)
     {
         var reservations = await _reservationService.GetReservationsByUserIdAsync(searchParams);
-        return reservations.ToActionResult(this);
+        return reservations.ToActionResult();
     }
 
     // POST: api/reservation
@@ -60,7 +60,7 @@ public class ReservationController : ControllerBase
 
         var reservation = await _reservationService.CreateReservationAsync(reservationDto);
 
-        return reservation.ToActionResult(this);
+        return reservation.ToActionResult();
     }
 
     // PUT: api/reservation/{id}
@@ -74,7 +74,7 @@ public class ReservationController : ControllerBase
         }
 
         var result = await _reservationService.UpdateReservationAsync(id, reservationDto);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     // DELETE: api/reservation/{id}
@@ -83,7 +83,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> DeleteReservation(int id)
     {
         var result = await _reservationService.DeleteReservationAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     // Table Reservation Endpoints
@@ -93,7 +93,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetTableReservation(int id)
     {
         var reservation = await _reservationService.GetTableReservationByIdAsync(id);
-        return reservation.ToActionResult(this);
+        return reservation.ToActionResult();
     }
 
     // GET: api/reservation/table/{tableId}
@@ -101,7 +101,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetTableReservationsByTableId(int tableId)
     {
         var reservations = await _reservationService.GetReservationsByTableIdAsync(tableId);
-        return reservations.ToActionResult(this);
+        return reservations.ToActionResult();
     }
 
     // POST: api/reservation/table
@@ -117,7 +117,7 @@ public class ReservationController : ControllerBase
 
         var reservation = await _reservationService.CreateTableReservationAsync(tableReservationDto);
 
-        return reservation.ToActionResult(this);
+        return reservation.ToActionResult();
     }
 
     // PUT: api/reservation/table/{id}
@@ -131,7 +131,7 @@ public class ReservationController : ControllerBase
         }
 
         var result = await _reservationService.UpdateTableReservationAsync(id, tableReservationDto);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     // DELETE: api/reservation/table/{id}
@@ -139,7 +139,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> DeleteTableReservation(int id)
     {
         var result = await _reservationService.DeleteTableReservationAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
@@ -147,7 +147,7 @@ public class ReservationController : ControllerBase
     public async Task<IActionResult> GetReservationsToManage(string userId)
     {
         var reservations = await _reservationService.GetReservationsToManage(userId);
-        return reservations.ToActionResult(this);
+        return reservations.ToActionResult();
     }
 
     [HttpGet("search")]
@@ -160,7 +160,7 @@ public class ReservationController : ControllerBase
         var reservations = await _reservationService.SearchReservationsAsync(searchParams
         );
         
-        return reservations.ToActionResult(this);
+        return reservations.ToActionResult();
     }
     
     [HttpPut("manage/{id}/change-status")]
@@ -173,6 +173,6 @@ public class ReservationController : ControllerBase
         }
 
         var result = await _reservationService.UpdateReservationStatusAsync(id, status);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }

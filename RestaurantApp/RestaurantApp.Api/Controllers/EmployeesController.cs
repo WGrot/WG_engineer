@@ -19,37 +19,37 @@ public class EmployeesController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
-        => (await _employeeService.GetAllAsync()).ToActionResult(this);
+        => (await _employeeService.GetAllAsync()).ToActionResult();
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
-        => (await _employeeService.GetByIdAsync(id)).ToActionResult(this);
+        => (await _employeeService.GetByIdAsync(id)).ToActionResult();
 
     [HttpGet("restaurant/{restaurantId}")]
     public async Task<IActionResult> GetByRestaurant(int restaurantId)
-        => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult(this);
+        => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult();
 
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetByUser(string userId)
-        => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult(this);
+        => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
-        => (await _employeeService.CreateAsync(dto)).ToActionResult(this);
+        => (await _employeeService.CreateAsync(dto)).ToActionResult();
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, UpdateEmployeeDto dto)
-        => (await _employeeService.UpdateAsync(id, dto)).ToActionResult(this);
+        => (await _employeeService.UpdateAsync(id, dto)).ToActionResult();
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
-        => (await _employeeService.DeleteAsync(id)).ToActionResult(this);
+        => (await _employeeService.DeleteAsync(id)).ToActionResult();
 
     [HttpPatch("{id}/update-active-status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] bool isActive)
-        => (await _employeeService.UpdateActiveStatusAsync(id, isActive)).ToActionResult(this);
+        => (await _employeeService.UpdateActiveStatusAsync(id, isActive)).ToActionResult();
     
     [HttpPatch("{id}/update-role")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] RestaurantRole newRole)
-        => (await _employeeService.UpdateEmployeeRoleAsync(id, newRole)).ToActionResult(this);
+        => (await _employeeService.UpdateEmployeeRoleAsync(id, newRole)).ToActionResult();
 }

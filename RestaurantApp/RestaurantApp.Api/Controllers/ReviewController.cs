@@ -27,7 +27,7 @@ public class ReviewsController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var review = await _reviewService.GetByIdAsync(id);
-        return review.ToActionResult(this);
+        return review.ToActionResult();
     }
 
     [HttpGet]
@@ -35,7 +35,7 @@ public class ReviewsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var reviews = await _reviewService.GetAllAsync();
-        return reviews.ToActionResult(this);
+        return reviews.ToActionResult();
     }
 
     [HttpGet("restaurant/{restaurantId}")]
@@ -43,7 +43,7 @@ public class ReviewsController : ControllerBase
     public async Task<IActionResult> GetByRestaurant(int restaurantId)
     {
         var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId);
-        return reviews.ToActionResult(this);
+        return reviews.ToActionResult();
     }
     
     [HttpGet("restaurant/{restaurantId}/paginated")]
@@ -60,48 +60,48 @@ public class ReviewsController : ControllerBase
             pageSize, 
             sortBy);
     
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetByUser(string userId)
     {
         var reviews = await _reviewService.GetByUserIdAsync(userId);
-        return reviews.ToActionResult(this);
+        return reviews.ToActionResult();
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto createReviewDto)
     {
         var review = await _reviewService.CreateAsync(createReviewDto);
-        return review.ToActionResult(this);
+        return review.ToActionResult();
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReviewDto updateReviewDto)
     {
         var review = await _reviewService.UpdateAsync(id, updateReviewDto);
-        return review.ToActionResult(this);
+        return review.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _reviewService.DeleteAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPatch("{id}/toggle-active")]
     public async Task<IActionResult> ToggleActive(int id)
     {
         var result = await _reviewService.ToggleActiveStatusAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpPatch("{id}/verify")]
     public async Task<IActionResult> VerifyReview(int id)
     {
         var result = await _reviewService.VerifyReviewAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }

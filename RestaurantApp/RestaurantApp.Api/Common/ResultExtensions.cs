@@ -5,25 +5,32 @@ namespace RestaurantApp.Api.Common;
 
 public static class ResultExtensions
 {
-    public static IActionResult ToActionResult<T>(this Result<T> result, ControllerBase controller)
+    public static IActionResult ToActionResult<T>(this Result<T> result)
     {
         if (result.IsSuccess)
         {
-            return controller.StatusCode(result.StatusCode, result.Value);
+            return new ObjectResult(result.Value) 
+            { 
+                StatusCode = result.StatusCode 
+            };
         }
-        
-        var errorResponse = new { error = result.Error };
-        return controller.StatusCode(result.StatusCode, errorResponse);
-    }
     
-    public static IActionResult ToActionResult(this Result result, ControllerBase controller)
+        return new ObjectResult(new { error = result.Error }) 
+        { 
+            StatusCode = result.StatusCode 
+        };
+    }
+
+    public static IActionResult ToActionResult(this Result result)
     {
         if (result.IsSuccess)
         {
-            return controller.StatusCode(result.StatusCode);
+            return new StatusCodeResult(result.StatusCode);
         }
-        
-        var errorResponse = new { error = result.Error };
-        return controller.StatusCode(result.StatusCode, errorResponse);
+    
+        return new ObjectResult(new { error = result.Error }) 
+        { 
+            StatusCode = result.StatusCode 
+        };
     }
 }

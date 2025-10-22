@@ -27,7 +27,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var restaurantsResult = await _restaurantService.GetAllAsync();
-        return restaurantsResult.ToActionResult(this);
+        return restaurantsResult.ToActionResult();
     }
 
     // GET: api/Restaurant/5
@@ -38,7 +38,7 @@ public class RestaurantController : ControllerBase
     {
         var restaurantResult = await _restaurantService.GetByIdAsync(id);
 
-        return restaurantResult.ToActionResult(this);
+        return restaurantResult.ToActionResult();
     }
 
     // GET: api/Restaurant/search?name=pizza
@@ -49,7 +49,7 @@ public class RestaurantController : ControllerBase
         [FromQuery] string? address = null)
     {
         var restaurants = await _restaurantService.SearchAsync(name, address);
-        return restaurants.ToActionResult(this);
+        return restaurants.ToActionResult();
     }
 
     // GET: api/Restaurant/5/tables
@@ -59,7 +59,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> GetRestaurantTables(int id)
     {
         var tablesResult = await _restaurantService.GetTablesAsync(id);
-        return tablesResult.ToActionResult(this);
+        return tablesResult.ToActionResult();
     }
 
     // GET: api/Restaurant/open-now
@@ -68,7 +68,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> GetOpenNow()
     {
         var openRestaurantsResult = await _restaurantService.GetOpenNowAsync();
-        return openRestaurantsResult.ToActionResult(this);
+        return openRestaurantsResult.ToActionResult();
     }
 
     // GET: api/Restaurant/5/is-open
@@ -84,7 +84,7 @@ public class RestaurantController : ControllerBase
         DayOfWeek? checkDay = dayOfWeek != null ? (DayOfWeek)dayOfWeek : null;
 
         var statusResult = await _restaurantService.CheckIfOpenAsync(id, checkTime, checkDay);
-        return statusResult.ToActionResult(this);
+        return statusResult.ToActionResult();
     }
 
     // POST: api/Restaurant
@@ -99,7 +99,7 @@ public class RestaurantController : ControllerBase
         }
 
         var createdRestaurantResult = await _restaurantService.CreateAsync(restaurantDto);
-        return createdRestaurantResult.ToActionResult(this);
+        return createdRestaurantResult.ToActionResult();
     }
 
     // PUT: api/Restaurant/5
@@ -115,7 +115,7 @@ public class RestaurantController : ControllerBase
         }
 
         var result = await _restaurantService.UpdateAsync(id, updateRestaurantDto);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     // PATCH: api/Restaurant/5/address
@@ -127,7 +127,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> UpdateAddress(int restaurantId, [FromBody] string address)
     {
             var result = await _restaurantService.UpdateAddressAsync(restaurantId, address);
-            return result.ToActionResult(this);
+            return result.ToActionResult();
     }
 
     // PATCH: api/Restaurant/5/address
@@ -138,7 +138,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> UpdateName(int id, [FromBody] string name)
     {
             var result = await _restaurantService.UpdateNameAsync(id, name);
-            return result.ToActionResult(this);
+            return result.ToActionResult();
     }
 
     // PATCH: api/Restaurant/5/opening-hours
@@ -150,7 +150,7 @@ public class RestaurantController : ControllerBase
     {
 
             var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
-            return result.ToActionResult(this);
+            return result.ToActionResult();
 
     }
 
@@ -162,34 +162,34 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
             var result = await _restaurantService.DeleteAsync(id);
-            return result.ToActionResult(this);
+            return result.ToActionResult();
     }
     
     [HttpPost("{id}/upload-profile-photo")]
     public async Task <IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
     {
         var result = await _restaurantService.UploadRestaurantProfilePhoto(image, id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
     
     [HttpPost("{id}/upload-restaurant-photos")]
     public async Task <IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
     {
         var result = await _restaurantService.UploadRestaurantPhotos(imageList, id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 
     [HttpDelete("{id}/delete-profile-photo")]
     public async Task<IActionResult> DeleteProfilePhoto(int id)
     {
         var result = await _restaurantService.DeleteRestaurantProfilePicture(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
     
     [HttpDelete("{id}/delete-photo")]
     public async Task<IActionResult> DeleteRestaurantPhoto(int id, int photoIndex)
     {
         var result = await _restaurantService.DeleteRestaurantPhoto(id, photoIndex);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }

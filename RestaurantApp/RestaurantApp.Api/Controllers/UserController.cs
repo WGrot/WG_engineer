@@ -24,7 +24,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _userService.GetByIdAsync(id);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
     
     [HttpGet("search")]
@@ -38,7 +38,7 @@ public class UserController : ControllerBase
         [FromQuery] string? phoneNumber = null)
     {
         var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email);
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
     
     [HttpPost]
@@ -72,6 +72,6 @@ public class UserController : ControllerBase
             );
         }
         
-        return result.ToActionResult(this);
+        return result.ToActionResult();
     }
 }
