@@ -1,5 +1,4 @@
-﻿@page "/booking/table/{restaurantId:int}"
-@using RestaurantApp.Shared.Models
+﻿@using RestaurantApp.Shared.Models
 @using System.Net.Http.Json
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.DTOs
@@ -26,43 +25,6 @@
     }
     else
     {
-        <div class="restaurant-header bg-primary text-white">
-            <div class="container py-4">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
-                        {
-                            <img src="@restaurant.profileThumbnailUrl"
-                                 alt="@restaurant.Name"
-                                 class="restaurant-logo rounded shadow-sm"
-                                 @onclick="GoBack">
-                        }
-                        else
-                        {
-                            <div
-                                class="restaurant-logo-placeholder rounded shadow-sm d-flex align-items-center justify-content-center bg-white text-primary">
-                                <i class="bi bi-shop fs-1"></i>
-                            </div>
-                        }
-                    </div>
-                    <div class="col-auto">
-                        <StarRating
-                            Restaurant="restaurant"/>
-                        <h1 class="h2 mb-1">@restaurant.Name</h1>
-                        <p class="mb-0 opacity-75">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
-                            @restaurant.Address
-                        </p>
-                    </div>
-                    <div class="col-auto ms-1">
-                        <button class="base-button lg" @onclick="GoBack">
-                            Back to restaurant
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="container mt-4">
             <div class="row justify-content-evenly">
                 <!-- Messages Section -->
@@ -147,7 +109,7 @@
                                            max=99/>
                                 </div>
                             </div>
-                            
+
 
                         </div>
                     </div>
@@ -301,15 +263,16 @@
         outline: none;
         box-shadow: none;
     }
-    
+
 </style>
 
 @code {
-    [Parameter] public int RestaurantId { get; set; }
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Restaurant? restaurant { get; set; }
 
     [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
-    private Restaurant? restaurant;
+
     private bool reservationNeedConfirmation = false;
     private List<Table>? allTables;
     private List<Table>? availableTables;
@@ -334,7 +297,7 @@
     private string errorMessage = "";
     private string successMessage = "";
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnParametersSetAsync()
     {
         await LoadRestaurantData();
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -362,9 +325,9 @@
         try
         {
             isLoadingRestaurant = true;
-            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{RestaurantId}");
-            allTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{RestaurantId}");
-            reservationNeedConfirmation = await Http.GetFromJsonAsync<bool>($"/api/RestaurantSettings/{RestaurantId}/needs-confirmation");
+            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+            allTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+            reservationNeedConfirmation = await Http.GetFromJsonAsync<bool>($"/api/RestaurantSettings/{Id}/needs-confirmation");
         }
         catch (Exception ex)
         {
@@ -527,7 +490,7 @@
             var reservation = new TableReservationDto
             {
                 TableId = selectedTableId,
-                RestaurantId = RestaurantId,
+                RestaurantId = Id,
                 CustomerName = customerName,
                 CustomerEmail = customerEmail,
                 CustomerPhone = customerPhone,
@@ -548,7 +511,7 @@
 
                 // Clear form after successful reservation
                 await Task.Delay(2000);
-                Navigation.NavigateTo($"/restaurant/{RestaurantId}");
+                Navigation.NavigateTo($"/restaurant/{Id}");
             }
             else
             {
@@ -569,8 +532,7 @@
 
     private void GoBack()
     {
-        Navigation.NavigateTo($"/restaurant/{RestaurantId}");
+        Navigation.NavigateTo($"/restaurant/{Id}");
     }
 
 }
-

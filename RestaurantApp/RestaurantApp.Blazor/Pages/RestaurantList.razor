@@ -100,7 +100,6 @@
                 {
                     <div class="restaurant-card" @onclick="() => NavigateToRestaurant(restaurant.Id)">
                         <div class="restaurant-image">
-                            <!-- Placeholder image - możesz dodać właściwe obrazki -->
                             <img src="@restaurant.profileUrl" 
                                  alt="@restaurant.Name" />
                         </div>
@@ -339,14 +338,14 @@
         await LoadRestaurantsPage();
     }
 
-    private void NavigateToRestaurant(int id)
+    private void NavigateToRestaurant(int restaurantId)
     {
-        Navigation.NavigateTo($"/restaurant/{id}");
+        Navigation.NavigateTo($"/restaurant/{restaurantId}");
     }
 
     private void BookTable(int restaurantId)
     {
-        //TODO
+        Navigation.NavigateTo($"/booking/table/{restaurantId}");
     }
 
     private bool IsOpenNow(Restaurant restaurant)
