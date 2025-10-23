@@ -34,7 +34,8 @@
                         {
                             <img src="@restaurant.profileThumbnailUrl"
                                  alt="@restaurant.Name"
-                                 class="restaurant-logo rounded shadow-sm">
+                                 class="restaurant-logo rounded shadow-sm"
+                                 @onclick="GoBack">
                         }
                         else
                         {
@@ -52,6 +53,11 @@
                             <i class="bi bi-geo-alt-fill me-1"></i>
                             @restaurant.Address
                         </p>
+                    </div>
+                    <div class="col-auto ms-1">
+                        <button class="base-button lg" @onclick="GoBack">
+                            Back to restaurant
+                        </button>
                     </div>
                 </div>
             </div>
@@ -141,10 +147,7 @@
                                            max=99/>
                                 </div>
                             </div>
-
-
-                            <!-- Customer Information Section -->
-
+                            
 
                         </div>
                     </div>
@@ -161,7 +164,8 @@
                                 }
                                 else
                                 {
-                                    <span>Check Available Tables</span>
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    <span> Check Available Tables</span>
                                 }
                             </button>
                         }
@@ -261,7 +265,8 @@
                                                     }
                                                     else
                                                     {
-                                                        <span>Confirm Reservation</span>
+                                                        <i class="bi bi-check2-circle me-2"></i>
+                                                        <span> Confirm Reservation</span>
                                                     }
                                                 </button>
                                             </div>
