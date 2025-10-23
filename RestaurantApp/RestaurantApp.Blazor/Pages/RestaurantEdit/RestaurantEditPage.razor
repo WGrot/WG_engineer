@@ -1,88 +1,118 @@
 ﻿@page "/restaurant/edit/{Id:int}"
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
 <div class="edit-container">
-    <div class="edit-header">
-        <div class="header-background"></div>
-        <div class="header-content">
-            <button class="back-button" @onclick="GoBack">
-                <span class="arrow-icon">←</span> Back
-            </button>
-            <h1 class="page-title">Restaurant edit</h1>
-            @if (restaurant != null)
-            {
-                <h2 class="restaurant-name">@restaurant.Name <br> @restaurant.Address</h2>
-            }
-        </div>
-    </div>
 
     @if (restaurant == null)
     {
         <div class="loading-container">
             <div class="spinner"></div>
-            <p>Ładowanie...</p>
+            <p>Loading...</p>
         </div>
     }
     else
     {
-        <div class="tabs-navigation">
-            <button class="tab-button @(activeTab == "basic" ? "active" : "")"
-                    @onclick="@(e => activeTab = "basic")">
-                Basic Info
-            </button>
-            <button class="tab-button @(activeTab == "tables" ? "active" : "")"
-                    @onclick="@(e => activeTab = "tables")">
-                Tables
-            </button>
-            <button class="tab-button @(activeTab == "hours" ? "active" : "")"
-                    @onclick="@(e => activeTab = "hours")">
-                Opening Hours
-            </button>
-            <button class="tab-button @(activeTab == "menu" ? "active" : "")"
-                    @onclick="@(e => activeTab = "menu")">
-                Menu setup
-            </button>
-            <button class="tab-button @(activeTab == "employees" ? "active" : "")"
-                    @onclick="@(e => activeTab = "employees")">
-                Employees
-            </button>
-            <button class="tab-button @(activeTab == "settings" ? "active" : "")"
-                    @onclick="@(e => activeTab = "settings")">
-                Restaurant settings
-            </button>
-            <button class="tab-button @(activeTab == "appearance" ? "active" : "")"
-                    @onclick="@(e => activeTab = "appearance")">
-                Appearance
-            </button>
+        <RestaurantHeader restaurant=@restaurant/>
+        <div class="bg-light border-bottom sticky-top">
+            <div class="container">
+                <ul class="nav nav-tabs border-0 pt-2" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "basic" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "basic")"
+                                type="button">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Basic Info
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "tables")"
+                                type="button">
+                            <i class="bi bi-grid-3x3-gap me-2"></i>
+                            Tables
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "hours" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "hours")"
+                                type="button">
+                            <i class="bi bi-clock-history"></i>
+                            Opening Hours
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button
+                            class="nav-link @(activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => activeTab = "settings")"
+                            type="button">
+                            <i class="bi bi-gear"></i>
+                            Settings
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button
+                            class="nav-link @(activeTab == "employees" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => activeTab = "employees")"
+                            type="button">
+                            <i class="bi bi-people"></i>
+                            Employees
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button
+                            class="nav-link @(activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => activeTab = "menu")"
+                            type="button">
+                            <i class="bi bi-book me-2"></i>
+                            Menu
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button
+                            class="nav-link @(activeTab == "appearance" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => activeTab = "appearance")"
+                            type="button">
+                            <i class="bi bi-stars"></i>
+                            Appearance
+                        </button>
+                    </li>
+
+                </ul>
+            </div>
         </div>
 
-        @switch (activeTab)
-        {
-            case "basic":
-                <BasicInfoTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "tables":
-                <TablesTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "hours":
-                <OpeningHoursTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "settings":
-                <RestaurantSettingsTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "employees":
-                <RestaurantEmployeesTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "menu":
-                <MenuTab Id=@Id restaurant=@restaurant/>
-                break;
-            case "appearance":
-                <AppearanceTab Id=@Id restaurant=@restaurant/>
-                break;
-        }
+        <div class="container my-4">
+            <div class="tab-content">
+                @switch (activeTab)
+                {
+                    case "basic":
+                        <BasicInfoTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "tables":
+                        <TablesTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "hours":
+                        <OpeningHoursTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "settings":
+                        <RestaurantSettingsTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "employees":
+                        <RestaurantEmployeesTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "menu":
+                        <MenuTab Id=@Id restaurant=@restaurant/>
+                        break;
+                    case "appearance":
+                        <AppearanceTab Id=@Id restaurant=@restaurant/>
+                        break;
+                }
+            </div>
+        </div>
     }
 </div>
 
@@ -111,11 +141,6 @@
         {
             isLoading = false;
         }
-    }
-
-    private void GoBack()
-    {
-        Navigation.NavigateTo("/restaurants");
     }
 
 }

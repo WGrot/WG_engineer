@@ -1,0 +1,57 @@
+﻿@using RestaurantApp.Shared.Models
+<div class="edit-container">
+    <div class="restaurant-header bg-primary text-white">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
+                    {
+                        <img src="@restaurant.profileThumbnailUrl"
+                             alt="@restaurant.Name"
+                             class="restaurant-logo rounded shadow-sm">
+                    }
+                    else
+                    {
+                        <div
+                            class="restaurant-logo-placeholder rounded shadow-sm d-flex align-items-center justify-content-center bg-white text-primary">
+                            <i class="bi bi-shop fs-1"></i>
+                        </div>
+                    }
+                </div>
+                <div class="col-auto">
+                    <StarRating
+                        Restaurant="restaurant"/>
+                    <h1 class="h2 mb-1">@restaurant.Name</h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-geo-alt-fill me-1"></i>
+                        @restaurant.Address
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .restaurant-header {
+        background: linear-gradient(180deg, #4c63d2 0%, #3b4bd1 100%);
+        position: relative;
+    }
+
+    .restaurant-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid white;
+    }
+
+    .restaurant-logo-placeholder {
+        width: 80px;
+        height: 80px;
+        border: 3px solid white;
+    }
+    
+</style>
+@code {
+    [Parameter] public Restaurant restaurant { get; set; }
+}
