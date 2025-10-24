@@ -4,89 +4,145 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject HttpClient Http
 
-<h3>Appearance Tab</h3>
+<div class="container-fluid py-4">
+    @if (restaurant != null)
+    {
 
-@if (restaurant != null)
-{
-    <div>
-        <h4>Profile Photo</h4>
-        @if (!string.IsNullOrEmpty(restaurant.profileUrl))
-        {
-            <div>
-                <img src="@restaurant.profileUrl" alt="Profile" style="max-width: 300px; max-height: 300px;" />
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-8 col-md-6 col-lg-4 mx-auto">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                        <span class="fw-semibold">Profile Photo</span>
+                        <div class="d-flex gap-1">
+                            <div>
+                                <label for="profilePhotoInput" class="base-button"
+                                       style="cursor: pointer; width: 32px; height: 32px; padding: 0;">
+                                    @if (isUploadingProfile)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-upload"></i>
+                                    }
+                                </label>
+
+                                <InputFile OnChange="@OnProfilePhotoSelected"
+                                           accept="image/*"
+                                           id="profilePhotoInput"
+                                           style="display: none;"/>
+                            </div>
+
+                            <button button
+                                    class="base-button  d-flex align-items-center justify-content-center"
+                                    @onclick="DeleteProfilePhoto"
+                                    disabled="@isDeletingProfile"
+                                    title="Delete photo"
+                                    style="width: 32px; height: 32px; padding: 0;">
+                                X
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="card-body p-0">
+
+                        @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
+                        {
+                            <img src="@restaurant.profileThumbnailUrl"
+                                 alt="@restaurant.Name"
+                                 class="img-fluid w-100"
+                                 style="max-height: 300px; object-fit: cover;"/>
+                        }
+                        else
+                        {
+                            <div
+                                class="rounded shadow-sm d-flex align-items-center justify-content-center bg-white text-primary"
+                                style="width: 300px; height: 300px; margin: auto;">
+                                <i class="bi bi-shop fs-1"></i>
+                                @*TODO add placeholder images*@
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-        }
-        else
-        {
-            <div>No profile photo</div>
-        }
-        
-        <div>
-            <InputFile OnChange="@OnProfilePhotoSelected" accept="image/*" />
-            @if (isUploadingProfile)
-            {
-                <span>Uploading...</span>
-            }
         </div>
-        
-        @if (!string.IsNullOrEmpty(restaurant.profileUrl))
-        {
-            <div>
-                <button @onclick="DeleteProfilePhoto" disabled="@isDeletingProfile">
-                    @(isDeletingProfile ? "Deleting..." : "Delete Profile Photo")
-                </button>
-            </div>
-        }
-    </div>
 
-    <hr />
-
-    <div>
-        <h4>Restaurant Photos</h4>
-        
         @if (restaurant.photosUrls != null && restaurant.photosUrls.Any())
         {
-            @for (int i = 0; i < restaurant.photosUrls.Count; i++)
-            {
-                var index = i;
-                var photoUrl = restaurant.photosUrls[i];
-                <div style="margin-bottom: 20px;">
-                    <img src="@photoUrl" alt="Restaurant photo @(i+1)" style="max-width: 300px; max-height: 300px;" />
-                    <button @onclick="() => DeleteRestaurantPhoto(index)" disabled="@isDeletingPhotos">
-                        Delete
-                    </button>
-                </div>
-            }
+            <div class="row g-3 mb-4">
+                @for (int i = 0; i < restaurant.photosUrls.Count; i++)
+                {
+                    var index = i;
+                    var photoUrl = restaurant.photosUrls[i];
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 ">
+                            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                                <span class="fw-semibold">Photo @(i + 1)</span>
+                                <button
+                                    class="base-button  m-1 d-flex align-items-center justify-content-center"
+                                    @onclick="() => DeleteRestaurantPhoto(index)"
+                                    disabled="@isDeletingPhotos"
+                                    style="width: 32px; height: 32px; padding: 0;">X
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <img src="@photoUrl"
+                                     alt="Restaurant photo @(i + 1)"
+                                     class="img-fluid w-100"
+                                     style="height: 200px; object-fit: cover;"/>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         }
         else
         {
-            <div>No restaurant photos</div>
+            <div class="alert alert-info text-center mb-3" role="alert">
+                <i class="bi bi-image me-2"></i>No restaurant photos uploaded
+            </div>
         }
-        
+
         <div>
-            <InputFile OnChange="@OnRestaurantPhotosSelected" accept="image/*" multiple />
+            <label class="form-label fw-semibold">Upload Restaurant Photos</label>
+            <InputFile OnChange="@OnRestaurantPhotosSelected"
+                       accept="image/*"
+                       multiple
+                       class="form-control"/>
             @if (isUploadingPhotos)
             {
-                <span>Uploading...</span>
+                <div class="mt-2">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span class="text-muted">Uploading...</span>
+                </div>
             }
+            <small class="form-text text-muted">You can select multiple photos at once</small>
         </div>
-    </div>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                @successMessage
+            </div>
+        }
+    }
+    else
     {
-        <div style="color: red; margin-top: 20px;">
-            @errorMessage
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading restaurant data...</p>
         </div>
     }
-
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <div style="color: green; margin-top: 20px;">
-            @successMessage
-        </div>
-    }
-}
-else
-{
-    <div class="loading">Loading restaurant data...</div>
-}
+</div>

@@ -10,6 +10,8 @@ public partial class AppearanceTab : ComponentBase
      [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
 
+    private InputFile? profilePhotoInput;
+    
     private bool isUploadingProfile = false;
     private bool isUploadingPhotos = false;
     private bool isDeletingProfile = false;
