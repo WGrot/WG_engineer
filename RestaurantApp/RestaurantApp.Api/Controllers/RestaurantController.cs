@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Models.DTOs;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
@@ -120,27 +121,17 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.UpdateAsync(id, updateRestaurantDto);
         return result.ToActionResult();
     }
+    
 
     // PATCH: api/Restaurant/5/address
-    [HttpPatch("{restaurantId}/address")]
-    [Authorize(Policy = "ManageMenu")]
+    [HttpPatch("{id}/basic-info")]
+    [Authorize(Policy = "RestaurantEmployee")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateAddress(int restaurantId, [FromBody] string address)
+    public async Task<IActionResult> UpdateName(int id, [FromBody] RestaurantBasicInfoDto dto)
     {
-        var result = await _restaurantService.UpdateAddressAsync(restaurantId, address);
-        return result.ToActionResult();
-    }
-
-    // PATCH: api/Restaurant/5/address
-    [HttpPatch("{id}/name")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateName(int id, [FromBody] string name)
-    {
-        var result = await _restaurantService.UpdateNameAsync(id, name);
+        var result = await _restaurantService.UpdateBasicInfoAsync(id, dto);
         return result.ToActionResult();
     }
 

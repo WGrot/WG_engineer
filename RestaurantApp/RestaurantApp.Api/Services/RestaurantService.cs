@@ -245,9 +245,13 @@ public class RestaurantService : IRestaurantService
         return Result.Success();
     }
 
-    public async Task<Result> UpdateAddressAsync(int id, string address)
+    public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto)
     {
-        if (string.IsNullOrWhiteSpace(address))
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            return Result.Failure("Name cannot be empty");
+        }
+        if (string.IsNullOrWhiteSpace(dto.Address))
         {
             return Result.Failure("Address cannot be empty");
         }
@@ -256,29 +260,14 @@ public class RestaurantService : IRestaurantService
         if (restaurant == null)
         {
             return Result.NotFound($"Restaurant with ID {id} not found.");
-            ;
         }
 
-        restaurant.Address = address;
-        await _context.SaveChangesAsync();
-
-        return Result.Success();
-    }
-
-    public async Task<Result> UpdateNameAsync(int id, string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
+        restaurant.Name = dto.Name;
+        restaurant.Address = dto.Address;
+        if (dto.Description != null)
         {
-            return Result.Failure("Name cannot be empty");
+            restaurant.Description = dto.Description;
         }
-
-        var restaurant = await _context.Restaurants.FindAsync(id);
-        if (restaurant == null)
-        {
-            return Result.NotFound($"Restaurant with ID {id} not found.");
-        }
-
-        restaurant.Name = name;
         await _context.SaveChangesAsync();
 
         return Result.Success();

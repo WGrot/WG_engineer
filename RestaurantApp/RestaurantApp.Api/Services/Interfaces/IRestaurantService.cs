@@ -17,8 +17,7 @@ public interface IRestaurantService
     Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null);
     Task<Result<Restaurant>> CreateAsync(RestaurantDto restaurantDto);
     Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto);
-    Task<Result> UpdateAddressAsync(int id, string address);
-    Task<Result> UpdateNameAsync(int id, string name);
+    Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
     Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
     Task<Result> DeleteAsync(int id);
     Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId);

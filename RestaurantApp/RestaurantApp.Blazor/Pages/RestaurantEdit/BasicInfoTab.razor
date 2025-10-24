@@ -1,5 +1,6 @@
 ﻿@using RestaurantApp.Blazor.Extensions
 @using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
 
@@ -67,64 +68,18 @@
                         </div>
                     </div>
                 }
-
-                <!-- Customer Information Section -->
+                
                 <h4 class="mb-3 text-center">Opening hours</h4>
 
                 <OpeningHoursTab Id=@Id restaurant=@restaurant/>
 
 
-
-                <!-- Messages Section -->
-                @* @if (!string.IsNullOrEmpty(errorMessage)) *@
-                @* { *@
-                @*     <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert"> *@
-                @*         <i class="bi bi-x-circle-fill me-2"></i> *@
-                @*         <strong>Error!</strong> @errorMessage *@
-                @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
-                @*     </div> *@
-                @* } *@
-                @* *@
-                @* @if (!string.IsNullOrEmpty(successMessage)) *@
-                @* { *@
-                @*     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert"> *@
-                @*         <i class="bi bi-check-circle-fill me-2"></i> *@
-                @*         <strong>Success!</strong> @successMessage *@
-                @*         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
-                @*     </div> *@
-                @* } *@
+                
             </div>
         </div>
     </div>
 
-
-    @* <div class="edit-content"> *@
-    @*     <!-- Sekcja podstawowych informacji --> *@
-    @*     <div class="edit-card"> *@
-    @*         <h3 class="section-title">Basic informations</h3> *@
-    @*         <div class="form-group"> *@
-    @*             <label class="form-label">Restaurant name</label> *@
-    @*             <input type="text" class="form-input" *@
-    @*                    @bind="restaurant.Name" *@
-    @*                    @bind:after="() => changesMade = true"/> *@
-    @*         </div> *@
-    @*         <div class="form-group"> *@
-    @*             <label class="form-label">Address</label> *@
-    @*             <input type="text" class="form-input" *@
-    @*                    @bind="restaurant.Address" *@
-    @*                    @bind:after="() => changesMade = true"/> *@
-    @*         </div> *@
-    @*     </div> *@
-    @* </div> *@
-    @* @if (changesMade) *@
-    @* { *@
-    @*     <div class="action-buttons"> *@
-    @*         <button @onclick="CancelChanges">Cancel</button> *@
-    @*         <button @onclick="SaveChanges"> *@
-    @*             Save Changes *@
-    @*         </button> *@
-    @*     </div> *@
-    @* } *@
+    
 }
 else
 {
@@ -136,7 +91,7 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public required Restaurant restaurant { get; set; }
+    [Parameter] public required Restaurant? restaurant { get; set; }
     private Restaurant modifiedRestaurant = new Restaurant();
     private bool changesMade = false;
 
@@ -157,8 +112,13 @@ else
     {
         try
         {
-            await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/name", modifiedRestaurant.Name, "X-Restaurant-Id", Id.ToString());
-            await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/address", modifiedRestaurant.Address, "X-Restaurant-Id", Id.ToString());
+            RestaurantBasicInfoDto dto = new RestaurantBasicInfoDto
+            {
+                Name = modifiedRestaurant.Name,
+                Address = modifiedRestaurant.Address,
+                Description = modifiedRestaurant.Description
+            };
+            await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/basic-info", dto, "X-Restaurant-Id", Id.ToString());
 
             changesMade = false;
         }
