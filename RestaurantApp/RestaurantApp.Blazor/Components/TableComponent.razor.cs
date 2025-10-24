@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
+namespace RestaurantApp.Blazor.Components;
 
 public partial class TableComponent : ComponentBase
 {

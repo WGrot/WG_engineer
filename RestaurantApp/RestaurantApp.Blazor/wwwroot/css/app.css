@@ -155,6 +155,25 @@ code {
     transform: scale(1.02);
 }
 
+.red-button {
+    background: #e81d1d;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    margin-right: 4px;
+}
+
+.red-button:hover {
+    background: #a80000;
+    transform: scale(1.02);
+}
+
 .grey-button:active {
     transform: scale(0.98);
 }

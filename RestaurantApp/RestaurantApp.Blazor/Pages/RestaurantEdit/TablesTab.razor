@@ -1,114 +1,43 @@
 ﻿@using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
 @inject HttpClient Http
-<h3>TablesTab</h3>
 
-<!-- Sekcja stolików -->
-<div class="edit-card">
-    <div class="section-header">
-        <h3 class="section-title">Tables</h3>
-        <button class="add-button" @onclick="ShowAddTableForm">
-            <span class="plus-icon">+</span> Add table
-        </button>
-    </div>
+<div class="container ">
+    <div class="row justify-content-evenly">
+        <h3 class="text-center mb-3">Configure tables</h3>
 
-    @if (showAddTable)
-    {
-        <div class="add-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Table number</label>
-                    <input type="text" class="form-input" @bind="newTable.TableNumber" />
+        <div class="tables-grid mb-3">
+            @if (loadedTables != null && loadedTables.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var table in loadedTables)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3"
+                             @onclick="() => { editingTable = table; showTableModal = true; }">
+                            <TableComponent Table="table"/>
+                        </div>
+                    }
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Number of seats</label>
-                    <input type="number" class="form-input" min="1" @bind="newTable.Capacity" />
+            }
+            else
+            {
+                <div class="">
+                    <p>No tables configured please add some</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Localization</label>
-                    <input type="text" class="form-input" @bind="newTable.Location" />
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn-secondary" @onclick="CancelAddTable">Cancel</button>
-                <button class="btn-primary" @onclick="AddTable">Add</button>
-            </div>
+            }
         </div>
-    }
+        <div class="row mb-4 justify-content-center ">
+            <button class="base-button w-25" @onclick="() => { editingTable = null; showTableModal = true; }">
+                <i class="bi bi-plus-circle me-2"></i> Add new table
+            </button>
+        </div>
 
-    <div class="tables-grid">
-        @if (loadedTables != null && loadedTables.Any())
-        {
-            @foreach (var table in loadedTables)
-            {
-                <div class="table-card">
-                    @if (editingTableId == table.Id)
-                    {
-                        <!-- Tryb edycji -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Table number</label>
-                                <input type="text" class="form-input" @bind="editingTable.TableNumber" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Seats</label>
-                                <input type="number" class="form-input" min="1" @bind="editingTable.Capacity" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Location</label>
-                                <input type="text" class="form-input" @bind="editingTable.Location" />
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn-secondary" @onclick="CancelEdit">Cancel</button>
-                            <button class="btn-primary" @onclick="() => SaveEdit(table)">Save</button>
-                        </div>
-                    }
-                    else
-                    {
-                        <!-- Tryb wyświetlania -->
-                        <div class="table-header">
-                            <span class="table-number">Table @table.TableNumber</span>
-                            <button class="edit-button" @onclick="() => StartEdit(table)">
-                                <span class="edit-icon">✏️</span>
-                            </button>
-                            <button class="delete-button" @onclick="() => DeleteTable(table)">
-                                <span class="delete-icon">×</span>
-                            </button>
-                        </div>
-                        <div class="table-info">
-                            <div class="info-row">
-                                <span class="info-label">Seats:</span>
-                                <span class="info-value">@table.Capacity</span>
-                            </div>
-                            @if (!string.IsNullOrEmpty(table.Location))
-                            {
-                                <div class="info-row">
-                                    <span class="info-label">Localization:</span>
-                                    <span class="info-value">@table.Location</span>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-            @if (changesMade)
-            {
-                <div class="action-buttons">
-                    <button @onclick="CancelChanges">Cancel</button>
-                    <button @onclick="SaveChanges">
-                        Save Changes
-                    </button>
-                </div>
-            }
-        }
-        else
-        {
-            <div class="empty-state">
-                <p>No tables configured please add some</p>
-            </div>
-        }
+        <EditTableModal Table="editingTable"
+                        RestaurantId="Id"
+                        OnSave="LoadTables"
+                        @bind-IsVisible="showTableModal"/>
     </div>
 </div>
 
@@ -117,14 +46,11 @@
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
     private List<Table> loadedTables = new();
-    private List<CreateTableDto> modifiedTablesDtos = new();
-    private List<Table> deletedTables = new();
-    private List<Table> editedTables = new();
-    private Table newTable = new();
-    private Table editingTable = new();
+    private Table? editingTable = null;
     private int? editingTableId = null;
     private bool showAddTable = false;
     private bool changesMade = false;
+    private bool showTableModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,160 +73,4 @@
         }
     }
 
-    private void ShowAddTableForm()
-    {
-        showAddTable = true;
-        newTable = new Table { RestaurantId = Id, Capacity = 2 };
-    }
-
-    private void CancelAddTable()
-    {
-        showAddTable = false;
-        newTable = new Table();
-    }
-
-    private void AddTable()
-    {
-        if (string.IsNullOrWhiteSpace(newTable.TableNumber))
-        {
-            return;
-        }
-
-        var createTableDto = new CreateTableDto
-        {
-            TableNumber = newTable.TableNumber,
-            Capacity = newTable.Capacity,
-            Location = newTable.Location,
-            RestaurantId = Id,
-            SeatCount = newTable.Capacity
-        };
-
-        modifiedTablesDtos.Add(createTableDto);
-        loadedTables.Add(newTable);
-
-        showAddTable = false;
-        changesMade = true;
-        newTable = new Table();
-    }
-
-    private void StartEdit(Table table)
-    {
-        editingTableId = table.Id;
-        editingTable = new Table
-        {
-            Id = table.Id,
-            TableNumber = table.TableNumber,
-            Capacity = table.Capacity,
-            Location = table.Location,
-            RestaurantId = table.RestaurantId
-        };
-    }
-
-    private void CancelEdit()
-    {
-        editingTableId = null;
-        editingTable = new Table();
-    }
-
-    private void SaveEdit(Table originalTable)
-    {
-        // Aktualizuj dane w liście
-        originalTable.TableNumber = editingTable.TableNumber;
-        originalTable.Capacity = editingTable.Capacity;
-        originalTable.Location = editingTable.Location;
-
-        // Dodaj do listy edytowanych stolików jeśli jeszcze nie ma
-        if (!editedTables.Contains(originalTable))
-        {
-            editedTables.Add(originalTable);
-        }
-
-        editingTableId = null;
-        editingTable = new Table();
-        changesMade = true;
-    }
-
-    private async Task DeleteTable(Table table)
-    {
-        loadedTables.Remove(table);
-        deletedTables.Add(table);
-        changesMade = true;
-    }
-
-    private async Task SaveChanges()
-    {
-        // Zapisz nowe stoliki
-        foreach (CreateTableDto createTableDto in modifiedTablesDtos)
-        {
-            try
-            {
-                var response = await Http.PostAsJsonAsync("api/table", createTableDto);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error adding table: {e.Message}");
-            }
-        }
-
-        // Zapisz edytowane stoliki
-        foreach (Table table in editedTables)
-        {
-            try
-            {
-                var response = await Http.PutAsJsonAsync($"api/table/{table.Id}", table);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error updating table: {response.StatusCode} - {errorContent}");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error updating table: {e.Message}");
-            }
-        }
-
-        // Usuń stoliki
-        foreach (Table table in deletedTables)
-        {
-            try
-            {
-                var response = await Http.DeleteAsync($"api/table/{table.Id}");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error deleting table: {e.Message}");
-            }
-        }
-
-        changesMade = false;
-        modifiedTablesDtos.Clear();
-        editedTables.Clear();
-        deletedTables.Clear();
-        await LoadTables();
-    }
-
-    private async Task CancelChanges()
-    {
-        await LoadTables();
-        modifiedTablesDtos.Clear();
-        deletedTables.Clear();
-        editedTables.Clear();
-        editingTableId = null;
-        editingTable = new Table();
-        changesMade = false;
-    }
 }

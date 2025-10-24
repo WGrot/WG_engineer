@@ -1,0 +1,146 @@
+﻿@using RestaurantApp.Shared.DTOs
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+
+@if (IsVisible)
+{
+    <div class="modal  fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary" style="color: #FFFFFF">
+                    <h5 class="modal-title"> @(isCreatingNew ? "Create new table" : "Edit table: " + modifiedTable.TableNumber)</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div>
+                        <p><strong>Table Number:</strong> <input class="form-control" @bind="modifiedTable.TableNumber"></p>
+                        <p><strong>Seats:</strong> <input class="form-control" @bind="modifiedTable.Capacity"></p>
+                        <p><strong>Location:</strong> <input class="form-control" @bind="modifiedTable.Location"></p>
+                    </div>
+                    <div class="d-flex flex-wrap justify-content-evenly gap-2">
+                        <button class="base-button flex-grow-1" @onclick="Save">
+                            @(isCreatingNew ? "Add table" : "Save")
+                        </button>
+                        @if (!isCreatingNew)
+                        {
+                            <button class="red-button flex-grow-1" @onclick="Delete"> Delete</button>
+                        }
+                        <button class="grey-button flex-grow-1" @onclick="Close"> Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    [Parameter] public Table? Table { get; set; }
+    [Parameter] public int RestaurantId { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+
+    private Table modifiedTable = new Table();
+    private bool isCreatingNew = false;
+
+    protected override void OnParametersSet()
+    {
+        if (Table != null)
+        {
+            modifiedTable = Table;
+            isCreatingNew = false;
+        }
+        else
+        {
+            modifiedTable = new Table();
+            isCreatingNew = true;
+        }
+    }
+
+
+    private async Task Delete()
+    {
+        
+        try
+        {
+            var response = await Http.DeleteAsync($"api/table/{modifiedTable.Id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error deleting table: {response.StatusCode} - {errorContent}");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error deleting table: {e.Message}");
+        }
+        
+        await OnSave.InvokeAsync();
+
+        await Close();
+    }
+    
+    private async Task Save()
+    {
+        try
+        {
+            if (isCreatingNew)
+            {
+                CreateTableDto dto = new CreateTableDto
+                {
+                    TableNumber = modifiedTable.TableNumber,
+                    Capacity = modifiedTable.Capacity,
+                    Location = modifiedTable.Location,
+                    RestaurantId = RestaurantId
+                };
+                
+                var response = await Http.PostAsJsonAsync("api/table", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
+                }
+            }
+            else
+            {
+                UpdateTableDto dto = new UpdateTableDto
+                {
+                    TableNumber = modifiedTable.TableNumber,
+                    Capacity = modifiedTable.Capacity,
+                    Location = modifiedTable.Location
+                };
+                var response = await Http.PutAsJsonAsync($"api/table/{modifiedTable.Id}", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error updating table: {response.StatusCode} - {errorContent}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error updating table: {e.Message}");
+        }
+        await OnSave.InvokeAsync();
+
+        await Close();
+    }
+
+
+    private async Task Close()
+    {
+        Table = null;
+        modifiedTable = new Table();
+        await IsVisibleChanged.InvokeAsync(false);
+        await OnClose.InvokeAsync();
+    }
+
+}
