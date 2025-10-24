@@ -316,6 +316,7 @@
 
     private async Task PerformSearch()
     {
+        displayedRestaurants.Clear();
         var queryParams = new List<string>();
         
         if (!string.IsNullOrWhiteSpace(searchName))

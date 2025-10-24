@@ -136,6 +136,31 @@ code {
     transform: scale(0.98);
 }
 
+.grey-button {
+    background: #707070;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    margin-right: 4px;
+}
+
+.grey-button:hover {
+    background: #5a5a5a;
+    transform: scale(1.02);
+}
+
+.grey-button:active {
+    transform: scale(0.98);
+}
+
+
+
 .base-button.lg {
     font-size: 1.4rem;       /* większy tekst */
     padding: 0.9rem 1.8rem;  /* więcej przestrzeni */

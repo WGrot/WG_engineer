@@ -1,64 +1,111 @@
 ﻿@using System.Net
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
-<h3>OpeningHoursTab</h3>
-<!-- Sekcja godzin otwarcia -->
-<div class="edit-card">
-    <h3 class="section-title">Opening Hours</h3>
-    <div class="hours-grid">
-        @foreach (var day in Enum.GetValues<DayOfWeek>())
-        {
-            var hours = GetOrCreateOpeningHours(day);
-            <div class="hours-row">
-                <div class="day-label">
-                    @day
-                </div>
-                <div class="hours-controls">
-                    @if (!hours.IsClosed)
-                    {
-                        <input type="time" class="time-input"
-                               value="@hours.OpenTime.ToString("HH:mm")"
-                               @onchange="(e) => {UpdateOpenTime(hours, e.Value?.ToString()); changesMade = true; }"/>
-                        <span class="time-separator">-</span>
-                        <input type="time" class="time-input"
-                               value="@hours.CloseTime.ToString("HH:mm")"
-                               @onchange="(e) => {UpdateCloseTime(hours, e.Value?.ToString()); changesMade = true; }" />
-                    }
-                    else
-                    {
-                        <span class="closed-label">Closed</span>
-                    }
-                    <button class="toggle-button @(hours.IsClosed ? "closed" : "open")"
-                            @onclick="() => ToggleClosed(hours)">
-                        @(hours.IsClosed ? "Set opening hours" : "Close for the Day")
+
+<div class="container mt-4">
+    <div class="col d-flex justify-content-center">
+
+        <div class="card-body">
+            <div class="d-flex flex-column gap-3">
+                @foreach (var day in Enum.GetValues<DayOfWeek>())
+                {
+                    var hours = GetOrCreateOpeningHours(day);
+                    <div class="border rounded p-3 bg-light">
+                        <div class="row align-items-center">
+
+                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                <strong>@day</strong>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-2 mb-md-0">
+                                @if (!hours.IsClosed)
+                                {
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="time"
+                                               class="form-control form-control-sm"
+                                               @bind="hours.OpenTime"
+                                               @bind:format="HH:mm"
+                                               @bind:after="() => changesMade = true"/>
+                                        <span class="fw-bold">—</span>
+                                        <input type="time"
+                                               class="form-control form-control-sm"
+                                               @bind="hours.CloseTime"
+                                               @bind:format="HH:mm"
+                                               @bind:after="() => changesMade = true"/>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <span class="badge bg-secondary py-2 w-50">Closed</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="col-12 col-md-3">
+                                <button class="w-100 @(hours.IsClosed ? "base-button" : "grey-button")"
+                                        @onclick="() => ToggleClosed(hours)">
+                                    @(hours.IsClosed ? "Open" : "Close")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (changesMade)
+            {
+                <div class="mt-4 d-flex justify-content-center gap-2">
+                    <button class="base-button" @onclick="SaveChanges">
+                        <i class="bi bi-arrow-down-right-circle me-2"></i> Save
+                    </button>
+                    <button class="grey-button" @onclick="CancelChanges">
+                        Cancel
                     </button>
                 </div>
-            </div>
-        }
-        @if (changesMade)
-        {
-            <div class="action-buttons">
-                <button  @onclick="CancelChanges">Cancel</button>
-                <button  @onclick="SaveChanges">
-                    Save Changes
-                </button>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
+
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public required Restaurant restaurant { get; set; }
+    private Restaurant modifiedRestaurant = new Restaurant();
     private bool changesMade = false;
-    
+
     protected override void OnInitialized()
     {
-        if (restaurant.OpeningHours.Count != 7)
+        InitializeOpeningHours();
+    }
+
+    private void InitializeOpeningHours()
+    {
+        modifiedRestaurant = new Restaurant
         {
-            restaurant.OpeningHours.Clear();
+            Id = restaurant.Id,
+            OpeningHours = new List<OpeningHours>()
+        };
+
+        if (restaurant.OpeningHours?.Count == 7)
+        {
+            foreach (var originalHours in restaurant.OpeningHours)
+            {
+                modifiedRestaurant.OpeningHours.Add(new OpeningHours
+                {
+                    DayOfWeek = originalHours.DayOfWeek,
+                    OpenTime = originalHours.OpenTime,
+                    CloseTime = originalHours.CloseTime,
+                    IsClosed = originalHours.IsClosed,
+                    RestaurantId = restaurant.Id
+                });
+            }
+        }
+        else
+        {
             foreach (var day in Enum.GetValues<DayOfWeek>())
             {
-                restaurant.OpeningHours.Add(new OpeningHours
+                modifiedRestaurant.OpeningHours.Add(new OpeningHours
                 {
                     DayOfWeek = day,
                     OpenTime = new TimeOnly(10, 0),
@@ -69,39 +116,24 @@
             }
         }
     }
-    
+
     private OpeningHours GetOrCreateOpeningHours(DayOfWeek day)
     {
-        var hours = restaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == day);
-        if (hours == null && restaurant != null)
+        var hours = modifiedRestaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == day);
+        if (hours == null && modifiedRestaurant != null)
         {
             hours = new OpeningHours
             {
                 DayOfWeek = day,
                 OpenTime = new TimeOnly(10, 0),
                 CloseTime = new TimeOnly(22, 0),
-                RestaurantId = restaurant.Id
+                RestaurantId = modifiedRestaurant.Id
             };
-            restaurant.OpeningHours ??= new List<OpeningHours>();
-            restaurant.OpeningHours.Add(hours);
+            modifiedRestaurant.OpeningHours ??= new List<OpeningHours>();
+            modifiedRestaurant.OpeningHours.Add(hours);
         }
-        return hours!;
-    }
-    
-    private void UpdateOpenTime(OpeningHours hours, string? timeString)
-    {
-        if (TimeOnly.TryParse(timeString, out var time))
-        {
-            hours.OpenTime = time;
-        }
-    }
 
-    private void UpdateCloseTime(OpeningHours hours, string? timeString)
-    {
-        if (TimeOnly.TryParse(timeString, out var time))
-        {
-            hours.CloseTime = time;
-        }
+        return hours!;
     }
 
     private void ToggleClosed(OpeningHours hours)
@@ -110,20 +142,32 @@
         hours.IsClosed = !hours.IsClosed;
     }
 
-    private async Task CancelChanges()
+    private void CancelChanges()
     {
+        changesMade = false;
+        InitializeOpeningHours();
     }
 
     private async Task SaveChanges()
     {
         try
         {
-            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/opening-hours", restaurant.OpeningHours);
+            await Http.PatchAsJsonAsync($"api/restaurant/{Id}/opening-hours", modifiedRestaurant.OpeningHours);
+
+            restaurant.OpeningHours = modifiedRestaurant.OpeningHours.Select(h => new OpeningHours
+            {
+                DayOfWeek = h.DayOfWeek,
+                OpenTime = h.OpenTime,
+                CloseTime = h.CloseTime,
+                IsClosed = h.IsClosed,
+                RestaurantId = h.RestaurantId
+            }).ToList();
+
             changesMade = false;
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error adding table: {e.Message}");
+            Console.WriteLine($"Error saving opening hours: {e.Message}");
         }
     }
 

@@ -37,14 +37,6 @@
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link @(activeTab == "hours" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "hours")"
-                                type="button">
-                            <i class="bi bi-clock-history"></i>
-                            Opening Hours
-                        </button>
-                    </li>
-                    <li class="nav-item">
                         <button
                             class="nav-link @(activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
                             @onclick="@(() => activeTab = "settings")"
@@ -94,9 +86,6 @@
                         break;
                     case "tables":
                         <TablesTab Id=@Id restaurant=@restaurant/>
-                        break;
-                    case "hours":
-                        <OpeningHoursTab Id=@Id restaurant=@restaurant/>
                         break;
                     case "settings":
                         <RestaurantSettingsTab Id=@Id restaurant=@restaurant/>
