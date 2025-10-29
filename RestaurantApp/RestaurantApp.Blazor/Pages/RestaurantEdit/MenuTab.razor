@@ -1,153 +1,182 @@
-﻿@using RestaurantApp.Blazor.Models.DTO
-@using RestaurantApp.Shared.Models
-
-<h3>Menu Management</h3>
+﻿@using RestaurantApp.Shared.Models
+<h3 class="mb-4">Menu Management</h3>
 
 @if (menu != null)
 {
-    <div>
-        <!-- Tags Section -->
-        <div>
-            <h4>Tags Management</h4>
-            <button @onclick="ShowAddTagForm">Add New Tag</button>
-
-            @if (showAddTag)
-            {
-                <div>
-                    <input type="text" @bind="newTag.Name" placeholder="Tag Name" />
-                    <input type="color" @bind="newTag.ColorHex" />
-                    <button @onclick="AddTag">Add</button>
-                    <button @onclick="() => showAddTag = false">Cancel</button>
-                </div>
-            }
-
-            <div>
-                @foreach (var tag in tags)
+    <div class="container">
+        <!-- TAGS SECTION -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Tags Management</h5>
+                <button class="btn btn-sm btn-primary" @onclick="ShowAddTagForm">Add New Tag</button>
+            </div>
+            <div class="card-body">
+                @if (showAddTag)
                 {
-                    <div>
-                        <span style="background-color: @tag.ColorHex; padding: 5px;">@tag.Name</span>
-                        <button @onclick="() => DeleteTag(tag.Id)">Delete</button>
+                    <div class="mb-3">
+                        <input type="text" class="form-control mb-2" @bind="newTag.Name" placeholder="Tag Name"/>
+                        <input type="color" class="form-control form-control-color mb-2" @bind="newTag.ColorHex"/>
+                        <button class="btn btn-success btn-sm me-2" @onclick="AddTag">Add</button>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => showAddTag = false">Cancel</button>
                     </div>
                 }
+
+                <ul class="list-group">
+                    @foreach (var tag in tags)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="badge rounded-pill text-white"
+                                  style="background-color:@tag.ColorHex">@tag.Name</span>
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteTag(tag.Id)">Delete
+                            </button>
+                        </li>
+                    }
+                </ul>
             </div>
         </div>
 
-        <hr />
-
-        <!-- Categories Section -->
-        <button @onclick="ShowAddCategoryForm">Add New Category</button>
-
-        @if (showAddCategory)
-        {
-            <div>
-                <h4>New Category</h4>
-                <input type="text" @bind="newCategory.Name" placeholder="Category Name" />
-                <input type="text" @bind="newCategory.Description" placeholder="Description" />
-                <input type="number" @bind="newCategory.DisplayOrder" placeholder="Display Order" />
-                <button @onclick="AddCategory">Add</button>
-                <button @onclick="() => showAddCategory = false">Cancel</button>
+        <!-- CATEGORIES SECTION -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Categories</h5>
+                <button class="btn btn-sm btn-primary" @onclick="ShowAddCategoryForm">Add New Category</button>
             </div>
-        }
-
-        <!-- Lista kategorii -->
-        @foreach (var category in categories.OrderBy(c => c.DisplayOrder))
-        {
-            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
-                @if (editingCategoryId == category.Id)
+            <div class="card-body">
+                @if (showAddCategory)
                 {
-                    <input type="text" @bind="category.Name" />
-                    <input type="text" @bind="category.Description" />
-                    <input type="number" @bind="category.DisplayOrder" />
-                    <button @onclick="() => SaveCategory(category)">Save</button>
-                    <button @onclick="() => editingCategoryId = null">Cancel</button>
-                }
-                else
-                {
-                    <h4>
-                        @category.Name
-                        <button @onclick="() => ToggleCategory(category.Id)">
-                            @(expandedCategories.Contains(category.Id) ? "Collapse" : "Expand")
+                    <div class="mb-3">
+                        <input type="text" class="form-control mb-2" @bind="newCategory.Name"
+                               placeholder="Category Name"/>
+                        <input type="text" class="form-control mb-2" @bind="newCategory.Description"
+                               placeholder="Description"/>
+                        <input type="number" class="form-control mb-2" @bind="newCategory.DisplayOrder"
+                               placeholder="Display Order"/>
+                        <button class="btn btn-success btn-sm me-2" @onclick="AddCategory">Add</button>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => showAddCategory = false">Cancel
                         </button>
-                        <button @onclick="() => editingCategoryId = category.Id">Edit</button>
-                        <button @onclick="() => DeleteCategory(category.Id)">Delete</button>
-                    </h4>
-                    @if (!string.IsNullOrEmpty(category.Description))
-                    {
-                        <p>@category.Description</p>
-                    }
+                    </div>
                 }
 
-                @if (expandedCategories.Contains(category.Id))
-                {
-                    <div style="margin-left: 20px;">
-                        <button @onclick="() => ShowAddItemForm(category.Id)">Add Item</button>
-
-                        @if (showAddItem && addItemToCategoryId == category.Id)
-                        {
-                            <div>
-                                <input type="text" @bind="newItem.Name" placeholder="Item Name" />
-                                <input type="text" @bind="newItem.Description" placeholder="Description" />
-                                <input type="number" @bind="newItem.Price" placeholder="Price" />
-                                <input type="text" @bind="newItem.CurrencyCode" placeholder="Currency (PLN)" />
-                                <input type="text" @bind="newItem.ImagePath" placeholder="Image Path" />
-                                <button @onclick="() => AddItem(category.Id)">Add</button>
-                                <button @onclick="() => showAddItem = false">Cancel</button>
+                <ul class="list-group">
+                    @foreach (var category in categories.OrderBy(c => c.DisplayOrder))
+                    {
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">@category.Name</h6>
+                                <div>
+                                    <button class="btn btn-outline-info btn-sm me-1"
+                                            @onclick="() => ToggleCategory(category.Id)">
+                                        @(expandedCategories.Contains(category.Id) ? "Collapse" : "Expand")
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm me-1"
+                                            @onclick="() => editingCategoryId = category.Id">Edit
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="() => DeleteCategory(category.Id)">Delete
+                                    </button>
+                                </div>
                             </div>
-                        }
 
-                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                <small class="text-muted">@category.Description</small>
+                            }
+
+                            @if (expandedCategories.Contains(category.Id))
+                            {
+                                <div class="mt-2 ps-3">
+                                    <!-- Przycisk dodania -->
+                                    <button class="btn btn-sm btn-primary mb-3"
+                                            @onclick="() => ShowAddItemForm(category.Id)">
+                                        + Add Item
+                                    </button>
+
+                                    <!-- Formularz dodawania pozycji -->
+                                    @if (showAddItem && addItemToCategoryId == category.Id)
+                                    {
+                                        <div class="card card-body mb-3 shadow-sm">
+                                            <h6 class="fw-bold mb-2">New Item</h6>
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <input type="text" class="form-control" @bind="newItem.Name"
+                                                           placeholder="Item Name"/>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" class="form-control" @bind="newItem.Description"
+                                                           placeholder="Description"/>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="number" class="form-control" @bind="newItem.Price"
+                                                           placeholder="Price"/>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" @bind="newItem.CurrencyCode"
+                                                           placeholder="Currency (PLN)"/>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" @bind="newItem.ImagePath"
+                                                           placeholder="Image Path"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3">
+                                                <button class="btn btn-success btn-sm me-2"
+                                                        @onclick="() => AddItem(category.Id)">Add
+                                                </button>
+                                                <button class="btn btn-secondary btn-sm"
+                                                        @onclick="() => showAddItem = false">Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+
+
+                                    <div class="d-flex flex-column gap-3">
+                                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                                        {
+                                            <MenuItemEditComponent
+                                                Item="item"
+                                                Categories="categories"
+                                                Tags="tags"
+                                                OnSave="SaveItem"
+                                                OnDelete="DeleteItem"
+                                                OnMove="HandleMoveItem"/>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- UNCATEGORIZED ITEMS -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Uncategorized Items</h5>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleUncategorized">
+                    @(showUncategorized ? "Collapse" : "Expand")
+                </button>
+            </div>
+            @if (showUncategorized)
+            {
+                <div class="card-body">
+                    <button class="btn btn-primary btn-sm mb-2" @onclick="() => ShowAddItemForm(null)">Add Item</button>
+
+                    <ul class="list-group">
+                        @foreach (var item in uncategorizedItems)
                         {
-                            <div style="border: 1px solid #ddd; margin: 5px; padding: 5px;">
+                            <li class="list-group-item">
                                 <MenuItemEditComponent
                                     Item="item"
                                     Categories="categories"
-                                    Tags="tags"
                                     OnSave="SaveItem"
                                     OnDelete="DeleteItem"
-                                    OnMove="HandleMoveItem" />
-                            </div>
+                                    OnMove="HandleMoveItem"/>
+                            </li>
                         }
-                    </div>
-                }
-            </div>
-        }
-
-        <!-- Pozycje bez kategorii -->
-        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
-            <h4>
-                Uncategorized Items
-                <button @onclick="ToggleUncategorized">
-                    @(showUncategorized ? "Collapse" : "Expand")
-                </button>
-            </h4>
-
-            @if (showUncategorized)
-            {
-                <div style="margin-left: 20px;">
-                    <button @onclick="() => ShowAddItemForm(null)">Add Item</button>
-
-                    @if (showAddItem && addItemToCategoryId == null)
-                    {
-                        <div>
-                            <input type="text" @bind="newItem.Name" placeholder="Item Name" />
-                            <input type="text" @bind="newItem.Description" placeholder="Description" />
-                            <input type="number" @bind="newItem.Price" placeholder="Price" />
-                            <input type="text" @bind="newItem.CurrencyCode" placeholder="Currency (PLN)" />
-                            <input type="text" @bind="newItem.ImagePath" placeholder="Image Path" />
-                            <button @onclick="() => AddItem(null)">Add</button>
-                            <button @onclick="() => showAddItem = false">Cancel</button>
-                        </div>
-                    }
-
-                    @foreach (var item in uncategorizedItems)
-                    {
-                        <MenuItemEditComponent
-                            Item="item"
-                            Categories="categories"
-                            OnSave="SaveItem"
-                            OnDelete="DeleteItem"
-                            OnMove="HandleMoveItem" />
-                    }
+                    </ul>
                 </div>
             }
         </div>
@@ -155,9 +184,7 @@
 }
 else
 {
-    <div >
-        <button @onclick="CreateMenu" class="base-button">
-            Add Menu
-        </button>
+    <div class="text-center mt-4">
+        <button class="btn btn-success" @onclick="CreateMenu">Add Menu</button>
     </div>
 }
