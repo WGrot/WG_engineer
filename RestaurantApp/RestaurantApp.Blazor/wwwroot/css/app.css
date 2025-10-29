@@ -123,7 +123,7 @@ code {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    transition: all 0.3s ease;
+    transition: all 0.1s ease;
     margin-right: 4px;
 }
 
@@ -185,6 +185,104 @@ code {
     padding: 0.9rem 1.8rem;  /* więcej przestrzeni */
     border-radius: 10px;     /* opcjonalnie bardziej zaokrąglony */
 }
+
+
+/*  Nowe klasy button */
+
+.button {
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.06s ease;
+    margin-right: 4px;
+    transform: scale(1);
+}
+
+.button:hover {
+    transform: scale(1.02);
+}
+
+.button:active {
+    transform: scale(0.98);
+}
+
+/* warianty kolorów */
+.button--primary {
+    background: #667eea;
+}
+.button--primary:hover {
+    background: #5a67d8;
+}
+
+.button--grey {
+    background: #707070;
+}
+.button--grey:hover {
+    background: #5a5a5a;
+}
+
+.button--red {
+    background: #e81d1d;
+}
+.button--red:hover {
+    background: #a80000;
+}
+
+.button--green {
+    background: #63f448;
+}
+.button--green:hover {
+    background: #2f7821;
+}
+
+/* rozmiary */
+.button--lg {
+    font-size: 1.4rem;
+    padding: 0.9rem 1.8rem;
+    border-radius: 10px;
+}
+
+.button--outline {
+    background: transparent;
+    border: 2px solid currentColor;
+}
+
+/* Odwracanie kolorów dla outline */
+.button--outline.button--blue {
+    color: #667eea;
+    border-color: #667eea;
+}
+.button--outline.button--blue:hover {
+    background: #667eea;
+    color: white;
+}
+
+.button--outline.button--grey {
+    color: #707070;
+    border-color: #707070;
+}
+.button--outline.button--grey:hover {
+    background: #707070;
+    color: white;
+}
+
+.button--outline.button--red {
+    color: #e81d1d;
+    border-color: #e81d1d;
+}
+.button--outline.button--red:hover {
+    background: #e81d1d;
+    color: white;
+}
+
+/*KOniec nowych klas button*/
+
+
 
 .nav-tabs .nav-link.active {
     
