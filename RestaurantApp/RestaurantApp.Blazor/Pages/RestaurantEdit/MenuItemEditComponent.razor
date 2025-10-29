@@ -7,77 +7,131 @@
         @if (Editing)
         {
             <div class="mb-3">
-                <input type="text" class="form-control mb-2" @bind="Item.Name" placeholder="Name" />
+                <input type="text" class="form-control mb-2" @bind="Item.Name" placeholder="Name"/>
                 <textarea class="form-control mb-2" @bind="Item.Description" placeholder="Description"></textarea>
                 <div class="row g-2">
                     <div class="col-md-4">
-                        <input type="number" class="form-control" @bind="Item.Price.Price" placeholder="Price" />
+                        <input type="number" class="form-control" @bind="Item.Price.Price" placeholder="Price"/>
                     </div>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" @bind="Item.Price.CurrencyCode" placeholder="Currency" />
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" @bind="Item.ImageUrl" placeholder="Image URL" />
+                        <input type="text" class="form-control" @bind="Item.Price.CurrencyCode" placeholder="Currency"/>
                     </div>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end">
-                <button class="btn btn-success btn-sm me-2" @onclick="OnSaveClicked">💾 Save</button>
-                <button class="btn btn-secondary btn-sm" @onclick="OnCancelClicked">Cancel</button>
+            <div class="d-flex justify-content-center">
+                <button class="base-button  me-2" @onclick="OnSaveClicked">Save</button>
+                <button class="grey-button" @onclick="OnCancelClicked">Cancel</button>
             </div>
         }
         else
         {
             <div class="d-flex align-items-start">
-                <div class="me-3">
-                    @if (!string.IsNullOrEmpty(Item.ImageUrl))
-                    {
-                        <img src="@Item.ImageUrl" alt="@Item.Name" class="img-thumbnail" style="width:100px; height:100px; object-fit:cover;" />
-                    }
-                    else
-                    {
-                        <div class="bg-light border d-flex align-items-center justify-content-center rounded" style="width:100px; height:100px;">
-                            <span class="text-muted small">No photo</span>
+                <div class="card position-relative shadow-sm me-2" style="max-width: 150px;">
+                    <div class="card-header d-flex justify-content-end align-items-center bg-light py-2 px-1">
+                        <div class="d-flex gap-1">
+                            <div>
+                                <label for=@($"itemImageInput_{Item.Id}")
+                                       class="base-button d-flex align-items-center justify-content-center"
+                                       style="width: 32px; height: 32px; padding: 0; cursor: pointer;"
+                                       title="Upload image">
+                                    @if (isUploadingImage)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-upload"></i>
+                                    }
+                                </label>
+
+                                <InputFile id=@($"itemImageInput_{Item.Id}")
+                                           OnChange="@((e) => UploadItemImage(e, Item.Id))"
+                                           accept="image/*"
+                                           style="display:none"/>
+                            </div>
+                            <button class="base-button d-flex align-items-center justify-content-center"
+                                    style="width: 32px; height: 32px; padding: 0;"
+                                    @onclick="() => DeleteItemImage(Item.Id)"
+                                    disabled="@isDeletingImage"
+                                    title="Delete image">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
-                    }
+                    </div>
+
+                    <div class="card-body p-0">
+                        @if (!string.IsNullOrEmpty(Item.ThumbnailUrl))
+                        {
+                            <img src="@Item.ThumbnailUrl"
+                                 alt="@Item.Name"
+                                 class="img-fluid w-100"
+                                 style="max-height: 300px; object-fit: cover;"/>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center bg-white text-muted"
+                                 style="height: 300px;">
+                                <i class="bi bi-image fs-1"></i>
+                            </div>
+                        }
+                    </div>
                 </div>
 
                 <div class="flex-grow-1">
-                    <h6 class="mb-1">@Item.Name</h6>
+                    <div class="d-flex flex-wrap justify-content-between mt-2">
+                        <div class="d-flex flex-wrap">
+                            <button class="button button--primary" @onclick="OnEditClicked">Edit</button>
+                            <button class="button @(ShowMoveDropdown ? "button--grey" : "button--primary" )" @onclick="OnMoveClicked">Move</button>
+                            <button class="button @(ShowVariants ? "button--grey" : "button--primary" )" @onclick="() => ShowVariants = !ShowVariants">
+                                @(ShowVariants ? "Hide Variants" : "Show Variants")
+                            </button>
+                        </div>
+                        <div>
+                            <button class="button button--red button--outline" @onclick="() => OnDelete.InvokeAsync(Item.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3 class="my-2">@Item.Name</h3>
                     <small class="text-muted">@Item.Price.Price @Item.Price.CurrencyCode</small>
                     <p class="mb-2 small">@Item.Description</p>
 
-                    @if (Item.Tags?.Any() == true)
-                    {
-                        <div class="mb-2">
-                            @foreach (var tag in Item.Tags)
+
+                    <div class="mb-2">
+                        @if (Item.Tags?.Any() == true)
+                        {
+                            foreach (var tag in Item.Tags)
                             {
-                                <span class="badge me-1" style="background-color:@tag.ColorHex">@tag.Name</span>
+                                <span class="badge me-1 position-relative"
+                                      style="background-color:@tag.ColorHex; padding-right: 25px;">
+                                @tag.Name
+                                    <button
+                                        class="btn-close btn-close-white position-absolute top-50 end-0 translate-middle-y"
+                                        style="font-size: 0.6rem; margin-right: 5px;"
+                                        @onclick="() => DeleteTag(Item.Id, tag.Id)">
+                                </button>
+                            </span>
                             }
-                        </div>
-                    }
-
-                    <div class="d-flex flex-wrap gap-2">
-                        <button class="btn btn-outline-primary btn-sm" @onclick="OnEditClicked">Edit</button>
-                        <button class="btn btn-outline-danger btn-sm" @onclick="() => OnDelete.InvokeAsync(Item.Id)">Delete</button>
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="OnMoveClicked">Move</button>
-                        <button class="btn btn-outline-info btn-sm" @onclick="() => ShowTagDropdown = !ShowTagDropdown">Add Tag</button>
-                        <button class="btn btn-outline-dark btn-sm" @onclick="() => ShowVariants = !ShowVariants">
-                            @(ShowVariants ? "Hide Variants" : "Show Variants")
-                        </button>
+                        }
+                        <span class="badge me-1 base-button"
+                              style="background-color:var(--primary-color); cursor: pointer;"
+                              @onclick="() => ShowTagDropdown = !ShowTagDropdown">
+                            <i class="bi bi-plus-lg"></i>
+                        </span>
                     </div>
-                </div>
-            </div>
 
-            <div class="mt-3">
-                <InputFile OnChange="(e) => UploadItemImage(e, Item.Id)" class="form-control form-control-sm" />
+
+                </div>
             </div>
 
             @if (ShowMoveDropdown)
             {
                 <div class="mt-2">
-                    <select class="form-select form-select-sm mb-2" @onchange="(e) => MoveItem(Item.Id, e.Value?.ToString())">
+                    <label class="small">Move item to category </label>
+                    <select class="form-select form-select-sm mb-2"
+                            @onchange="(e) => MoveItem(Item.Id, e.Value?.ToString())">
                         <option value="">Select category...</option>
                         <option value="uncategorized">No category</option>
                         @foreach (var cat in Categories)
@@ -85,27 +139,28 @@
                             <option value="@cat.Id">@cat.Name</option>
                         }
                     </select>
-                    <button class="btn btn-secondary btn-sm" @onclick="() => ShowMoveDropdown = false">Cancel</button>
                 </div>
             }
 
             @if (ShowTagDropdown)
             {
                 <div class="mt-2">
-                    <select class="form-select form-select-sm mb-2" @onchange="(e) => AddTag(Item.Id, e.Value?.ToString())">
+                    <label class="small">Add tags to item </label>
+                    <select class="form-select form-select-sm mb-2"
+                            @onchange="(e) => AddTag(Item.Id, e.Value?.ToString())">
                         <option value="">Select tag...</option>
                         @foreach (var tag in Tags)
                         {
                             <option value="@tag.Id">@tag.Name</option>
                         }
                     </select>
-                    <button class="btn btn-secondary btn-sm" @onclick="() => ShowTagDropdown = false">Cancel</button>
+                    <button class="grey-button" @onclick="() => ShowTagDropdown = false">Cancel</button>
                 </div>
             }
 
             @if (ShowVariants)
             {
-                <hr />
+                <hr/>
                 <div class="mt-2">
                     <h6 class="fw-bold mb-2">Variants</h6>
                     @foreach (var variant in Variants)
@@ -113,24 +168,33 @@
                         <div class="border rounded p-2 mb-2 bg-light">
                             @if (editingVariantId == variant.Id)
                             {
-                                <input class="form-control mb-2" @bind="editVariant.Name" placeholder="Name" />
-                                <input type="number" class="form-control mb-2" @bind="editVariant.Price" placeholder="Price" />
-                                <textarea class="form-control mb-2" @bind="editVariant.Description" placeholder="Description"></textarea>
+                                <input class="form-control mb-2" @bind="editVariant.Name" placeholder="Name"/>
+                                <input type="number" class="form-control mb-2" @bind="editVariant.Price"
+                                       placeholder="Price"/>
+                                <textarea class="form-control mb-2" @bind="editVariant.Description"
+                                          placeholder="Description"></textarea>
 
-                                <button class="btn btn-success btn-sm me-2" @onclick="() => SaveVariantEdit(variant.Id)">Save</button>
+                                <button class="btn btn-success btn-sm me-2"
+                                        @onclick="() => SaveVariantEdit(variant.Id)">Save
+                                </button>
                                 <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
                             }
                             else
                             {
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <strong>@variant.Name</strong> <span class="text-muted">@variant.Price @Item.Price.CurrencyCode</span>
-                                        <br />
+                                        <strong>@variant.Name</strong> <span
+                                            class="text-muted">@variant.Price @Item.Price.CurrencyCode</span>
+                                        <br/>
                                         <small>@variant.Description</small>
                                     </div>
                                     <div>
-                                        <button class="btn btn-outline-secondary btn-sm me-1" @onclick="() => StartEdit(variant)">Edit</button>
-                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteVariant(variant.Id)">Delete</button>
+                                        <button class="btn btn-outline-secondary btn-sm me-1"
+                                                @onclick="() => StartEdit(variant)">Edit
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm"
+                                                @onclick="() => DeleteVariant(variant.Id)">Delete
+                                        </button>
                                     </div>
                                 </div>
                             }
@@ -141,16 +205,18 @@
                     {
                         <div class="border rounded p-3 mb-2">
                             <h6>New Variant</h6>
-                            <input class="form-control mb-2" @bind="newVariant.Name" placeholder="Name" />
-                            <input type="number" class="form-control mb-2" @bind="newVariant.Price" placeholder="Price" />
-                            <textarea class="form-control mb-2" @bind="newVariant.Description" placeholder="Description"></textarea>
+                            <input class="form-control mb-2" @bind="newVariant.Name" placeholder="Name"/>
+                            <input type="number" class="form-control mb-2" @bind="newVariant.Price"
+                                   placeholder="Price"/>
+                            <textarea class="form-control mb-2" @bind="newVariant.Description"
+                                      placeholder="Description"></textarea>
                             <button class="btn btn-success btn-sm me-2" @onclick="AddNewVariant">Add</button>
                             <button class="btn btn-secondary btn-sm" @onclick="CancelAddNew">Cancel</button>
                         </div>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-outline-primary" @onclick="StartAddNew">+ Add new variant</button>
+                        <button class="base-button w-100" @onclick="StartAddNew">+ Add new variant</button>
                     }
                 </div>
             }

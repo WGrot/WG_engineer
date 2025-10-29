@@ -24,13 +24,16 @@ public partial class MenuItemEditComponent : ComponentBase
     private bool ShowTagDropdown = false;
     private bool ShowVariants = false;
 
+    private bool isUploadingImage = false;
+    private bool isDeletingImage = false;
+    
     private bool isAddingNew = false;
     private int? editingVariantId = null;
     private MenuItemVariantDto newVariant = new MenuItemVariantDto();
     private MenuItemVariantDto editVariant = new MenuItemVariantDto();
     private void OnEditClicked() => Editing = true;
     private void OnCancelClicked() => Editing = false;
-    private void OnMoveClicked() => ShowMoveDropdown = true;
+    private void OnMoveClicked() => ShowMoveDropdown = !ShowMoveDropdown;
 
 
     protected override async Task OnParametersSetAsync()
@@ -53,6 +56,22 @@ public partial class MenuItemEditComponent : ComponentBase
     private async Task AddTag(int itemId, string? targetTagId)
     {
         await Http.PostAsJsonAsync($"/api/MenuItem/{itemId}/tags/{targetTagId}", targetTagId);
+        var tagToAdd = Tags.FirstOrDefault(t => t.Id.ToString() == targetTagId);
+        if (tagToAdd != null)
+        {
+            Item.Tags.Add(tagToAdd.ToEntity());
+        }
+        ShowTagDropdown = false;
+    }
+    
+    private async Task DeleteTag(int itemId, int targetTagId)
+    {
+        await Http.DeleteAsync($"/api/MenuItem/{itemId}/tags/{targetTagId}");
+        var tagToRemove = Item.Tags.FirstOrDefault(t => t.Id == targetTagId);
+        if (tagToRemove != null)
+        {
+            Item.Tags.Remove(tagToRemove);
+        }
         ShowTagDropdown = false;
     }
 
@@ -71,6 +90,7 @@ public partial class MenuItemEditComponent : ComponentBase
     {
         try
         {
+            isUploadingImage = true;
             var file = e.File;
             if (file is null) return;
 
@@ -79,15 +99,15 @@ public partial class MenuItemEditComponent : ComponentBase
             streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
             content.Add(streamContent, "image", file.Name);
 
-            var response = await Http.PostAsync($"/api/Menu/item/{itemId}/upload-image", content);
+            var response = await Http.PostAsync($"/api/MenuItem/item/{itemId}/upload-image", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadFromJsonAsync<ImageUploadResult>();
                 if (json != null && !string.IsNullOrEmpty(json.ThumbnailUrl))
                 {
-                    Item.ImageUrl = json.ThumbnailUrl;
-                    StateHasChanged(); // 🔥 natychmiast odświeża widok
+                    Item.ThumbnailUrl = json.ThumbnailUrl;
+                    StateHasChanged(); 
                 }
             }
             else
@@ -98,6 +118,9 @@ public partial class MenuItemEditComponent : ComponentBase
         catch (Exception ex)
         {
             Console.WriteLine($"Error uploading image: {ex.Message}");
+        }finally
+        {
+            isUploadingImage = false;
         }
     }
 
@@ -105,20 +128,24 @@ public partial class MenuItemEditComponent : ComponentBase
     {
         try
         {
-            var response = await Http.DeleteAsync($"/api/Menu/item/{itemId}/delete-image");
+            isDeletingImage = true;
+            var response = await Http.DeleteAsync($"/api/MenuItem/item/{itemId}/delete-image");
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Failed to delete image: {response.StatusCode}");
             }
             else
             {
-                Item.ImageUrl = null;
+                Item.ThumbnailUrl = null;
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting image: {ex.Message}");
+        }finally
+        {
+            isDeletingImage = false;
         }
     }
 

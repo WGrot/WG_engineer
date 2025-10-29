@@ -29,6 +29,7 @@ public partial class MenuTab : ComponentBase
     private int? editingItemId;
     private int? movingItemId;
 
+    private bool isLoading = false;
     private MenuCategoryDto newCategory = new();
     private MenuItemDto newItem = new();
 
@@ -47,8 +48,10 @@ public partial class MenuTab : ComponentBase
     }
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         await LoadMenu();
         await LoadTags();
+        isLoading = false;
     }
 
     private async Task LoadMenu()
@@ -98,7 +101,7 @@ public partial class MenuTab : ComponentBase
     {
         showAddItem = true;
         addItemToCategoryId = categoryId;
-        newItem = new MenuItemDto { CurrencyCode = "PLN" };
+        newItem = new MenuItemDto { CurrencyCode = "PLN", ImagePath = ""};
     }
 
     private void ShowMoveItemForm(int itemId)
