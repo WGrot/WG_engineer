@@ -5,7 +5,7 @@ using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
+namespace RestaurantApp.Blazor.Components;
 
 public partial class TableReservationSection : ComponentBase
 {
@@ -18,6 +18,8 @@ public partial class TableReservationSection : ComponentBase
     [Parameter] public DateTime Date { get; set; }
     [Parameter] public Table Table { get; set; }
     [Parameter] public DateTime EndTime { get; set; }
+    
+    [Parameter] public bool autoFilldata { get; set; } = true;
     private string customerName = "";
     private string customerEmail = "";
     private string customerPhone = "";
@@ -33,22 +35,26 @@ public partial class TableReservationSection : ComponentBase
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-    
-        if (user.Identity?.IsAuthenticated == true)
+
+        if (autoFilldata)
         {
-            currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
-            if (currentUser != null)
+            if (user.Identity?.IsAuthenticated == true)
             {
-                customerName = currentUser.FirstName + " " +currentUser.LastName;
-                customerEmail = currentUser.Email;
-                customerPhone = currentUser.PhoneNumber;
-                userId = currentUser.Id;
+                currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
+                if (currentUser != null)
+                {
+                    customerName = currentUser.FirstName + " " +currentUser.LastName;
+                    customerEmail = currentUser.Email;
+                    customerPhone = currentUser.PhoneNumber;
+                    userId = currentUser.Id;
+                }
+            }
+            else
+            {
+                currentUser = null;
             }
         }
-        else
-        {
-            currentUser = null;
-        }
+        
     }
     
     private async Task MakeReservation()

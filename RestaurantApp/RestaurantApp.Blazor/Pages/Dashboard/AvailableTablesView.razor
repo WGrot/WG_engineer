@@ -1,0 +1,47 @@
+﻿@using RestaurantApp.Blazor.Components
+<div class="card">
+    <div class="card-body shadow border-1">
+        <h3 class="text-center">Tables</h3>
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        }
+        else
+        {
+            if (tables.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var table in tables)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3" @onclick="() => ShowTableDetails(table)">
+                            <TableComponentBlazor Table="table"/>
+                        </div>
+                    }
+                </div>
+
+
+                <TableDetailsModal
+                    @bind-IsVisible="showTableDetails"
+                    RestaurantId="RestaurantId"
+                    Table="selectedTable"
+                    AutoFillUserData="false"
+                />
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-table fs-1 d-block mb-2"></i>
+                    <p class="mb-0">No tables configured — please add some.</p>
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+@code {
+
+} 
