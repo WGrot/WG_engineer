@@ -10,7 +10,8 @@ public partial class TableComponentBlazor : ComponentBase
     [Inject] private HttpClient Http { get; set; } = null!;
     [Parameter]
     public Table Table { get; set; }
-
+    
+    private string? TrimmedAvailability = new string('2', 96);
     private string TableAvailibilitymap = new string('2', 96);
     [Parameter] public bool isAvailable { get; set; }
     
@@ -19,6 +20,7 @@ public partial class TableComponentBlazor : ComponentBase
     protected override async Task OnParametersSetAsync()
     {
         await LoadTableAvailability();
+        TrimmedAvailability = TrimEdges(TableAvailibilitymap);
     }
 
     private async Task LoadTableAvailability()
@@ -47,4 +49,47 @@ public partial class TableComponentBlazor : ComponentBase
             isAvailable = false;
         }
     }
+    
+    
+    
+    private string? TrimEdges(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+        int leading2s = 0;
+        leading2s = input.TakeWhile(c => c == '2').Count();
+
+        if(leading2s > 95) // all '2's
+            return input;
+
+        return input.Trim('2');
+    }
+    
+    private List<(char value, int count)> GetSegments()
+    {
+        var segments = new List<(char value, int count)>();
+        if (!string.IsNullOrEmpty(TrimmedAvailability))
+        {
+            char currentBit = TrimmedAvailability[0];
+            int count = 1;
+            
+            for (int i = 1; i < TrimmedAvailability.Length; i++)
+            {
+                if (TrimmedAvailability[i] == currentBit)
+                {
+                    count++;
+                }
+                else
+                {
+                    segments.Add((currentBit, count));
+                    currentBit = TrimmedAvailability[i];
+                    count = 1;
+                }
+            }
+            segments.Add((currentBit, count));
+        }
+        return segments;
+    }
+    
+    
 }

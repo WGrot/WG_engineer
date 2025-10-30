@@ -1,4 +1,5 @@
-﻿@using RestaurantApp.Shared.Models
+﻿@using System.Globalization
+@using RestaurantApp.Shared.Models
 
 <div class="card shadow-sm border-0 rounded-3 table-card h-100">
     <div class="card-header @HeaderClass d-flex justify-content-between align-items-center rounded-top-3">
@@ -28,8 +29,18 @@
                 <span class="fw-semibold">@Table.Location</span>
             </div>
         }
+        <div class="color-bar-flex">
+            @foreach (var segment in GetSegments())
+            {
+                <div class="@(segment.value == '0' ? "segment-zero" : "segment-one")"
+                     style="flex-grow: @segment.count"></div>
+            }
+        </div>
+        
     </div>
+
 </div>
+
 
 <style>
     .table-card {
@@ -54,4 +65,20 @@
         background-color: var(--primary-color) !important;
         color: whitesmoke;
     }
+    
+    .color-bar-flex {
+        display: flex;
+        height: 15px;
+        width: 100%;
+        border: 2px solid #ffffff;
+    }
+
+    .segment-zero {
+        background-color: var(--primary-color-strong);
+    }
+
+    .segment-one {
+        background-color: #999999;
+    }
+
 </style>
