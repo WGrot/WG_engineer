@@ -75,7 +75,6 @@ public class EmployeeService : IEmployeeService
 
         foreach (var employee in employees)
         {
-            // Bezpośrednie zapytanie zamiast przez UserService
             var user = await _context.Users.FindAsync(employee.UserId);
             if (user == null)
                 return Result.Failure<IEnumerable<ResponseRestaurantEmployeeDto>>(

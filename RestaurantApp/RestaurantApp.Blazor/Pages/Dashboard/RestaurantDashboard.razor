@@ -1,7 +1,15 @@
 ﻿@page "/RestaurantDashboard"
 
-
-<div class="container mt-4">
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+}
+else
+{
+    <div class="container mt-4">
     <div class="row g-3 mb-3">
         <!-- Lewa karta: wybrana restauracja -->
         <div class="col-md-3">
@@ -11,7 +19,7 @@
                     <small class="text-uppercase mb-2">Chosen restaurant</small>
 
                     <div class="d-flex align-items-center gap-2">
-                        <h4 class="fw-bold mb-0">Pasta Bella</h4>
+                        <h4 class="fw-bold mb-0">@loadedRestaurant.Name</h4>
                         <button class="btn btn-link btn-sm p-0 text-white text-decoration-none">
                             <i class="bi bi-chevron-down fs-5"></i>
                         </button>
@@ -90,5 +98,8 @@
         </div>
     </div>
 </div>
+
+}
+
 
 
