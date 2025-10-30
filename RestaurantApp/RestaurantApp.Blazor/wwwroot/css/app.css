@@ -128,7 +128,7 @@ code {
 }
 
 .base-button:hover {
-    background: #5a67d8;
+    background: var(--primary-color);
     transform: scale(1.02);
 }
 
