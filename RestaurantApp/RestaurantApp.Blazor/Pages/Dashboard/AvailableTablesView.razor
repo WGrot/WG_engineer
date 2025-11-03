@@ -1,7 +1,12 @@
 ﻿@using RestaurantApp.Blazor.Components
 <div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-1 fw-bold">
+            Tables availability
+        </h5>
+    </div>
     <div class="card-body shadow border-1">
-        <h3 class="text-center">Tables</h3>
+
         @if (isLoading)
         {
             <div class="loading-container">
@@ -27,8 +32,7 @@
                     @bind-IsVisible="showTableDetails"
                     RestaurantId="RestaurantId"
                     Table="selectedTable"
-                    AutoFillUserData="false"
-                />
+                    AutoFillUserData="false"/>
             }
             else
             {

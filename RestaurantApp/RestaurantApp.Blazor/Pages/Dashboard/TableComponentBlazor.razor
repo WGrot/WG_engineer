@@ -15,8 +15,8 @@
     </div>
 
     <div class="card-body py-3">
-        <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Seats</span>
+        <div class="d-flex justify-content-start mb-2">
+            <span class="text-muted me-1">Seats</span>
             <span class="fw-semibold">@Table.Capacity
                 <i class="bi bi-people-fill text-secondary"></i>
             </span>
@@ -24,19 +24,25 @@
 
         @if (!string.IsNullOrEmpty(Table.Location))
         {
-            <div class="d-flex justify-content-between">
-                <span class="text-muted">Location</span>
+            <div class="d-flex justify-content-start mb-2">
+                <span class="text-muted me-1">Location</span>
                 <span class="fw-semibold">@Table.Location</span>
             </div>
         }
+
+        <div class="d-flex justify-content-center">
+            <span>Availability today</span>
+        </div>
         <div class="color-bar-flex">
+
             @foreach (var segment in GetSegments())
             {
                 <div class="@(segment.value == '0' ? "segment-zero" : "segment-one")"
                      style="flex-grow: @segment.count"></div>
             }
+
         </div>
-        
+
     </div>
 
 </div>
@@ -65,7 +71,7 @@
         background-color: var(--primary-color) !important;
         color: whitesmoke;
     }
-    
+
     .color-bar-flex {
         display: flex;
         height: 15px;
