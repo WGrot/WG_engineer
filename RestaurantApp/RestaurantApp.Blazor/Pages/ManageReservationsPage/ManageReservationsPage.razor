@@ -9,11 +9,13 @@
 
 <div class="container-fluid px-4">
     <div class="row mb-4">
-        <div class="col">
-            <h2 class="text-primary mb-0">
+        <div class="col-12 my-3 card">
+            <div class="card-body">
+            <h2 class="text-center mb-0">
                 <i class="bi bi-calendar-check me-2"></i>Manage Reservations
             </h2>
-            <p class="text-muted">View and manage all restaurant reservations</p>
+            <p class="text-muted text-center">View and manage all restaurant reservations</p>
+            </div>
         </div>
     </div>
 
@@ -41,7 +43,7 @@
     {
         <div class="row">
             <!-- Left Sidebar with Filters -->
-            <div class="col-lg-2 col-md-3 mb-4">
+            <div class="col-lg-3 col-md-3 mb-4">
                 <div class="card shadow-sm border-0 sticky-lg-top" style="top: 20px;">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -142,11 +144,11 @@
 
                         <!-- Action Buttons -->
                         <div class="d-grid gap-2 mt-4">
-                            <button class="btn btn-primary btn-sm"
+                            <button class="button button--outline button--primary"
                                     @onclick="() => LoadReservations()">
                                 <i class="bi bi-search me-2"></i>Apply Filters
                             </button>
-                            <button class="btn btn-outline-secondary btn-sm"
+                            <button class="button button--outline button--grey"
                                     @onclick="() => ClearParams()">
                                 <i class="bi bi-x-circle me-2"></i>Clear All
                             </button>
@@ -179,92 +181,66 @@
             </div>
 
             <!-- Right Content Area with Reservations -->
-            <div class="col-lg-9 col-md-8">
-                <div class="row">
-                    @foreach (var reservation in reservations.OrderByDescending(r => r.ReservationDate))
-                    {
-                        <div class="col-xl-4 col-lg-6 col-md-12 mb-3">
-                            <div class="card h-100 shadow-sm border-0 reservation-card">
-                                <!-- Status Badge -->
-                                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 text-primary">
-                                        <i class="bi bi-shop me-2"></i>@reservation.Restaurant?.Name
-                                    </h6>
-                                    <span class="badge @GetStatusBadgeClass(reservation.Status)">
-                                        @reservation.Status
-                                    </span>
-                                </div>
+            <div class="col-lg-9 col-md-9">
+                @foreach (var reservation in reservations.OrderByDescending(r => r.ReservationDate))
+                {
+                    <div class="card mb-3 reservation-card w-100 mx-auto">
+                        <div class="card-body " @onclick="() => OpenReservationModal(reservation)">
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <!-- Left section: restaurant and customer -->
+                                <div class="flex-grow-1" style="min-width: 0; max-width: 65%;">
+                                    <div class="mb-1">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-shop"></i>
+                                            <span class="text-truncate ms-1" style="max-width: 200px;"
+                                                  title="@reservation.Restaurant?.Name">
+                                                @reservation.Restaurant?.Name
+                                            </span>
+                                            <span class="badge ms-2 @GetStatusBadgeClass(reservation.Status)">
+                                                @reservation.Status
+                                            </span >
+                                            @if (reservation.Status == ReservationStatus.Pending)
+                                            {
+                                                <span class="badge ms-2 bg-success"
+                                                      @onclick:stopPropagation="true"
+                                                      @onclick="() => ApproveReservation(reservation.Id, reservation.RestaurantId)"
+                                                      style="background-color: #28a745; color: white; cursor: pointer;">
+                                                Approve
+                                                </span>
+                                            }
 
-                                <div class="card-body">
-                                    <!-- Customer Info -->
-                                    <div class="mb-3">
-                                        <h6 class="text-muted small mb-1">CUSTOMER DETAILS</h6>
-                                        <p class="mb-1">
-                                            <strong>@reservation.CustomerName</strong>
-                                        </p>
-                                        <p class="mb-1 small text-muted">
-                                            <i class="bi bi-envelope me-1"></i>@reservation.CustomerEmail
-                                        </p>
-                                        <p class="mb-0 small text-muted">
-                                            <i class="bi bi-telephone me-1"></i>@reservation.CustomerPhone
-                                        </p>
+                                        </div>
+                                        <div class="d-flex align-items-center text-muted small">
+                                            <i class="bi bi-person me-1"></i>@reservation.CustomerName
+                                            <span class="ms-2"><i class="bi bi-envelope"></i> @reservation.CustomerEmail</span>
+                                        </div>
                                     </div>
 
-                                    <!-- Reservation Details -->
-                                    <div class="mb-3">
-                                        <h6 class="text-muted small mb-1">RESERVATION INFO</h6>
-                                        <div class="row g-2 small">
-                                            <div class="col-6">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
-                                                    <span>@reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi bi-clock me-2 text-primary"></i>
-                                                    <span>@reservation.StartTime.ToString("HH:mm") - @reservation.EndTime.ToString("HH:mm")</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi bi-people me-2 text-primary"></i>
-                                                    <span>@reservation.NumberOfGuests guests</span>
-                                                </div>
-                                            </div>
+                                    <div class="small text-muted mt-2">
+                                        <div>
+                                            <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                            @reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-clock me-1 text-primary"></i>
+                                            @reservation.StartTime.ToString("HH:mm") - @reservation.EndTime.ToString("HH:mm")
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-people me-1 text-primary"></i>@reservation.NumberOfGuests guests
                                             @if (reservation is TableReservation tableRes)
                                             {
-                                                <div class="col-6">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="bi bi-hash me-2 text-primary"></i>
-                                                        <span>Table @tableRes.Table.Capacity</span>
-                                                    </div>
-                                                </div>
+                                                <span class="ms-2">
+                                                    <i class="bi bi-hash text-primary"></i> Table @tableRes.Table.Capacity
+                                                </span>
                                             }
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Action Buttons -->
-                                <div class="card-footer bg-white border-top">
-                                    <div class="d-flex gap-2">
-                                        @if (reservation.Status == ReservationStatus.Pending)
-                                        {
-                                            <button class="btn btn-success btn-sm flex-fill"
-                                                    @onclick="() => ApproveReservation(reservation.Id, reservation.RestaurantId)">
-                                                <i class="bi bi-check-circle me-1"></i>Approve
-                                            </button>
-                                        }
-                                        <button class="btn btn-outline-primary btn-sm flex-fill"
-                                                @onclick="() => OpenReservationModal(reservation)">
-                                            <i class="bi bi-gear me-1"></i>Manage
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
 
                 @if (!reservations.Any())
                 {
@@ -277,6 +253,7 @@
                     </div>
                 }
             </div>
+
         </div>
 
         <!-- Modal dla opcji rezerwacji -->
@@ -412,6 +389,23 @@
     }
 </div>
 
+<style>
+    .reservation-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .reservation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        border-left-color: var(--primary-color);
+        cursor: pointer;
+    }
+
+    .reservation-card .badge {
+        font-size: 0.75rem;
+    }
+</style>
 
 @code {
     // Helper method for badge styling
@@ -426,4 +420,4 @@
             _ => "bg-secondary"
         };
     }
-}
+} 

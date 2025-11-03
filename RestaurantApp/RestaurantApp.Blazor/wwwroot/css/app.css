@@ -253,11 +253,11 @@ code {
 }
 
 /* Odwracanie kolorów dla outline */
-.button--outline.button--blue {
+.button--outline.button--primary {
     color: #667eea;
     border-color: #667eea;
 }
-.button--outline.button--blue:hover {
+.button--outline.button--primary:hover {
     background: #667eea;
     color: white;
 }

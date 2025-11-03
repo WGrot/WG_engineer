@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
-namespace RestaurantApp.Blazor.Pages;
+namespace RestaurantApp.Blazor.Pages.ManageReservationsPage;
 
 partial class ManageReservationsPage
 {
