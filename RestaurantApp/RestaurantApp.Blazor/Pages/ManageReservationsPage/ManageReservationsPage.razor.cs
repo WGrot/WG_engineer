@@ -3,19 +3,25 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
 using RestaurantApp.Blazor.Extensions;
+using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Blazor.Pages.ManageReservationsPage;
 
 partial class ManageReservationsPage
 {
-    [Inject]
-    private HttpClient Http { get; set; } = null!;
-    
-        private List<ReservationBase>? reservations;
+    [Inject] private HttpClient Http { get; set; } = null!;
+
+    private List<ReservationBase>? reservations;
     private bool isLoading = true;
     private string? error;
-    private ReservationSearchParameters searchParameters = new ReservationSearchParameters();
+
+    private ReservationSearchParameters searchParameters = new ReservationSearchParameters
+    {
+        Page = 1,
+        PageSize = 10,
+        SortBy = "newest"
+    };
 
     // Zmienne dla modala
     private bool showReservationModal = false;
@@ -25,10 +31,16 @@ partial class ManageReservationsPage
     private bool isProcessing = false;
     private string? modalError;
     private string? modalSuccess;
-    
+
+
+    private bool isInitialLoading { get; set; } = true;
+
+    bool hasMoreReservations = true;
+    private bool isLoadingMore = false;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadReservations();
+        await LoadInitialReservations();
     }
 
 
@@ -43,7 +55,9 @@ partial class ManageReservationsPage
             var queryString = BuildQueryString(searchParameters);
 
             // Wywołanie endpointu search
-            reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/reservation/search{queryString}");
+            var result =
+                await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
+            reservations = result.Reservations;
         }
         catch (Exception ex)
         {
@@ -56,17 +70,96 @@ partial class ManageReservationsPage
         }
     }
 
+    private async Task LoadMoreReservations()
+    {
+        if (isLoadingMore || !hasMoreReservations) return;
+
+        isLoadingMore = true;
+        searchParameters.Page++;
+
+        try
+        {
+            await LoadReservationsPage();
+        }
+        catch (Exception ex)
+        {
+            searchParameters.Page--;
+        }
+        finally
+        {
+            isLoadingMore = false;
+        }
+    }
+
+    private async Task SetPageSize(int size)
+    {
+        searchParameters.PageSize = size;
+        searchParameters.Page = 1;
+        await LoadInitialReservations();
+    }
+
+    private async Task LoadInitialReservations()
+    {
+        isInitialLoading = true;
+        reservations = new List<ReservationBase>();
+
+        try
+        {
+            await LoadReservationsPage();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            reservations = new List<ReservationBase>();
+        }
+        finally
+        {
+            isInitialLoading = false;
+        }
+    }
+
+    private async Task SortReservations(string option)
+    {
+        if (searchParameters.SortBy == option) return;
+
+        searchParameters.SortBy = option.ToLower();
+        await LoadInitialReservations();
+    }
+
+    private async Task LoadReservationsPage()
+    {
+        try
+        {
+            var queryString = BuildQueryString(searchParameters);
+
+            var response =
+                await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
+            if (response != null)
+            {
+                reservations.AddRange(response.Reservations);
+                hasMoreReservations = response.HasMore;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            reservations = new List<ReservationBase>();
+        }
+        finally
+        {
+            isLoadingMore = false;
+        }
+    }
+
     private async Task ApproveReservation(int reservationId, int restaurantId)
     {
         try
         {
-            var response = await Http.RequestWithHeaderAsync(HttpMethod.Put, $"api/reservation/manage/{reservationId}/change-status", ReservationStatus.Confirmed, "X-Restaurant-Id", restaurantId.ToString());
+            var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
+                $"api/reservation/manage/{reservationId}/change-status", ReservationStatus.Confirmed, "X-Restaurant-Id",
+                restaurantId.ToString());
 
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadReservations();
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 var message = await response.Content.ReadAsStringAsync();
                 error = $"Failed to approve reservation: {response.StatusCode} - {message}";
@@ -82,6 +175,7 @@ partial class ManageReservationsPage
     {
         searchParameters = new ReservationSearchParameters();
     }
+
     // Metoda pomocnicza do budowania query string
     private string BuildQueryString(ReservationSearchParameters parameters)
     {
@@ -117,50 +211,15 @@ partial class ManageReservationsPage
         if (!string.IsNullOrWhiteSpace(parameters.Notes))
             queryParams.Add($"notes={Uri.EscapeDataString(parameters.Notes)}");
 
+        queryParams.Add($"page={searchParameters.Page}");
+        queryParams.Add($"pageSize={searchParameters.PageSize}");
+        queryParams.Add($"sortBy={searchParameters.SortBy}");
+
         return queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
     }
+    
 
-    // Metoda do wyszukiwania - wywoływana po zmianie filtrów
-    private async Task SearchReservations()
-    {
-        await LoadReservations();
-    }
-
-    // Metoda do resetowania filtrów
-    private async Task ResetFilters()
-    {
-        searchParameters = new ReservationSearchParameters();
-        await LoadReservations();
-    }
-
-    // Pobierz tylko dzisiejsze rezerwacje
-    private async Task LoadTodayReservations()
-    {
-        try
-        {
-            isLoading = true;
-            error = null;
-
-            reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/reservations/today");
-        }
-        catch (Exception ex)
-        {
-            error = $"Failed to load today's reservations: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    // Przykład użycia z filtrami UI
-    private async Task ApplyFilters()
-    {
-        // Ta metoda może być wywoływana z UI po ustawieniu filtrów
-        await SearchReservations();
-    }
-
-private void OpenReservationModal(ReservationBase reservation)
+    private void OpenReservationModal(ReservationBase reservation)
     {
         selectedReservation = reservation;
         selectedStatus = reservation.Status;
@@ -189,10 +248,10 @@ private void OpenReservationModal(ReservationBase reservation)
             modalSuccess = null;
 
             var response = await Http.RequestWithHeaderAsync(
-                HttpMethod.Put, 
-                $"api/reservation/manage/{selectedReservation.Id}/change-status", 
-                selectedStatus.Value, 
-                "X-Restaurant-Id", 
+                HttpMethod.Put,
+                $"api/reservation/manage/{selectedReservation.Id}/change-status",
+                selectedStatus.Value,
+                "X-Restaurant-Id",
                 selectedReservation.RestaurantId.ToString()
             );
 
@@ -201,7 +260,7 @@ private void OpenReservationModal(ReservationBase reservation)
                 modalSuccess = "Status updated successfully!";
                 selectedReservation.Status = selectedStatus.Value;
                 await LoadReservations();
-                
+
                 // Automatyczne zamknięcie modala po sukcesie
                 await Task.Delay(1500);
                 CloseModal();
@@ -267,5 +326,4 @@ private void OpenReservationModal(ReservationBase reservation)
             isProcessing = false;
         }
     }
-
 }

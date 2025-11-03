@@ -19,7 +19,8 @@ public class ReservationService : IReservationService
     private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-    public ReservationService(ApiDbContext context, IRestaurantService restaurantService, IHttpContextAccessor httpContextAccessor)
+    public ReservationService(ApiDbContext context, IRestaurantService restaurantService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _restaurantService = restaurantService;
@@ -32,8 +33,8 @@ public class ReservationService : IReservationService
             .Include(r => r.Restaurant)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
-        return result == null 
-            ? Result<ReservationBase>.NotFound("Reservation not found") 
+        return result == null
+            ? Result<ReservationBase>.NotFound("Reservation not found")
             : Result<ReservationBase>.Success(result);
     }
 
@@ -47,24 +48,75 @@ public class ReservationService : IReservationService
         return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(
+    public async Task<Result<PaginatedReservationsDto>> GetReservationsByUserIdAsync(
         ReservationSearchParameters searchParams)
     {
         var user = _httpContextAccessor.HttpContext?.User;
 
         if (user == null || !user.Identity?.IsAuthenticated == true)
-            return Result<IEnumerable<ReservationBase>>.Failure("User is not authenticated.");
+            return Result<PaginatedReservationsDto>.Failure("User is not authenticated.");
 
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            return Result<IEnumerable<ReservationBase>>.Failure("User ID not found in token claims.");
+            return Result<PaginatedReservationsDto>.Failure("User ID not found in token claims.");
 
-        // użyj userId do filtrowania
+        // Wymuszenie ID użytkownika na parametrach wyszukiwania
         searchParams.UserId = userId;
 
-        var result = await SearchReservationsAsync(searchParams);
-        return Result<IEnumerable<ReservationBase>>.Success(result.Value);
+        // --- 2. Pobranie bazowego zapytania (z centralnej metody) ---
+        var queryResult = GetReservationsQuery(searchParams);
+
+        // Sprawdzenie błędów walidacji z metody GetReservationsQuery
+        if (!queryResult.IsSuccess)
+        {
+            return Result<PaginatedReservationsDto>.Failure(queryResult.Error, queryResult.StatusCode);
+        }
+
+        var query = queryResult.Value;
+
+        // --- 3. Walidacja i zastosowanie paginacji ---
+        int page = searchParams.Page;
+        int pageSize = searchParams.PageSize;
+
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 5; // Domyślna wartość z DTO
+        if (pageSize > 50) pageSize = 50; // Twardy limit
+
+        // --- 4. Zastosowanie dynamicznego sortowania (z wzorca) ---
+        // Używamy SortBy z searchParams, zamiast sztywnego sortowania
+        query = searchParams.SortBy?.ToLower() switch
+        {
+            "oldest" => query.OrderBy(r => r.ReservationDate).ThenBy(r => r.StartTime),
+            "status" => query.OrderBy(r => r.Status),
+            "newest" => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime),
+            _ => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime) // Domyślne
+        };
+
+        // --- 5. Pobranie liczników i wyników (Kluczowa logika paginacji) ---
+
+        // Liczba wszystkich pasujących rekordów (przed Skip/Take)
+        var totalCount = await query.CountAsync();
+
+        // Zastosowanie paginacji
+        var reservationsEntities = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // Mapowanie encji na DTO (ReservationBase)
+        var result = new PaginatedReservationsDto
+        {
+            Reservations = reservationsEntities,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            HasMore = page * pageSize < totalCount
+        };
+
+
+        return Result<PaginatedReservationsDto>.Success(result);
     }
 
     public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId)
@@ -73,7 +125,7 @@ public class ReservationService : IReservationService
             .Include(r => r.Restaurant)
             .Where(r => r.TableId == tableId)
             .ToListAsync();
-        
+
         return Result<IEnumerable<ReservationBase>>.Success(result);
     }
 
@@ -146,25 +198,83 @@ public class ReservationService : IReservationService
         return Result.Success();
     }
 
-    public async Task<Result<List<ReservationBase>>> GetReservationsToManage(string userId)
+    public async Task<Result<PaginatedReservationsDto>> GetReservationsToManage(
+        ReservationSearchParameters searchParams)
     {
-        var restaurantEmployeesId = await _context.RestaurantEmployees
+        var user = _httpContextAccessor.HttpContext?.User;
+
+        if (user == null || !user.Identity?.IsAuthenticated == true)
+            return Result<PaginatedReservationsDto>.Failure("User is not authenticated.");
+
+        var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+            return Result<PaginatedReservationsDto>.Failure("User ID not found in token claims.");
+
+        // Pobierz zarządzane restauracje
+        var managedRestaurantIds = await _context.RestaurantEmployees
             .Where(re => re.UserId == userId)
             .Select(re => re.RestaurantId)
             .ToListAsync();
 
-        var reservations = new List<ReservationBase>();
-        foreach (var restaurantId in restaurantEmployeesId)
+        if (!managedRestaurantIds.Any())
         {
-            var restaurantReservations = await _context.Reservations
-                .Include(r => r.Restaurant)
-                .Where(r => r.RestaurantId == restaurantId)
-                .ToListAsync();
-
-            reservations.AddRange(restaurantReservations);
+            return Result<PaginatedReservationsDto>.Success(new PaginatedReservationsDto
+            {
+                Reservations = new List<ReservationBase>(),
+                Page = searchParams.Page,
+                PageSize = searchParams.PageSize,
+                TotalCount = 0,
+                TotalPages = 0,
+                HasMore = false
+            });
         }
 
-        return Result<List<ReservationBase>>.Success(reservations);
+        // Wykorzystaj istniejącą metodę do budowania zapytania
+        var queryResult = GetReservationsQuery(searchParams);
+
+        if (!queryResult.IsSuccess)
+            return Result<PaginatedReservationsDto>.Failure(queryResult.Error, queryResult.StatusCode);
+
+        var query = queryResult.Value;
+
+        // Dodaj filtr po zarządzanych restauracjach
+        query = query.Where(r => managedRestaurantIds.Contains(r.RestaurantId));
+
+        // Walidacja paginacji
+        int page = searchParams.Page < 1 ? 1 : searchParams.Page;
+        int pageSize = Math.Clamp(searchParams.PageSize, 1, 50);
+
+        // Dynamiczne sortowanie
+        query = searchParams.SortBy?.ToLower() switch
+        {
+            "oldest" => query.OrderBy(r => r.ReservationDate).ThenBy(r => r.StartTime),
+            "status" => query.OrderBy(r => r.Status),
+            "customer" => query.OrderBy(r => r.CustomerName),
+            "restaurant" => query.OrderBy(r => r.Restaurant.Name),
+            "newest" => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime),
+            _ => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime)
+        };
+
+        // Wykonanie zapytania i paginacja
+        var totalCount = await query.CountAsync();
+
+        var reservationsEntities = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var result = new PaginatedReservationsDto
+        {
+            Reservations = reservationsEntities,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            HasMore = page * pageSize < totalCount
+        };
+
+        return Result<PaginatedReservationsDto>.Success(result);
     }
 
     // ===== METODY DLA TABLE RESERVATIONS - UŻYWAJĄ TableReservations DbSet =====
@@ -176,8 +286,8 @@ public class ReservationService : IReservationService
             .Include(r => r.Table)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
-        return result == null 
-            ? Result<TableReservation>.NotFound("Table reservation not found") 
+        return result == null
+            ? Result<TableReservation>.NotFound("Table reservation not found")
             : Result<TableReservation>.Success(result);
     }
 
@@ -190,14 +300,15 @@ public class ReservationService : IReservationService
 
         if (!tableExists)
         {
-            return Result<TableReservation>.NotFound($"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
+            return Result<TableReservation>.NotFound(
+                $"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
         }
 
         if (tableReservationDto.StartTime > tableReservationDto.EndTime)
         {
             return Result<TableReservation>.Failure("Start Date > End Date", 400);
         }
-        
+
         if (tableReservationDto.StartTime == tableReservationDto.EndTime)
         {
             return Result<TableReservation>.Failure("Start Date == End Date", 400);
@@ -220,14 +331,14 @@ public class ReservationService : IReservationService
         }
 
         var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
-        
+
         ReservationStatus initialStatus = ReservationStatus.Confirmed;
 
         if (tableReservationDto.requiresConfirmation)
         {
             initialStatus = ReservationStatus.Pending;
         }
-        
+
         var reservation = new TableReservation
         {
             RestaurantId = tableReservationDto.RestaurantId,
@@ -258,7 +369,7 @@ public class ReservationService : IReservationService
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         if (existing == null)
-        { 
+        {
             return Result.NotFound($"Reservation with id {reservationId} not found");
         }
 
@@ -360,51 +471,80 @@ public class ReservationService : IReservationService
     public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(
         ReservationSearchParameters searchParams)
     {
-        
+        // 1. Użyj nowej, centralnej metody do pobrania IQueryable
+        var queryResult = GetReservationsQuery(searchParams);
+
+        // 2. Sprawdź, czy walidacja (np. dat) się powiodła
+        if (!queryResult.IsSuccess)
+        {
+            return Result<IEnumerable<ReservationBase>>.Failure(queryResult.Error, queryResult.StatusCode);
+        }
+
+        var query = queryResult.Value;
+
+        // 3. Zastosuj domyślne sortowanie (które było tu wcześniej)
+        query = query.OrderByDescending(r => r.ReservationDate)
+            .ThenByDescending(r => r.StartTime);
+
+        // 4. Wykonaj zapytanie i mapuj
+        var resultEntities = await query.ToListAsync();
+
+        return Result<IEnumerable<ReservationBase>>.Success(resultEntities);
+    }
+
+
+    private Result<IQueryable<ReservationBase>> GetReservationsQuery(
+        ReservationSearchParameters searchParams)
+    {
+        // --- Walidacja ---
         if (searchParams.ReservationDate.HasValue &&
             searchParams.ReservationDateTo.HasValue &&
             searchParams.ReservationDateFrom > searchParams.ReservationDateTo)
         {
-            return Result<IEnumerable<ReservationBase>>.Failure($"Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
+            return Result<IQueryable<ReservationBase>>.Failure(
+                "Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
         }
 
-        //Spraewdzenie i ustawienie DateTimeKind na Utc dla dat
+        // --- Normalizacja dat ---
         if (searchParams.ReservationDate.HasValue)
         {
-            searchParams.ReservationDate = DateTime.SpecifyKind((DateTime)searchParams.ReservationDate, DateTimeKind.Utc);
+            searchParams.ReservationDate =
+                DateTime.SpecifyKind((DateTime)searchParams.ReservationDate, DateTimeKind.Utc);
         }
+
         if (searchParams.ReservationDateFrom.HasValue)
         {
-            searchParams.ReservationDateFrom = DateTime.SpecifyKind((DateTime)searchParams.ReservationDateFrom, DateTimeKind.Utc);
+            searchParams.ReservationDateFrom =
+                DateTime.SpecifyKind((DateTime)searchParams.ReservationDateFrom, DateTimeKind.Utc);
         }
+
         if (searchParams.ReservationDateTo.HasValue)
         {
-            searchParams.ReservationDateTo = DateTime.SpecifyKind((DateTime)searchParams.ReservationDateTo, DateTimeKind.Utc);
+            searchParams.ReservationDateTo =
+                DateTime.SpecifyKind((DateTime)searchParams.ReservationDateTo, DateTimeKind.Utc);
         }
-        
+
+        // --- Budowanie zapytania ---
         var query = _context.Reservations
             .Include(r => r.Restaurant)
             .AsQueryable();
 
-        // Filtrowanie po ID restauracji
+        // --- Filtrowanie (cała logika skopiowana z SearchReservationsAsync) ---
         if (searchParams.RestaurantId.HasValue)
         {
             query = query.Where(r => r.RestaurantId == searchParams.RestaurantId.Value);
         }
 
-        // Filtrowanie po ID użytkownika
         if (!string.IsNullOrWhiteSpace(searchParams.UserId))
         {
             query = query.Where(r => r.UserId == searchParams.UserId);
         }
 
-        // Filtrowanie po statusie
         if (searchParams.Status.HasValue)
         {
             query = query.Where(r => r.Status == searchParams.Status.Value);
         }
 
-        // Filtrowanie po nazwisku klienta (case-insensitive)
         if (!string.IsNullOrWhiteSpace(searchParams.CustomerName))
         {
             query = query.Where(r => r.CustomerName.ToLower().Contains(searchParams.CustomerName.ToLower()));
@@ -448,13 +588,7 @@ public class ReservationService : IReservationService
             query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(searchParams.Notes.ToLower()));
         }
 
-        // Sortowanie po dacie rezerwacji (od najnowszych)
-        query = query.OrderByDescending(r => r.ReservationDate)
-            .ThenByDescending(r => r.StartTime);
-
-        var result = await query.ToListAsync();
-
-        return Result<IEnumerable<ReservationBase>>.Success(result);
+        return Result<IQueryable<ReservationBase>>.Success(query);
     }
 
     // ===== DODATKOWE METODY DLA TABLE RESERVATIONS =====

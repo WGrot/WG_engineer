@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    @if (isLoading)
+    @if (isInitialLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
             <div class="text-center">
@@ -27,15 +27,6 @@
                     <span class="visually-hidden">Loading...</span>
                 </div>
                 <p class="text-muted">Loading reservations...</p>
-            </div>
-        </div>
-    }
-    else if (reservations == null || !reservations.Any())
-    {
-        <div class="alert alert-info d-flex align-items-center" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            <div>
-                You don't have any reservations yet.
             </div>
         </div>
     }
@@ -61,6 +52,35 @@
                                    placeholder="Enter name..."
                                    @bind="searchParameters.CustomerName"
                                    @bind:event="oninput"/>
+                        </div>
+                        <div class="d-flex flex-row justify-content-end">
+                            <div class="dropdown me-2">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown">
+                                    Reservations per page: @searchParameters.PageSize
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(10)'>10</a></li>
+                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(25)'>25</a></li>
+                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(50)'>50</a></li>
+
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown">
+                                    <i class="bi bi-funnel me-1"></i>Sort by: @char.ToUpper(searchParameters.SortBy[0])@searchParameters.SortBy.Substring(1)
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" @onclick='() => SortReservations("name_ascending")'>A-z</a></li>
+                                    <li><a class="dropdown-item" @onclick='() => SortReservations("name_descending")'>Z-a</a></li>
+                                    <li><a class="dropdown-item" @onclick='() => SortReservations("best")'>Highest Rating</a></li>
+                                    <li><a class="dropdown-item" @onclick='() => SortReservations("worst")'>Lowest Rating</a></li>
+                                </ul>
+                            </div>
+
                         </div>
 
                         <!-- Customer Email -->
@@ -153,29 +173,6 @@
                                 <i class="bi bi-x-circle me-2"></i>Clear All
                             </button>
                         </div>
-
-                        <!-- Quick Stats -->
-                        <div class="mt-4 p-3 bg-light rounded">
-                            <h6 class="text-muted small mb-2">Quick Stats</h6>
-                            <div class="small">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Total:</span>
-                                    <span class="fw-bold">@reservations.Count()</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1 text-warning">
-                                    <span>Pending:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.Status == ReservationStatus.Pending)</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1 text-success">
-                                    <span>Confirmed:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.Status == ReservationStatus.Confirmed)</span>
-                                </div>
-                                <div class="d-flex justify-content-between text-info">
-                                    <span>Today:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.ReservationDate.Date == DateTime.Today)</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -242,6 +239,33 @@
                     </div>
                 }
 
+                @if (hasMoreReservations && reservations.Any())
+                {
+                    <div class="text-center mt-3">
+                        <button class="btn-outline-primary"
+                                @onclick="LoadMoreReservations"
+                                disabled="@isLoadingMore">
+                            @if (isLoadingMore)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Loading...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-down-circle me-2"></i>
+                                <span>Load more reservations</span>
+                            }
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center mt-3 text-muted">
+                        <i class="bi bi-check-circle me-2"></i>
+                        All reservations loaded
+                    </div>
+                }
+                
                 @if (!reservations.Any())
                 {
                     <div class="text-center py-5">
@@ -387,6 +411,8 @@
             </FooterContent>
         </GenericModal>
     }
+
+   
 </div>
 
 <style>

@@ -203,6 +203,12 @@
     private string? error;
     private string? userId;
     private ReservationSearchParameters searchParameters = new ReservationSearchParameters();
+    private bool isInitialLoading { get; set; } = true;
+    private string sortOption { get; set; } = "best";
+    private int currentPage = 1;
+    private int pageSize = 20;
+    bool hasMoreReservations = true;
+    private bool isLoadingMore = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -223,7 +229,8 @@
         try
         {
             var queryString = BuildQueryString(searchParameters);
-            reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/reservation/client/{queryString}");
+            var result = await Http.GetFromJsonAsync<PaginatedReservationsDto>($"api/reservation/client/{queryString}");
+            reservations = result?.Reservations;
         }
         catch (Exception ex)
         {

@@ -13,12 +13,12 @@ public interface IReservationService
     Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId);
     Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId);
     
-    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByUserIdAsync(ReservationSearchParameters searchParams);
+    Task<Result<PaginatedReservationsDto>> GetReservationsByUserIdAsync(ReservationSearchParameters searchParams);
     Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto);
     Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
     Task<Result> DeleteReservationAsync(int reservationId);
     
-    Task<Result<List<ReservationBase>>> GetReservationsToManage(string userId);
+    Task<Result<PaginatedReservationsDto>> GetReservationsToManage(ReservationSearchParameters searchParams);
 
     // Operacje na rezerwacjach stolików
     Task<Result<TableReservation>> GetTableReservationByIdAsync(int reservationId);

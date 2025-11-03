@@ -143,10 +143,10 @@ public class ReservationController : ControllerBase
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
-    [HttpGet("manage/{userId}")]
-    public async Task<IActionResult> GetReservationsToManage(string userId)
+    [HttpGet("manage/")]
+    public async Task<IActionResult> GetReservationsToManage([FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.GetReservationsToManage(userId);
+        var reservations = await _reservationService.GetReservationsToManage(searchParams);
         return reservations.ToActionResult();
     }
 
