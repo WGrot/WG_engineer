@@ -1,4 +1,6 @@
-﻿<div class="card">
+﻿@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Pages.ManageReservationsPage
+<div class="card">
     <div class="card-header bg-primary">
         <h5 class="mb-1 fw-bold text-white">
             Today Reservations
@@ -15,8 +17,28 @@
         }
         else
         {
-
+            foreach (var reservation in reservations)
+            {
+                <ReservationCard
+                    Reservation="reservation"
+                    OnClick="OpenReservationModal"
+                    OnApprove="HandleApproveReservation"/>
+            }
         }
 
     </div>
+
+    <ReservationDetailsModal @bind-IsVisible="showReservationModal"
+                             Reservation="selectedReservation"
+                             OnUpdateStatus="HandleUpdateStatus"
+                             OnDelete="HandleDeleteReservation"/>
+
+
+    <ConfirmationModal
+        @bind-IsVisible="showDeleteConfirmation"
+        Title="Confirm Deletion"
+        Message="Are you sure you want to delete this reservation?"
+        IsProcessing="isProcessing"
+        OnConfirm="DeleteReservation"
+        OnCancel="@(() => showDeleteConfirmation = false)"/>
 </div>

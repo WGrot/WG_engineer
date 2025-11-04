@@ -24,6 +24,7 @@ public partial class RestaurantDashboard : ComponentBase
     private bool isLoading = true;
     
     private System.Threading.Timer? timer;
+
     
     protected override async Task OnInitializedAsync()
     {

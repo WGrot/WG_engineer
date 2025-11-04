@@ -1,4 +1,6 @@
 ﻿@page "/RestaurantDashboard"
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Pages.ManageReservationsPage
 
 @if (isLoading)
 {
@@ -98,7 +100,7 @@ else
             </div>
         </div>
         <div class="row g-3 mb-3">
-            <div class="col-md-12">
+            <div class="col-6">
                 <NextReservationsView/>
             </div>
 
@@ -112,6 +114,9 @@ else
 
         </div>
     </div>
+    
+
+}
 }
 
 

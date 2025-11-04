@@ -55,33 +55,6 @@ partial class ManageReservationsPage
         await LoadInitialReservations();
     }
 
-
-    private async Task LoadReservations()
-    {
-        try
-        {
-            isLoading = true;
-            error = null;
-
-            // Budowanie query string z parametrów wyszukiwania
-            var queryString = searchParameters.BuildQueryString();
-
-            // Wywołanie endpointu search
-            var result =
-                await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
-            reservations = result.Reservations;
-        }
-        catch (Exception ex)
-        {
-            error = $"Failed to load reservations: {ex.Message}";
-            reservations = new List<ReservationBase>();
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
     private async Task LoadMoreReservations()
     {
         if (isLoadingMore || !hasMoreReservations) return;
