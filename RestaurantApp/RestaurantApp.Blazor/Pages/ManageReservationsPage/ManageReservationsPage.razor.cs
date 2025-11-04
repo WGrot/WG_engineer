@@ -326,4 +326,15 @@ partial class ManageReservationsPage
             isProcessing = false;
         }
     }
+    
+    private async Task HandleUpdateStatus(ReservationStatus? newStatus)
+    {
+        selectedStatus = newStatus;
+        await UpdateReservationStatus();
+    }
+
+    private async Task HandleDeleteReservation()
+    {
+        ShowDeleteConfirmation();
+    }
 }

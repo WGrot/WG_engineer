@@ -1,0 +1,86 @@
+﻿@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
+@inherits ComponentBase
+
+<GenericModal @bind-IsVisible="IsVisible"
+              Title="Manage Reservation"
+              Size="GenericModal.ModalSize.Default">
+    <ChildContent>
+        @if (Reservation != null)
+        {
+            <div class="reservation-details mb-4">
+                <h6 class="text-primary mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Reservation Details
+                </h6>
+                <div class="bg-light rounded p-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <p><strong>Customer:</strong> @Reservation.CustomerName</p>
+                            <p><strong>Email:</strong> @Reservation.CustomerEmail</p>
+                            <p><strong>Phone:</strong> @Reservation.CustomerPhone</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> @Reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")</p>
+                            <p><strong>Time:</strong> @Reservation.StartTime.ToString("HH:mm") - @Reservation.EndTime.ToString("HH:mm")</p>
+                            <p><strong>Guests:</strong> @Reservation.NumberOfGuests</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="mb-0">
+                            <strong>Current Status:</strong>
+                            <span class="badge @GetStatusBadgeClass(Reservation.Status) ms-2">
+                                @Reservation.Status
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="statusSelect" class="form-label">
+                    <i class="bi bi-arrow-repeat me-2"></i>Change Status:
+                </label>
+                <select id="statusSelect" class="form-select" @bind="SelectedStatus">
+                    <option value="">-- Select Status --</option>
+                    @foreach (var status in Enum.GetValues<ReservationStatus>())
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Error))
+            {
+                <div class="alert alert-danger">@Error</div>
+            }
+
+            @if (!string.IsNullOrEmpty(Success))
+            {
+                <div class="alert alert-success">@Success</div>
+            }
+        }
+    </ChildContent>
+
+    <FooterContent>
+        <button class="btn btn-primary"
+                @onclick="OnUpdateClicked"
+                disabled="@(SelectedStatus == null || IsProcessing)">
+            @if (IsProcessing)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="bi bi-save me-1"></i>Update Status
+        </button>
+
+        <button class="btn btn-danger"
+                @onclick="OnDeleteClicked"
+                disabled="@IsProcessing">
+            <i class="bi bi-trash me-1"></i>Delete
+        </button>
+
+        <button class="btn btn-secondary" @onclick="Close">
+            <i class="bi bi-x me-1"></i>Cancel
+        </button>
+    </FooterContent>
+</GenericModal>
+
