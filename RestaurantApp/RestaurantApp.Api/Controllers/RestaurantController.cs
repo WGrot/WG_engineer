@@ -184,4 +184,10 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.DeleteRestaurantPhoto(id, photoIndex);
         return result.ToActionResult();
     }
+    
+    [HttpGet("{id}/dashboard-data")]
+    public IActionResult GetDashboardData(int id){
+        var result = _restaurantService.GetRestaurantDashboardData(id);
+        return result.Result.ToActionResult();
+    }
 }

@@ -26,7 +26,7 @@ public partial class RestaurantDashboard : ComponentBase
     
     private System.Threading.Timer? timer;
 
-    
+    private RestaurantDashboardDataDto? dto;
     private ReservationSearchParameters pendingSearchParams = new();
     
     
@@ -36,6 +36,7 @@ public partial class RestaurantDashboard : ComponentBase
         await LoadUserData();
         await LoadRestaurantEmployeeData();
         await LoadRestaurantData(restaurantEmployeeList[0].RestaurantId);
+        await LoadDashboardStatistics();
         
         timer = new System.Threading.Timer(_ =>
         {
@@ -68,6 +69,13 @@ public partial class RestaurantDashboard : ComponentBase
         }
     }
 
+    private async Task LoadDashboardStatistics()
+    {
+        if(loadedRestaurant != null)
+        {
+            dto = await Http.GetFromJsonAsync<RestaurantDashboardDataDto>($"api/Restaurant/{loadedRestaurant.Id}/dashboard-data");
+        }
+    }
     private async Task LoadRestaurantEmployeeData()
     {
         var response = await Http.GetFromJsonAsync<List<RestaurantEmployee>>($"api/Employees/user/{currentUserId}");

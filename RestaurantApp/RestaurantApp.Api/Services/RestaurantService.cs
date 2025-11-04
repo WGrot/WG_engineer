@@ -554,6 +554,31 @@ public class RestaurantService : IRestaurantService
         }
     }
 
+    public async Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId)
+    {
+        var dto = new RestaurantDashboardDataDto();
+
+        var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+        var tomorrow = DateTime.SpecifyKind(today.AddDays(1), DateTimeKind.Utc);
+
+        var todayReservations = await _context.Reservations
+            .Where(r => r.RestaurantId == restaurantId
+                        && r.ReservationDate >= today
+                        && r.ReservationDate < tomorrow)
+            .ToListAsync();
+
+        var lastWeek = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(-7), DateTimeKind.Utc);
+        var lastWeekReservations = await _context.Reservations
+            .Where(r => r.RestaurantId == restaurantId
+                        && r.ReservationDate >= lastWeek)
+            .ToListAsync();
+        
+        dto.TodayReservations = todayReservations.Count;
+        dto.ReservationsLastWeek = lastWeekReservations.Count;
+
+        return Result<RestaurantDashboardDataDto>.Success(dto);
+    }
+
 
     private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
     {
