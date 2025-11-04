@@ -12,7 +12,10 @@ public partial class NextReservationsView : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
 
+    [Parameter] public string Title { get; set; } = "Next Reservations";
     [Parameter] public int RestaurantId { get; set; }
+    [Parameter] public bool getPendingReservations { get; set; } = false;
+    private ReservationSearchParameters? searchParameters { get; set; } = null;
     private bool isLoading = true;
 
     private List<ReservationBase>? reservations = new List<ReservationBase>();
@@ -45,27 +48,41 @@ public partial class NextReservationsView : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        
-        searchParameters = new ReservationSearchParameters
+        if (searchParameters == null && getPendingReservations)
         {
-            Page = 1,
-            PageSize = 4,
-            ReservationDate = DateTime.Today,
-            SortBy = "next",
-            RestaurantId = RestaurantId,
-        };
+            searchParameters = new ReservationSearchParameters
+            {
+                Page = 1,
+                PageSize = 4,
+                Status = ReservationStatus.Pending,
+                SortBy = "oldest",
+                RestaurantId = RestaurantId,
+            };
+        }
+        else if (searchParameters == null && !getPendingReservations)
+        {
+            searchParameters = new ReservationSearchParameters
+            {
+                Page = 1,
+                PageSize = 4,
+                ReservationDate = DateTime.Today,
+                SortBy = "next",
+                RestaurantId = RestaurantId,
+            };
+        }
+
 
         await LoadReservations();
     }
 
-    private ReservationSearchParameters searchParameters;
+
 
     private async Task LoadReservations()
     {
         try
         {
             var queryString = searchParameters.BuildQueryString();
-
+            reservations.Clear();
             var response =
                 await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
             if (response != null)

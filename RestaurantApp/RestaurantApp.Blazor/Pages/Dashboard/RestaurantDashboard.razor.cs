@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.Dashboard;
@@ -26,6 +27,9 @@ public partial class RestaurantDashboard : ComponentBase
     private System.Threading.Timer? timer;
 
     
+    private ReservationSearchParameters pendingSearchParams = new();
+    
+    
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -42,6 +46,15 @@ public partial class RestaurantDashboard : ComponentBase
             });
         }, null, 0, 1000);
         
+        
+        if (loadedRestaurant != null)
+        {
+            pendingSearchParams.Page = 1;
+            pendingSearchParams.PageSize = 4;
+            pendingSearchParams.SortBy = "oldest";
+            pendingSearchParams.Status = ReservationStatus.Pending;
+            pendingSearchParams.RestaurantId = loadedRestaurant.Id;
+        }
         isLoading = false;
     }
 

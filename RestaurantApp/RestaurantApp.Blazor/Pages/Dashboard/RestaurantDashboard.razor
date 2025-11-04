@@ -1,6 +1,8 @@
 ﻿@page "/RestaurantDashboard"
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Pages.ManageReservationsPage
+@using RestaurantApp.Shared.DTOs.SearchParameters
+@using RestaurantApp.Shared.Models
 
 @if (isLoading)
 {
@@ -99,25 +101,32 @@ else
                 </div>
             </div>
         </div>
-        <div class="row g-3 mb-3">
-            <div class="col-6" >
-                <NextReservationsView
-                    RestaurantId="@loadedRestaurant.Id"/>
+        <div class="row g-3 mb-3 d-flex align-items-stretch">
+            <div class="col-6 d-flex">
+                <div class="card shadow border-1 flex-fill">
+                    <NextReservationsView RestaurantId="@loadedRestaurant.Id" />
+                </div>
             </div>
 
+            <div class="col-6 d-flex">
+                <div class="card shadow border-1 flex-fill">
+                    <NextReservationsView
+                        RestaurantId="@loadedRestaurant.Id"
+                        Title="Pending Reservations"
+                        getPendingReservations="true" />
+                </div>
+            </div>
         </div>
         <div class="row g-3">
             <div class="col-12">
-            @if (!isLoading && loadedRestaurant != null)
-            {
-                <AvailableTablesView
-                    RestaurantId="@loadedRestaurant.Id"/>
-            }
+                @if (!isLoading && loadedRestaurant != null)
+                {
+                    <AvailableTablesView
+                        RestaurantId="@loadedRestaurant.Id"/>
+                }
             </div>
         </div>
     </div>
-    
-
 }
 
 
