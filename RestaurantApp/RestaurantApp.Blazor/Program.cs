@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using RestaurantApp.Blazor;
 using RestaurantApp.Blazor.Services;
+using RestaurantApp.Blazor.Services.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -32,6 +33,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
     provider.GetRequiredService<JwtAuthenticationStateProvider>());
+
+builder.Services.AddScoped<IReservationService, ReservationService>();
 
 // Połącz AuthService z JwtAuthenticationStateProvider
 var host = builder.Build();
