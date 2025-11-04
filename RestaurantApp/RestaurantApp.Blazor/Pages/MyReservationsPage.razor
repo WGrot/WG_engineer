@@ -2,6 +2,7 @@
 @using RestaurantApp.Shared.Models
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Authorization
+@using RestaurantApp.Blazor.Helpers
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.SearchParameters
 @attribute [Authorize]
@@ -157,7 +158,7 @@
                                     <h6 class="mb-0 text-primary">
                                         <i class="bi bi-shop me-2"></i>@reservation.Restaurant?.Name
                                     </h6>
-                                    <span class="badge @GetStatusBadgeClass(reservation.Status)">
+                                    <span class="badge @reservation.Status.GetStatusBadgeClass()">
                                 @reservation.Status
                             </span>
                                 </div>
@@ -241,18 +242,7 @@
             isLoading = false;
         }
     }
-
-    private string GetStatusBadgeClass(ReservationStatus status)
-    {
-        return status switch
-        {
-            ReservationStatus.Pending => "bg-warning text-dark",
-            ReservationStatus.Confirmed => "bg-success",
-            ReservationStatus.Cancelled => "bg-danger",
-            ReservationStatus.Completed => "bg-info text-dark",
-            _ => "bg-secondary"
-        };
-    }
+    
 
     private string BuildQueryString(ReservationSearchParameters parameters)
     {

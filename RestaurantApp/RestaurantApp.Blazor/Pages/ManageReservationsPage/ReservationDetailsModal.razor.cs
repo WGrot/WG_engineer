@@ -32,14 +32,4 @@ public partial class ReservationDetailsModal : ComponentBase
     {
         await IsVisibleChanged.InvokeAsync(false);
     }
-
-    private string GetStatusBadgeClass(ReservationStatus status) =>
-        status switch
-        {
-            ReservationStatus.Pending => "bg-warning text-dark",
-            ReservationStatus.Confirmed => "bg-success",
-            ReservationStatus.Cancelled => "bg-danger",
-            ReservationStatus.Completed => "bg-info",
-            _ => "bg-secondary"
-        };
 }

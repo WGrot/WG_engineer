@@ -8,235 +8,56 @@
 @attribute [Authorize]
 
 <div class="container-fluid px-4">
-    <div class="row mb-4">
+    <div class="row mb-2">
         <div class="col-12 my-3 card">
             <div class="card-body">
-            <h2 class="text-center mb-0">
-                <i class="bi bi-calendar-check me-2"></i>Manage Reservations
-            </h2>
-            <p class="text-muted text-center">View and manage all restaurant reservations</p>
+                <h2 class="text-center mb-0">
+                    <i class="bi bi-calendar-check me-2"></i>Manage Reservations
+                </h2>
+                <p class="text-muted text-center">View and manage all restaurant reservations</p>
             </div>
         </div>
     </div>
 
-    @if (isInitialLoading)
-    {
-        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-            <div class="text-center">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="text-muted">Loading reservations...</p>
-            </div>
+    <div class="row">
+        <div class="col-lg-3 col-md-3 mb-4">
+            <ReservationFilters
+                SearchParameters="@searchParameters"
+                OnApplyFilters="@LoadInitialReservations"
+                OnClearFilters="@ClearParams"/>
         </div>
-    }
-    else
-    {
-        <div class="row">
-            <!-- Left Sidebar with Filters -->
-            <div class="col-lg-3 col-md-3 mb-4">
-                <div class="card shadow-sm border-0 sticky-lg-top" style="top: 20px;">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-funnel me-2"></i>Filters
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Customer Name -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-person me-1"></i>Customer Name
-                            </label>
-                            <input type="text"
-                                   class="form-control form-control-sm"
-                                   placeholder="Enter name..."
-                                   @bind="searchParameters.CustomerName"
-                                   @bind:event="oninput"/>
+
+        <!-- Right Content Area with Reservations -->
+        <div class="col-lg-9 col-md-9">
+            <div class="d-flex flex-row justify-content-end mb-2">
+                <SetPageSizeComponent
+                    OnPageSizeChanged="@SetPageSize"
+                    Title="Reservations per page: "/>
+                <SortDropdown
+                    Options="SortOptions"
+                    SelectedValue="@searchParameters.SortBy"
+                    OnSortChanged="@SortReservations"/>
+            </div>
+            @if (isInitialLoading)
+            {
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status"
+                             style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                        <div class="d-flex flex-row justify-content-end">
-                            <div class="dropdown me-2">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                                        type="button"
-                                        data-bs-toggle="dropdown">
-                                    Reservations per page: @searchParameters.PageSize
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(10)'>10</a></li>
-                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(25)'>25</a></li>
-                                    <li><a class="dropdown-item" @onclick='() => SetPageSize(50)'>50</a></li>
-
-                                </ul>
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                                        type="button"
-                                        data-bs-toggle="dropdown">
-                                    <i class="bi bi-funnel me-1"></i>Sort by: @char.ToUpper(searchParameters.SortBy[0])@searchParameters.SortBy.Substring(1)
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" @onclick='() => SortReservations("name_ascending")'>A-z</a></li>
-                                    <li><a class="dropdown-item" @onclick='() => SortReservations("name_descending")'>Z-a</a></li>
-                                    <li><a class="dropdown-item" @onclick='() => SortReservations("best")'>Highest Rating</a></li>
-                                    <li><a class="dropdown-item" @onclick='() => SortReservations("worst")'>Lowest Rating</a></li>
-                                </ul>
-                            </div>
-
-                        </div>
-
-                        <!-- Customer Email -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-envelope me-1"></i>Email Address
-                            </label>
-                            <input type="text"
-                                   class="form-control form-control-sm"
-                                   placeholder="Enter email..."
-                                   @bind="searchParameters.CustomerEmail"
-                                   @bind:event="oninput"/>
-                        </div>
-
-                        <!-- Customer Phone -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-telephone me-1"></i>Phone Number
-                            </label>
-                            <input type="text"
-                                   class="form-control form-control-sm"
-                                   placeholder="Enter phone..."
-                                   @bind="searchParameters.CustomerPhone"
-                                   @bind:event="oninput"/>
-                        </div>
-
-                        <hr class="my-3" />
-
-                        <!-- Reservation Status -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-bookmark me-1"></i>Status
-                            </label>
-                            <select class="form-select form-select-sm"
-                                    @bind="searchParameters.Status"
-                                    @bind:event="oninput">
-                                <option value="">All Statuses</option>
-                                @foreach (var status in Enum.GetValues<ReservationStatus>())
-                                {
-                                    <option value="@status">@status</option>
-                                }
-                            </select>
-                        </div>
-                        
-                        <!-- Reservation Date -->
-                        <div class="mb-3">
-                            <label for="date" class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-calendar me-1"></i>Reservation Date
-                            </label>
-                            <input type="date"
-                                   id="date"
-                                   class="form-control form-control-sm"
-                                   @bind="searchParameters.ReservationDate"
-                                   @bind:event="oninput"/>
-                        </div>
-
-                        <!-- Time Range -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-clock me-1"></i>Time Range
-                            </label>
-
-                            <div class="mb-2">
-                                <label for="startTime" class="form-label small text-muted mb-1">From:</label>
-                                <input type="time"
-                                       id="startTime"
-                                       class="form-control form-control-sm"
-                                       @bind="searchParameters.ReservationDateFrom"
-                                       @bind:event="oninput"/>
-                            </div>
-
-                            <div>
-                                <label for="endTime" class="form-label small text-muted mb-1">To:</label>
-                                <input type="time"
-                                       id="endTime"
-                                       class="form-control form-control-sm"
-                                       @bind="searchParameters.ReservationDateTo"
-                                       @bind:event="oninput"/>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button class="button button--outline button--primary"
-                                    @onclick="() => LoadReservations()">
-                                <i class="bi bi-search me-2"></i>Apply Filters
-                            </button>
-                            <button class="button button--outline button--grey"
-                                    @onclick="() => ClearParams()">
-                                <i class="bi bi-x-circle me-2"></i>Clear All
-                            </button>
-                        </div>
+                        <p class="text-muted">Loading reservations...</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Content Area with Reservations -->
-            <div class="col-lg-9 col-md-9">
-                @foreach (var reservation in reservations.OrderByDescending(r => r.ReservationDate))
+            }
+            else
+            {
+                foreach (var reservation in reservations)
                 {
-                    <div class="card mb-3 reservation-card w-100 mx-auto">
-                        <div class="card-body " @onclick="() => OpenReservationModal(reservation)">
-                            
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <!-- Left section: restaurant and customer -->
-                                <div class="flex-grow-1" style="min-width: 0; max-width: 65%;">
-                                    <div class="mb-1">
-                                        <div class="d-flex align-items-center mb-1">
-                                            <i class="bi bi-shop"></i>
-                                            <span class="text-truncate ms-1" style="max-width: 200px;"
-                                                  title="@reservation.Restaurant?.Name">
-                                                @reservation.Restaurant?.Name
-                                            </span>
-                                            <span class="badge ms-2 @GetStatusBadgeClass(reservation.Status)">
-                                                @reservation.Status
-                                            </span >
-                                            @if (reservation.Status == ReservationStatus.Pending)
-                                            {
-                                                <span class="badge ms-2 bg-success"
-                                                      @onclick:stopPropagation="true"
-                                                      @onclick="() => ApproveReservation(reservation.Id, reservation.RestaurantId)"
-                                                      style="background-color: #28a745; color: white; cursor: pointer;">
-                                                Approve
-                                                </span>
-                                            }
-
-                                        </div>
-                                        <div class="d-flex align-items-center text-muted small">
-                                            <i class="bi bi-person me-1"></i>@reservation.CustomerName
-                                            <span class="ms-2"><i class="bi bi-envelope"></i> @reservation.CustomerEmail</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="small text-muted mt-2">
-                                        <div>
-                                            <i class="bi bi-calendar-event me-1 text-primary"></i>
-                                            @reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")
-                                        </div>
-                                        <div>
-                                            <i class="bi bi-clock me-1 text-primary"></i>
-                                            @reservation.StartTime.ToString("HH:mm") - @reservation.EndTime.ToString("HH:mm")
-                                        </div>
-                                        <div>
-                                            <i class="bi bi-people me-1 text-primary"></i>@reservation.NumberOfGuests guests
-                                            @if (reservation is TableReservation tableRes)
-                                            {
-                                                <span class="ms-2">
-                                                    <i class="bi bi-hash text-primary"></i> Table @tableRes.Table.Capacity
-                                                </span>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ReservationCard
+                        Reservation="reservation"
+                        OnClick="OpenReservationModal"
+                        OnApprove="HandleApproveReservation"/>
                 }
 
                 @if (hasMoreReservations && reservations.Any())
@@ -265,7 +86,7 @@
                         All reservations loaded
                     </div>
                 }
-                
+
                 @if (!reservations.Any())
                 {
                     <div class="text-center py-5">
@@ -276,27 +97,29 @@
                         </button>
                     </div>
                 }
-            </div>
+            }
 
         </div>
 
-        <!-- Modal dla opcji rezerwacji -->
-        <ReservationDetailsModal @bind-IsVisible="showReservationModal"
-                          Reservation="selectedReservation"
-                          OnUpdateStatus="HandleUpdateStatus"
-                          OnDelete="HandleDeleteReservation" />
+    </div>
 
-        <!-- Modal potwierdzenia usunięcia -->
-        <ConfirmationModal 
-            @bind-IsVisible="showDeleteConfirmation"
-            Title="Confirm Deletion"
-            Message="Are you sure you want to delete this reservation?"
-            IsProcessing="isProcessing"
-            OnConfirm="DeleteReservation"
-            OnCancel="@(() => showDeleteConfirmation = false)" />
+
+    <ReservationDetailsModal @bind-IsVisible="showReservationModal"
+                             Reservation="selectedReservation"
+                             OnUpdateStatus="HandleUpdateStatus"
+                             OnDelete="HandleDeleteReservation"/>
+
+
+    <ConfirmationModal
+        @bind-IsVisible="showDeleteConfirmation"
+        Title="Confirm Deletion"
+        Message="Are you sure you want to delete this reservation?"
+        IsProcessing="isProcessing"
+        OnConfirm="DeleteReservation"
+        OnCancel="@(() => showDeleteConfirmation = false)"/>
     }
 
-   
+
 </div>
 
 <style>
@@ -316,18 +139,3 @@
         font-size: 0.75rem;
     }
 </style>
-
-@code {
-    // Helper method for badge styling
-    private string GetStatusBadgeClass(ReservationStatus status)
-    {
-        return status switch
-        {
-            ReservationStatus.Pending => "bg-warning text-dark",
-            ReservationStatus.Confirmed => "bg-success",
-            ReservationStatus.Cancelled => "bg-danger",
-            ReservationStatus.Completed => "bg-info",
-            _ => "bg-secondary"
-        };
-    }
-} 

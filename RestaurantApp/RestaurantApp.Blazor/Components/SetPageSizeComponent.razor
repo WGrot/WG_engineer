@@ -1,0 +1,18 @@
+﻿<div class="dropdown me-2">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown">
+        @title @CurrentPageSize
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" @onclick="() => { OnPageSizeChanged.InvokeAsync(10); CurrentPageSize = 10; }">10</a></li>
+        <li><a class="dropdown-item" @onclick="() => { OnPageSizeChanged.InvokeAsync(25); CurrentPageSize = 25; }">25</a></li>
+        <li><a class="dropdown-item" @onclick="() => { OnPageSizeChanged.InvokeAsync(50); CurrentPageSize = 50; }">50</a></li>
+    </ul>
+</div>
+
+@code {
+    [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
+    private int CurrentPageSize { get; set; } = 10;
+    [Parameter] public string title { get; set; } = "Set Page Size: ";
+}

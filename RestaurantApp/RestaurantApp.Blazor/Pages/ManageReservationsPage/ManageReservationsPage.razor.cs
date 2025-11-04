@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
 using RestaurantApp.Blazor.Extensions;
+using RestaurantApp.Blazor.Helpers;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
@@ -33,6 +35,16 @@ partial class ManageReservationsPage
     private string? modalSuccess;
 
 
+    
+    private List<SortOption> SortOptions = new()
+    {
+        new() { Label = "A–Z", Value = "name_ascending" },
+        new() { Label = "Z–A", Value = "name_descending" },
+        new() { Label = "Highest Rating", Value = "best" },
+        new() { Label = "Lowest Rating", Value = "worst" }
+    };
+
+    
     private bool isInitialLoading { get; set; } = true;
 
     bool hasMoreReservations = true;
@@ -52,7 +64,7 @@ partial class ManageReservationsPage
             error = null;
 
             // Budowanie query string z parametrów wyszukiwania
-            var queryString = BuildQueryString(searchParameters);
+            var queryString = searchParameters.BuildQueryString();
 
             // Wywołanie endpointu search
             var result =
@@ -130,7 +142,7 @@ partial class ManageReservationsPage
     {
         try
         {
-            var queryString = BuildQueryString(searchParameters);
+            var queryString = searchParameters.BuildQueryString();
 
             var response =
                 await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
@@ -151,6 +163,11 @@ partial class ManageReservationsPage
         }
     }
 
+    private async Task HandleApproveReservation((int ReservationId, int RestaurantId) data)
+    {
+        await ApproveReservation(data.ReservationId, data.RestaurantId);
+    }
+    
     private async Task ApproveReservation(int reservationId, int restaurantId)
     {
         try
@@ -175,48 +192,7 @@ partial class ManageReservationsPage
     {
         searchParameters = new ReservationSearchParameters();
     }
-
-    // Metoda pomocnicza do budowania query string
-    private string BuildQueryString(ReservationSearchParameters parameters)
-    {
-        var queryParams = new List<string>();
-
-        if (parameters.RestaurantId.HasValue)
-            queryParams.Add($"restaurantId={parameters.RestaurantId}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.UserId))
-            queryParams.Add($"userId={Uri.EscapeDataString(parameters.UserId)}");
-
-        if (parameters.Status.HasValue)
-            queryParams.Add($"status={parameters.Status}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerName))
-            queryParams.Add($"customerName={Uri.EscapeDataString(parameters.CustomerName)}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerEmail))
-            queryParams.Add($"customerEmail={Uri.EscapeDataString(parameters.CustomerEmail)}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerPhone))
-            queryParams.Add($"customerPhone={Uri.EscapeDataString(parameters.CustomerPhone)}");
-
-        if (parameters.ReservationDate.HasValue)
-            queryParams.Add($"reservationDate={parameters.ReservationDate.Value:yyyy-MM-dd}");
-
-        if (parameters.ReservationDateFrom.HasValue)
-            queryParams.Add($"reservationDateFrom={parameters.ReservationDateFrom.Value:yyyy-MM-dd}");
-
-        if (parameters.ReservationDateTo.HasValue)
-            queryParams.Add($"reservationDateTo={parameters.ReservationDateTo.Value:yyyy-MM-dd}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.Notes))
-            queryParams.Add($"notes={Uri.EscapeDataString(parameters.Notes)}");
-
-        queryParams.Add($"page={searchParameters.Page}");
-        queryParams.Add($"pageSize={searchParameters.PageSize}");
-        queryParams.Add($"sortBy={searchParameters.SortBy}");
-
-        return queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-    }
+    
     
 
     private void OpenReservationModal(ReservationBase reservation)
@@ -259,7 +235,7 @@ partial class ManageReservationsPage
             {
                 modalSuccess = "Status updated successfully!";
                 selectedReservation.Status = selectedStatus.Value;
-                await LoadReservations();
+                // await LoadInitialReservations();
 
                 // Automatyczne zamknięcie modala po sukcesie
                 await Task.Delay(1500);
@@ -294,7 +270,8 @@ partial class ManageReservationsPage
         {
             isProcessing = true;
             modalError = null;
-
+            showDeleteConfirmation = false;
+            
             var response = await Http.RequestWithHeaderAsync(
                 HttpMethod.Delete,
                 $"api/reservation/{selectedReservation.Id}",
@@ -305,15 +282,13 @@ partial class ManageReservationsPage
 
             if (response.IsSuccessStatusCode)
             {
-                showDeleteConfirmation = false;
+                reservations.Remove(selectedReservation);
                 CloseModal();
-                await LoadReservations();
             }
             else
             {
                 var message = await response.Content.ReadAsStringAsync();
                 modalError = $"Failed to delete reservation: {message}";
-                showDeleteConfirmation = false;
             }
         }
         catch (Exception ex)

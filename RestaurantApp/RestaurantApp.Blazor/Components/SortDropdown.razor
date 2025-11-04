@@ -1,0 +1,34 @@
+﻿@using RestaurantApp.Shared.Common
+<div class="dropdown">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown">
+        <i class="bi bi-funnel me-1"></i>
+        Sort by:
+        @if (SelectedOption is not null)
+        {
+            @SelectedOption.Label
+        }
+    </button>
+    <ul class="dropdown-menu">
+        @foreach (var option in Options)
+        {
+            <li>
+                <a class="dropdown-item @(option.Value == SelectedOption?.Value ? "active" : "")"
+                   @onclick='() => OnSortChanged.InvokeAsync(option.Value)'>
+                    @option.Label
+                </a>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<SortOption> Options { get; set; } = new();
+    [Parameter] public string? SelectedValue { get; set; }
+    [Parameter] public EventCallback<string> OnSortChanged { get; set; }
+
+    private SortOption? SelectedOption => Options.FirstOrDefault(o => o.Value == SelectedValue);
+    
+}
+
