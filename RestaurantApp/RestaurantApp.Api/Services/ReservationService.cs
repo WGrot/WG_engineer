@@ -244,17 +244,29 @@ public class ReservationService : IReservationService
         // Walidacja paginacji
         int page = searchParams.Page < 1 ? 1 : searchParams.Page;
         int pageSize = Math.Clamp(searchParams.PageSize, 1, 50);
-
-        // Dynamiczne sortowanie
+        var now = DateTime.UtcNow;
+        var currentTime = TimeOnly.FromDateTime(now);
         query = searchParams.SortBy?.ToLower() switch
         {
-            "oldest" => query.OrderBy(r => r.ReservationDate).ThenBy(r => r.StartTime),
-            "status" => query.OrderBy(r => r.Status),
-            "customer" => query.OrderBy(r => r.CustomerName),
-            "restaurant" => query.OrderBy(r => r.Restaurant.Name),
-            "newest" => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime),
-            _ => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime)
+            "oldest" => query
+                .OrderBy(r => r.CreatedAt)
+                .ThenBy(r => r.StartTime),
+
+            "next" => query
+                .Where(r => r.ReservationDate >= now.Date 
+                            || (r.ReservationDate == now.Date && r.StartTime > currentTime))
+                .OrderBy(r => r.ReservationDate)
+                .ThenBy(r => r.StartTime),
+
+            "newest" => query
+                .OrderByDescending(r => r.CreatedAt)
+                .ThenByDescending(r => r.StartTime),
+
+            _ => query
+                .OrderByDescending(r => r.ReservationDate)
+                .ThenByDescending(r => r.StartTime)
         };
+
 
         // Wykonanie zapytania i paginacja
         var totalCount = await query.CountAsync();

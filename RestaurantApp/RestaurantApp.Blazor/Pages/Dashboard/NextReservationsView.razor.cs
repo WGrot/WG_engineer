@@ -51,7 +51,7 @@ public partial class NextReservationsView : ComponentBase
             Page = 1,
             PageSize = 4,
             ReservationDate = DateTime.Today,
-            SortBy = "newest",
+            SortBy = "next",
             RestaurantId = RestaurantId,
         };
 

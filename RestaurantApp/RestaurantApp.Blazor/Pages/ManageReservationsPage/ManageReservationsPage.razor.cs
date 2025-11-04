@@ -38,10 +38,9 @@ partial class ManageReservationsPage
     
     private List<SortOption> SortOptions = new()
     {
-        new() { Label = "A–Z", Value = "name_ascending" },
-        new() { Label = "Z–A", Value = "name_descending" },
-        new() { Label = "Highest Rating", Value = "best" },
-        new() { Label = "Lowest Rating", Value = "worst" }
+        new() { Label = "Newest", Value = "newest" },
+        new() { Label = "Oldest", Value = "oldest" },
+        new() { Label = "Next", Value = "next" },
     };
 
     
