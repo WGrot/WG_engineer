@@ -29,16 +29,7 @@
     </div>
 
     <ReservationDetailsModal @bind-IsVisible="showReservationModal"
-                             Reservation="selectedReservation"
-                             OnUpdateStatus="HandleUpdateStatus"
-                             OnDelete="HandleDeleteReservation"/>
-
-
-    <ConfirmationModal
-        @bind-IsVisible="showDeleteConfirmation"
-        Title="Confirm Deletion"
-        Message="Are you sure you want to delete this reservation?"
-        IsProcessing="isProcessing"
-        OnConfirm="DeleteReservation"
-        OnCancel="@(() => showDeleteConfirmation = false)"/>
+                             Reservation="selectedReservation"/>
+    
 </div>
+

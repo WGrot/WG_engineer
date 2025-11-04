@@ -1,13 +1,13 @@
-﻿@using RestaurantApp.Shared.Models
+﻿@inherits ComponentBase
+@using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Helpers
-@inherits ComponentBase
 
 <GenericModal @bind-IsVisible="IsVisible"
               Title="Manage Reservation"
               Size="GenericModal.ModalSize.Default">
     <ChildContent>
-        @if (Reservation != null)
+        @if (Reservation is not null)
         {
             <div class="reservation-details mb-4">
                 <h6 class="text-primary mb-3">
@@ -21,8 +21,11 @@
                             <p><strong>Phone:</strong> @Reservation.CustomerPhone</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Date:</strong> @Reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")</p>
-                            <p><strong>Time:</strong> @Reservation.StartTime.ToString("HH:mm") - @Reservation.EndTime.ToString("HH:mm")</p>
+                            <p><strong>Date:</strong> @Reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")
+                            </p>
+                            <p>
+                                <strong>Time:</strong> @Reservation.StartTime.ToString("HH:mm") - @Reservation.EndTime.ToString("HH:mm")
+                            </p>
                             <p><strong>Guests:</strong> @Reservation.NumberOfGuests</p>
                         </div>
                     </div>
@@ -36,7 +39,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="form-group mb-3">
                 <label for="statusSelect" class="form-label">
                     <i class="bi bi-arrow-repeat me-2"></i>Change Status:
@@ -49,39 +51,43 @@
                     }
                 </select>
             </div>
+        }
 
-            @if (!string.IsNullOrEmpty(Error))
-            {
-                <div class="alert alert-danger">@Error</div>
-            }
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="alert alert-danger">@Error</div>
+        }
 
-            @if (!string.IsNullOrEmpty(Success))
-            {
-                <div class="alert alert-success">@Success</div>
-            }
+        @if (!string.IsNullOrEmpty(Success))
+        {
+            <div class="alert alert-success">@Success</div>
         }
     </ChildContent>
 
     <FooterContent>
-        <button class="btn btn-primary"
+        <button class="btn btn-primary me-2"
                 @onclick="OnUpdateClicked"
-                disabled="@(SelectedStatus == null || IsProcessing)">
+                disabled="@IsProcessing">
             @if (IsProcessing)
             {
                 <span class="spinner-border spinner-border-sm me-2"></span>
             }
-            <i class="bi bi-save me-1"></i>Update Status
+            Update Status
         </button>
 
-        <button class="btn btn-danger"
-                @onclick="OnDeleteClicked"
+        <button class="btn btn-danger me-2"
+                @onclick="ShowDeleteConfirmation"
                 disabled="@IsProcessing">
-            <i class="bi bi-trash me-1"></i>Delete
+            <i class="bi bi-trash"></i> Delete
         </button>
 
-        <button class="btn btn-secondary" @onclick="Close">
-            <i class="bi bi-x me-1"></i>Cancel
-        </button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
     </FooterContent>
 </GenericModal>
 
+<!-- Wewnętrzny modal potwierdzenia -->
+<ConfirmationModal @bind-IsVisible="ShowConfirmDelete"
+                   Title="Confirm Deletion"
+                   Message="Are you sure you want to delete this reservation?"
+                   IsProcessing="IsProcessing"
+                   OnConfirm="DeleteReservation"/>

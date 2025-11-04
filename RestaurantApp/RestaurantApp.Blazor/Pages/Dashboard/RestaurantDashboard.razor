@@ -100,23 +100,24 @@ else
             </div>
         </div>
         <div class="row g-3 mb-3">
-            <div class="col-6">
-                <NextReservationsView/>
+            <div class="col-6" >
+                <NextReservationsView
+                    RestaurantId="@loadedRestaurant.Id"/>
             </div>
 
         </div>
         <div class="row g-3">
-            <div class="col-md-12">
+            <div class="col-12">
+            @if (!isLoading && loadedRestaurant != null)
+            {
                 <AvailableTablesView
-                    RestaurantId="loadedRestaurant.Id"
-                />
+                    RestaurantId="@loadedRestaurant.Id"/>
+            }
             </div>
-
         </div>
     </div>
     
 
-}
 }
 
 

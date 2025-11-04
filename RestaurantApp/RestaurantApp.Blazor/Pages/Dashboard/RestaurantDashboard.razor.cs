@@ -14,7 +14,7 @@ public partial class RestaurantDashboard : ComponentBase
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     
-    public Restaurant loadedRestaurant { get; set; } = new Restaurant();
+    public Restaurant? loadedRestaurant { get; set; }
     public List<RestaurantEmployee> restaurantEmployeeList { get; set; }
     private DateTime currentDate = DateTime.Now;
     

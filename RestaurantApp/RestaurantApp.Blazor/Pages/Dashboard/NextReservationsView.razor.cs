@@ -45,13 +45,14 @@ public partial class NextReservationsView : ComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        
         searchParameters = new ReservationSearchParameters
         {
             Page = 1,
             PageSize = 4,
-            //ReservationDate = DateTime.Today,
+            ReservationDate = DateTime.Today,
             SortBy = "newest",
-            //RestaurantId = RestaurantId,
+            RestaurantId = RestaurantId,
         };
 
         await LoadReservations();
@@ -96,103 +97,4 @@ public partial class NextReservationsView : ComponentBase
         await LoadReservations();
     }
     
-    private async Task DeleteReservation()
-    {
-        if (selectedReservation == null) return;
-
-        try
-        {
-            isProcessing = true;
-            modalError = null;
-            showDeleteConfirmation = false;
-            
-            var response = await Http.RequestWithHeaderAsync(
-                HttpMethod.Delete,
-                $"api/reservation/{selectedReservation.Id}",
-                0,
-                "X-Restaurant-Id",
-                selectedReservation.RestaurantId.ToString()
-            );
-
-            if (response.IsSuccessStatusCode)
-            {
-                reservations.Remove(selectedReservation);
-                CloseModal();
-            }
-            else
-            {
-                var message = await response.Content.ReadAsStringAsync();
-                modalError = $"Failed to delete reservation: {message}";
-            }
-        }
-        catch (Exception ex)
-        {
-            modalError = $"Error deleting reservation: {ex.Message}";
-            showDeleteConfirmation = false;
-        }
-        finally
-        {
-            isProcessing = false;
-        }
-    }
-    
-    private async Task HandleUpdateStatus(ReservationStatus? newStatus)
-    {
-        selectedStatus = newStatus;
-        await UpdateReservationStatus();
-    }
-
-    private async Task HandleDeleteReservation()
-    {
-        ShowDeleteConfirmation();
-    }
-    
-    private void ShowDeleteConfirmation()
-    {
-        showDeleteConfirmation = true;
-    }
-    
-    private async Task UpdateReservationStatus()
-    {
-        if (selectedReservation == null || selectedStatus == null) return;
-
-        try
-        {
-            isProcessing = true;
-            modalError = null;
-            modalSuccess = null;
-
-            var response = await Http.RequestWithHeaderAsync(
-                HttpMethod.Put,
-                $"api/reservation/manage/{selectedReservation.Id}/change-status",
-                selectedStatus.Value,
-                "X-Restaurant-Id",
-                selectedReservation.RestaurantId.ToString()
-            );
-
-            if (response.IsSuccessStatusCode)
-            {
-                modalSuccess = "Status updated successfully!";
-                selectedReservation.Status = selectedStatus.Value;
-                // await LoadInitialReservations();
-
-                // Automatyczne zamknięcie modala po sukcesie
-                await Task.Delay(1500);
-                CloseModal();
-            }
-            else
-            {
-                var message = await response.Content.ReadAsStringAsync();
-                modalError = $"Failed to update status: {message}";
-            }
-        }
-        catch (Exception ex)
-        {
-            modalError = $"Error updating status: {ex.Message}";
-        }
-        finally
-        {
-            isProcessing = false;
-        }
-    }
 }
