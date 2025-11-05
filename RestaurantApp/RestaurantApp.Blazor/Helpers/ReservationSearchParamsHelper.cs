@@ -14,6 +14,9 @@ public static class ReservationSearchParamsHelper
         
         if (parameters.RestaurantId.HasValue)
             queryParams.Add($"restaurantId={parameters.RestaurantId}");
+        
+        if (!string.IsNullOrWhiteSpace(parameters.RestaurantName))
+            queryParams.Add($"restaurantName={Uri.EscapeDataString(parameters.RestaurantName)}");
 
         if (!string.IsNullOrWhiteSpace(parameters.UserId))
             queryParams.Add($"userId={Uri.EscapeDataString(parameters.UserId)}");

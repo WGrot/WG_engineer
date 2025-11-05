@@ -5,6 +5,8 @@ namespace RestaurantApp.Shared.DTOs.SearchParameters;
 public class ReservationSearchParameters
 {
     public int? RestaurantId { get; set; }
+    
+    public string? RestaurantName { get; set; }
     public string? UserId { get; set; }
     public ReservationStatus? Status { get; set; }
     public string? CustomerName { get; set; }

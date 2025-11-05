@@ -244,28 +244,7 @@ public class ReservationService : IReservationService
         // Walidacja paginacji
         int page = searchParams.Page < 1 ? 1 : searchParams.Page;
         int pageSize = Math.Clamp(searchParams.PageSize, 1, 50);
-        var now = DateTime.UtcNow;
-        var currentTime = TimeOnly.FromDateTime(now);
-        query = searchParams.SortBy?.ToLower() switch
-        {
-            "oldest" => query
-                .OrderBy(r => r.CreatedAt)
-                .ThenBy(r => r.StartTime),
-
-            "next" => query
-                .Where(r => r.ReservationDate >= now.Date 
-                            || (r.ReservationDate == now.Date && r.StartTime > currentTime))
-                .OrderBy(r => r.ReservationDate)
-                .ThenBy(r => r.StartTime),
-
-            "newest" => query
-                .OrderByDescending(r => r.CreatedAt)
-                .ThenByDescending(r => r.StartTime),
-
-            _ => query
-                .OrderByDescending(r => r.ReservationDate)
-                .ThenByDescending(r => r.StartTime)
-        };
+        
 
 
         // Wykonanie zapytania i paginacja
@@ -546,6 +525,10 @@ public class ReservationService : IReservationService
         {
             query = query.Where(r => r.RestaurantId == searchParams.RestaurantId.Value);
         }
+        if (!string.IsNullOrWhiteSpace(searchParams.RestaurantName))
+        {
+            query = query.Where(r => r.Restaurant.Name.ToLower().Contains(searchParams.RestaurantName.ToLower()));
+        }
 
         if (!string.IsNullOrWhiteSpace(searchParams.UserId))
         {
@@ -600,6 +583,30 @@ public class ReservationService : IReservationService
             query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(searchParams.Notes.ToLower()));
         }
 
+        var now = DateTime.UtcNow;
+        var currentTime = TimeOnly.FromDateTime(now);
+        query = searchParams.SortBy?.ToLower() switch
+        {
+            "oldest" => query
+                .OrderBy(r => r.CreatedAt)
+                .ThenBy(r => r.StartTime),
+
+            "next" => query
+                .Where(r => r.ReservationDate == now.Date && r.StartTime >= currentTime
+                            || (r.ReservationDate > now.Date ))
+                .OrderBy(r => r.ReservationDate)
+                .ThenBy(r => r.StartTime),
+
+            "newest" => query
+                .OrderByDescending(r => r.CreatedAt)
+                .ThenByDescending(r => r.StartTime),
+
+            _ => query
+                .OrderByDescending(r => r.ReservationDate)
+                .ThenByDescending(r => r.StartTime)
+        };
+        
+        
         return Result<IQueryable<ReservationBase>>.Success(query);
     }
 

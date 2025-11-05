@@ -5,20 +5,26 @@
 @using RestaurantApp.Blazor.Helpers
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.SearchParameters
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.Common
 @attribute [Authorize]
 @inject HttpClient Http
 
 <div class="container-fluid px-4">
     <div class="row mb-4">
-        <div class="col">
-            <h2 class="text-primary mb-0">
-                <i class="bi bi-bookmark-star me-2"></i>My Reservations
-            </h2>
-            <p class="text-muted">View and track your restaurant reservations</p>
-        </div>
+
+            <div class="col-12 my-3 card bg-primary">
+                <div class="card-body  text-white" >
+                    <h2 class="text-center mb-0">
+                        <i class="bi bi-calendar-check me-1"></i>Your Reservations
+                    </h2>
+                    <h5 class="text-white text-center">View all your reservations</h5>
+                </div>
+            </div>
+
     </div>
 
-    @if (isLoading)
+    @if (isInitialLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
             <div class="text-center">
@@ -45,240 +51,208 @@
     }
     else
     {
-                <div class="row">
+
+        <div class="row">
             <!-- Left Sidebar with Filters -->
-            <div class="col-lg-2 col-md-3 mb-4">
-                <div class="card shadow-sm border-0 sticky-lg-top" style="top: 20px;">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-funnel me-2"></i>Filters
-                        </h5>
-                    </div>
-                    <div class="card-body">
+            <div class="col-lg-3 col-md-4">
+                <ReservationFilters SearchParameters="@searchParameters"
+                                    OnApplyFilters="@LoadInitialReservations"
+                                    OnClearFilters="@ClearParams"
+                                    showCustomerFilters="false">
 
-                        <!-- Reservation Status -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-bookmark me-1"></i>Status
-                            </label>
-                            <select class="form-select form-select-sm"
-                                    @bind="searchParameters.Status"
-                                    @bind:event="oninput">
-                                <option value="">All Statuses</option>
-                                @foreach (var status in Enum.GetValues<ReservationStatus>())
-                                {
-                                    <option value="@status">@status</option>
-                                }
-                            </select>
-                        </div>
-                        
-                        <!-- Reservation Date -->
-                        <div class="mb-3">
-                            <label for="date" class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-calendar me-1"></i>Reservation Date
-                            </label>
-                            <input type="date"
-                                   id="date"
-                                   class="form-control form-control-sm"
-                                   @bind="searchParameters.ReservationDate"
-                                   @bind:event="oninput"/>
-                        </div>
-
-                        <!-- Time Range -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="bi bi-clock me-1"></i>Time Range
-                            </label>
-
-                            <div class="mb-2">
-                                <label for="startTime" class="form-label small text-muted mb-1">From:</label>
-                                <input type="time"
-                                       id="startTime"
-                                       class="form-control form-control-sm"
-                                       @bind="searchParameters.ReservationDateFrom"
-                                       @bind:event="oninput"/>
-                            </div>
-
-                            <div>
-                                <label for="endTime" class="form-label small text-muted mb-1">To:</label>
-                                <input type="time"
-                                       id="endTime"
-                                       class="form-control form-control-sm"
-                                       @bind="searchParameters.ReservationDateTo"
-                                       @bind:event="oninput"/>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button class="btn btn-primary btn-sm"
-                                    @onclick="() => LoadUserReservations()">
-                                <i class="bi bi-search me-2"></i>Apply Filters
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm"
-                                    @onclick="() => ClearParams()">
-                                <i class="bi bi-x-circle me-2"></i>Clear All
-                            </button>
-                        </div>
-
-                        <!-- Quick Stats -->
-                        <div class="mt-4 p-3 bg-light rounded">
-                            <h6 class="text-muted small mb-2">Quick Stats</h6>
-                            <div class="small">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Total:</span>
-                                    <span class="fw-bold">@reservations.Count()</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1 text-warning">
-                                    <span>Pending:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.Status == ReservationStatus.Pending)</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1 text-success">
-                                    <span>Confirmed:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.Status == ReservationStatus.Confirmed)</span>
-                                </div>
-                                <div class="d-flex justify-content-between text-info">
-                                    <span>Today:</span>
-                                    <span class="fw-bold">@reservations.Count(r => r.ReservationDate.Date == DateTime.Today)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </ReservationFilters>
             </div>
 
             <!-- Right Content Area with Reservations -->
-            <div class="col-lg-9 col-md-8">
-                <div class="row">
-                    @foreach (var reservation in reservations.OrderByDescending(r => r.ReservationDate))
-                    {
-                        <div class="col-xl-4 col-lg-6 col-md-12 mb-3">
-                            <div class="card h-100 shadow-sm border-0 reservation-card">
-                                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 text-primary">
-                                        <i class="bi bi-shop me-2"></i>@reservation.Restaurant?.Name
-                                    </h6>
-                                    <span class="badge @reservation.Status.GetStatusBadgeClass()">
-                                @reservation.Status
-                            </span>
-                                </div>
-
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <h6 class="text-muted small mb-1">RESERVATION INFO</h6>
-                                        <div class="small">
-                                            <div class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-calendar-event me-2 text-primary"></i>
-                                                <span>@reservation.ReservationDate.ToLocalTime().ToString("yyyy-MM-dd")</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-clock me-2 text-primary"></i>
-                                                <span>@reservation.StartTime.ToString("HH:mm") - @reservation.EndTime.ToString("HH:mm")</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-people me-2 text-primary"></i>
-                                                <span>@reservation.NumberOfGuests guests</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-geo-alt me-2 text-primary"></i>
-                                                <span>@reservation.Restaurant?.Address</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
+            <div class="col-lg-9 col-md-9">
+                <div class="d-flex flex-row justify-content-end mb-2">
+                    <SetPageSizeComponent
+                        OnPageSizeChanged="@SetPageSize"
+                        Title="Reservations per page: "/>
+                    <SortDropdown
+                        Options="SortOptions"
+                        SelectedValue="@searchParameters.SortBy"
+                        OnSortChanged="@SortReservations"/>
+                </div>
+                @if (isInitialLoading)
+                {
+                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-3" role="status"
+                                 style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
+                            <p class="text-muted">Loading reservations...</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var reservation in reservations)
+                    {
+                        <ReservationCard
+                            Reservation="reservation"/>
+                    }
+
+                    @if (hasMoreReservations && reservations.Any())
+                    {
+                        <div class="text-center mt-3">
+                            <button class="btn-outline-primary"
+                                    @onclick="LoadMoreReservations"
+                                    disabled="@isLoadingMore">
+                                @if (isLoadingMore)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Loading...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-arrow-down-circle me-2"></i>
+                                    <span>Load more reservations</span>
+                                }
+                            </button>
                         </div>
                     }
-                </div>
+                    else
+                    {
+                        <div class="text-center mt-3 text-muted">
+                            <i class="bi bi-check-circle me-2"></i>
+                            All reservations loaded
+                        </div>
+                    }
+
+                    @if (!reservations.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                            <p class="text-muted mt-3">No reservations found matching your filters.</p>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="() => ClearParams()">
+                                Clear Filters
+                            </button>
+                        </div>
+                    }
+                }
             </div>
+
         </div>
-       
+
     }
 </div>
 
-
-@code {
+    @code {
     private List<ReservationBase>? reservations;
     private bool isLoading = true;
     private string? error;
     private string? userId;
-    private ReservationSearchParameters searchParameters = new ReservationSearchParameters();
+    private ReservationSearchParameters searchParameters = new ReservationSearchParameters
+    {
+        Page = 1,
+        PageSize = 10,
+        SortBy = "newest"
+    };
     private bool isInitialLoading { get; set; } = true;
-    private string sortOption { get; set; } = "best";
+    private string sortOption { get; set; } = "next";
     private int currentPage = 1;
-    private int pageSize = 20;
     bool hasMoreReservations = true;
     private bool isLoadingMore = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUserReservations();
+        await LoadInitialReservations();
     }
-
-    private async Task SearchReservations()
-    {
-        await LoadUserReservations();
-    }
+    
 
     private void ClearParams()
     {
         searchParameters = new ReservationSearchParameters();
     }
-    private async Task LoadUserReservations()
+    
+    private async Task SortReservations(string option)
     {
+        if (searchParameters.SortBy == option) return;
+
+        searchParameters.SortBy = option.ToLower();
+        await LoadInitialReservations();
+    }
+    
+    private async Task LoadInitialReservations()
+    {
+        isInitialLoading = true;
+        reservations = new List<ReservationBase>();
+
         try
         {
-            var queryString = BuildQueryString(searchParameters);
-            var result = await Http.GetFromJsonAsync<PaginatedReservationsDto>($"api/reservation/client/{queryString}");
-            reservations = result?.Reservations;
+            await LoadReservationsPage();
         }
         catch (Exception ex)
         {
-            error = $"Failed to load reservations: {ex.Message}";
+            Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            reservations = new List<ReservationBase>();
         }
         finally
         {
-            isLoading = false;
+            isInitialLoading = false;
         }
     }
     
-
-    private string BuildQueryString(ReservationSearchParameters parameters)
+    private async Task LoadReservationsPage()
     {
-        var queryParams = new List<string>();
+        try
+        {
+            var queryString = searchParameters.BuildQueryString();
 
-        if (parameters.RestaurantId.HasValue)
-            queryParams.Add($"restaurantId={parameters.RestaurantId}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.UserId))
-            queryParams.Add($"userId={Uri.EscapeDataString(parameters.UserId)}");
-
-        if (parameters.Status.HasValue)
-            queryParams.Add($"status={parameters.Status}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerName))
-            queryParams.Add($"customerName={Uri.EscapeDataString(parameters.CustomerName)}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerEmail))
-            queryParams.Add($"customerEmail={Uri.EscapeDataString(parameters.CustomerEmail)}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.CustomerPhone))
-            queryParams.Add($"customerPhone={Uri.EscapeDataString(parameters.CustomerPhone)}");
-
-        if (parameters.ReservationDate.HasValue)
-            queryParams.Add($"reservationDate={parameters.ReservationDate.Value:yyyy-MM-dd}");
-
-        if (parameters.ReservationDateFrom.HasValue)
-            queryParams.Add($"reservationDateFrom={parameters.ReservationDateFrom.Value:yyyy-MM-dd}");
-
-        if (parameters.ReservationDateTo.HasValue)
-            queryParams.Add($"reservationDateTo={parameters.ReservationDateTo.Value:yyyy-MM-dd}");
-
-        if (!string.IsNullOrWhiteSpace(parameters.Notes))
-            queryParams.Add($"notes={Uri.EscapeDataString(parameters.Notes)}");
-
-        return queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+            var response =
+                await Http.GetFromJsonAsync<PaginatedReservationsDto>($"api/reservation/client/{queryString}");
+            if (response != null)
+            {
+                reservations.AddRange(response.Reservations);
+                hasMoreReservations = response.HasMore;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            reservations = new List<ReservationBase>();
+        }
+        finally
+        {
+            isLoadingMore = false;
+        }
     }
+    
+    private async Task LoadMoreReservations()
+    {
+        if (isLoadingMore || !hasMoreReservations) return;
+
+        isLoadingMore = true;
+        searchParameters.Page++;
+
+        try
+        {
+            await LoadReservationsPage();
+        }
+        catch (Exception ex)
+        {
+            searchParameters.Page--;
+        }
+        finally
+        {
+            isLoadingMore = false;
+        }
+    }
+    
+    private async Task SetPageSize(int size)
+    {
+        searchParameters.PageSize = size;
+        searchParameters.Page = 1;
+        await LoadInitialReservations();
+    }
+    
+    private List<SortOption> SortOptions = new()
+    {
+        new() { Label = "Newest", Value = "newest" },
+        new() { Label = "Oldest", Value = "oldest" },
+        new() { Label = "Next", Value = "next" },
+    };
 
 }
