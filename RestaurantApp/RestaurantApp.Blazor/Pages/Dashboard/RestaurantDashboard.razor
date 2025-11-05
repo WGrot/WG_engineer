@@ -30,16 +30,26 @@ else
                                     <i class="bi bi-chevron-down fs-5"></i>
                                 </button>
                             }
-                            
+
                         </div>
 
                     </div>
 
                 </div>
             </div>
-
-            <!-- Prawa karta: data i godzina -->
-            <Clock></Clock>
+            <div class="col-md-9">
+                <div class="card shadow border-1 h-100">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <Clock></Clock>
+                        <div>
+                            <button class="base-button lg" @onclick="() => showReservationModal = true">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                New Reservation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-3 mb-3">
@@ -49,7 +59,7 @@ else
                         <div class="card-body">
                             <h6 class="text-uppercase text-muted mb-2">Today reservations</h6>
                             <h2 class="fw-bold mb-1">
-                                @if(dto.TodayReservations != null)
+                                @if (dto.TodayReservations != null)
                                 {
                                     <div>@dto.TodayReservations</div>
                                 }
@@ -90,7 +100,7 @@ else
                         <div class="card-body">
                             <h6 class="text-uppercase text-muted mb-2">Reservations in last week</h6>
                             <h2 class="fw-bold mb-1">
-                                @if(dto.ReservationsLastWeek != null)
+                                @if (dto.ReservationsLastWeek != null)
                                 {
                                     <div>@dto.ReservationsLastWeek</div>
                                 }
@@ -99,7 +109,7 @@ else
                                     <div>no data</div>
                                 }
                             </h2>
-                        
+
                         </div>
                     </div>
                 </div>
@@ -132,6 +142,16 @@ else
             </div>
         </div>
     </div>
+
+    <GenericModal Title="New reservation"
+                  @bind-IsVisible="showReservationModal"
+                  Size="@GenericModal.ModalSize.Large"
+    >
+        <ChildContent>
+            <TableBookingForm Id="@loadedRestaurant.Id" restaurant="@loadedRestaurant" OnReservationCreated="() => showReservationModal = false"/>
+        </ChildContent>
+        
+    </GenericModal>
 }
 
 

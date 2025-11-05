@@ -1,32 +1,19 @@
-﻿<div class="col-md-9">
-    <div class="card shadow border-1 h-100">
-        <div class="card-body p-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-1 fw-bold">@currentDate.ToString("dddd, dd MMMM yyyy")</h4>
-                <p class="text-muted mb-0">
-                    <i class="bi bi-clock me-1"></i>
-                    @currentDate.ToString("HH:mm:ss")
-                </p>
-            </div>
-            <div>
-                <button class="base-button lg">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    New Reservation
-                </button>
-            </div>
-        </div>
-    </div>
+﻿<div>
+    <h4 class="mb-1 fw-bold">@currentDate.ToString("dddd, dd MMMM yyyy")</h4>
+    <p class="text-muted mb-0">
+        <i class="bi bi-clock me-1"></i>
+        @currentDate.ToString("HH:mm:ss")
+    </p>
 </div>
+
 
 @code {
     private DateTime currentDate = DateTime.Now;
-        
+
     private System.Threading.Timer? timer;
-    
+
     protected override async Task OnInitializedAsync()
     {
-        
-        
         timer = new System.Threading.Timer(_ =>
         {
             InvokeAsync(() =>
@@ -35,9 +22,8 @@
                 StateHasChanged();
             });
         }, null, 0, 1000);
-        
     }
-    
+
     public void Dispose()
     {
         timer?.Dispose();

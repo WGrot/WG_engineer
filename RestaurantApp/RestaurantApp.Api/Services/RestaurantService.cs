@@ -570,7 +570,7 @@ public class RestaurantService : IRestaurantService
         var lastWeek = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(-7), DateTimeKind.Utc);
         var lastWeekReservations = await _context.Reservations
             .Where(r => r.RestaurantId == restaurantId
-                        && r.ReservationDate >= lastWeek)
+                        && r.ReservationDate >= lastWeek && r.ReservationDate < tomorrow)
             .ToListAsync();
         
         dto.TodayReservations = todayReservations.Count;

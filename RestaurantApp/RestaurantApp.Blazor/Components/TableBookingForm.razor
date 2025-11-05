@@ -269,7 +269,8 @@
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public Restaurant? restaurant { get; set; }
-
+    
+    [Parameter] public EventCallback<TableReservationDto> OnReservationCreated { get; set; }
     [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
 
@@ -508,10 +509,19 @@
             if (response.IsSuccessStatusCode)
             {
                 successMessage = "Reservation confirmed! You will receive a confirmation email shortly.";
+                var createdReservation = await response.Content.ReadFromJsonAsync<TableReservationDto>();
+                
+                if (OnReservationCreated.HasDelegate)
+                {
+                    await Task.Delay(2000);
+                    await OnReservationCreated.InvokeAsync(createdReservation ?? reservation);
+                }
+                else
+                {
 
-                // Clear form after successful reservation
-                await Task.Delay(2000);
-                Navigation.NavigateTo($"/restaurant/{Id}");
+                    await Task.Delay(2000);
+                    Navigation.NavigateTo($"/restaurant/{Id}");
+                }
             }
             else
             {

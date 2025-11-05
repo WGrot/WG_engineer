@@ -25,8 +25,9 @@ public partial class RestaurantDashboard : ComponentBase
     
     private int availableTables;
     private int freeSeats;
-    
 
+    private bool showReservationModal = false;
+    
     private RestaurantDashboardDataDto? dto;
     private ReservationSearchParameters pendingSearchParams = new();
     
