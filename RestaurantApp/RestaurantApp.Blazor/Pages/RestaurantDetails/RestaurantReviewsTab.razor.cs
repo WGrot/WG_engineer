@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -33,7 +34,14 @@ public partial class RestaurantReviewsTab : ComponentBase
     private bool isEditReviewExpanded = false;
     private bool isAddReviewExpanded = false;
 
-    private string sortOption { get; set; } = "newest";
+    private string sortBy { get; set; } = "newest";
+    
+    private List<SortOption> SortOptions = new()
+    {
+        new() { Label = "Highest rating", Value = "highest" },
+        new() { Label = "Oldest", Value = "oldest" },
+        new() { Label = "Lowest rating", Value = "lowest" },
+    };
     
     private ReviewDto? existingUserReview { get; set; } = null;
     private Dictionary<int, int> ratingDistribution { get; set; } = new();
@@ -43,6 +51,11 @@ public partial class RestaurantReviewsTab : ComponentBase
     private int totalReviewCount = 0;
     private double averageRating = 0;
 
+
+    public void SetPageSize(int size)
+    {
+        pageSize = size;
+    }
     protected override async Task OnParametersSetAsync()
     {
 
@@ -83,7 +96,7 @@ public partial class RestaurantReviewsTab : ComponentBase
         try
         {
             var response = await Http.GetFromJsonAsync<PaginatedReviewsDto>(
-                $"/api/Reviews/restaurant/{Id}/paginated?page={currentPage}&pageSize={pageSize}&sortBy={sortOption}");
+                $"/api/Reviews/restaurant/{Id}/paginated?page={currentPage}&pageSize={pageSize}&sortBy={sortBy}");
 
             if (response != null)
             {
@@ -140,9 +153,9 @@ public partial class RestaurantReviewsTab : ComponentBase
 
     private async Task SortReviews(string option)
     {
-        if (sortOption == option) return;
+        if (sortBy == option) return;
 
-        sortOption = option.ToLower();
+        sortBy = option.ToLower();
         await LoadInitialReviews();
     }
 

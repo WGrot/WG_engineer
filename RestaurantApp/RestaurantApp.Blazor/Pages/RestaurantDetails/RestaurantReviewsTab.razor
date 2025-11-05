@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using RestaurantApp.Blazor.Components
 
 
 <div class="container-fluid px-0">
@@ -63,7 +64,8 @@
                                               @bind="existingUserReview.Content"
                                               placeholder="Share your experience at this restaurant..."
                                               maxlength="1000"></textarea>
-                                    <small class="text-muted">@(existingUserReview.Content?.Length ?? 0) / 1000 characters</small>
+                                    <small class="text-muted">@(existingUserReview.Content?.Length ?? 0) / 1000
+                                        characters</small>
                                 </div>
 
                                 <div class="d-flex gap-2">
@@ -144,7 +146,8 @@
                                               @bind="newReview.Content"
                                               placeholder="Share your experience at this restaurant..."
                                               maxlength="1000"></textarea>
-                                    <small class="text-muted">@(newReview.Content?.Length ?? 0) / 1000 characters</small>
+                                    <small class="text-muted">@(newReview.Content?.Length ?? 0) / 1000
+                                        characters</small>
                                 </div>
 
                                 <button type="button"
@@ -183,18 +186,12 @@
             </h4>
             @if (!isInitialLoading && displayedReviews.Any())
             {
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown">
-                        <i class="bi bi-funnel me-1"></i>Sort by: @char.ToUpper(sortOption[0])@sortOption.Substring(1)
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" @onclick='() => SortReviews("newest")'>Newest First</a></li>
-                        <li><a class="dropdown-item" @onclick='() => SortReviews("oldest")'>Oldest First</a></li>
-                        <li><a class="dropdown-item" @onclick='() => SortReviews("highest")'>Highest Rating</a></li>
-                        <li><a class="dropdown-item" @onclick='() => SortReviews("lowest")'>Lowest Rating</a></li>
-                    </ul>
+                <div class="d-flex gap-3 align-items-center">
+                    <SetPageSizeComponent title="Reviews per page"
+                                          OnPageSizeChanged="SetPageSize"></SetPageSizeComponent>
+                    <SortDropdown Options="SortOptions"
+                                  SelectedValue="@sortBy"
+                                  OnSortChanged="@SortReviews"></SortDropdown>
                 </div>
             }
         </div>
@@ -244,62 +241,9 @@
             <!-- Reviews List -->
             foreach (var review in displayedReviews)
             {
-                <div class="card mb-3 review-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <!-- Left section - username and rating (with max-width) -->
-                            <div class="flex-grow-1" style="min-width: 0; max-width: 60%;">
-                                <h5 class="mb-1 d-flex align-items-center">
-                                    <i class="bi bi-person-circle me-2 flex-shrink-0"></i>
-                                    <span class="text-truncate" style="max-width: 200px;" title="@review.UserName">
-                                        @("@" + review.UserName)
-                                    </span>
-                                    @if (review.IsVerified)
-                                    {
-                                        <span class="badge bg-success ms-2 flex-shrink-0" title="Verified Review">
-                                            <i class="bi bi-check-circle"></i> Verified
-                                        </span>
-                                    }
-                                </h5>
-                                <div class="mb-2">
-                                    @for (int i = 1; i <= 5; i++)
-                                    {
-                                        <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star") text-warning"></i>
-                                    }
-                                    <span class="ms-2 text-muted small">@review.Rating.0 / 5.0</span>
-                                </div>
-                            </div>
-
-                            <!-- Right section - date and actions (fixed position) -->
-                            <div class="text-muted small d-flex align-items-center gap-2 flex-shrink-0 ms-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-calendar3 me-1"></i>
-                                    <span class="text-nowrap">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
-                                    @if (review.UpdatedAt.HasValue)
-                                    {
-                                        <span class="badge bg-secondary ms-1">Edited</span>
-                                    }
-                                </div>
-
-                                @if (review.UserId == loggedUserId)
-                                {
-                                    
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" @onclick="() => DeleteMyReview(review.Id)">Delete</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                        <p class="card-text">@review.Content</p>
-                    </div>
-                </div>
+                <ReviewCard review="review">
+                    <Title><i class="bi bi-person-circle"></i> @review.UserName</Title>
+                </ReviewCard>
             }
 
             <!-- Load More Button -->
