@@ -13,7 +13,22 @@ public partial class TableComponentBlazor : ComponentBase
     
     private string? TrimmedAvailability = new string('2', 96);
     private string TableAvailibilitymap = new string('2', 96);
-    [Parameter] public bool isAvailable { get; set; }
+    [Parameter] public EventCallback<(Table table, bool isAvailable)> OnAvailabilityChanged { get; set; }
+
+    private bool _isAvailable;
+    [Parameter]
+    public bool isAvailable
+    {
+        get => _isAvailable;
+        set
+        {
+            if (_isAvailable != value)
+            {
+                _isAvailable = value;
+                OnAvailabilityChanged.InvokeAsync((Table, _isAvailable));
+            }
+        }
+    }
     
     private string HeaderClass => isAvailable ? "bg-light" :  "bg-purple";
 

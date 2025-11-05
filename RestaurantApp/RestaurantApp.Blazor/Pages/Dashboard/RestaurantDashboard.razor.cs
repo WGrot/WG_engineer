@@ -17,14 +17,15 @@ public partial class RestaurantDashboard : ComponentBase
     
     public Restaurant? loadedRestaurant { get; set; }
     public List<RestaurantEmployee> restaurantEmployeeList { get; set; }
-    private DateTime currentDate = DateTime.Now;
     
     private ClaimsPrincipal currentUser;
     private string currentUserId = "";
     
     private bool isLoading = true;
     
-    private System.Threading.Timer? timer;
+    private int availableTables;
+    private int freeSeats;
+    
 
     private RestaurantDashboardDataDto? dto;
     private ReservationSearchParameters pendingSearchParams = new();
@@ -38,14 +39,6 @@ public partial class RestaurantDashboard : ComponentBase
         await LoadRestaurantData(restaurantEmployeeList[0].RestaurantId);
         await LoadDashboardStatistics();
         
-        timer = new System.Threading.Timer(_ =>
-        {
-            InvokeAsync(() =>
-            {
-                currentDate = DateTime.Now;
-                StateHasChanged();
-            });
-        }, null, 0, 1000);
         
         
         if (loadedRestaurant != null)
@@ -93,8 +86,10 @@ public partial class RestaurantDashboard : ComponentBase
         }
     }
 
-    public void Dispose()
+
+    private void HandleAvailabilitySummaryChanged((int availableTables, int freeSeats) summary)
     {
-        timer?.Dispose();
+        availableTables = summary.availableTables;
+        freeSeats = summary.freeSeats;
     }
 }
