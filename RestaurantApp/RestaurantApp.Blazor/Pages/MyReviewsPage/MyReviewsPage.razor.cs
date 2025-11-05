@@ -5,7 +5,7 @@ using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Blazor.Pages;
+namespace RestaurantApp.Blazor.Pages.MyReviewsPage;
 
 public partial class MyReviewsPage : ComponentBase
 {
@@ -21,9 +21,17 @@ public partial class MyReviewsPage : ComponentBase
     private bool showEditModal = false;
     private ReviewDto? selectedReview = null;
 
+    private double averageRating = 0f;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadUserReviews();
+        CalculateStats();
+    }
+    
+    private void CalculateStats()
+    {
+        averageRating = reviews.Count == 0 ? 0 : Math.Round(reviews.Average(r => r.Rating), 2);
     }
 
     private async Task LoadUserReviews()
