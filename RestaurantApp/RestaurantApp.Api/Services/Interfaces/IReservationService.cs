@@ -33,6 +33,8 @@ public interface IReservationService
     Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime,
         int? excludeReservationId = null);
     Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
+    
+    Task<Result> CancelUserReservation(int reservationId);
 
 
     Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(ReservationSearchParameters searchParams);

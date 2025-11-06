@@ -459,6 +459,24 @@ public class ReservationService : IReservationService
         return Result.Success();
     }
 
+    public async Task<Result> CancelUserReservation(int reservationId)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        var reservation = _context.Reservations
+            .FirstOrDefault(r => r.Id == reservationId && r.UserId == userId);
+
+        if (reservation == null)
+        {
+            return Result.Failure("Reservation not found or does not belong to the user", 404);
+        }
+        
+        reservation.Status = ReservationStatus.Cancelled;
+        _context.Reservations.Update(reservation);
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
     public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(
         ReservationSearchParameters searchParams)
     {

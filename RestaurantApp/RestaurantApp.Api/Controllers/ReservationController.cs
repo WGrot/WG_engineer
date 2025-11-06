@@ -175,4 +175,17 @@ public class ReservationController : ControllerBase
         var result = await _reservationService.UpdateReservationStatusAsync(id, status);
         return result.ToActionResult();
     }
+    
+    [HttpPatch("manage/{id}/cancel-user-reservation")]
+    [Authorize]
+    public async Task<IActionResult> CancelUserReservation(int id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _reservationService.CancelUserReservation(id);
+        return result.ToActionResult();
+    }
 }

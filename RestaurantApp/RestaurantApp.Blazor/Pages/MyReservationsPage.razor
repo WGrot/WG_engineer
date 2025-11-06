@@ -90,8 +90,9 @@
                 {
                     foreach (var reservation in reservations)
                     {
-                        <ReservationCard
-                            Reservation="reservation"/>
+                        <MyReservationCard
+                            Reservation="reservation"
+                            OnCancelled="() => {showCancellationModal = true; reservationToCancel = reservation; }"/>
                     }
 
                     @if (hasMoreReservations && reservations.Any())
@@ -137,6 +138,15 @@
         </div>
 
     }
+    <ConfirmationModal
+        Title="Confirm Cancellation"
+        Message="Are you sure you want to cancel this reservation? This cannot be undone"
+        @bind-IsVisible="showCancellationModal"
+        OnConfirm="CancelReservation"
+        cancelButtonText="Abort"
+        ConfirmButtonText="Confirm Cancellation">
+        
+    </ConfirmationModal>
 </div>
 
     @code {
@@ -155,6 +165,8 @@
     private int currentPage = 1;
     bool hasMoreReservations = true;
     private bool isLoadingMore = false;
+    private ReservationBase? reservationToCancel;
+    private bool showCancellationModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,6 +191,7 @@
     {
         isInitialLoading = true;
         reservations = new List<ReservationBase>();
+        searchParameters.Page = 1;
 
         try
         {
@@ -194,6 +207,8 @@
             isInitialLoading = false;
         }
     }
+    
+    
     
     private async Task LoadReservationsPage()
     {
@@ -217,6 +232,37 @@
         finally
         {
             isLoadingMore = false;
+        }
+    }
+    
+    private async Task CancelReservation()
+    {
+        if (reservationToCancel == null) return;
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Patch,
+                $"/api/Reservation/manage/{reservationToCancel.Id}/cancel-user-reservation");
+
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                reservationToCancel.Status = ReservationStatus.Cancelled;
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            var errorMsg = ex.Message;
+        }
+        finally
+        {
+            reservationToCancel = null;
+            showCancellationModal = false;
         }
     }
     
