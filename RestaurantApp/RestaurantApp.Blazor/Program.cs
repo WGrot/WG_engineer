@@ -35,7 +35,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
     provider.GetRequiredService<JwtAuthenticationStateProvider>());
 
 builder.Services.AddScoped<IReservationService, ReservationService>();
-
+builder.Services.AddScoped<PermissionService>();
 // Połącz AuthService z JwtAuthenticationStateProvider
 var host = builder.Build();
 
