@@ -4,7 +4,7 @@ namespace RestaurantApp.Shared.DTOs;
 
 public class PaginatedRestaurantsDto
 {
-    public IEnumerable<Restaurant> Restaurants { get; set; } = new List<Restaurant>();
+    public IEnumerable<RestaurantDto> Restaurants { get; set; } = new List<RestaurantDto>();
     // Lub jeśli masz RestaurantDto:
     // public IEnumerable<RestaurantDto> Restaurants { get; set; } = new List<RestaurantDto>();
     

@@ -4,6 +4,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;

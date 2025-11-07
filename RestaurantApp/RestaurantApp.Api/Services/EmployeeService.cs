@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
@@ -86,9 +87,9 @@ public class EmployeeService : IEmployeeService
                 Id = employee.Id,
                 UserId = employee.UserId,
                 RestaurantId = employee.RestaurantId,
-                Restaurant = employee.Restaurant,
+                Restaurant = employee.Restaurant.ToDto(),
                 Role = employee.Role,
-                Permissions = employee.Permissions,
+                Permissions = employee.Permissions.ToDtoList(),
                 CreatedAt = employee.CreatedAt,
                 IsActive = employee.IsActive,
                 Email = user.Email ?? string.Empty,

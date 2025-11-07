@@ -1,4 +1,6 @@
-﻿namespace RestaurantApp.Shared.DTOs;
+﻿using RestaurantApp.Shared.Models;
+
+namespace RestaurantApp.Shared.DTOs;
 
 public class ReservationDto
 {
@@ -12,6 +14,8 @@ public class ReservationDto
     public string CustomerEmail { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
 
+    public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
+    
     public string? Notes { get; set; }
 
     // Powiązanie z użytkownikiem
@@ -20,4 +24,8 @@ public class ReservationDto
     public bool requiresConfirmation { get; set; } = false;
     //Powiązanie z restauracją
     public int RestaurantId { get; set; }
+    
+    public string RestaurantName { get; set; }
+    
+    public string RestaurantAddress { get; set; }
 }

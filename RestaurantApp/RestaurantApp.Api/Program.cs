@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services;

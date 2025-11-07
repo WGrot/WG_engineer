@@ -2,7 +2,6 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using RestaurantApp.Shared.Common.Mappers;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 

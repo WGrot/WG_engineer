@@ -5,7 +5,8 @@ using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using Microsoft.AspNetCore.Http;
-using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Api.Mappers;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;
@@ -107,7 +108,7 @@ public class ReservationService : IReservationService
         // Mapowanie encji na DTO (ReservationBase)
         var result = new PaginatedReservationsDto
         {
-            Reservations = reservationsEntities,
+            Reservations = reservationsEntities.ToDtoList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -221,7 +222,7 @@ public class ReservationService : IReservationService
         {
             return Result<PaginatedReservationsDto>.Success(new PaginatedReservationsDto
             {
-                Reservations = new List<ReservationBase>(),
+                Reservations = new List<ReservationDto>(),
                 Page = searchParams.Page,
                 PageSize = searchParams.PageSize,
                 TotalCount = 0,
@@ -257,7 +258,7 @@ public class ReservationService : IReservationService
 
         var result = new PaginatedReservationsDto
         {
-            Reservations = reservationsEntities,
+            Reservations = reservationsEntities.ToDtoList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,

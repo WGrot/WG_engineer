@@ -1,8 +1,10 @@
-﻿using RestaurantApp.Api.Models.DTOs;
-using RestaurantApp.Shared.Models;
+﻿using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Common.Images;
+using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 
@@ -89,7 +91,7 @@ public class RestaurantService : IRestaurantService
 
         var result = new PaginatedRestaurantsDto
         {
-            Restaurants = restaurants, // lub restaurants.ToDtoList() jeśli masz mapowanie na DTO
+            Restaurants = restaurants.ToDtoList(), // lub restaurants.ToDtoList() jeśli masz mapowanie na DTO
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,

@@ -1,6 +1,5 @@
 ﻿using RestaurantApp.Api.Common;
-using RestaurantApp.Api.Models;
-using RestaurantApp.Api.Models.DTOs;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.SearchParameters;

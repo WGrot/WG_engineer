@@ -18,5 +18,4 @@ public class ReviewDto
     public List<string>? PhotosUrls { get; set; }
     public bool IsVerified { get; set; }
     public bool IsActive { get; set; }
-    public RestaurantReviewResponse? RestaurantResponse { get; set; }
 }

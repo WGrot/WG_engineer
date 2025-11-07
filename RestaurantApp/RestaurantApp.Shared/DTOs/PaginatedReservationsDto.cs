@@ -4,7 +4,7 @@ namespace RestaurantApp.Shared.DTOs;
 
 public class PaginatedReservationsDto
 {
-    public List<ReservationBase> Reservations { get; set; }
+    public List<ReservationDto> Reservations { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
     public int TotalCount { get; set; }

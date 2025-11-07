@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Shared.Models;
-using RestaurantApp.Api.Models.DTOs;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RestaurantApp.Domain.Models;
+using RestaurantApp.Shared.DTOs;
 
 namespace RestaurantApp.Api.Controllers;
 

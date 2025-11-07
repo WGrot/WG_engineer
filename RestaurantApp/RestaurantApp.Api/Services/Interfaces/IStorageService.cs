@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.Models;
 
