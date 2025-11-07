@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;

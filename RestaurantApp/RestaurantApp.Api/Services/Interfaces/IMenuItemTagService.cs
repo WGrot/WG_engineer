@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;

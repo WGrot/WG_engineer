@@ -6,6 +6,8 @@ using RestaurantApp.Shared.Models;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Menu;
+using RestaurantApp.Shared.DTOs.Menu.Categories;
 
 namespace RestaurantApp.Api.Services;
 

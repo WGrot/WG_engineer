@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Reservation;
+using RestaurantApp.Shared.DTOs.Users;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Components;

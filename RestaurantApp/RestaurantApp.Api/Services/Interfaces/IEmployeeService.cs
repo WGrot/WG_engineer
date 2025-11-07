@@ -2,6 +2,7 @@
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;

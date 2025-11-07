@@ -8,6 +8,7 @@ using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.Models;
 using SkiaSharp;
 

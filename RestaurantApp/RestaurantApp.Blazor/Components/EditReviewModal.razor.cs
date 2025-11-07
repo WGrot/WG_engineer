@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Review;
 
 namespace RestaurantApp.Blazor.Components;
 

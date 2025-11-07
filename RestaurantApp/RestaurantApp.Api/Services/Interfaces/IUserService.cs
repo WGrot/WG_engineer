@@ -1,6 +1,7 @@
 ﻿using RestaurantApp.Api.Common;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 

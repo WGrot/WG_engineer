@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Blazor.Helpers;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 

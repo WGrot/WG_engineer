@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Components.Forms;
 using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Menu;
+using RestaurantApp.Shared.DTOs.Menu.Categories;
+using RestaurantApp.Shared.DTOs.Menu.MenuItems;
+using RestaurantApp.Shared.DTOs.Menu.Tags;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Auth;
 
 namespace RestaurantApp.Api.Controllers;
 

@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Api.Mappers;

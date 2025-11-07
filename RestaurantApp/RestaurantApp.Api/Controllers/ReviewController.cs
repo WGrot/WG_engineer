@@ -6,6 +6,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Api.Controllers;

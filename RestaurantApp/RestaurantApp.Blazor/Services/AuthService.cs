@@ -3,6 +3,8 @@ using System.Text.Json;
 using Microsoft.JSInterop;
 using RestaurantApp.Blazor.Models.DTO;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Auth;
+using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Blazor.Services;
 

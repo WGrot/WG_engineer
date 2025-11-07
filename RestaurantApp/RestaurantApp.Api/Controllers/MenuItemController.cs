@@ -2,6 +2,8 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Menu.MenuItems;
+using RestaurantApp.Shared.DTOs.Menu.Prices;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;

@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.Dashboard;

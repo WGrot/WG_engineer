@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 

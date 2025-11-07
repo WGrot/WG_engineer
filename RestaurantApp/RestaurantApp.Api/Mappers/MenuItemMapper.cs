@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 
 namespace RestaurantApp.Api.Mappers;
 

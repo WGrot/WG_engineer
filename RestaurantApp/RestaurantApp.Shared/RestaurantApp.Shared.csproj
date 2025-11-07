@@ -6,12 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <Folder Include="Common\Mappers\" />
-      <Folder Include="DTOs\Employees\" />
-      <Folder Include="DTOs\Reservation\" />
-      <Folder Include="DTOs\Restaurant\" />
-      <Folder Include="DTOs\Review\" />
-    </ItemGroup>
-
 </Project>

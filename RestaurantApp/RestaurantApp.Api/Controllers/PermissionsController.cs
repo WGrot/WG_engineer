@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;

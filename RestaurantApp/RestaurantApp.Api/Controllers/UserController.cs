@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Api.Controllers;
 

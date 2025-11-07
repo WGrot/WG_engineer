@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Tables;
 
 namespace RestaurantApp.Api.Controllers;
 

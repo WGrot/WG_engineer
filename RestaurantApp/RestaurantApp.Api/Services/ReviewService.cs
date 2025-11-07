@@ -5,6 +5,7 @@ using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 
