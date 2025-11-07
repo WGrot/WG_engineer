@@ -14,6 +14,7 @@ using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
 

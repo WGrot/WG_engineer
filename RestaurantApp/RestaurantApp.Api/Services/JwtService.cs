@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Models;
 
 

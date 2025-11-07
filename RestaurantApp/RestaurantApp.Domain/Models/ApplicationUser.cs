@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Api;
+namespace RestaurantApp.Domain.Models;
 
 
 

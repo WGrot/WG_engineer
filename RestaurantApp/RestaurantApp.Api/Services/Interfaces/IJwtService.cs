@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using RestaurantApp.Domain.Models;
 
 namespace RestaurantApp.Api.Services.Interfaces;
 

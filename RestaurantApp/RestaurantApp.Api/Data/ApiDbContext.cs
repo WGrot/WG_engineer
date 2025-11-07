@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
 
