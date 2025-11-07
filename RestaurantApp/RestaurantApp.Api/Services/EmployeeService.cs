@@ -65,7 +65,7 @@ public class EmployeeService : IEmployeeService
         return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
     }
 
-    public async Task<Result<IEnumerable<ResponseRestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId)
     {
         var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
@@ -73,17 +73,17 @@ public class EmployeeService : IEmployeeService
             .Where(e => e.RestaurantId == restaurantId)
             .ToListAsync();
 
-        var dtoList = new List<ResponseRestaurantEmployeeDto>();
+        var dtoList = new List<RestaurantEmployeeDto>();
 
         foreach (var employee in employees)
         {
             var user = await _context.Users.FindAsync(employee.UserId);
             if (user == null)
-                return Result.Failure<IEnumerable<ResponseRestaurantEmployeeDto>>(
+                return Result.Failure<IEnumerable<RestaurantEmployeeDto>>(
                     $"User with ID {employee.UserId} not found", 404
                 );
 
-            var dto = new ResponseRestaurantEmployeeDto
+            var dto = new RestaurantEmployeeDto
             {
                 Id = employee.Id,
                 UserId = employee.UserId,
@@ -102,7 +102,7 @@ public class EmployeeService : IEmployeeService
             dtoList.Add(dto);
         }
 
-        return Result<IEnumerable<ResponseRestaurantEmployeeDto>>.Success(dtoList);
+        return Result<IEnumerable<RestaurantEmployeeDto>>.Success(dtoList);
     }
 
     public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole)

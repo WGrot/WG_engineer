@@ -15,7 +15,7 @@ public interface IEmployeeService
     Task<Result<IEnumerable<RestaurantEmployee>>> GetByUserIdAsync(string userId);
 
     // Nowa metoda zwracająca od razu DTO
-    Task<Result<IEnumerable<ResponseRestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId);
+    Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId);
     
     Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole);
 

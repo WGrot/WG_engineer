@@ -125,7 +125,7 @@ else
 
     private bool isLoading = true;
     private string? error;
-    private List<ResponseRestaurantEmployeeDto> employees = new List<ResponseRestaurantEmployeeDto>();
+    private List<RestaurantEmployeeDto> employees = new List<RestaurantEmployeeDto>();
 
     // Modal visibility states
     private bool showAddEmployeeModal = false;
@@ -134,7 +134,7 @@ else
 
     // Selected data
     private CreateUserResponse? newEmployeeResponse;
-    private ResponseRestaurantEmployeeDto? selectedEmployee;
+    private RestaurantEmployeeDto? selectedEmployee;
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,7 +148,7 @@ else
 
         try
         {
-            var response = await Http.RequestJsonWithHeaderAsync<List<ResponseRestaurantEmployeeDto>>(HttpMethod.Get,
+            var response = await Http.RequestJsonWithHeaderAsync<List<RestaurantEmployeeDto>>(HttpMethod.Get,
                 $"api/Employees/restaurant/{Id}", "X-Restaurant-Id",
                 Id.ToString());
             employees = response;
@@ -170,7 +170,7 @@ else
         showAddEmployeeModal = true;
     }
 
-    private void OpenPermissionsModal(ResponseRestaurantEmployeeDto employee)
+    private void OpenPermissionsModal(RestaurantEmployeeDto employee)
     {
         selectedEmployee = employee;
         showPermissionsModal = true;
@@ -190,7 +190,7 @@ else
         await LoadEmployees();
     }
 
-    private async Task RemoveEmployee(ResponseRestaurantEmployeeDto employee)
+    private async Task RemoveEmployee(RestaurantEmployeeDto employee)
     {
         // TODO: Dodaj potwierdzenie przed usunięciem
         if (!await ConfirmRemoval(employee))
@@ -220,7 +220,7 @@ else
         }
     }
 
-    private async Task<bool> ConfirmRemoval(ResponseRestaurantEmployeeDto employee)
+    private async Task<bool> ConfirmRemoval(RestaurantEmployeeDto employee)
     {
         // TODO: Implementacja rzeczywistego dialogu potwierdzenia
         // Na razie zwracamy false aby zapobiec przypadkowemu usunięciu

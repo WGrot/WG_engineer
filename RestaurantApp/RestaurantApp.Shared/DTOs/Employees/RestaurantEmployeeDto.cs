@@ -4,7 +4,7 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Shared.DTOs.Employees;
 
-public class ResponseRestaurantEmployeeDto
+public class RestaurantEmployeeDto
 {
     public int Id { get; set; }
     public string? Email { get; set; }
