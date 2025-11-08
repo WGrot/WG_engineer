@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -18,17 +19,17 @@ public class TableService : ITableService
         _context = context;
     }
 
-    public async Task<Result<IEnumerable<Table>>> GetTablesAsync()
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesAsync()
     {
         var tables = await _context.Tables
             .Include(t => t.Restaurant)
             .Include(t => t.Seats)
             .ToListAsync();
 
-        return Result.Success<IEnumerable<Table>>(tables);
+        return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<Table>> GetTableByIdAsync(int id)
+    public async Task<Result<TableDto>> GetTableByIdAsync(int id)
     {
         var table = await _context.Tables
             .Include(t => t.Restaurant)
@@ -36,21 +37,21 @@ public class TableService : ITableService
             .FirstOrDefaultAsync(t => t.Id == id);
 
         return table is null
-            ? Result<Table>.NotFound($"Table with ID {id} not found.")
-            : Result.Success(table);
+            ? Result<TableDto>.NotFound($"Table with ID {id} not found.")
+            : Result.Success(table.ToDto());
     }
 
-    public async Task<Result<IEnumerable<Table>>> GetTablesByRestaurantAsync(int restaurantId)
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId)
     {
         var tables = await _context.Tables
             .Where(t => t.RestaurantId == restaurantId)
             .Include(t => t.Seats)
             .ToListAsync();
 
-        return Result.Success<IEnumerable<Table>>(tables);
+        return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<Table>>> GetAvailableTablesAsync(int? minCapacity)
+    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity)
     {
         var query = _context.Tables
             .Include(t => t.Restaurant)
@@ -63,20 +64,20 @@ public class TableService : ITableService
         }
 
         var tables = await query.ToListAsync();
-        return Result.Success<IEnumerable<Table>>(tables);
+        return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<Table>> CreateTableAsync(CreateTableDto dto)
+    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto)
     {
         var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == dto.RestaurantId);
         if (!restaurantExists)
-            return Result<Table>.ValidationError($"Restaurant with ID {dto.RestaurantId} does not exist.");
+            return Result<TableDto>.ValidationError($"Restaurant with ID {dto.RestaurantId} does not exist.");
 
         var tableNumberExists = await _context.Tables
             .AnyAsync(t => t.TableNumber == dto.TableNumber && t.RestaurantId == dto.RestaurantId);
 
         if (tableNumberExists)
-            return Result<Table>.Conflict($"Table number {dto.TableNumber} already exists in this restaurant.");
+            return Result<TableDto>.Conflict($"Table number {dto.TableNumber} already exists in this restaurant.");
 
         var table = new Table
         {
@@ -108,7 +109,7 @@ public class TableService : ITableService
             .Include(t => t.Seats)
             .FirstAsync(t => t.Id == table.Id);
 
-        return Result<Table>.Created(createdTable);
+        return Result<TableDto>.Created(createdTable.ToDto());
     }
 
     public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto)
