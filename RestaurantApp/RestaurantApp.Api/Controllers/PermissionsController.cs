@@ -77,7 +77,6 @@ public class PermissionsController : ControllerBase
         var permission = new RestaurantPermission
         {
             RestaurantEmployeeId = permissionDto.RestaurantEmployeeId,
-            RestaurantEmployee = employeeResult.Value!,
             Permission = permissionDto.Permission
         };
 

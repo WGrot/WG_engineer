@@ -21,17 +21,17 @@ public class EmployeeService : IEmployeeService
         _restaurantService = restaurantService;
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
     {
         var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .ToListAsync();
 
-        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
+        return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
-    public async Task<Result<RestaurantEmployee>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id)
     {
         var employee = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
@@ -39,11 +39,11 @@ public class EmployeeService : IEmployeeService
             .FirstOrDefaultAsync(e => e.Id == id);
 
         return employee == null
-            ? Result<RestaurantEmployee>.NotFound($"Employee with ID {id} not found.")
-            : Result.Success(employee);
+            ? Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {id} not found.")
+            : Result.Success(employee.ToDto());
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId)
     {
         var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
@@ -51,10 +51,10 @@ public class EmployeeService : IEmployeeService
             .Where(e => e.RestaurantId == restaurantId)
             .ToListAsync();
 
-        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
+        return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployee>>> GetByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId)
     {
         var employees = await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
@@ -62,7 +62,7 @@ public class EmployeeService : IEmployeeService
             .Where(e => e.UserId == userId)
             .ToListAsync();
 
-        return Result<IEnumerable<RestaurantEmployee>>.Success(employees);
+        return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantDtoAsync(int restaurantId)
@@ -117,11 +117,11 @@ public class EmployeeService : IEmployeeService
         return Result.Success();
     }
 
-    public async Task<Result<RestaurantEmployee>> CreateAsync(CreateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto)
     {
         var restaurantResult = await _restaurantService.GetByIdAsync(dto.RestaurantId);
         if (restaurantResult.IsFailure)
-            return Result<RestaurantEmployee>.Failure(restaurantResult.Error);
+            return Result<RestaurantEmployeeDto>.Failure(restaurantResult.Error);
 
         var employee = new RestaurantEmployee
         {
@@ -136,21 +136,21 @@ public class EmployeeService : IEmployeeService
         _context.RestaurantEmployees.Add(employee);
         await _context.SaveChangesAsync();
 
-        return Result.Success(employee);
+        return Result.Success(employee.ToDto());
     }
 
-    public async Task<Result<RestaurantEmployee>> UpdateAsync(int id, UpdateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(int id, UpdateEmployeeDto dto)
     {
         var employee = await _context.RestaurantEmployees.FindAsync(id);
         if (employee == null)
-            return Result<RestaurantEmployee>.NotFound($"Employee with ID {id} not found.");
+            return Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {id} not found.");
 
         employee.Role = dto.Role;
         employee.IsActive = dto.IsActive;
         // inne pola do aktualizacji
 
         await _context.SaveChangesAsync();
-        return Result.Success(employee);
+        return Result.Success(employee.ToDto());
     }
 
     public async Task<Result> DeleteAsync(int id)
