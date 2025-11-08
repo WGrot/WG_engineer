@@ -11,22 +11,22 @@ namespace RestaurantApp.Api.Services.Interfaces;
 public interface IMenuService
 {
     // Menu operations
-    Task<Result<Menu>> GetMenuByIdAsync(int menuId);
-    Task<Result<Menu>> GetMenuByRestaurantIdAsync(int restaurantId);
-    Task<Result<Menu>> CreateMenuAsync(int restaurantId, MenuDto menuDto);
+    Task<Result<MenuDto>> GetMenuByIdAsync(int menuId);
+    Task<Result<MenuDto>> GetMenuByRestaurantIdAsync(int restaurantId);
+    Task<Result<MenuDto>> CreateMenuAsync(int restaurantId, MenuDto menuDto);
     Task<Result> UpdateMenuAsync(int menuId, MenuDto menuDto);
     Task<Result> DeleteMenuAsync(int menuId);
     Task<Result> ActivateMenuAsync(int menuId);
     Task<Result> DeactivateMenuAsync(int menuId);
     
     // Category operations
-    Task<Result<MenuCategory>> GetCategoryByIdAsync(int categoryId);
-    Task<Result<IEnumerable<MenuCategory>>> GetCategoriesAsync(int menuId);
-    Task<Result<MenuCategory>> CreateCategoryAsync(int menuId, MenuCategoryDto categoryDto);
+    Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId);
+    Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int menuId);
+    Task<Result<MenuCategoryDto>> CreateCategoryAsync(int menuId, MenuCategoryDto categoryDto);
     Task<Result> UpdateCategoryAsync(int categoryId, MenuCategoryDto categoryDto);
     Task<Result> DeleteCategoryAsync(int categoryId);
     Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder);
     
 
-    Task<Result<Menu>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
+    Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
 }
