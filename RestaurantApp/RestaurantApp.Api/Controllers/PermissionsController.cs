@@ -74,13 +74,9 @@ public class PermissionsController : ControllerBase
         if (employeeResult.IsFailure)
             return StatusCode(employeeResult.StatusCode, new { error = employeeResult.Error });
 
-        var permission = new RestaurantPermission
-        {
-            RestaurantEmployeeId = permissionDto.RestaurantEmployeeId,
-            Permission = permissionDto.Permission
-        };
 
-        var result = await _permissionService.CreateAsync(permission);
+
+        var result = await _permissionService.CreateAsync(permissionDto);
         
         if (result.IsSuccess && result.StatusCode == 201)
         {
@@ -91,7 +87,7 @@ public class PermissionsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, RestaurantPermission permission)
+    public async Task<IActionResult> Update(int id, RestaurantPermissionDto permission)
     {
         if (id != permission.Id)
             return BadRequest(new { error = "ID w URL nie zgadza się z ID w body" });

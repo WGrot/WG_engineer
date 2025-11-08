@@ -47,4 +47,13 @@ public static class PermissionMapper
     {
         return dtos.Select(d => d.ToEntity()).ToList();
     }
+    
+    public static RestaurantPermission ToEntity(this CreateRestaurantPermissionDto dto)
+    {
+        return new RestaurantPermission
+        {
+            RestaurantEmployeeId = dto.RestaurantEmployeeId,
+            Permission = dto.Permission
+        };
+    }
 }
