@@ -1,4 +1,6 @@
-﻿using RestaurantApp.Shared.DTOs.OpeningHours;
+﻿using RestaurantApp.Shared.DTOs.Menu;
+using RestaurantApp.Shared.DTOs.OpeningHours;
+using RestaurantApp.Shared.DTOs.Settings;
 
 namespace RestaurantApp.Shared.DTOs.Restaurant;
 
@@ -18,6 +20,8 @@ public class RestaurantDto
     public List<string>? PhotosUrls { get; set; }
     public List<string>? PhotosThumbnailsUrls { get; set; }
     
+    public MenuDto? Menu { get; set; }
+    
     // Oceny i recenzje
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
@@ -26,4 +30,6 @@ public class RestaurantDto
     public int TotalRatings3Star { get; set; }
     public int TotalRatings4Star { get; set; }
     public int TotalRatings5Star { get; set; }
+    
+    public SettingsDto Settings { get; set; }
 }

@@ -10,11 +10,11 @@ public partial class TableComponentBlazor : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
     [Parameter]
-    public Table Table { get; set; }
+    public TableDto Table { get; set; }
     
     private string? TrimmedAvailability = new string('2', 96);
     private string TableAvailibilitymap = new string('2', 96);
-    [Parameter] public EventCallback<(Table table, bool isAvailable)> OnAvailabilityChanged { get; set; }
+    [Parameter] public EventCallback<(TableDto table, bool isAvailable)> OnAvailabilityChanged { get; set; }
 
     private bool _isAvailable;
     [Parameter]

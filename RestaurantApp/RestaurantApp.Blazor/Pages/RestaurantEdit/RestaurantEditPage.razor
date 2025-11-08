@@ -2,6 +2,7 @@
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.DTOs.Restaurant
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
@@ -107,7 +108,7 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-    private Restaurant? restaurant;
+    private RestaurantDto? restaurant;
     private bool isLoading = true;
     string activeTab = "basic";
 
@@ -120,7 +121,7 @@
     {
         try
         {
-            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/restaurant/{Id}");
+            restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{Id}");
         }
         catch (Exception ex)
         {

@@ -1,4 +1,6 @@
 ﻿@using System.Net
+@using RestaurantApp.Shared.DTOs.OpeningHours
+@using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
 
@@ -70,8 +72,8 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public required Restaurant restaurant { get; set; }
-    private Restaurant modifiedRestaurant = new Restaurant();
+    [Parameter] public required RestaurantDto restaurant { get; set; }
+    private RestaurantDto modifiedRestaurant = new RestaurantDto();
     private bool changesMade = false;
 
     protected override void OnInitialized()
@@ -81,17 +83,17 @@
 
     private void InitializeOpeningHours()
     {
-        modifiedRestaurant = new Restaurant
+        modifiedRestaurant = new RestaurantDto
         {
             Id = restaurant.Id,
-            OpeningHours = new List<OpeningHours>()
+            OpeningHours = new List<OpeningHoursDto>()
         };
 
         if (restaurant.OpeningHours?.Count == 7)
         {
             foreach (var originalHours in restaurant.OpeningHours)
             {
-                modifiedRestaurant.OpeningHours.Add(new OpeningHours
+                modifiedRestaurant.OpeningHours.Add(new OpeningHoursDto
                 {
                     DayOfWeek = originalHours.DayOfWeek,
                     OpenTime = originalHours.OpenTime,
@@ -105,7 +107,7 @@
         {
             foreach (var day in Enum.GetValues<DayOfWeek>())
             {
-                modifiedRestaurant.OpeningHours.Add(new OpeningHours
+                modifiedRestaurant.OpeningHours.Add(new OpeningHoursDto
                 {
                     DayOfWeek = day,
                     OpenTime = new TimeOnly(10, 0),
@@ -117,26 +119,26 @@
         }
     }
 
-    private OpeningHours GetOrCreateOpeningHours(DayOfWeek day)
+    private OpeningHoursDto GetOrCreateOpeningHours(DayOfWeek day)
     {
         var hours = modifiedRestaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == day);
         if (hours == null && modifiedRestaurant != null)
         {
-            hours = new OpeningHours
+            hours = new OpeningHoursDto
             {
                 DayOfWeek = day,
                 OpenTime = new TimeOnly(10, 0),
                 CloseTime = new TimeOnly(22, 0),
                 RestaurantId = modifiedRestaurant.Id
             };
-            modifiedRestaurant.OpeningHours ??= new List<OpeningHours>();
+            modifiedRestaurant.OpeningHours ??= new List<OpeningHoursDto>();
             modifiedRestaurant.OpeningHours.Add(hours);
         }
 
         return hours!;
     }
 
-    private void ToggleClosed(OpeningHours hours)
+    private void ToggleClosed(OpeningHoursDto hours)
     {
         changesMade = true;
         hours.IsClosed = !hours.IsClosed;
@@ -154,7 +156,7 @@
         {
             await Http.PatchAsJsonAsync($"api/restaurant/{Id}/opening-hours", modifiedRestaurant.OpeningHours);
 
-            restaurant.OpeningHours = modifiedRestaurant.OpeningHours.Select(h => new OpeningHours
+            restaurant.OpeningHours = modifiedRestaurant.OpeningHours.Select(h => new OpeningHoursDto
             {
                 DayOfWeek = h.DayOfWeek,
                 OpenTime = h.OpenTime,

@@ -1,5 +1,6 @@
 ﻿@using System.Net
 @using RestaurantApp.Shared.DTOs
+@using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.DTOs.Settings
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
@@ -28,8 +29,8 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
-    private RestaurantSettings settings;
+    [Parameter] public RestaurantDto? restaurant { get; set; }
+    private SettingsDto settings;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,11 +47,11 @@ else
         var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
         if (response.IsSuccessStatusCode)
         {
-            settings = await response.Content.ReadFromJsonAsync<RestaurantSettings>();
+            settings = await response.Content.ReadFromJsonAsync<SettingsDto>();
         }
         else
         {
-            settings = new RestaurantSettings();
+            settings = new SettingsDto();
             await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
         }
     }

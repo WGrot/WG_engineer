@@ -92,7 +92,7 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public int RestaurantId { get; set; }
-    [Parameter] public Table Table { get; set; }
+    [Parameter] public TableDto Table { get; set; }
     [Parameter] public bool AutoFillUserData { get; set; } = true;
 
     private string TableAvailibilitymap = new string('2', 96);

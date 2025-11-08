@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -17,7 +18,7 @@ public partial class RestaurantReviewsTab : ComponentBase
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public RestaurantDto? restaurant { get; set; }
 
     private List<ReviewDto> displayedReviews { get; set; } = new();
     private CreateReviewDto newReview { get; set; } = new() { Rating = 5 };

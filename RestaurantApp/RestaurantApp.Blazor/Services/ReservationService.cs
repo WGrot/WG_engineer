@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Blazor.Services.Interfaces;
+using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Services;
@@ -13,7 +14,7 @@ public class ReservationService : IReservationService
         _http = http;
     }
 
-    public async Task<(bool Success, string? Error)> DeleteReservationAsync(ReservationBase reservation)
+    public async Task<(bool Success, string? Error)> DeleteReservationAsync(ReservationDto reservation)
     {
         try
         {
@@ -37,7 +38,7 @@ public class ReservationService : IReservationService
         }
     }
 
-    public async Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationBase reservation, ReservationStatus newStatus)
+    public async Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationDto reservation, ReservationStatus newStatus)
     {
         try
         {

@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
@@ -9,7 +10,7 @@ public partial class RestaurantInfoTab : ComponentBase
     [Inject]
     private HttpClient Http { get; set; } = null!;
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public RestaurantDto? restaurant { get; set; }
 
     private bool showPhotoModal = false;
     
@@ -20,7 +21,7 @@ public partial class RestaurantInfoTab : ComponentBase
     {
         showPhotoModal = true;
         selectedPhotoIndex = index;
-        selectedPhotoUrl = restaurant.photosUrls?[selectedPhotoIndex];
+        selectedPhotoUrl = restaurant.PhotosUrls?[selectedPhotoIndex];
     }
 
     

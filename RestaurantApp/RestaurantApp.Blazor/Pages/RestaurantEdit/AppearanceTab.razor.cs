@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
@@ -8,7 +9,7 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 public partial class AppearanceTab : ComponentBase
 {
      [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public RestaurantDto? restaurant { get; set; }
 
     private InputFile? profilePhotoInput;
     
@@ -41,7 +42,7 @@ public partial class AppearanceTab : ComponentBase
                 {
                     successMessage = "Profile photo uploaded successfully";
                     // Refresh restaurant data
-                    var updatedRestaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+                    var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
                     {
                         restaurant = updatedRestaurant;
@@ -89,7 +90,7 @@ public partial class AppearanceTab : ComponentBase
                 {
                     successMessage = "Restaurant photos uploaded successfully";
                     // Refresh restaurant data
-                    var updatedRestaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+                    var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
                     {
                         restaurant = updatedRestaurant;
@@ -125,7 +126,7 @@ public partial class AppearanceTab : ComponentBase
             {
                 successMessage = "Profile photo deleted successfully";
                 // Refresh restaurant data
-                var updatedRestaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+                var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {
                     restaurant = updatedRestaurant;
@@ -160,7 +161,7 @@ public partial class AppearanceTab : ComponentBase
             {
                 successMessage = "Restaurant photo deleted successfully";
                 // Refresh restaurant data
-                var updatedRestaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
+                var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {
                     restaurant = updatedRestaurant;

@@ -1,5 +1,6 @@
 ﻿@using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.DTOs.Menu.MenuItems
 
 <h3 class="mb-4">Menu</h3>
 
@@ -27,7 +28,7 @@
 
                 <div class="collapse @(isExpanded ? "show" : "")">
                     <div class="card-body bg-white">
-                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItemDto>()))
                         {
                             <MenuItemComponent Item="item"
                                                OnItemClick="HandleMenuItemClick"/>

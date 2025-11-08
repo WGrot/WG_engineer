@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Images;
+using RestaurantApp.Shared.DTOs.Menu.Categories;
+using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.DTOs.Menu.Variants;
 using RestaurantApp.Shared.Models;
@@ -12,12 +14,12 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
 public partial class MenuItemEditComponent : ComponentBase
 {
-    [Parameter] public MenuItem Item { get; set; } = default!;
+    [Parameter] public MenuItemDto Item { get; set; } = default!;
     [Parameter] public IEnumerable<MenuItemTagDto> Tags { get; set; } = default!;
 
     [Parameter] public List<MenuItemVariantDto> Variants { get; set; } = default!;
-    [Parameter] public IEnumerable<MenuCategory> Categories { get; set; } = Enumerable.Empty<MenuCategory>();
-    [Parameter] public EventCallback<MenuItem> OnSave { get; set; }
+    [Parameter] public IEnumerable<MenuCategoryDto> Categories { get; set; } = Enumerable.Empty<MenuCategoryDto>();
+    [Parameter] public EventCallback<MenuItemDto> OnSave { get; set; }
     [Parameter] public EventCallback<int> OnDelete { get; set; }
     [Parameter] public EventCallback<(int ItemId, string? CategoryId)> OnMove { get; set; }
 
@@ -61,7 +63,7 @@ public partial class MenuItemEditComponent : ComponentBase
         var tagToAdd = Tags.FirstOrDefault(t => t.Id.ToString() == targetTagId);
         if (tagToAdd != null)
         {
-            Item.Tags.Add(tagToAdd.ToEntity());
+            Item.Tags.Add(tagToAdd);
         }
         ShowTagDropdown = false;
     }

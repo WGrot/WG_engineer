@@ -151,7 +151,7 @@
 </div>
 
     @code {
-    private List<ReservationBase>? reservations;
+    private List<ReservationDto>? reservations;
     private bool isLoading = true;
     private string? error;
     private string? userId;
@@ -166,7 +166,7 @@
     private int currentPage = 1;
     bool hasMoreReservations = true;
     private bool isLoadingMore = false;
-    private ReservationBase? reservationToCancel;
+    private ReservationDto? reservationToCancel;
     private bool showCancellationModal = false;
 
     protected override async Task OnInitializedAsync()
@@ -191,7 +191,7 @@
     private async Task LoadInitialReservations()
     {
         isInitialLoading = true;
-        reservations = new List<ReservationBase>();
+        reservations = new List<ReservationDto>();
         searchParameters.Page = 1;
 
         try
@@ -201,7 +201,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<ReservationBase>();
+            reservations = new List<ReservationDto>();
         }
         finally
         {
@@ -228,7 +228,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<ReservationBase>();
+            reservations = new List<ReservationDto>();
         }
         finally
         {

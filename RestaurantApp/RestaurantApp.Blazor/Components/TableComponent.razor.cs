@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Components;
@@ -7,7 +8,7 @@ public partial class TableComponent : ComponentBase
 {
     
     [Parameter]
-    public Table Table { get; set; }
+    public TableDto Table { get; set; }
 
     [Parameter] public bool isSelected { get; set; }
     

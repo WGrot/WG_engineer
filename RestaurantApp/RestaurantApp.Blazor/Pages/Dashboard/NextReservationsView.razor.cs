@@ -19,9 +19,9 @@ public partial class NextReservationsView : ComponentBase
     private ReservationSearchParameters? searchParameters { get; set; } = null;
     private bool isLoading = true;
 
-    private List<ReservationBase>? reservations = new List<ReservationBase>();
+    private List<ReservationDto>? reservations = new List<ReservationDto>();
     
-    private ReservationBase? selectedReservation;
+    private ReservationDto? selectedReservation;
     private ReservationStatus? selectedStatus;
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
@@ -29,7 +29,7 @@ public partial class NextReservationsView : ComponentBase
     private string? modalError;
     private string? modalSuccess;
     
-    private void OpenReservationModal(ReservationBase reservation)
+    private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
         selectedStatus = reservation.Status;
@@ -94,7 +94,7 @@ public partial class NextReservationsView : ComponentBase
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<ReservationBase>();
+            reservations = new List<ReservationDto>();
         }
         finally
         {

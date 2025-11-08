@@ -46,9 +46,9 @@
                     </div>
                     <div class="card-body p-0">
 
-                        @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
+                        @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
                         {
-                            <img src="@restaurant.profileThumbnailUrl"
+                            <img src="@restaurant.ProfileThumbnailUrl"
                                  alt="@restaurant.Name"
                                  class="img-fluid w-100"
                                  style="max-height: 300px; object-fit: cover;"/>
@@ -67,13 +67,13 @@
             </div>
         </div>
 
-        @if (restaurant.photosUrls != null && restaurant.photosUrls.Any())
+        @if (restaurant.PhotosUrls != null && restaurant.PhotosUrls.Any())
         {
             <div class="row g-3 mb-4">
-                @for (int i = 0; i < restaurant.photosUrls.Count; i++)
+                @for (int i = 0; i < restaurant.PhotosUrls.Count; i++)
                 {
                     var index = i;
-                    var photoUrl = restaurant.photosUrls[i];
+                    var photoUrl = restaurant.PhotosUrls[i];
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                         <div class="card h-100 ">
                             <div class="card-header d-flex justify-content-between align-items-center bg-light">

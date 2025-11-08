@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -16,8 +17,8 @@ public partial class RestaurantDashboard : ComponentBase
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     
-    public Restaurant? loadedRestaurant { get; set; }
-    public List<RestaurantEmployee> restaurantEmployeeList { get; set; }
+    public RestaurantDto? loadedRestaurant { get; set; }
+    public List<RestaurantEmployeeDto> restaurantEmployeeList { get; set; }
     
     private ClaimsPrincipal currentUser;
     private string currentUserId = "";
@@ -73,7 +74,7 @@ public partial class RestaurantDashboard : ComponentBase
     }
     private async Task LoadRestaurantEmployeeData()
     {
-        var response = await Http.GetFromJsonAsync<List<RestaurantEmployee>>($"api/Employees/user/{currentUserId}");
+        var response = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"api/Employees/user/{currentUserId}");
         if(response != null)
         {
             restaurantEmployeeList = response;
@@ -84,7 +85,7 @@ public partial class RestaurantDashboard : ComponentBase
     {
         if(restaurantEmployeeList.Count > 0)
         {
-            loadedRestaurant = await Http.GetFromJsonAsync<Restaurant>($"api/restaurant/{restaurantId}");
+            loadedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{restaurantId}");
         }
     }
 

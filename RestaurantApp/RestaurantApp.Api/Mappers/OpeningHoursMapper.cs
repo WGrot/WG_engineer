@@ -11,9 +11,9 @@ public static class OpeningHoursMapper
     {
         return new OpeningHoursDto
         {
-            DayOfWeek = (int)entity.DayOfWeek,
-            OpenTime = entity.OpenTime.ToString("HH:mm"),
-            CloseTime = entity.CloseTime.ToString("HH:mm"),
+            DayOfWeek = entity.DayOfWeek,
+            OpenTime = entity.OpenTime,
+            CloseTime = entity.CloseTime,
             IsClosed = entity.IsClosed
         };
     }
@@ -24,8 +24,8 @@ public static class OpeningHoursMapper
         return new OpeningHours
         {
             DayOfWeek = (DayOfWeek)dto.DayOfWeek,
-            OpenTime = TimeOnly.Parse(dto.OpenTime),
-            CloseTime = TimeOnly.Parse(dto.CloseTime),
+            OpenTime = dto.OpenTime,
+            CloseTime = dto.CloseTime,
             IsClosed = dto.IsClosed
             // Id i RestaurantId będą ustawione przez EF lub w warstwie serwisu
             // Restaurant nie jest mapowany - zarządzany przez EF
@@ -35,9 +35,9 @@ public static class OpeningHoursMapper
     // Aktualizacja istniejącej encji z DTO
     public static void UpdateFromDto(this OpeningHours entity, OpeningHoursDto dto)
     {
-        entity.DayOfWeek = (DayOfWeek)dto.DayOfWeek;
-        entity.OpenTime = TimeOnly.Parse(dto.OpenTime);
-        entity.CloseTime = TimeOnly.Parse(dto.CloseTime);
+        entity.DayOfWeek = dto.DayOfWeek;
+        entity.OpenTime = dto.OpenTime;
+        entity.CloseTime = dto.CloseTime;
         entity.IsClosed = dto.IsClosed;
         // Nie aktualizujemy Id, RestaurantId ani Restaurant
     }
@@ -67,24 +67,20 @@ public static class OpeningHoursMapper
     // Z DTO na Entity z walidacją
     public static OpeningHours? ToEntityWithValidation(this OpeningHoursDto dto)
     {
-        var openTime = TryParseTime(dto.OpenTime);
-        var closeTime = TryParseTime(dto.CloseTime);
+        var openTime = dto.OpenTime;
+        var closeTime = dto.CloseTime;
+        
 
-        if (!openTime.HasValue || !closeTime.HasValue)
-        {
-            return null; // Niepoprawny format czasu
-        }
-
-        if (dto.DayOfWeek < 0 || dto.DayOfWeek > 6)
+        if (dto.DayOfWeek < 0)
         {
             return null; // Niepoprawny dzień tygodnia
         }
 
         return new OpeningHours
         {
-            DayOfWeek = (DayOfWeek)dto.DayOfWeek,
-            OpenTime = openTime.Value,
-            CloseTime = closeTime.Value,
+            DayOfWeek = dto.DayOfWeek,
+            OpenTime = openTime,
+            CloseTime = closeTime,
             IsClosed = dto.IsClosed
         };
     }

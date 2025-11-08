@@ -11,7 +11,7 @@
                 <textarea class="form-control mb-2" @bind="Item.Description" placeholder="Description"></textarea>
                 <div class="row g-2">
                     <div class="col-md-4">
-                        <input type="number" class="form-control" @bind="Item.Price.Price" placeholder="Price"/>
+                        <input type="number" class="form-control" @bind="Item.Price" placeholder="Price"/>
                     </div>
                     <div class="col-md-4">
                         <input type="text" class="form-control" @bind="Item.Price.CurrencyCode" placeholder="Currency"/>
@@ -95,7 +95,7 @@
                     </div>
 
                     <h3 class="my-2">@Item.Name</h3>
-                    <small class="text-muted">@Item.Price.Price @Item.Price.CurrencyCode</small>
+                    <small class="text-muted">@Item.Price @Item.Price.CurrencyCode</small>
                     <p class="mb-2 small">@Item.Description</p>
 
 

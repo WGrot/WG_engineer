@@ -1,4 +1,5 @@
 ﻿@using RestaurantApp.Blazor.Helpers
+@using RestaurantApp.Shared.DTOs.Reservation
 @using RestaurantApp.Shared.Models
 <div class="card mb-3 reservation-card w-100">
     <div class="card-body" @onclick="() => OnClick.InvokeAsync(Reservation)">
@@ -9,8 +10,8 @@
                     <div class="d-flex align-items-center mb-1">
                         <i class="bi bi-shop"></i>
                         <span class="text-truncate ms-1" style="max-width: 200px;"
-                              title="@Reservation.Restaurant?.Name">
-                            @Reservation.Restaurant?.Name
+                              title="@Reservation.RestaurantName">
+                            @Reservation.RestaurantName
                         </span>
                         <span class="badge ms-2 @Reservation.Status.GetStatusBadgeClass()">
                             @Reservation.Status
@@ -46,7 +47,7 @@
                     </div>
                     <div>
                         <i class="bi bi-people me-1 text-primary"></i>@Reservation.NumberOfGuests guests
-                        @if (Reservation is TableReservation tableRes)
+                        @if (Reservation is TableReservationDto tableRes)
                         {
                             <span class="ms-2">
                                 <i class="bi bi-hash text-primary"></i> Table @tableRes.Table.Capacity
@@ -60,7 +61,7 @@
 </div>
 
 @code {
-    [Parameter] public ReservationBase Reservation { get; set; } = default!;
-    [Parameter] public EventCallback<ReservationBase> OnClick { get; set; }
+    [Parameter] public ReservationDto Reservation { get; set; } = default!;
+    [Parameter] public EventCallback<ReservationDto> OnClick { get; set; }
     [Parameter] public EventCallback<(int ReservationId, int RestaurantId)> OnApprove { get; set; }
 }

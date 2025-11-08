@@ -15,7 +15,7 @@ partial class ManageReservationsPage
 {
     [Inject] private HttpClient Http { get; set; } = null!;
 
-    private List<ReservationBase>? reservations;
+    private List<ReservationDto>? reservations;
     private bool isLoading = true;
     private string? error;
 
@@ -29,7 +29,7 @@ partial class ManageReservationsPage
     // Zmienne dla modala
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
-    private ReservationBase? selectedReservation;
+    private ReservationDto? selectedReservation;
     private ReservationStatus? selectedStatus;
     private bool isProcessing = false;
     private string? modalError;
@@ -86,7 +86,7 @@ partial class ManageReservationsPage
     private async Task LoadInitialReservations()
     {
         isInitialLoading = true;
-        reservations = new List<ReservationBase>();
+        reservations = new List<ReservationDto>();
 
         try
         {
@@ -95,7 +95,7 @@ partial class ManageReservationsPage
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<ReservationBase>();
+            reservations = new List<ReservationDto>();
         }
         finally
         {
@@ -128,7 +128,7 @@ partial class ManageReservationsPage
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<ReservationBase>();
+            reservations = new List<ReservationDto>();
         }
         finally
         {
@@ -168,7 +168,7 @@ partial class ManageReservationsPage
     
     
 
-    private void OpenReservationModal(ReservationBase reservation)
+    private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
         selectedStatus = reservation.Status;

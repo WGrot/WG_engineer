@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
+using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 
 public partial class MenuItemComponent : ComponentBase
 {
-    [Parameter] public MenuItem Item { get; set; } = default!;
+    [Parameter] public MenuItemDto Item { get; set; } = default!;
     
-    [Parameter] public EventCallback<MenuItem> OnItemClick { get; set; }
+    [Parameter] public EventCallback<MenuItemDto> OnItemClick { get; set; }
 
     private async Task HandleClick()
     {

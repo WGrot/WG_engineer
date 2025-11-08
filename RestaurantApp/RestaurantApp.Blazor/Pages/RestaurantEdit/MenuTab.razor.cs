@@ -8,6 +8,7 @@ using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
+using RestaurantApp.Shared.DTOs.Restaurant;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
@@ -16,12 +17,12 @@ public partial class MenuTab : ComponentBase
     [Inject]
     private HttpClient Http { get; set; } = null!;
      [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public RestaurantDto? restaurant { get; set; }
 
-    private Menu? menu;
-    private List<MenuCategory> categories = new();
-    private Dictionary<int, List<MenuItem>> categoryItems = new();
-    private List<MenuItem> uncategorizedItems = new();
+    private MenuDto? menu;
+    private List<MenuCategoryDto> categories = new();
+    private Dictionary<int, List<MenuItemDto>> categoryItems = new();
+    private List<MenuItemDto> uncategorizedItems = new();
     private List<MenuItemTagDto> tags = new();
     private HashSet<int> expandedCategories = new();
 
@@ -62,19 +63,19 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            menu = await Http.GetFromJsonAsync<Menu>($"api/Menu/restaurant/{Id}");
+            menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/restaurant/{Id}");
 
             if (menu != null)
             {
-                categories = (await Http.GetFromJsonAsync<List<MenuCategory>>($"api/Menu/{menu.Id}/categories")) ?? new();
+                categories = (await Http.GetFromJsonAsync<List<MenuCategoryDto>>($"api/Menu/{menu.Id}/categories")) ?? new();
                 
                 foreach (var category in categories)
                 {
-                    var items = await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/category/{category.Id}/items");
+                    var items = await Http.GetFromJsonAsync<List<MenuItemDto>>($"api/MenuItem/category/{category.Id}/items");
                     categoryItems[category.Id] = items ?? new();
                 }
                 
-                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItem>>($"api/MenuItem/{menu.Id}/items/uncategorized")) ?? new();
+                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItemDto>>($"api/MenuItem/{menu.Id}/items/uncategorized")) ?? new();
             }
         }
         catch (Exception ex)
@@ -105,7 +106,7 @@ public partial class MenuTab : ComponentBase
     {
         showAddItem = true;
         addItemToCategoryId = categoryId;
-        newItem = new MenuItemDto { CurrencyCode = "PLN", ImagePath = ""};
+        newItem = new MenuItemDto { CurrencyCode = "PLN", ImageUrl = ""};
     }
 
     private void ShowMoveItemForm(int itemId)
@@ -167,7 +168,7 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error creating menu: {ex.Message}");
         }
     }
-    private async Task SaveCategory(MenuCategory category)
+    private async Task SaveCategory(MenuCategoryDto category)
     {
         try
         {
@@ -236,7 +237,7 @@ public partial class MenuTab : ComponentBase
         }
     }
 
-    private async Task SaveItem(MenuItem item)
+    private async Task SaveItem(MenuItemDto item)
     {
         try
         {
@@ -244,9 +245,9 @@ public partial class MenuTab : ComponentBase
             {
                 Name = item.Name,
                 Description = item.Description,
-                Price = item.Price.Price,
+                Price = item.Price,
                 CurrencyCode = item.Price.CurrencyCode,
-                ImagePath = item.ImageUrl
+                ImageUrl = item.ImageUrl
             };
 
             var response = await Http.PutAsJsonAsync($"api/MenuItem/item/{item.Id}", dto);

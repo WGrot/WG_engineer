@@ -2,6 +2,8 @@
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.DTOs.Restaurant
+@using RestaurantApp.Shared.DTOs.Tables
 @inject HttpClient Http
 
 <div class="container ">
@@ -44,9 +46,9 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
-    private List<Table> loadedTables = new();
-    private Table? editingTable = null;
+    [Parameter] public RestaurantDto? restaurant { get; set; }
+    private List<TableDto> loadedTables = new();
+    private TableDto? editingTable = null;
     private int? editingTableId = null;
     private bool showAddTable = false;
     private bool changesMade = false;
@@ -61,10 +63,10 @@
     {
         try
         {
-            loadedTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+            loadedTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}");
             if (loadedTables == null)
             {
-                loadedTables = new List<Table>();
+                loadedTables = new List<TableDto>();
             }
         }
         catch (Exception ex)

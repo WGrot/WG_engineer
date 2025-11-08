@@ -1,4 +1,5 @@
 ﻿@using System.Drawing
+@using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.Models
 @if(Restaurant != null){
     <div class="star-rating">
@@ -31,7 +32,7 @@
 }
 
 @code {
-    [Parameter] public Restaurant? Restaurant { get; set; }
+    [Parameter] public RestaurantDto? Restaurant { get; set; }
     
     [Parameter] public string StarColor { get; set; } = "#dee2e6"; 
     [Parameter] public string EmptyStarColor { get; set; } = "#dee2e6"; 

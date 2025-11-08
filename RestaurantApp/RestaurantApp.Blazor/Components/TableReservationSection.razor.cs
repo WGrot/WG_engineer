@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
+using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.DTOs.Users;
 using RestaurantApp.Shared.Models;
 
@@ -18,7 +19,7 @@ public partial class TableReservationSection : ComponentBase
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public DateTime StartTime { get; set; }
     [Parameter] public DateTime Date { get; set; }
-    [Parameter] public Table Table { get; set; }
+    [Parameter] public TableDto Table { get; set; }
     [Parameter] public DateTime EndTime { get; set; }
     
     [Parameter] public bool autoFilldata { get; set; } = true;

@@ -1,12 +1,13 @@
-﻿@using RestaurantApp.Shared.Models
+﻿@using RestaurantApp.Shared.DTOs.Restaurant
+@using RestaurantApp.Shared.Models
 <div class="edit-container">
     <div class="restaurant-header bg-primary text-white">
         <div class="container py-4">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    @if (!string.IsNullOrEmpty(restaurant.profileThumbnailUrl))
+                    @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
                     {
-                        <img src="@restaurant.profileThumbnailUrl"
+                        <img src="@restaurant.ProfileThumbnailUrl"
                              alt="@restaurant.Name"
                              class="restaurant-logo rounded shadow-sm">
                     }
@@ -53,5 +54,5 @@
     
 </style>
 @code {
-    [Parameter] public Restaurant restaurant { get; set; }
+    [Parameter] public RestaurantDto restaurant { get; set; }
 }

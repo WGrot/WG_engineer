@@ -204,7 +204,7 @@ public class RestaurantService : IRestaurantService
         // Add opening hours if provided
         if (restaurantDto.OpeningHours?.Any() == true)
         {
-            restaurant.OpeningHours = MapOpeningHours(restaurantDto.OpeningHours);
+            restaurant.OpeningHours = restaurantDto.OpeningHours.ToEntityList();
         }
 
         _context.Restaurants.Add(restaurant);
@@ -374,7 +374,7 @@ public class RestaurantService : IRestaurantService
         }
 
         // Add new opening hours
-        restaurant.OpeningHours = MapOpeningHours(newHours, restaurant.Id);
+        restaurant.OpeningHours = newHours.ToEntityList();
 
         // Explicit tracking for EF Core
         await Task.CompletedTask;
@@ -585,17 +585,17 @@ public class RestaurantService : IRestaurantService
     }
 
 
-    private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
-    {
-        return dtos.Select(oh => new OpeningHours
-        {
-            DayOfWeek = (DayOfWeek)oh.DayOfWeek,
-            OpenTime = TimeOnly.Parse(oh.OpenTime),
-            CloseTime = TimeOnly.Parse(oh.CloseTime),
-            IsClosed = oh.IsClosed,
-            RestaurantId = restaurantId ?? 0
-        }).ToList();
-    }
+    // private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
+    // {
+    //     return dtos.Select(oh => new OpeningHours
+    //     {
+    //         DayOfWeek = (DayOfWeek)oh.DayOfWeek,
+    //         OpenTime = TimeOnly.Parse(oh.OpenTime),
+    //         CloseTime = TimeOnly.Parse(oh.CloseTime),
+    //         IsClosed = oh.IsClosed,
+    //         RestaurantId = restaurantId ?? 0
+    //     }).ToList();
+    // }
     
     private void InitializedOpeningHours(Restaurant restaurant)
     {

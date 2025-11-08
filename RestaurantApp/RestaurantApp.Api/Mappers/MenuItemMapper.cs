@@ -1,6 +1,7 @@
 ﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
+using RestaurantApp.Shared.DTOs.Menu.Tags;
 
 namespace RestaurantApp.Api.Mappers;
 
@@ -10,43 +11,64 @@ public static class MenuItemMapper
     {
         return new MenuItemDto
         {
+            Id = entity.Id,
             Name = entity.Name,
             Description = entity.Description,
-            Price = entity.Price.Price,
+            Price = entity.Price.ToDto(),
             CurrencyCode = entity.Price.CurrencyCode,
-            ImagePath = entity.ImageUrl
+            ImageUrl = entity.ImageUrl,
+            ThumbnailUrl = entity.ThumbnailUrl,
+            // Mapuj tagi używając MenuItemTagMapper
+            Tags = entity.Tags?.ToDto().ToList() ?? new List<MenuItemTagDto>()
         };
     }
-    
+
     // IEnumerable<MenuItem> -> IEnumerable<MenuItemDto>
     public static IEnumerable<MenuItemDto> ToDto(this IEnumerable<MenuItem> entities)
     {
         return entities.Select(e => e.ToDto());
     }
-    
+
     // MenuItemDto -> MenuItem
     public static MenuItem ToEntity(this MenuItemDto dto)
     {
-        return new MenuItem
+        var menuItem = new MenuItem
         {
+            Id = dto.Id,
             Name = dto.Name,
             Description = dto.Description,
-            Price = new MenuItemPrice 
-            { 
-                Price = dto.Price, 
-                CurrencyCode = dto.CurrencyCode 
-            },
-            ImageUrl = dto.ImagePath
+            Price = dto.Price.ToEntity(),
+            ImageUrl = dto.ImageUrl,
+            ThumbnailUrl = dto.ThumbnailUrl
         };
+
+        // Mapuj tagi
+        if (dto.Tags?.Any() == true)
+        {
+            menuItem.Tags = dto.Tags.Select(t => t.ToEntity()).ToHashSet();
+        }
+
+        return menuItem;
     }
-    
+
     // Aktualizacja istniejącej encji z DTO
     public static void UpdateFromDto(this MenuItem entity, MenuItemDto dto)
     {
         entity.Name = dto.Name;
         entity.Description = dto.Description;
-        entity.Price.Price = dto.Price;
+        entity.Price = dto.Price.ToEntity();
         entity.Price.CurrencyCode = dto.CurrencyCode;
-        entity.ImageUrl = dto.ImagePath;
+        entity.ImageUrl = dto.ImageUrl;
+        entity.ThumbnailUrl = dto.ThumbnailUrl;
+
+        // Aktualizuj tagi - zastąp całą kolekcję
+        entity.Tags.Clear();
+        if (dto.Tags?.Any() == true)
+        {
+            foreach (var tagDto in dto.Tags)
+            {
+                entity.Tags.Add(tagDto.ToEntity());
+            }
+        }
     }
 }

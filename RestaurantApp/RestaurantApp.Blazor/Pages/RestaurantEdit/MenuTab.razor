@@ -1,4 +1,5 @@
-﻿@using RestaurantApp.Shared.Models
+﻿@using RestaurantApp.Shared.DTOs.Menu.MenuItems
+@using RestaurantApp.Shared.Models
 
 
 @if (menu != null)
@@ -183,7 +184,7 @@
 
 
                                         <div class="d-flex flex-column gap-3">
-                                            @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItem>()))
+                                            @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItemDto>()))
                                             {
                                                 <MenuItemEditComponent
                                                     Item="item"

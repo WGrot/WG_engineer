@@ -6,6 +6,8 @@
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Reservation
+@using RestaurantApp.Shared.DTOs.Restaurant
+@using RestaurantApp.Shared.DTOs.Tables
 @using RestaurantApp.Shared.DTOs.Users
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -270,15 +272,15 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public Restaurant? restaurant { get; set; }
+    [Parameter] public RestaurantDto? restaurant { get; set; }
     
     [Parameter] public EventCallback<TableReservationDto> OnReservationCreated { get; set; }
     [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
 
     private bool reservationNeedConfirmation = false;
-    private List<Table>? allTables;
-    private List<Table>? availableTables;
+    private List<TableDto>? allTables;
+    private List<TableDto>? availableTables;
 
     private DateTime selectedDate = DateTime.Now.Date;
     private DateTime startTime = DateTime.Now;
@@ -328,8 +330,8 @@
         try
         {
             isLoadingRestaurant = true;
-            restaurant = await Http.GetFromJsonAsync<Restaurant>($"api/Restaurant/{Id}");
-            allTables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+            restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
+            allTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}");
             reservationNeedConfirmation = await Http.GetFromJsonAsync<bool>($"/api/RestaurantSettings/{Id}/needs-confirmation");
         }
         catch (Exception ex)
@@ -379,7 +381,7 @@
             if (endTime <= startTime)
             {
                 errorMessage = "End time must be after start time.";
-                availableTables = new List<Table>();
+                availableTables = new List<TableDto>();
                 return;
             }
 
@@ -394,19 +396,19 @@
             if (openingHours != null && openingHours.IsClosed)
             {
                 errorMessage = "Restaurant is closed on this day.";
-                availableTables = new List<Table>();
+                availableTables = new List<TableDto>();
                 return;
             }
 
             if (openingHours != null && (startTimeOnly < openingHours.OpenTime || endTimeOnly > openingHours.CloseTime))
             {
                 errorMessage = $"Restaurant is open from {openingHours.OpenTime:HH:mm} to {openingHours.CloseTime:HH:mm} on {dayOfWeek}.";
-                availableTables = new List<Table>();
+                availableTables = new List<TableDto>();
                 return;
             }
 
             // Check each table for availability
-            var availableTablesList = new List<Table>();
+            var availableTablesList = new List<TableDto>();
 
             foreach (var table in allTables.Where(t => t.Capacity >= numberOfGuests))
             {
@@ -434,7 +436,7 @@
     {
         try
         {
-            var reservations = await Http.GetFromJsonAsync<List<ReservationBase>>($"api/Reservation/reservation/table/{tableId}");
+            var reservations = await Http.GetFromJsonAsync<List<ReservationDto>>($"api/Reservation/reservation/table/{tableId}");
 
             if (reservations == null || !reservations.Any())
                 return true;

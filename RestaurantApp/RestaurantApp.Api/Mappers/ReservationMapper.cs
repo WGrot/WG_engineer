@@ -11,6 +11,7 @@ public static class ReservationMapper
     {
         return new ReservationDto
         {
+            Id = entity.Id,
             ReservationDate = entity.ReservationDate,
             StartTime = entity.StartTime,
             EndTime = entity.EndTime,
@@ -33,6 +34,7 @@ public static class ReservationMapper
     {
         return new ReservationBase
         {
+            Id = dto.Id,
             ReservationDate = dto.ReservationDate,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,

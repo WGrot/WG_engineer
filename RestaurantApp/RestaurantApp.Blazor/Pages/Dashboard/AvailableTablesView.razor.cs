@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.Dashboard;
@@ -12,9 +13,9 @@ public partial class AvailableTablesView : ComponentBase
     
     [Parameter] public EventCallback<(int availableTables, int freeSeats)> OnAvailabilitySummaryChanged { get; set; }
     
-    private Table selectedTable = null!;
+    private TableDto selectedTable = null!;
     
-    private List<Table> tables = new List<Table>();
+    private List<TableDto> tables = new List<TableDto>();
     private bool showTableDetails;
     private bool isLoading = true;
     private int availableCount;
@@ -37,10 +38,10 @@ public partial class AvailableTablesView : ComponentBase
     private async Task LoadTables()
     {
         tables.Clear();
-        tables = await Http.GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{RestaurantId}");
+        tables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{RestaurantId}");
     }
     
-    private void ShowTableDetails(Table table)
+    private void ShowTableDetails(TableDto table)
     {
         showTableDetails = true;
         selectedTable = table;
@@ -49,7 +50,7 @@ public partial class AvailableTablesView : ComponentBase
     private readonly HashSet<int> availableTableIds = new(); // śledzimy dostępne stoliki
 
 
-    private void HandleAvailabilityChanged((Table table, bool isAvailable) update)
+    private void HandleAvailabilityChanged((TableDto table, bool isAvailable) update)
     {
         if (update.isAvailable)
         {

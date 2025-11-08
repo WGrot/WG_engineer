@@ -39,14 +39,14 @@
 
 
 @code {
-    [Parameter] public Table? Table { get; set; }
+    [Parameter] public TableDto? Table { get; set; }
     [Parameter] public int RestaurantId { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public bool IsVisible { get; set; }
 
-    private Table modifiedTable = new Table();
+    private TableDto modifiedTable = new TableDto();
     private bool isCreatingNew = false;
 
     protected override void OnParametersSet()
@@ -58,7 +58,7 @@
         }
         else
         {
-            modifiedTable = new Table();
+            modifiedTable = new TableDto();
             isCreatingNew = true;
         }
     }
@@ -139,7 +139,7 @@
     private async Task Close()
     {
         Table = null;
-        modifiedTable = new Table();
+        modifiedTable = new TableDto();
         await IsVisibleChanged.InvokeAsync(false);
         await OnClose.InvokeAsync();
     }

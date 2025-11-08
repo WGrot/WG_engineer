@@ -92,8 +92,8 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public required Restaurant? restaurant { get; set; }
-    private Restaurant modifiedRestaurant = new Restaurant();
+    [Parameter] public required RestaurantDto? restaurant { get; set; }
+    private RestaurantDto modifiedRestaurant = new RestaurantDto();
     private bool changesMade = false;
 
     protected override void OnParametersSet()

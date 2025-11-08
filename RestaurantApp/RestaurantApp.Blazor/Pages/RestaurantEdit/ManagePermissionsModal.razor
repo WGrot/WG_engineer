@@ -133,7 +133,7 @@
     private RestaurantRole currentRole = RestaurantRole.Employee;
     private RestaurantRole selectedRole = RestaurantRole.Employee;
     private HashSet<PermissionType> selectedPermissions = new HashSet<PermissionType>();
-    private List<RestaurantPermission> permissionsResponse = new List<RestaurantPermission>();
+    private List<RestaurantPermissionDto> permissionsResponse = new List<RestaurantPermissionDto>();
     private bool isActive = true;
 
     protected override async Task OnParametersSetAsync()
@@ -151,14 +151,14 @@
         
         try
         {
-            permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermission>>($"api/Permissions/employee/{Employee.Id}/");
+            permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"api/Permissions/employee/{Employee.Id}/");
             // Przykładowe dane - zastąp danymi z API
             currentRole = Employee.Role;
             selectedRole = Employee.Role;
             isActive = Employee.IsActive;
             selectedPermissions.Clear();
             
-            foreach (RestaurantPermission permission in permissionsResponse)
+            foreach (RestaurantPermissionDto permission in permissionsResponse)
             {
                 selectedPermissions.Add(permission.Permission);
             }

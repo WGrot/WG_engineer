@@ -149,12 +149,8 @@ public class MenuItemService : IMenuItemService
         {
             Name = itemDto.Name,
             Description = itemDto.Description,
-            Price = new MenuItemPrice
-            {
-                Price = itemDto.Price,
-                CurrencyCode = itemDto.CurrencyCode ?? "USD" // Domyślna waluta
-            },
-            ImageUrl = itemDto.ImagePath
+            Price = itemDto.Price.ToEntity(),
+            ImageUrl = itemDto.ImageUrl
         };
 
         item.MenuId = menuId;
@@ -180,12 +176,8 @@ public class MenuItemService : IMenuItemService
         {
             Name = itemDto.Name,
             Description = itemDto.Description,
-            Price = new MenuItemPrice
-            {
-                Price = itemDto.Price,
-                CurrencyCode = itemDto.CurrencyCode ?? "USD" 
-            },
-            ImageUrl = itemDto.ImagePath
+            Price = itemDto.Price.ToEntity(),
+            ImageUrl = itemDto.ImageUrl
         };
 
         item.CategoryId = categoryId;
@@ -206,12 +198,8 @@ public class MenuItemService : IMenuItemService
 
         existingItem.Name = itemDto.Name;
         existingItem.Description = itemDto.Description;
-        existingItem.Price = new MenuItemPrice
-        {
-            Price = itemDto.Price,
-            CurrencyCode = itemDto.CurrencyCode ?? existingItem.Price.CurrencyCode
-        };
-        existingItem.ImageUrl = itemDto.ImagePath;
+        existingItem.Price = itemDto.Price.ToEntity();
+        existingItem.ImageUrl = itemDto.ImageUrl;
 
         await _context.SaveChangesAsync();
         return Result.Success();
