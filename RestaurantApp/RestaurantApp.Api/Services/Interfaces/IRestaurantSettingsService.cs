@@ -10,7 +10,7 @@ public interface IRestaurantSettingsService
 {
     Task<Result<IEnumerable<SettingsDto>>> GetAllAsync();
     Task<Result<SettingsDto>> GetByIdAsync(int id);
-    Task<Result<SettingsDto>> CreateAsync(SettingsDto restaurantSettings);
+    Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto restaurantSettings);
     Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto restaurantSettings);
     Task<Result> DeleteAsync(int id);
     Task<Result> ExistsAsync(int id); 

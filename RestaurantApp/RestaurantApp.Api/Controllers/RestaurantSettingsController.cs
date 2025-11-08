@@ -57,13 +57,9 @@ public class RestaurantSettingsController : ControllerBase
                 return restaurant.ToActionResult();
             }
             
-            RestaurantSettings restaurantSettings = new RestaurantSettings
-            {
-                RestaurantId = restaurantSettingsDto.RestaurantId,
-                ReservationsNeedConfirmation = restaurantSettingsDto.ReservationsNeedConfirmation,
-            };
 
-            var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettings);
+
+            var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettingsDto);
             return createdSettings.ToActionResult();
 
     }

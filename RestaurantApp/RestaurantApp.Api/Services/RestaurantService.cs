@@ -10,6 +10,7 @@ using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 using RestaurantApp.Shared.DTOs.Restaurant;
+using RestaurantApp.Shared.DTOs.Tables;
 
 
 namespace RestaurantApp.Api.Services;
@@ -27,7 +28,7 @@ public class RestaurantService : IRestaurantService
         _storageService = storageService;
     }
 
-    public async Task<Result<IEnumerable<Restaurant>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
     {
         var restaurants = await _context.Restaurants
             .Include(r => r.Menu)
@@ -35,10 +36,10 @@ public class RestaurantService : IRestaurantService
             .Include(r => r.OpeningHours)
             .ToListAsync();
 
-        return Result<IEnumerable<Restaurant>>.Success(restaurants);
+        return Result<IEnumerable<RestaurantDto>>.Success(restaurants.ToDtoList());
     }
 
-    public async Task<Result<Restaurant>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantDto>> GetByIdAsync(int id)
     {
         var restaurant = await _context.Restaurants
             .Include(r => r.Menu)
@@ -48,8 +49,8 @@ public class RestaurantService : IRestaurantService
             .FirstOrDefaultAsync(r => r.Id == id);
 
         return restaurant == null
-            ? Result<Restaurant>.NotFound("Restaurant not found")
-            : Result<Restaurant>.Success(restaurant);
+            ? Result<RestaurantDto>.NotFound("Restaurant not found")
+            : Result<RestaurantDto>.Success(restaurant.ToDto());
     }
 
     public async Task<Result<PaginatedRestaurantsDto>> SearchAsync(string? name, string? address, int page,
@@ -105,12 +106,12 @@ public class RestaurantService : IRestaurantService
         return Result<PaginatedRestaurantsDto>.Success(result);
     }
 
-    public async Task<Result<IEnumerable<Table>>> GetTablesAsync(int restaurantId)
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesAsync(int restaurantId)
     {
         var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
         if (!restaurantExists)
         {
-            return Result<IEnumerable<Table>>.NotFound($"Cannot find restaurant with ID {restaurantId}");
+            return Result<IEnumerable<TableDto>>.NotFound($"Cannot find restaurant with ID {restaurantId}");
         }
 
         var tables = await _context.Tables
@@ -118,10 +119,10 @@ public class RestaurantService : IRestaurantService
             .Include(t => t.Seats)
             .ToListAsync();
 
-        return Result<IEnumerable<Table>>.Success(tables);
+        return Result<IEnumerable<TableDto>>.Success(tables.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<Restaurant>>> GetOpenNowAsync()
+    public async Task<Result<IEnumerable<RestaurantDto>>> GetOpenNowAsync()
     {
         var now = TimeOnly.FromDateTime(DateTime.Now);
         var currentDay = DateTime.Now.DayOfWeek;
@@ -137,7 +138,7 @@ public class RestaurantService : IRestaurantService
                 !oh.IsClosed))
             .ToListAsync();
 
-        return Result<IEnumerable<Restaurant>>.Success(openRestaurants);
+        return Result<IEnumerable<RestaurantDto>>.Success(openRestaurants.ToDtoList());
     }
 
     public async Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null,
@@ -182,7 +183,7 @@ public class RestaurantService : IRestaurantService
         );
     }
 
-    public async Task<Result<Restaurant>> CreateAsync(RestaurantDto restaurantDto)
+    public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto)
     {
         _logger.LogInformation("Creating new restaurant: {RestaurantName}", restaurantDto.Name);
 
@@ -190,7 +191,7 @@ public class RestaurantService : IRestaurantService
         // Walidacja biznesowa
         if (validationResult.IsFailure)
         {
-            return Result<Restaurant>.Failure("A restaurant with the same name and address already exists.");
+            return Result<RestaurantDto>.Failure("A restaurant with the same name and address already exists.");
         }
 
         Restaurant restaurant = new Restaurant
@@ -210,7 +211,7 @@ public class RestaurantService : IRestaurantService
         _context.Restaurants.Add(restaurant);
         await _context.SaveChangesAsync();
 
-        return Result<Restaurant>.Success(restaurant);
+        return Result<Restaurant>.Success(restaurant.ToDto());
     }
 
     public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)

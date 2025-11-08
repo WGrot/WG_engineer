@@ -38,11 +38,17 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<SettingsDto>.Success(result.ToDto());
     }
 
-    public async Task<Result<SettingsDto>> CreateAsync(SettingsDto restaurantSettings)
+    public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto restaurantSettingsDto)
     {
-        _context.RestaurantSettings.Add(restaurantSettings.ToEntity());
+        
+        RestaurantSettings restaurantSettings = new RestaurantSettings
+        {
+            RestaurantId = restaurantSettingsDto.RestaurantId,
+            ReservationsNeedConfirmation = restaurantSettingsDto.ReservationsNeedConfirmation,
+        };
+        _context.RestaurantSettings.Add(restaurantSettings);
         await _context.SaveChangesAsync();
-        return Result<SettingsDto>.Success(restaurantSettings);
+        return Result<SettingsDto>.Success(restaurantSettings.ToDto());
     }
 
     public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto restaurantSettings)
