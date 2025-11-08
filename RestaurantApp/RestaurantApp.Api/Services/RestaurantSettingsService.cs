@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -19,44 +20,44 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<RestaurantSettings>>> GetAllAsync()
+    public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync()
     {
         var result = await _context.RestaurantSettings.ToListAsync();
-        return Result<IEnumerable<RestaurantSettings>>.Success(result);
+        return Result<IEnumerable<SettingsDto>>.Success(result.ToDtoList());
     }
 
-    public async Task<Result<RestaurantSettings>> GetByIdAsync(int id)
+    public async Task<Result<SettingsDto>> GetByIdAsync(int id)
     {
         var result = await _context.RestaurantSettings.FindAsync(id);
 
         if (result == null)
         {
-            return Result<RestaurantSettings>.NotFound($"Restaurant settings with id {id} not found");
+            return Result<SettingsDto>.NotFound($"Restaurant settings with id {id} not found");
         }
 
-        return Result<RestaurantSettings>.Success(result);
+        return Result<SettingsDto>.Success(result.ToDto());
     }
 
-    public async Task<Result<RestaurantSettings>> CreateAsync(RestaurantSettings restaurantSettings)
+    public async Task<Result<SettingsDto>> CreateAsync(SettingsDto restaurantSettings)
     {
-        _context.RestaurantSettings.Add(restaurantSettings);
+        _context.RestaurantSettings.Add(restaurantSettings.ToEntity());
         await _context.SaveChangesAsync();
-        return Result<RestaurantSettings>.Success(restaurantSettings);
+        return Result<SettingsDto>.Success(restaurantSettings);
     }
 
-    public async Task<Result<RestaurantSettings>> UpdateAsync(int id, UpdateRestaurantSettingsDto restaurantSettings)
+    public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto restaurantSettings)
     {
         var existingSettings = await _context.RestaurantSettings.FindAsync(id);
         if (existingSettings == null)
         {
-            return Result<RestaurantSettings>.NotFound($"Restaurant settings with id {id} not found");
+            return Result<SettingsDto>.NotFound($"Restaurant settings with id {id} not found");
         }
 
         existingSettings.ReservationsNeedConfirmation = restaurantSettings.ReservationsNeedConfirmation;
 
         _context.RestaurantSettings.Update(existingSettings);
         await _context.SaveChangesAsync();
-        return Result<RestaurantSettings>.Success(existingSettings);
+        return Result<SettingsDto>.Success(existingSettings.ToDto());
     }
 
     public async Task<Result> DeleteAsync(int id)
@@ -94,14 +95,14 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<bool>.Success(result.ReservationsNeedConfirmation);
     }
 
-    public async Task<Result<RestaurantSettings>> GetByRestaurantId(int restaurantId)
+    public async Task<Result<SettingsDto>> GetByRestaurantId(int restaurantId)
     {
         var result = await _context.RestaurantSettings.Where(r =>r.RestaurantId == restaurantId)
             .FirstOrDefaultAsync();
         if (result == null)
         {
-            return Result<RestaurantSettings>.NotFound($"Restaurant settings with id {restaurantId} not found");
+            return Result<SettingsDto>.NotFound($"Restaurant settings with id {restaurantId} not found");
         }
-        return Result<RestaurantSettings>.Success(result);
+        return Result<SettingsDto>.Success(result.ToDto());
     }
 }
