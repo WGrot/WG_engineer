@@ -89,7 +89,7 @@ public class MenuItemService : IMenuItemService
         return Result<IEnumerable<MenuItemTagDto>>.Success(tagDtos);
     }
     
-    public async Task<Result<MenuItem>> GetMenuItemByIdAsync(int itemId)
+    public async Task<Result<MenuItemDto>> GetMenuItemByIdAsync(int itemId)
     {
         var item = await _context.MenuItems
             .Include(mi => mi.Menu)
@@ -99,11 +99,11 @@ public class MenuItemService : IMenuItemService
             .FirstOrDefaultAsync(mi => mi.Id == itemId);
 
         return item == null
-            ? Result<MenuItem>.NotFound($"Menu item with ID {itemId} not found.")
-            : Result<MenuItem>.Success(item);
+            ? Result<MenuItemDto>.NotFound($"Menu item with ID {itemId} not found.")
+            : Result<MenuItemDto>.Success(item.ToDto());
     }
 
-    public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsAsync(int menuId)
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Category)
@@ -112,10 +112,10 @@ public class MenuItemService : IMenuItemService
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
 
-        return Result<IEnumerable<MenuItem>>.Success(items);
+        return Result<IEnumerable<MenuItemDto>>.Success(items.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<MenuItem>>> GetMenuItemsByCategoryAsync(int categoryId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsByCategoryAsync(int categoryId)
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
@@ -123,10 +123,10 @@ public class MenuItemService : IMenuItemService
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
 
-        return Result<IEnumerable<MenuItem>>.Success(items);
+        return Result<IEnumerable<MenuItemDto>>.Success(items.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<MenuItem>>> GetUncategorizedMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetUncategorizedMenuItemsAsync(int menuId)
     {
         var items = await _context.MenuItems
             .Include(mi => mi.Tags)
@@ -134,34 +134,28 @@ public class MenuItemService : IMenuItemService
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
 
-        return Result<IEnumerable<MenuItem>>.Success(items);
+        return Result<IEnumerable<MenuItemDto>>.Success(items.ToDtoList());
     }
 
-    public async Task<Result<MenuItem>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
+    public async Task<Result<MenuItemDto>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
     {
         var menu = await _context.Menus.FindAsync(menuId);
         if (menu == null)
         {
-            return Result<MenuItem>.NotFound($"Menu with ID {menuId} not found.");
+            return Result<MenuItemDto>.NotFound($"Menu with ID {menuId} not found.");
         }
 
-        MenuItem item = new MenuItem
-        {
-            Name = itemDto.Name,
-            Description = itemDto.Description,
-            Price = itemDto.Price.ToEntity(),
-            ImageUrl = itemDto.ImageUrl
-        };
+        MenuItem item = itemDto.ToEntity();
 
         item.MenuId = menuId;
         item.CategoryId = null;
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
 
-        return Result<MenuItem>.Success(item);
+        return Result<MenuItemDto>.Success(item.ToDto());
     }
 
-    public async Task<Result<MenuItem>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
+    public async Task<Result<MenuItemDto>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
     {
         var category = await _context.MenuCategories
             .Include(c => c.Menu)
@@ -169,23 +163,16 @@ public class MenuItemService : IMenuItemService
 
         if (category == null)
         {
-            return Result<MenuItem>.NotFound($"Category with ID {categoryId} not found.");
+            return Result<MenuItemDto>.NotFound($"Category with ID {categoryId} not found.");
         }
 
-        MenuItem item = new MenuItem
-        {
-            Name = itemDto.Name,
-            Description = itemDto.Description,
-            Price = itemDto.Price.ToEntity(),
-            ImageUrl = itemDto.ImageUrl
-        };
-
+        MenuItem item = itemDto.ToEntity();
         item.CategoryId = categoryId;
         item.MenuId = null; 
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
 
-        return Result<MenuItem>.Success(item);
+        return Result<MenuItemDto>.Success(item.ToDto());
     }
 
     public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto)
@@ -195,12 +182,7 @@ public class MenuItemService : IMenuItemService
         {
             return Result.NotFound($"Menu with ID {itemId} not found.");
         }
-
-        existingItem.Name = itemDto.Name;
-        existingItem.Description = itemDto.Description;
-        existingItem.Price = itemDto.Price.ToEntity();
-        existingItem.ImageUrl = itemDto.ImageUrl;
-
+        existingItem.UpdateFromDto(itemDto);
         await _context.SaveChangesAsync();
         return Result.Success();
     }

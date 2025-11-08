@@ -24,7 +24,7 @@ public static class MenuItemMapper
     }
 
     // IEnumerable<MenuItem> -> IEnumerable<MenuItemDto>
-    public static IEnumerable<MenuItemDto> ToDto(this IEnumerable<MenuItem> entities)
+    public static IEnumerable<MenuItemDto> ToDtoList(this IEnumerable<MenuItem> entities)
     {
         return entities.Select(e => e.ToDto());
     }
