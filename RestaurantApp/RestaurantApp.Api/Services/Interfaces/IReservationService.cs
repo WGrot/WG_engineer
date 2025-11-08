@@ -10,24 +10,24 @@ namespace RestaurantApp.Api.Services.Interfaces;
 
 public interface IReservationService
 {
-    Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId);
-    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId);
+    Task<Result<ReservationDto>> GetReservationByIdAsync(int reservationId);
+    Task<Result<List<ReservationDto>>> GetReservationsByRestaurantIdAsync(int restaurantId);
     
     Task<Result<PaginatedReservationsDto>> GetReservationsByUserIdAsync(ReservationSearchParameters searchParams);
-    Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto);
+    Task<Result<ReservationDto>> CreateReservationAsync(ReservationDto reservationDto);
     Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto);
     Task<Result> DeleteReservationAsync(int reservationId);
     
     Task<Result<PaginatedReservationsDto>> GetReservationsToManage(ReservationSearchParameters searchParams);
 
     // Operacje na rezerwacjach stolików
-    Task<Result<TableReservation>> GetTableReservationByIdAsync(int reservationId);
-    Task<Result<TableReservation>> CreateTableReservationAsync(TableReservationDto tableReservationDto);
+    Task<Result<TableReservationDto>> GetTableReservationByIdAsync(int reservationId);
+    Task<Result<TableReservationDto>> CreateTableReservationAsync(TableReservationDto tableReservationDto);
     Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
     Task<Result> DeleteTableReservationAsync(int reservationId);
 
   
-    Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId);
+    Task<Result<IEnumerable<ReservationDto>>> GetReservationsByTableIdAsync(int tableId);
 
     // Metody pomocnicze
     Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime,
@@ -37,5 +37,5 @@ public interface IReservationService
     Task<Result> CancelUserReservation(int reservationId);
 
 
-    Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(ReservationSearchParameters searchParams);
+    Task<Result<IEnumerable<ReservationDto>>> SearchReservationsAsync(ReservationSearchParameters searchParams);
 }

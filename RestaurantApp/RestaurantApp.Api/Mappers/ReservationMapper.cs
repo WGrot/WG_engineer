@@ -80,4 +80,30 @@ public static class ReservationMapper
     {
         return dtos.Select(d => d.ToEntity()).ToList();
     }
+    
+    public static TableReservationDto ToTableReservationDto(this TableReservation reservation)
+    {
+        return new TableReservationDto
+        {
+            // Właściwości z ReservationDto
+            Id = reservation.Id,
+            ReservationDate = reservation.ReservationDate,
+            StartTime = reservation.StartTime,
+            EndTime = reservation.EndTime,
+            NumberOfGuests = reservation.NumberOfGuests,
+            CustomerName = reservation.CustomerName,
+            CustomerEmail = reservation.CustomerEmail,
+            CustomerPhone = reservation.CustomerPhone,
+            Status = reservation.Status,
+            Notes = reservation.Notes,
+            UserId = reservation.UserId,
+            RestaurantId = reservation.RestaurantId,
+            RestaurantName = reservation.Restaurant?.Name ?? string.Empty,
+            RestaurantAddress = reservation.Restaurant?.Address ?? string.Empty,
+            
+            // Właściwości specyficzne dla TableReservationDto
+            TableId = reservation.TableId,
+            Table = reservation.Table?.ToDto() // zakładając, że masz metodę ToDto() dla Table
+        };
+    }
 }

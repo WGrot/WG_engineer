@@ -29,25 +29,25 @@ public class ReservationService : IReservationService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Result<ReservationBase>> GetReservationByIdAsync(int reservationId)
+    public async Task<Result<ReservationDto>> GetReservationByIdAsync(int reservationId)
     {
         var result = await _context.Reservations
             .Include(r => r.Restaurant)
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         return result == null
-            ? Result<ReservationBase>.NotFound("Reservation not found")
-            : Result<ReservationBase>.Success(result);
+            ? Result<ReservationDto>.NotFound("Reservation not found")
+            : Result<ReservationDto>.Success(result.ToDto());
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<List<ReservationDto>>> GetReservationsByRestaurantIdAsync(int restaurantId)
     {
         var result = await _context.Reservations
             .Include(r => r.Restaurant)
             .Where(r => r.RestaurantId == restaurantId)
             .ToListAsync();
 
-        return Result<IEnumerable<ReservationBase>>.Success(result);
+        return Result<List<ReservationDto>>.Success(result.ToDtoList());
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetReservationsByUserIdAsync(
@@ -121,22 +121,22 @@ public class ReservationService : IReservationService
         return Result<PaginatedReservationsDto>.Success(result);
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> GetReservationsByTableIdAsync(int tableId)
+    public async Task<Result<IEnumerable<ReservationDto>>> GetReservationsByTableIdAsync(int tableId)
     {
         var result = await _context.TableReservations
             .Include(r => r.Restaurant)
             .Where(r => r.TableId == tableId)
             .ToListAsync();
 
-        return Result<IEnumerable<ReservationBase>>.Success(result);
+        return Result<IEnumerable<ReservationDto>>.Success(result.ToDtoList());
     }
 
-    public async Task<Result<ReservationBase>> CreateReservationAsync(ReservationDto reservationDto)
+    public async Task<Result<ReservationDto>> CreateReservationAsync(ReservationDto reservationDto)
     {
         var restaurant = await _restaurantService.GetByIdAsync(reservationDto.RestaurantId);
         if (restaurant.IsFailure)
         {
-            return Result<ReservationBase>.Failure(restaurant.Error, restaurant.StatusCode);
+            return Result<ReservationDto>.Failure(restaurant.Error, restaurant.StatusCode);
         }
 
         var reservation = new ReservationBase
@@ -159,7 +159,7 @@ public class ReservationService : IReservationService
         _context.Reservations.Add(reservation);
         await _context.SaveChangesAsync();
 
-        return Result<ReservationBase>.Success(reservation);
+        return Result<ReservationDto>.Success(reservation.ToDto());
     }
 
     public async Task<Result> UpdateReservationAsync(int reservationId, ReservationDto reservationDto)
@@ -171,16 +171,7 @@ public class ReservationService : IReservationService
         }
 
 
-        existing.RestaurantId = reservationDto.RestaurantId;
-        existing.UserId = reservationDto.UserId;
-        existing.NumberOfGuests = reservationDto.NumberOfGuests;
-        existing.CustomerName = reservationDto.CustomerName;
-        existing.CustomerEmail = reservationDto.CustomerEmail;
-        existing.CustomerPhone = reservationDto.CustomerPhone;
-        existing.ReservationDate = reservationDto.ReservationDate;
-        existing.StartTime = reservationDto.StartTime;
-        existing.EndTime = reservationDto.EndTime;
-        existing.Notes = reservationDto.Notes;
+        existing.UpdateFromDto(reservationDto);
 
         _context.Reservations.Update(existing);
         await _context.SaveChangesAsync();
@@ -272,7 +263,7 @@ public class ReservationService : IReservationService
 
     // ===== METODY DLA TABLE RESERVATIONS - UŻYWAJĄ TableReservations DbSet =====
 
-    public async Task<Result<TableReservation>> GetTableReservationByIdAsync(int reservationId)
+    public async Task<Result<TableReservationDto>> GetTableReservationByIdAsync(int reservationId)
     {
         var result = await _context.TableReservations
             .Include(r => r.Restaurant)
@@ -280,11 +271,11 @@ public class ReservationService : IReservationService
             .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         return result == null
-            ? Result<TableReservation>.NotFound("Table reservation not found")
-            : Result<TableReservation>.Success(result);
+            ? Result<TableReservationDto>.NotFound("Table reservation not found")
+            : Result<TableReservationDto>.Success(result.ToTableReservationDto());
     }
 
-    public async Task<Result<TableReservation>> CreateTableReservationAsync(TableReservationDto tableReservationDto)
+    public async Task<Result<TableReservationDto>> CreateTableReservationAsync(TableReservationDto tableReservationDto)
     {
         // Sprawdzenie czy stolik istnieje i jest dostępny
         var tableExists = await _context.Tables
@@ -293,18 +284,18 @@ public class ReservationService : IReservationService
 
         if (!tableExists)
         {
-            return Result<TableReservation>.NotFound(
+            return Result<TableReservationDto>.NotFound(
                 $"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
         }
 
         if (tableReservationDto.StartTime > tableReservationDto.EndTime)
         {
-            return Result<TableReservation>.Failure("Start Date > End Date", 400);
+            return Result<TableReservationDto>.Failure("Start Date > End Date", 400);
         }
 
         if (tableReservationDto.StartTime == tableReservationDto.EndTime)
         {
-            return Result<TableReservation>.Failure("Start Date == End Date", 400);
+            return Result<TableReservationDto>.Failure("Start Date == End Date", 400);
         }
 
         // Sprawdzenie czy stolik nie jest już zarezerwowany w tym czasie
@@ -320,7 +311,7 @@ public class ReservationService : IReservationService
 
         if (conflictingReservation)
         {
-            return Result<TableReservation>.Failure("Table is already reserved for this time period", 409);
+            return Result<TableReservationDto>.Failure("Table is already reserved for this time period", 409);
         }
 
         var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
@@ -353,7 +344,7 @@ public class ReservationService : IReservationService
         _context.TableReservations.Add(reservation);
         await _context.SaveChangesAsync();
 
-        return Result<TableReservation>.Success(reservation);
+        return Result<TableReservationDto>.Success(reservation.ToTableReservationDto());
     }
 
     public async Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto)
@@ -479,7 +470,7 @@ public class ReservationService : IReservationService
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<ReservationBase>>> SearchReservationsAsync(
+    public async Task<Result<IEnumerable<ReservationDto>>> SearchReservationsAsync(
         ReservationSearchParameters searchParams)
     {
         // 1. Użyj nowej, centralnej metody do pobrania IQueryable
@@ -488,7 +479,7 @@ public class ReservationService : IReservationService
         // 2. Sprawdź, czy walidacja (np. dat) się powiodła
         if (!queryResult.IsSuccess)
         {
-            return Result<IEnumerable<ReservationBase>>.Failure(queryResult.Error, queryResult.StatusCode);
+            return Result<IEnumerable<ReservationDto>>.Failure(queryResult.Error, queryResult.StatusCode);
         }
 
         var query = queryResult.Value;
@@ -500,7 +491,7 @@ public class ReservationService : IReservationService
         // 4. Wykonaj zapytanie i mapuj
         var resultEntities = await query.ToListAsync();
 
-        return Result<IEnumerable<ReservationBase>>.Success(resultEntities);
+        return Result<IEnumerable<ReservationDto>>.Success(resultEntities.ToDtoList());
     }
 
 
@@ -628,27 +619,5 @@ public class ReservationService : IReservationService
         
         
         return Result<IQueryable<ReservationBase>>.Success(query);
-    }
-
-    // ===== DODATKOWE METODY DLA TABLE RESERVATIONS =====
-
-    public async Task<IEnumerable<TableReservation>> GetTableReservationsByRestaurantIdAsync(int restaurantId)
-    {
-        return await _context.TableReservations
-            .Include(r => r.Restaurant)
-            .Include(r => r.Table)
-            .Where(r => r.RestaurantId == restaurantId)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<TableReservation>> GetTableReservationsByTableIdAsync(int tableId)
-    {
-        return await _context.TableReservations
-            .Include(r => r.Restaurant)
-            .Include(r => r.Table)
-            .Where(r => r.TableId == tableId)
-            .OrderBy(r => r.ReservationDate)
-            .ThenBy(r => r.StartTime)
-            .ToListAsync();
     }
 }
