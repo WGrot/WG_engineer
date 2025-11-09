@@ -492,7 +492,7 @@
                 userId = currentUser.Id;
             }
 
-            var reservation = new TableReservationDto
+            var reservation = new CreateTableReservationDto
             {
                 TableId = selectedTableId,
                 RestaurantId = Id,
@@ -504,7 +504,6 @@
                 EndTime = TimeOnly.FromDateTime(endTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                requiresConfirmation = restaurant.Settings.ReservationsNeedConfirmation,
                 UserId = userId // This should be replaced with actual user ID from authentication
             };
 
@@ -518,7 +517,7 @@
                 if (OnReservationCreated.HasDelegate)
                 {
                     await Task.Delay(2000);
-                    await OnReservationCreated.InvokeAsync(createdReservation ?? reservation);
+                    await OnReservationCreated.InvokeAsync(createdReservation);
                 }
                 else
                 {

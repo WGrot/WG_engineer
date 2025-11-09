@@ -35,7 +35,7 @@ public class EmployeesController : ControllerBase
         => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult();
 
     [HttpGet("user/{userId}")]
-    [Authorize(Policy = "RestaurantEmployee")]
+    [Authorize]
     public async Task<IActionResult> GetByUser(string userId)
         => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
 
