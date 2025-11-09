@@ -89,6 +89,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
 
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
@@ -177,6 +178,11 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("SameUser", policy =>
+    {
+        policy.Requirements.Add(new SameUserRequirement("userId"));
+    });
+    
     options.AddPolicy("RestaurantEmployee", policy =>
         policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement()));
 

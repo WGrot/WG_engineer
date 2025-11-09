@@ -24,10 +24,7 @@ public class SpecificRestaurantEmployeeHandler : AuthorizationHandler<SpecificRe
             context.Fail();
             return Task.CompletedTask;
         }
-
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-
+        
         var isEmployee = context.User.Claims.Any(c =>
             c.Type == "restaurant_employee" &&
             c.Value == restaurantId.ToString());
