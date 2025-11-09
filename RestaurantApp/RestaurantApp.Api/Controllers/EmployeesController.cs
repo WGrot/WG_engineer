@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -13,10 +14,12 @@ namespace RestaurantApp.Api.Controllers;
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-
-    public EmployeesController(IEmployeeService employeeService)
+    private readonly IAuthorizationService _authorizationService;
+    
+    public EmployeesController(IEmployeeService employeeService, IAuthorizationService authorizationService)
     {
         _employeeService = employeeService;
+        _authorizationService = authorizationService;
     }
 
     [HttpGet]
@@ -35,14 +38,23 @@ public class EmployeesController : ControllerBase
         => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult();
 
     [HttpGet("user/{userId}")]
-    [Authorize]
+    [Authorize(Policy = "SameUser")]
     public async Task<IActionResult> GetByUser(string userId)
         => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
 
     [HttpPost]
-    [Authorize(Policy = "ManageEmployees")]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
-        => (await _employeeService.CreateAsync(dto)).ToActionResult();
+    {
+        // Tu zakładam, że dto.RestaurantId jest przekazane
+        var authorizationResult = await _authorizationService.AuthorizeAsync(
+            User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+
+        if (!authorizationResult.Succeeded)
+            return Forbid();
+
+        var result = await _employeeService.CreateAsync(dto);
+        return result.ToActionResult();
+    }
 
     [HttpPut("{id}")]
     [Authorize(Policy = "ManageEmployees")]

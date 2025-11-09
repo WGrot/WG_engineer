@@ -22,17 +22,8 @@ public class SameUserAuthorizationHandler: AuthorizationHandler<SameUserRequirem
             return Task.CompletedTask;
         }
     
-        // DEBUG: Wypisz wszystkie claims
-        var claims = context.User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-        foreach (var claim in claims)
-        {
-            Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
-            // Lub użyj loggera:
-            // _logger.LogInformation($"Claim Type: {claim.Type}, Value: {claim.Value}");
-        }
-    
         var userIdFromRoute = httpContext.Request.RouteValues[requirement.UserIdRouteParameter]?.ToString();
-        Console.WriteLine($"User ID from route: {userIdFromRoute}");
+
     
         if (string.IsNullOrEmpty(userIdFromRoute))
         {
@@ -40,13 +31,7 @@ public class SameUserAuthorizationHandler: AuthorizationHandler<SameUserRequirem
         }
     
         // Spróbuj różnych typów claims
-        var loggedInUserId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                             ?? context.User.FindFirst("sub")?.Value
-                             ?? context.User.FindFirst("user_id")?.Value
-                             ?? context.User.FindFirst("id")?.Value
-                             ?? context.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-    
-        Console.WriteLine($"Logged in user ID: {loggedInUserId}");
+        var loggedInUserId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     
         if (!string.IsNullOrEmpty(loggedInUserId) && loggedInUserId == userIdFromRoute)
         {

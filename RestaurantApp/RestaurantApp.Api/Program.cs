@@ -13,6 +13,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
@@ -90,6 +91,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();

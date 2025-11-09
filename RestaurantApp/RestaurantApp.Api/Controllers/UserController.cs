@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Users;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -11,10 +14,11 @@ namespace RestaurantApp.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    
-    public UserController(IUserService userService)
+    private readonly IAuthorizationService _authorizationService;
+    public UserController(IUserService userService, IAuthorizationService authorizationService)
     {
         _userService = userService;
+        _authorizationService = authorizationService;
     }
     
     [HttpGet("{id}")]
@@ -48,6 +52,13 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
+        var authorizationResult = await _authorizationService.AuthorizeAsync(
+            User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+
+        if (!authorizationResult.Succeeded)
+            return Forbid();
+
+        
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
