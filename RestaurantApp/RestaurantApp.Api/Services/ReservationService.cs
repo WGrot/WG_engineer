@@ -275,7 +275,8 @@ public class ReservationService : IReservationService
             : Result<TableReservationDto>.Success(result.ToTableReservationDto());
     }
 
-    public async Task<Result<TableReservationDto>> CreateTableReservationAsync(TableReservationDto tableReservationDto)
+    public async Task<Result<TableReservationDto>> CreateTableReservationAsync(
+        CreateTableReservationDto tableReservationDto)
     {
         // Sprawdzenie czy stolik istnieje i jest dostępny
         var tableExists = await _context.Tables
@@ -318,7 +319,7 @@ public class ReservationService : IReservationService
 
         ReservationStatus initialStatus = ReservationStatus.Confirmed;
 
-        if (tableReservationDto.requiresConfirmation)
+        if (restaurant.Value.Settings?.ReservationsNeedConfirmation == true)
         {
             initialStatus = ReservationStatus.Pending;
         }

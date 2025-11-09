@@ -22,7 +22,7 @@ public interface IReservationService
 
     // Operacje na rezerwacjach stolików
     Task<Result<TableReservationDto>> GetTableReservationByIdAsync(int reservationId);
-    Task<Result<TableReservationDto>> CreateTableReservationAsync(TableReservationDto tableReservationDto);
+    Task<Result<TableReservationDto>> CreateTableReservationAsync(CreateTableReservationDto tableReservationDto);
     Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
     Task<Result> DeleteTableReservationAsync(int reservationId);
 

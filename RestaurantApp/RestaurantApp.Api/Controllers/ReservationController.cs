@@ -108,14 +108,8 @@ public class ReservationController : ControllerBase
     // POST: api/reservation/table
     [HttpPost("table")]
     [Authorize]
-    public async Task<IActionResult> CreateTableReservation(
-        [FromBody] TableReservationDto tableReservationDto)
+    public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto tableReservationDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var reservation = await _reservationService.CreateTableReservationAsync(tableReservationDto);
 
         return reservation.ToActionResult();

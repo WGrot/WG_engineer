@@ -69,7 +69,7 @@ public partial class TableReservationSection : ComponentBase
             successMessage = "";
             
             
-            var reservation = new TableReservationDto
+            var reservation = new CreateTableReservationDto
             {
                 TableId = Table.Id,
                 RestaurantId = Table.RestaurantId,
