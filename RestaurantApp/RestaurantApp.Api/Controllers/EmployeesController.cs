@@ -10,7 +10,7 @@ using RestaurantApp.Shared.Models;
 namespace RestaurantApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[Controller]")]
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
@@ -24,28 +24,50 @@ public class EmployeesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAll()
-        => (await _employeeService.GetAllAsync()).ToActionResult();
+    public async Task<IActionResult> GetAll([FromQuery] int? restaurantId, [FromQuery] string? userId)
+    {
+        if (restaurantId.HasValue)
+        {
+            var authorizationResult = await _authorizationService.AuthorizeAsync(
+                User, restaurantId.Value, new PermissionRequirement(PermissionType.ManageEmployees));
+            if (!authorizationResult.Succeeded) return Forbid();
 
-    [HttpGet("{id}")]
-    [Authorize(Policy = "ViewReports")]
-    public async Task<IActionResult> GetById(int id)
-        => (await _employeeService.GetByIdAsync(id)).ToActionResult();
+            return (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId.Value)).ToActionResult();
+        }
 
-    [HttpGet("restaurant/{restaurantId}")]
-    [Authorize(Policy = "RestaurantEmployee")]
-    public async Task<IActionResult> GetByRestaurant(int restaurantId)
-        => (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId)).ToActionResult();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, "SameUser");
 
-    [HttpGet("user/{userId}")]
-    [Authorize(Policy = "SameUser")]
-    public async Task<IActionResult> GetByUser(string userId)
-        => (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
+            if (!authorizationResult.Succeeded)
+            {
+                return Forbid();
+            }
+        
+            return (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
+        }
+
+        // Domyślnie, jeśli nie ma filtrów:
+        return (await _employeeService.GetAllAsync()).ToActionResult();
+    }
+
+    // [HttpGet("{id}")]
+    //
+    // public async Task<IActionResult> GetById(int id, [FromQuery] int restaurantId)
+    // {
+    //     var authorizationResult = await _authorizationService.AuthorizeAsync(
+    //         User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+    //
+    //     if (!authorizationResult.Succeeded)
+    //         return Forbid();
+    //     
+    //     return (await _employeeService.GetByIdAsync(id)).ToActionResult();
+    // }
+
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
     {
-        // Tu zakładam, że dto.RestaurantId jest przekazane
         var authorizationResult = await _authorizationService.AuthorizeAsync(
             User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
 
@@ -57,22 +79,27 @@ public class EmployeesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "ManageEmployees")]
-    public async Task<IActionResult> Update(int id, UpdateEmployeeDto dto)
-        => (await _employeeService.UpdateAsync(id, dto)).ToActionResult();
+    public async Task<IActionResult> Update([FromQuery] int restaurantId, UpdateEmployeeDto dto)
+    {
+        var authorizationResult = await _authorizationService.AuthorizeAsync(
+            User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
 
-    [HttpDelete("{id}")]
-    [Authorize(Policy = "ManageEmployees")]
-    public async Task<IActionResult> Delete(int id)
-        => (await _employeeService.DeleteAsync(id)).ToActionResult();
+        if (!authorizationResult.Succeeded)
+            return Forbid();
+        
+        return (await _employeeService.UpdateAsync(dto)).ToActionResult();
 
-    [HttpPatch("{id}/update-active-status")]
-    [Authorize(Policy = "ManageEmployees")]
-    public async Task<IActionResult> UpdateStatus(int id, [FromBody] bool isActive)
-        => (await _employeeService.UpdateActiveStatusAsync(id, isActive)).ToActionResult();
-    
-    [HttpPatch("{id}/update-role")]
-    [Authorize(Policy = "ManageEmployees")]
-    public async Task<IActionResult> UpdateStatus(int id, [FromBody] RestaurantRole newRole)
-        => (await _employeeService.UpdateEmployeeRoleAsync(id, newRole)).ToActionResult();
+    }
+
+
+    [HttpDelete("{id}/restaurant/{restaurantId}")]
+    public async Task<IActionResult> Delete(int restaurantId, int id)
+    {
+        var authorizationResult = await _authorizationService.AuthorizeAsync(
+            User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+
+        if (!authorizationResult.Succeeded)
+            return Forbid();
+        return (await _employeeService.DeleteAsync(id)).ToActionResult();
+    }
 }

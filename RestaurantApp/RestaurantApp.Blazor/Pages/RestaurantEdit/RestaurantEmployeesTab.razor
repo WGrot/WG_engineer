@@ -149,9 +149,7 @@ else
 
         try
         {
-            var response = await Http.RequestJsonWithHeaderAsync<List<RestaurantEmployeeDto>>(HttpMethod.Get,
-                $"api/Employees/restaurant/{Id}", "X-Restaurant-Id",
-                Id.ToString());
+            var response = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"/api/Employees?restaurantId={Id}");
             employees = response;
 
         }

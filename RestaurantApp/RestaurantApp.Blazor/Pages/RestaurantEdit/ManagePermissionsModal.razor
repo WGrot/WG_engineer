@@ -252,9 +252,15 @@
     
         try
         {
-            var response = await Http.PatchAsJsonAsync(
-                $"api/Employees/{Employee.Id}/update-role", 
-                selectedRole  
+            var dto = new UpdateEmployeeDto
+            {
+                Id = Employee.Id,
+                IsActive = isActive,
+                Role = selectedRole
+            };
+            var response = await Http.PutAsJsonAsync(
+                $"api/Employees/{Employee.Id}?restaurantId={RestaurantId}", 
+                dto  
             );
         
             if (response.IsSuccessStatusCode)
@@ -306,9 +312,15 @@
     {
         if (Employee == null) return;
         if (isActive == Employee.IsActive) return;
-        var response = await Http.PatchAsJsonAsync(
-            $"api/Employees/{Employee.Id}/update-active-status", 
-            isActive  
+        var dto = new UpdateEmployeeDto
+        {
+            Id = Employee.Id,
+            IsActive = isActive,
+            Role = Employee.Role
+        };
+        var response = await Http.PutAsJsonAsync(
+            $"api/Employees/{Employee.Id}?restaurantId={RestaurantId}", 
+            dto  
         );
         
         if (!response.IsSuccessStatusCode)

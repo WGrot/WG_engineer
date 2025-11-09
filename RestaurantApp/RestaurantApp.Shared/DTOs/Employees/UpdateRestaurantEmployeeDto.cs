@@ -5,7 +5,7 @@ namespace RestaurantApp.Shared.DTOs.Employees;
 
 public class UpdateEmployeeDto
 {
+    public int Id { get; set; }
     public RestaurantRole Role { get; set; }
-    public List<RestaurantPermissionDto> Permissions { get; set; } = new List<RestaurantPermissionDto>();
     public bool IsActive { get; set; }
 }

@@ -20,7 +20,7 @@ public interface IEmployeeService
     Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole);
 
     Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto);
-    Task<Result<RestaurantEmployeeDto>> UpdateAsync(int id, UpdateEmployeeDto dto);
+    Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto);
     Task<Result> DeleteAsync(int id);
     Task<Result> UpdateActiveStatusAsync(int id, bool isActive);
 }

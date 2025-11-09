@@ -22,18 +22,23 @@ public class SameUserAuthorizationHandler: AuthorizationHandler<SameUserRequirem
             return Task.CompletedTask;
         }
     
-        var userIdFromRoute = httpContext.Request.RouteValues[requirement.UserIdRouteParameter]?.ToString();
+        // Najpierw spróbuj pobrać z Route (dla ścieżek typu /users/{userId})
+        var userIdFromRequest = httpContext.Request.RouteValues[requirement.ParameterName]?.ToString();
 
-    
-        if (string.IsNullOrEmpty(userIdFromRoute))
+        // Jeśli nie ma w Route, spróbuj pobrać z Query (dla /employees?userId=...)
+        if (string.IsNullOrEmpty(userIdFromRequest))
+        {
+            userIdFromRequest = httpContext.Request.Query[requirement.ParameterName].FirstOrDefault();
+        }
+
+        if (string.IsNullOrEmpty(userIdFromRequest))
         {
             return Task.CompletedTask;
         }
     
-        // Spróbuj różnych typów claims
         var loggedInUserId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     
-        if (!string.IsNullOrEmpty(loggedInUserId) && loggedInUserId == userIdFromRoute)
+        if (!string.IsNullOrEmpty(loggedInUserId) && loggedInUserId == userIdFromRequest)
         {
             context.Succeed(requirement);
         }

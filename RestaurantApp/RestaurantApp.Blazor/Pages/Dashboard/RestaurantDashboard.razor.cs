@@ -74,7 +74,7 @@ public partial class RestaurantDashboard : ComponentBase
     }
     private async Task LoadRestaurantEmployeeData()
     {
-        var response = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"api/Employees/user/{currentUserId}");
+        var response = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"api/Employees?userId={currentUserId}");
         if(response != null)
         {
             restaurantEmployeeList = response;
