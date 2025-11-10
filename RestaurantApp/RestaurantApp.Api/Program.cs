@@ -92,10 +92,15 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManageMenuAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHandler>();
+
 
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
 builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
+
+
 
 builder.Services.AddScoped<IBucketService, BucketService>();
 builder.Services.AddScoped<IImageProcessor, ImageProcessor>();

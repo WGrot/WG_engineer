@@ -55,29 +55,7 @@ public class MenuController : ControllerBase
 
     // ===== CATEGORY ENDPOINTS =====
 
-    [HttpGet("{menuId}/categories")]
-    public async Task<IActionResult> GetCategories(int menuId) =>
-        (await _menuService.GetCategoriesAsync(menuId)).ToActionResult();
-
-    [HttpGet("category/{categoryId}")]
-    public async Task<IActionResult> GetCategory(int categoryId) =>
-        (await _menuService.GetCategoryByIdAsync(categoryId)).ToActionResult();
-
-    [HttpPost("{menuId}/categories")]
-    public async Task<IActionResult> CreateCategory(int menuId, [FromBody] MenuCategoryDto categoryDto) =>
-        (await _menuService.CreateCategoryAsync(menuId, categoryDto)).ToActionResult();
-
-    [HttpPut("category/{categoryId}")]
-    public async Task<IActionResult> UpdateCategory(int categoryId, [FromBody] MenuCategoryDto categoryDto) =>
-        (await _menuService.UpdateCategoryAsync(categoryId, categoryDto)).ToActionResult();
-
-    [HttpDelete("category/{categoryId}")]
-    public async Task<IActionResult> DeleteCategory(int categoryId) =>
-        (await _menuService.DeleteCategoryAsync(categoryId)).ToActionResult();
-
-    [HttpPatch("category/{categoryId}/order")]
-    public async Task<IActionResult> UpdateCategoryOrder(int categoryId, [FromBody] int order) =>
-        (await _menuService.UpdateCategoryOrderAsync(categoryId, order)).ToActionResult();
+   
 
     // ===== MENU ITEM ENDPOINTS =====
 

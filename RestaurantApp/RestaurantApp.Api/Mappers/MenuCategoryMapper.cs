@@ -12,6 +12,7 @@ public static class MenuCategoryMapper
         return new MenuCategoryDto
         {
             Id = entity.Id,
+            MenuId = entity.MenuId,
             Name = entity.Name,
             Description = entity.Description,
             DisplayOrder = entity.DisplayOrder,
@@ -27,6 +28,7 @@ public static class MenuCategoryMapper
         return new MenuCategory
         {
             Id = dto.Id,
+            MenuId = dto.MenuId,
             Name = dto.Name,
             Description = dto.Description,
             DisplayOrder = dto.DisplayOrder,
@@ -38,11 +40,23 @@ public static class MenuCategoryMapper
     }
 
     // Aktualizacja istniejącej encji z DTO
-    public static void UpdateFromDto(this MenuCategory entity, MenuCategoryDto dto)
+    public static void UpdateFromDto(this MenuCategory entity, UpdateMenuCategoryDto dto)
     {
-        entity.Name = dto.Name;
-        entity.Description = dto.Description;
-        entity.IsActive = dto.IsActive;
+        if (!string.IsNullOrWhiteSpace(dto.Name))
+        {
+            entity.Name = dto.Name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Description))
+        {
+            entity.Description = dto.Description;
+        }
+
+        if (dto.IsActive != null)
+        {
+            entity.IsActive = dto.IsActive.Value;
+        }
+
         
         // Aktualizacja pozycji menu w kategorii (jeśli przekazane)
         if (dto.Items != null)
@@ -55,8 +69,22 @@ public static class MenuCategoryMapper
             entity.DisplayOrder = dto.DisplayOrder;
         }
         
-        // Nie aktualizujemy Id, MenuId ani relacji Menu
     }
+    
+    // NOWA METODA: Z CreateMenuCategoryDto na Entity
+    public static MenuCategory ToEntity(this CreateMenuCategoryDto dto)
+    {
+        return new MenuCategory
+        {
+            MenuId = dto.MenuId,
+            Name = dto.Name,
+            Description = dto.Description,
+            DisplayOrder = dto.DisplayOrder,
+            IsActive = dto.IsActive,
+            Items = new List<MenuItem>() // Nowa kategoria nie ma jeszcze pozycji
+        };
+    }
+
 
     // Mapowanie kolekcji Entity na listę DTO
     public static List<MenuCategoryDto> ToDtoList(this IEnumerable<MenuCategory> entities)

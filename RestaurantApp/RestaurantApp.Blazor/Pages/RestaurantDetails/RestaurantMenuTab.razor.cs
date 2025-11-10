@@ -50,7 +50,7 @@ public partial class RestaurantMenuTab : ComponentBase
             if (menu != null)
             {
 
-                categories = (await Http.GetFromJsonAsync<List<MenuCategoryDto>>($"api/Menu/{menu.Id}/categories")) ?? new();
+                categories = (await Http.GetFromJsonAsync<List<MenuCategoryDto>>($"/api/MenuCategory?menuId={menu.Id}")) ?? new();
                 
                  foreach (var category in categories)
                  {
