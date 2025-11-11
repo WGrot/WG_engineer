@@ -5,7 +5,7 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 
-public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuRequirement, int>
+public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuRequirement, int?>
 {
     private readonly ApiDbContext _context;
 
@@ -19,7 +19,7 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ManageMenuRequirement requirement,
-        int resource)
+        int? resource)
     {
         var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -31,18 +31,34 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
 
         try
         {
+            int? restaurantId = null;
 
-            var menu = await _context.Menus
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == requirement.MenuId.Value);
-
-            if (menu == null)
+            // Jeśli mamy MenuId, pobierz RestaurantId z menu
+            if (requirement.MenuId.HasValue)
             {
+                var menu = await _context.Menus
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(m => m.Id == requirement.MenuId.Value);
+
+                if (menu == null)
+                {
+                    context.Fail();
+                    return;
+                }
+
+                restaurantId = menu.RestaurantId;
+            }
+            // Jeśli nie mamy MenuId, użyj RestaurantId z requirement
+            else if (requirement.RestaurantId.HasValue)
+            {
+                restaurantId = requirement.RestaurantId.Value;
+            }
+            else
+            {
+                // Brak MenuId i RestaurantId - nie można autoryzować
                 context.Fail();
                 return;
             }
-
-            var restaurantId = menu.RestaurantId;
 
             // Sprawdź czy użytkownik pracuje w tej restauracji
             var employee = await _context.RestaurantEmployees
@@ -58,12 +74,11 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
                 return;
             }
 
-            int employeeId = employee.Id;
             // Sprawdź czy użytkownik ma uprawnienie ManageMenu w tej restauracji
             var hasManageMenuPermission = await _context.RestaurantPermissions
                 .AsNoTracking()
                 .AnyAsync(ep =>
-                    ep.RestaurantEmployeeId == employeeId &&
+                    ep.RestaurantEmployeeId == employee.Id &&
                     ep.Permission == PermissionType.ManageMenu);
 
             if (hasManageMenuPermission)

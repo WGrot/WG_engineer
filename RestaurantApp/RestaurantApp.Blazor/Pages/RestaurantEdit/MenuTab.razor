@@ -72,7 +72,7 @@
                 }
 
                 <ul class="list-group">
-                    @foreach (var category in categories.OrderBy(c => c.DisplayOrder))
+                    @foreach (var category in menu.Categories)
                     {
                         @if (editingCategoryId == category.Id)
                         {
@@ -162,7 +162,7 @@
                                                                placeholder="Description"/>
                                                     </div>
                                                     <div class="col-md-4">
-                                                        <input type="number" class="form-control" @bind="newItem.Price"
+                                                        <input type="number" class="form-control" @bind="newItem.Price.Amount"
                                                                placeholder="Price"/>
                                                     </div>
                                                     <div class="col-md-4">
@@ -184,11 +184,11 @@
 
 
                                         <div class="d-flex flex-column gap-3">
-                                            @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItemDto>()))
+                                            @foreach (var item in category.Items)
                                             {
                                                 <MenuItemEditComponent
                                                     Item="item"
-                                                    Categories="categories"
+                                                    Categories="menu.Categories"
                                                     Tags="tags"
                                                     OnSave="SaveItem"
                                                     OnDelete="DeleteItem"
@@ -234,7 +234,7 @@
                                            placeholder="Description"/>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="number" class="form-control" @bind="newItem.Price"
+                                    <input type="number" class="form-control" @bind="newItem.Price.Amount"
                                            placeholder="Price"/>
                                 </div>
                                 <div class="col-md-4">
@@ -254,19 +254,22 @@
                         </div>
                     }
                     
-                    <ul class="list-group">
-                        @foreach (var item in uncategorizedItems)
-                        {
-                            <li class="list-group-item">
-                                <MenuItemEditComponent
-                                    Item="item"
-                                    Categories="categories"
-                                    OnSave="SaveItem"
-                                    OnDelete="DeleteItem"
-                                    OnMove="HandleMoveItem"/>
-                            </li>
-                        }
-                    </ul>
+                    @if(menu.Items?.Any() == true){
+                        <ul class="list-group">
+                            @foreach (var item in menu.Items)
+                            {
+                                <li class="list-group-item">
+                                    <MenuItemEditComponent
+                                        Item="item"
+                                        Categories="menu.Categories"
+                                        OnSave="SaveItem"
+                                        OnDelete="DeleteItem"
+                                        OnMove="HandleMoveItem"/>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    
                 </div>
             }
         </div>

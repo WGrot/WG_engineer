@@ -12,16 +12,8 @@ public interface IMenuService
 {
     // Menu operations
     Task<Result<MenuDto>> GetMenuByIdAsync(int menuId);
-    Task<Result<MenuDto>> GetMenuByRestaurantIdAsync(int restaurantId);
-    Task<Result<MenuDto>> CreateMenuAsync(int restaurantId, MenuDto menuDto);
-    Task<Result> UpdateMenuAsync(int menuId, MenuDto menuDto);
+    Task<Result<MenuDto>> GetMenus(int restaurantId, bool? isActive = null);
+    Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto);
+    Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto menuDto);
     Task<Result> DeleteMenuAsync(int menuId);
-    Task<Result> ActivateMenuAsync(int menuId);
-    Task<Result> DeactivateMenuAsync(int menuId);
-    
-    // Category operations
-
-    
-
-    Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
 }

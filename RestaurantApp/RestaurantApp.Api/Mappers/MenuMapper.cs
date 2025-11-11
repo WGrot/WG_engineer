@@ -39,25 +39,12 @@ public static class MenuMapper
     }
 
     // Aktualizacja istniejącej encji z DTO
-    public static void UpdateFromDto(this Menu entity, MenuDto dto)
+    public static void UpdateFromDto(this Menu entity, UpdateMenuDto dto)
     {
         entity.Name = dto.Name;
         entity.Description = dto.Description;
         entity.IsActive = dto.IsActive;
         
-        // Aktualizacja kategorii (jeśli przekazane)
-        if (dto.Categories != null)
-        {
-            entity.Categories = dto.Categories.Select(c => c.ToEntity()).ToList();
-        }
-        
-        // Aktualizacja pozycji menu bez kategorii (jeśli przekazane)
-        if (dto.Items != null)
-        {
-            entity.Items = dto.Items.Select(i => i.ToEntity()).ToList();
-        }
-        
-        // Nie aktualizujemy Id, RestaurantId ani relacji Restaurant
     }
 
     // Mapowanie kolekcji Entity na listę DTO
@@ -72,10 +59,16 @@ public static class MenuMapper
         return dtos.Select(d => d.ToEntity()).ToList();
     }
     
-    // Opcjonalna metoda do ustawienia RestaurantId
-    public static Menu WithRestaurantId(this Menu entity, int restaurantId)
+    public static Menu ToEntity(this CreateMenuDto dto)
     {
-        entity.RestaurantId = restaurantId;
-        return entity;
+        return new Menu
+        {
+            RestaurantId = dto.RestaurantId,
+            Name = dto.Name,
+            Description = dto.Description,
+            IsActive = dto.IsActive,
+            Categories = new List<MenuCategory>(),
+            Items = new List<MenuItem>()
+        };
     }
 }

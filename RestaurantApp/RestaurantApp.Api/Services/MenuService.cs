@@ -38,43 +38,49 @@ public class MenuService : IMenuService
             : Result.Success(menu.ToDto());
     }
 
-    public async Task<Result<MenuDto>> GetMenuByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<MenuDto>> GetMenus(int restaurantId, bool? isActive = null)
     {
-        var menu = await _context.Menus
+        var query = _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
             .ThenInclude(c => c.Items)
+            .ThenInclude(i => i.Tags)
             .Include(m => m.Items.Where(i => i.CategoryId == null))
-            .Where(m => m.RestaurantId == restaurantId)
-            .FirstOrDefaultAsync();
+            .Where(m => m.RestaurantId == restaurantId);
+        
+        if (isActive.HasValue)
+        {
+            query = query.Where(m => m.IsActive == isActive.Value);
+        }
+
+        var menu = await query.FirstOrDefaultAsync();
 
         return menu == null
-            ? Result<MenuDto>.NotFound($"Active menu for restaurant ID {restaurantId} not found.")
+            ? Result<MenuDto>.NotFound($"Menu for restaurant ID {restaurantId} not found.")
             : Result.Success(menu.ToDto());
     }
 
-    public async Task<Result<MenuDto>> CreateMenuAsync(int restaurantId, MenuDto menuDto)
+    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto)
     {
-        var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
+        var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == dto.RestaurantId);
         if (!restaurantExists)
         {
-            return Result<MenuDto>.NotFound($"restaurant with ID {restaurantId} not found.");
+            return Result<MenuDto>.NotFound($"restaurant with ID {dto.RestaurantId} not found.");
         }
 
-        if (menuDto.IsActive)
+        if (dto.IsActive)
         {
-            await DeactivateAllMenusForRestaurantAsync(restaurantId);
+            await DeactivateAllMenusForRestaurantAsync(dto.RestaurantId);
         }
 
-        Menu menu = menuDto.ToEntity();
-
-        menu.RestaurantId = restaurantId;
+        Menu menu = dto.ToEntity();
+        
         _context.Menus.Add(menu);
         await _context.SaveChangesAsync();
 
         return Result<MenuDto>.Success(menu.ToDto());
     }
 
-    public async Task<Result> UpdateMenuAsync(int menuId, MenuDto menuDto)
+    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto menuDto)
     {
         var existingMenu = await _context.Menus.FindAsync(menuId);
         if (existingMenu == null)
@@ -147,12 +153,7 @@ public class MenuService : IMenuService
         _logger.LogInformation("Deactivated menu {MenuId}", menuId);
         return Result.Success();
     }
-
-    // ===== CATEGORY OPERATIONS =====
-
-
-
-    // ===== MENU ITEM OPERATIONS =====
+    
 
     
 

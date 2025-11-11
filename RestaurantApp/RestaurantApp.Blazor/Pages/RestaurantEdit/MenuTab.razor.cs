@@ -20,9 +20,6 @@ public partial class MenuTab : ComponentBase
     [Parameter] public RestaurantDto? restaurant { get; set; }
 
     private MenuDto? menu;
-    private List<MenuCategoryDto> categories = new();
-    private Dictionary<int, List<MenuItemDto>> categoryItems = new();
-    private List<MenuItemDto> uncategorizedItems = new();
     private List<MenuItemTagDto> tags = new();
     private HashSet<int> expandedCategories = new();
 
@@ -63,20 +60,7 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/restaurant/{Id}");
-
-            if (menu != null)
-            {
-                categories = (await Http.GetFromJsonAsync<List<MenuCategoryDto>>($"/api/MenuCategory?menuId={menu.Id}")) ?? new();
-                
-                foreach (var category in categories)
-                {
-                    var items = await Http.GetFromJsonAsync<List<MenuItemDto>>($"api/MenuItem/category/{category.Id}/items");
-                    categoryItems[category.Id] = items ?? new();
-                }
-                
-                uncategorizedItems = (await Http.GetFromJsonAsync<List<MenuItemDto>>($"api/MenuItem/{menu.Id}/items/uncategorized")) ?? new();
-            }
+            menu =await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
         }
         catch (Exception ex)
         {

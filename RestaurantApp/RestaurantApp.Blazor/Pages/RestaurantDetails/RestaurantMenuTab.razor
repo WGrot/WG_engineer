@@ -28,7 +28,7 @@
 
                 <div class="collapse @(isExpanded ? "show" : "")">
                     <div class="card-body bg-white">
-                        @foreach (var item in categoryItems.GetValueOrDefault(category.Id, new List<MenuItemDto>()))
+                        @foreach (var item in category.Items)
                         {
                             <MenuItemComponent Item="item"
                                                OnItemClick="HandleMenuItemClick"/>
@@ -38,7 +38,7 @@
             </div>
         }
         
-        @if (uncategorizedItems.Any())
+        @if (menu.Items?.Any() == true)
         {
             <div class="card shadow-sm mb-3 border-0 rounded-3">
                 <div
@@ -53,7 +53,7 @@
 
                 <div class="collapse @(showUncategorized ? "show" : "")">
                     <div class="card-body bg-white">
-                        @foreach (var item in uncategorizedItems)
+                        @foreach (var item in menu.Items)
                         {
                             <MenuItemComponent Item="item"/>
                         }
