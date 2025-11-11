@@ -19,6 +19,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
@@ -108,7 +109,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHan
 builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthorizationHandler>();
-
+builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandler>();
 
 
 
