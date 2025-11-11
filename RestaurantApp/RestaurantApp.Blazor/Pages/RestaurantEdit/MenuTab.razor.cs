@@ -90,7 +90,14 @@ public partial class MenuTab : ComponentBase
     {
         showAddItem = true;
         addItemToCategoryId = categoryId;
-        newItem = new MenuItemDto { CurrencyCode = "PLN", ImageUrl = ""};
+        newItem = new MenuItemDto
+        {
+            Description = "",
+            Name = "",
+            Price = new PriceDto(),
+            CurrencyCode = "PLN", 
+            ImageUrl = ""
+        };
     }
 
     private void ShowMoveItemForm(int itemId)

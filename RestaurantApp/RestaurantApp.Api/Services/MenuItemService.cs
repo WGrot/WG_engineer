@@ -168,7 +168,7 @@ public class MenuItemService : IMenuItemService
 
         MenuItem item = itemDto.ToEntity();
         item.CategoryId = categoryId;
-        item.MenuId = null; 
+        item.MenuId = category.MenuId; 
         _context.MenuItems.Add(item);
         await _context.SaveChangesAsync();
 
@@ -239,7 +239,6 @@ public class MenuItemService : IMenuItemService
             }
 
             item.CategoryId = categoryId;
-            item.MenuId = null;
         }
         else
         {

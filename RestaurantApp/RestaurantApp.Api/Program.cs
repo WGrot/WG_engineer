@@ -16,6 +16,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
@@ -98,7 +99,7 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler>();
-
+builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHandler>();
 
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
