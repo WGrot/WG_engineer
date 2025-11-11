@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 
-namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased;
 
 public class PermissionAuthorizationHandler
     : AuthorizationHandler<PermissionRequirement, int>

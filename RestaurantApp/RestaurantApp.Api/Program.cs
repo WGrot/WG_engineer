@@ -13,12 +13,13 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
-using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
@@ -110,6 +111,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
 
 
 

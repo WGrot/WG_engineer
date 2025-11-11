@@ -72,6 +72,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto createReviewDto)
     {
         var review = await _reviewService.CreateAsync(createReviewDto);

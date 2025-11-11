@@ -94,6 +94,7 @@ public class RestaurantController : ControllerBase
 
     // POST: api/Restaurant
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] RestaurantDto restaurantDto)

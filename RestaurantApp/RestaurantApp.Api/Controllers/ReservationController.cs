@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -17,10 +18,12 @@ public class ReservationController : ControllerBase
 {
     private readonly IReservationService _reservationService;
     private readonly ILogger<ReservationController> _logger;
+    private readonly IAuthorizationService _authorizationService;
 
-    public ReservationController(IReservationService reservationService, ILogger<ReservationController> logger)
+    public ReservationController(IReservationService reservationService, IAuthorizationService authorizationService, ILogger<ReservationController> logger)
     {
         _reservationService = reservationService;
+        _authorizationService = authorizationService;
         _logger = logger;
     }
 
@@ -69,6 +72,18 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto)
     {
+        
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -83,6 +98,17 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteReservation(int id)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        
         var result = await _reservationService.DeleteReservationAsync(id);
         return result.ToActionResult();
     }
@@ -125,6 +151,17 @@ public class ReservationController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        
         var result = await _reservationService.UpdateTableReservationAsync(id, tableReservationDto);
         return result.ToActionResult();
     }
@@ -133,12 +170,24 @@ public class ReservationController : ControllerBase
     [HttpDelete("table/{id}")]
     public async Task<IActionResult> DeleteTableReservation(int id)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        
         var result = await _reservationService.DeleteTableReservationAsync(id);
         return result.ToActionResult();
     }
 
     // GET: api/reservation/restaurant/{restaurantId}
     [HttpGet("manage/")]
+    [Authorize]
     public async Task<IActionResult> GetReservationsToManage([FromQuery] ReservationSearchParameters searchParams)
     {
         var reservations = await _reservationService.GetReservationsToManage(searchParams);
@@ -146,9 +195,6 @@ public class ReservationController : ControllerBase
     }
 
     [HttpGet("search")]
-    [ProducesResponseType(typeof(IEnumerable<ReservationBase>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SearchReservations(
         [FromQuery] ReservationSearchParameters searchParams)
     {
@@ -159,13 +205,24 @@ public class ReservationController : ControllerBase
     }
     
     [HttpPut("manage/{id}/change-status")]
-    [Authorize(Policy = "ManageReservations")]
     public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatus status)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+        
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
 
         var result = await _reservationService.UpdateReservationStatusAsync(id, status);
         return result.ToActionResult();
@@ -178,6 +235,17 @@ public class ReservationController : ControllerBase
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+        
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new ManageReservationRequirement(id)
+        );
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
         }
 
         var result = await _reservationService.CancelUserReservation(id);
