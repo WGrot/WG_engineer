@@ -18,6 +18,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
@@ -93,6 +94,12 @@ builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMenuItemService, MenuItemService>();
+builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
+builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
+builder.Services.AddScoped<IMenuCategoryService, MenuCategoryService>();
+
+
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
@@ -100,11 +107,9 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageMenuAuthorizationHandler
 builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthorizationHandler>();
 
-builder.Services.AddScoped<IMenuItemService, MenuItemService>();
-builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
-builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
-builder.Services.AddScoped<IMenuCategoryService, MenuCategoryService>();
+
 
 
 

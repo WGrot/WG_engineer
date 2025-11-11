@@ -168,6 +168,8 @@ public partial class MenuItemEditComponent : ComponentBase
 
     private async Task SaveVariantEdit(int variantId)
     {
+        editVariant.MenuItemId = Item.Id;
+        editVariant.Id = variantId;
         var response = await Http.PutAsJsonAsync($"api/MenuItemVariants/{variantId}", editVariant);
 
         if (response.IsSuccessStatusCode)
@@ -194,14 +196,12 @@ public partial class MenuItemEditComponent : ComponentBase
     private void StartAddNew()
     {
         isAddingNew = true;
-        newVariant = new MenuItemVariantDto
-        {
-            MenuItemId = Item.Id
-        };
+
     }
 
     private async Task AddNewVariant()
     {
+        newVariant.MenuItemId = Item.Id;
         var response = await Http.PostAsJsonAsync($"api/MenuItemVariants", newVariant);
 
         if (response.IsSuccessStatusCode)
@@ -226,6 +226,10 @@ public partial class MenuItemEditComponent : ComponentBase
     private async Task DeleteVariant(int variantId)
     {
         var response = await Http.DeleteAsync($"/api/MenuItemVariants/{variantId}");
+        if (response.IsSuccessStatusCode)
+        {
+            Variants.RemoveAll(v => v.Id == variantId);
+        }
         
     }
 }
