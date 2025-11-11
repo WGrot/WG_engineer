@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu;
@@ -13,51 +15,79 @@ namespace RestaurantApp.Api.Controllers;
 public class MenuController : ControllerBase
 {
     private readonly IMenuService _menuService;
-
-    public MenuController(IMenuService menuService)
+    private readonly IAuthorizationService _authorizationService;
+    public MenuController(IMenuService menuService, IAuthorizationService authorizationService)
     {
         _menuService = menuService;
+        _authorizationService = authorizationService;
     }
 
-    // ===== MENU ENDPOINTS =====
-
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetMenu(int id) =>
-        (await _menuService.GetMenuByIdAsync(id)).ToActionResult();
+    public async Task<IActionResult> GetMenu(int id)
+    {
+        return (await _menuService.GetMenuByIdAsync(id)).ToActionResult();
+    }
 
-    [HttpGet("restaurant/{restaurantId}")]
-    public async Task<IActionResult> GetMenuByRestaurant(int restaurantId) =>
-        (await _menuService.GetMenuByRestaurantIdAsync(restaurantId)).ToActionResult();
-    
-    [HttpGet("restaurant/{restaurantId}/active-menu")]
-    public async Task<IActionResult> GetActiveMenuByRestaurant(int restaurantId) =>
-        (await _menuService.GetActiveMenuByRestaurantIdAsync(restaurantId)).ToActionResult();
+    [HttpGet]
+    public async Task<IActionResult> GetMenuByRestaurant([FromQuery] int restaurantId, [FromQuery] bool isActive)
+    {
+        return (await _menuService.GetMenus(restaurantId, isActive)).ToActionResult();
+    }
 
-    [HttpPost("restaurant/{restaurantId}")]
-    public async Task<IActionResult> CreateMenu(int restaurantId, [FromBody] MenuDto menuDto) =>
-        (await _menuService.CreateMenuAsync(restaurantId, menuDto)).ToActionResult();
+    [HttpPost]
+    public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null,
+            new ManageMenuRequirement(restaurantId: menuDto.RestaurantId)); 
+
+        if (!authResult.Succeeded)
+            return Forbid();
+        return (await _menuService.CreateMenuAsync(menuDto)).ToActionResult();
+    }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMenu(int id, [FromBody] MenuDto menuDto) =>
-        (await _menuService.UpdateMenuAsync(id, menuDto)).ToActionResult();
+    public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            id,
+            new ManageMenuRequirement(menuId: id)); 
+
+        if (!authResult.Succeeded)
+            return Forbid();
+        
+        return (await _menuService.UpdateMenuAsync(id, menuDto)).ToActionResult();
+    }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMenu(int id) =>
-        (await _menuService.DeleteMenuAsync(id)).ToActionResult();
+    public async Task<IActionResult> DeleteMenu(int id)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            id,
+            new ManageMenuRequirement(menuId: id)); 
 
-    [HttpPatch("{id}/activate")]
-    public async Task<IActionResult> ActivateMenu(int id) =>
-        (await _menuService.ActivateMenuAsync(id)).ToActionResult();
+        if (!authResult.Succeeded)
+            return Forbid();
+        return (await _menuService.DeleteMenuAsync(id)).ToActionResult();
+    }
 
-    [HttpPatch("{id}/deactivate")]
-    public async Task<IActionResult> DeactivateMenu(int id) =>
-        (await _menuService.DeactivateMenuAsync(id)).ToActionResult();
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> PatchMenu(int id, [FromBody] UpdateMenuDto menuDto)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            id,
+            new ManageMenuRequirement(menuId: id)); 
 
-    // ===== CATEGORY ENDPOINTS =====
+        if (!authResult.Succeeded)
+            return Forbid();
+        
+        return (await _menuService.UpdateMenuAsync(id, menuDto)).ToActionResult();
+    }
 
-   
-
-    // ===== MENU ITEM ENDPOINTS =====
 
 
 }
