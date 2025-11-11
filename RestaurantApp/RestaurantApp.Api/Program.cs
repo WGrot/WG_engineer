@@ -94,6 +94,7 @@ builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>(
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler>();
 
 
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();

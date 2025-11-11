@@ -5,20 +5,18 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 
-public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuRequirement>
+public class ManageTagsAuthorizationHandler: AuthorizationHandler<ManageTagsRequirement>
 {
     private readonly ApiDbContext _context;
 
-    public ManageMenuAuthorizationHandler(
-        ApiDbContext context,
-        ILogger<ManageMenuAuthorizationHandler> logger)
+    public ManageTagsAuthorizationHandler(ApiDbContext context)
     {
         _context = context;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
-        ManageMenuRequirement requirement)
+        ManageTagsRequirement requirement)
     {
         var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -30,34 +28,13 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
 
         try
         {
-            int? restaurantId = null;
+            // Pobierz kategorię wraz z Menu i Restaurant
+            var tag = await _context.MenuItemTags
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == requirement.TagId);
+            
 
-            // Jeśli mamy MenuId, pobierz RestaurantId z menu
-            if (requirement.MenuId.HasValue)
-            {
-                var menu = await _context.Menus
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(m => m.Id == requirement.MenuId.Value);
-
-                if (menu == null)
-                {
-                    context.Fail();
-                    return;
-                }
-
-                restaurantId = menu.RestaurantId;
-            }
-            // Jeśli nie mamy MenuId, użyj RestaurantId z requirement
-            else if (requirement.RestaurantId.HasValue)
-            {
-                restaurantId = requirement.RestaurantId.Value;
-            }
-            else
-            {
-                // Brak MenuId i RestaurantId - nie można autoryzować
-                context.Fail();
-                return;
-            }
+            var restaurantId = tag.RestaurantId;
 
             // Sprawdź czy użytkownik pracuje w tej restauracji
             var employee = await _context.RestaurantEmployees
@@ -73,7 +50,7 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
                 return;
             }
 
-            // Sprawdź czy użytkownik ma uprawnienie ManageMenu w tej restauracji
+            // Sprawdź uprawnienie ManageMenu
             var hasManageMenuPermission = await _context.RestaurantPermissions
                 .AsNoTracking()
                 .AnyAsync(ep =>
@@ -89,7 +66,7 @@ public class ManageMenuAuthorizationHandler : AuthorizationHandler<ManageMenuReq
                 context.Fail();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             context.Fail();
         }

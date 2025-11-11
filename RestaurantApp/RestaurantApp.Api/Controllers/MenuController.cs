@@ -52,7 +52,7 @@ public class MenuController : ControllerBase
     {
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
-            id,
+            null,
             new ManageMenuRequirement(menuId: id)); 
 
         if (!authResult.Succeeded)
@@ -66,7 +66,7 @@ public class MenuController : ControllerBase
     {
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
-            id,
+            null,
             new ManageMenuRequirement(menuId: id)); 
 
         if (!authResult.Succeeded)
@@ -79,7 +79,7 @@ public class MenuController : ControllerBase
     {
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
-            id,
+            null,
             new ManageMenuRequirement(menuId: id)); 
 
         if (!authResult.Succeeded)

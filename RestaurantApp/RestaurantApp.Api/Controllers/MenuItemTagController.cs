@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
@@ -13,29 +16,22 @@ namespace RestaurantApp.Api.Controllers;
 public class MenuItemTagController : ControllerBase
 {
     private readonly IMenuItemTagService _tagService;
-    private readonly ILogger<MenuItemTagController> _logger;
+    private readonly IAuthorizationService _authorizationService;
 
-    public MenuItemTagController(IMenuItemTagService tagService, ILogger<MenuItemTagController> logger)
+    public MenuItemTagController(IMenuItemTagService tagService, IAuthorizationService authorizationService)
     {
         _tagService = tagService;
-        _logger = logger;
+        _authorizationService = authorizationService;
     }
 
     // GET: api/MenuItemTag
     [HttpGet]
-    public async Task<IActionResult> GetAllTags()
+    public async Task<IActionResult> GetTags([FromBody] int? restaurantId)
     {
-        var tags = await _tagService.GetAllTagsAsync();
+        var tags = await _tagService.GetTagsAsync(restaurantId);
         return tags.ToActionResult();
     }
 
-    // GET: api/MenuItemTag/restaurant/5
-    [HttpGet("restaurant/{restaurantId}")]
-    public async Task<IActionResult> GetTagsByRestaurant(int restaurantId)
-    {
-        var tags = await _tagService.GetTagsByRestaurantIdAsync(restaurantId);
-        return tags.ToActionResult();
-    }
 
     // GET: api/MenuItemTag/5
     [HttpGet("{id}")]
@@ -47,8 +43,16 @@ public class MenuItemTagController : ControllerBase
 
     // POST: api/MenuItemTag
     [HttpPost]
-    public async Task<IActionResult> CreateTag([FromBody] MenuItemTagDto tag)
+    public async Task<IActionResult> CreateTag([FromBody] CreateMenuItemTagDto tag)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User,
+            null,
+            new ManageMenuRequirement(restaurantId: tag.RestaurantId));
+
+        if (!authResult.Succeeded)
+            return Forbid();
+
         var createdTag = await _tagService.CreateTagAsync(tag);
         return createdTag.ToActionResult();
     }
@@ -57,6 +61,14 @@ public class MenuItemTagController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTag(int id, [FromBody] MenuItemTagDto tag)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User,
+            null,
+            new ManageMenuRequirement(restaurantId: tag.RestaurantId));
+
+        if (!authResult.Succeeded)
+            return Forbid();
+
         var updatedTag = await _tagService.UpdateTagAsync(id, tag);
 
         return updatedTag.ToActionResult();
@@ -66,9 +78,15 @@ public class MenuItemTagController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTag(int id)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User,
+            null,
+            new ManageTagsRequirement(id));
 
-            var result = await _tagService.DeleteTagAsync(id);
-            return result.ToActionResult();
+        if (!authResult.Succeeded)
+            return Forbid();
 
+        var result = await _tagService.DeleteTagAsync(id);
+        return result.ToActionResult();
     }
 }

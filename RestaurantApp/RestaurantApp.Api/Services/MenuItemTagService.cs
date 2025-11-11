@@ -19,21 +19,17 @@ public class MenuItemTagService : IMenuItemTagService
         _context = context;
         _logger = logger;
     }
-
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetAllTagsAsync()
+    
+    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(int? restaurantId = null)
     {
-        var tags = await _context.MenuItemTags
-            .ToListAsync();
+        var query = _context.MenuItemTags.AsQueryable();
 
-        return Result<IEnumerable<MenuItemTagDto>>.Success(tags.ToDto());
-    }
+        if (restaurantId.HasValue)
+        {
+            query = query.Where(t => t.RestaurantId == restaurantId.Value);
+        }
 
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsByRestaurantIdAsync(int restaurantId)
-    {
-        var tags = await _context.MenuItemTags
-            .Where(t => t.RestaurantId == restaurantId)
-            .ToListAsync();
-
+        var tags = await query.ToListAsync();
         return Result<IEnumerable<MenuItemTagDto>>.Success(tags.ToDto());
     }
 
@@ -49,7 +45,7 @@ public class MenuItemTagService : IMenuItemTagService
         return Result<MenuItemTag?>.Success(tag.ToDto());
     }
 
-    public async Task<Result<MenuItemTagDto>> CreateTagAsync(MenuItemTagDto tag)
+    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto tag)
     {
         var restaurantExists = await _context.Restaurants.AnyAsync(r => r.Id == tag.RestaurantId);
         if (!restaurantExists)

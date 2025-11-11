@@ -36,13 +36,13 @@ public partial class MenuTab : ComponentBase
     private MenuItemDto newItem = new();
 
     
-    private MenuItemTagDto newTag = new();
+    private CreateMenuItemTagDto newTag;
     private bool showAddTag = false;
 
     private void ShowAddTagForm()
     {
         showAddTag = true;
-        newTag = new MenuItemTagDto 
+        newTag = new CreateMenuItemTagDto 
         { 
             ColorHex = "#FFFFFF",
             RestaurantId = Id // ustaw odpowiednie ID restauracji
@@ -72,7 +72,7 @@ public partial class MenuTab : ComponentBase
 
     private async Task LoadTags()
     {
-        var response = await Http.GetFromJsonAsync<List<MenuItemTagDto>>($"api/MenuItemTag/restaurant/{Id}");
+        var response = await Http.GetFromJsonAsync<List<MenuItemTagDto>>($"api/MenuItemTag?restaurantId={Id}");
         if (response != null)
         {
             tags = response;

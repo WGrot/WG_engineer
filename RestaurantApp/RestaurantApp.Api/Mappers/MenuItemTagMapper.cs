@@ -39,6 +39,17 @@ public static class MenuItemTagMapper
         entity.RestaurantId = dto.RestaurantId;
     }
     
+    public static MenuItemTag ToEntity(this CreateMenuItemTagDto dto)
+    {
+        return new MenuItemTag
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            ColorHex = dto.ColorHex,
+            RestaurantId = dto.RestaurantId
+        };
+    }
+    
     public static IEnumerable<MenuItemTagDto> ToDto(this IEnumerable<MenuItemTag> entities)
     {
         return entities.Select(e => e.ToDto());
