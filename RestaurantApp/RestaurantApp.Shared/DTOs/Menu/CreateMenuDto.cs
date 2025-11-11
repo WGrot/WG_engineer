@@ -1,0 +1,8 @@
+﻿namespace RestaurantApp.Shared.DTOs.Menu;
+
+public class CreateMenuDto
+{
+    public int RestaurantId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}

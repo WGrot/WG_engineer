@@ -99,6 +99,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHan
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
 builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
+builder.Services.AddScoped<IMenuCategoryService, MenuCategoryService>();
 
 
 

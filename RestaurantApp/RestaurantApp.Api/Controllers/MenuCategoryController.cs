@@ -13,25 +13,25 @@ namespace RestaurantApp.Api.Controllers;
 public class MenuCategoryController: ControllerBase
 {
     
-    private readonly IMenuService _menuService;
+    private readonly IMenuCategoryService _menuCategoryService;
     private readonly IAuthorizationService _authorizationService;
 
-    public MenuCategoryController(IMenuService menuService, IAuthorizationService authorizationService)
+    public MenuCategoryController(IMenuCategoryService menuCategoryService, IAuthorizationService authorizationService)
     {
-        _menuService = menuService;
+        _menuCategoryService = menuCategoryService;
         _authorizationService = authorizationService;
     }
     
     [HttpGet]
     public async Task<IActionResult> GetCategories([FromQuery] int? menuId)
     {
-        return (await _menuService.GetCategoriesAsync(menuId)).ToActionResult();
+        return (await _menuCategoryService.GetCategoriesAsync(menuId)).ToActionResult();
     }
 
     [HttpGet("{categoryId}")]
     public async Task<IActionResult> GetCategory(int categoryId)
     {
-        return (await _menuService.GetCategoryByIdAsync(categoryId)).ToActionResult();
+        return (await _menuCategoryService.GetCategoryByIdAsync(categoryId)).ToActionResult();
     }
 
     [HttpPost]
@@ -45,7 +45,7 @@ public class MenuCategoryController: ControllerBase
         if (!authResult.Succeeded)
             return Forbid();
         
-        return (await _menuService.CreateCategoryAsync(categoryDto)).ToActionResult();
+        return (await _menuCategoryService.CreateCategoryAsync(categoryDto)).ToActionResult();
     }
 
     [HttpPut("{categoryId}")]
@@ -59,7 +59,7 @@ public class MenuCategoryController: ControllerBase
         if (!authResult.Succeeded)
             return Forbid();
         
-        return (await _menuService.UpdateCategoryAsync(categoryDto)).ToActionResult();
+        return (await _menuCategoryService.UpdateCategoryAsync(categoryDto)).ToActionResult();
     }
 
     [HttpDelete("{categoryId}")]
@@ -72,7 +72,7 @@ public class MenuCategoryController: ControllerBase
 
         if (!authResult.Succeeded)
             return Forbid();
-        return (await _menuService.DeleteCategoryAsync(categoryId)).ToActionResult();
+        return (await _menuCategoryService.DeleteCategoryAsync(categoryId)).ToActionResult();
     }
     
 }

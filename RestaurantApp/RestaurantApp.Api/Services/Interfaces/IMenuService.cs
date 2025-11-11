@@ -20,12 +20,7 @@ public interface IMenuService
     Task<Result> DeactivateMenuAsync(int menuId);
     
     // Category operations
-    Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId);
-    Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId);
-    Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto);
-    Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto);
-    Task<Result> DeleteCategoryAsync(int categoryId);
-    Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder);
+
     
 
     Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId);
