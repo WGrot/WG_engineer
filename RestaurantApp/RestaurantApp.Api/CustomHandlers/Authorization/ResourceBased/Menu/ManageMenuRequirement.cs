@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 
 public class ManageMenuRequirement : IAuthorizationRequirement
 {

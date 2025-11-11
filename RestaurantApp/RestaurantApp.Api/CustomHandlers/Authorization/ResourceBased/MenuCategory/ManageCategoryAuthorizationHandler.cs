@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Shared.Models;
 
-namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 
 public class ManageCategoryAuthorizationHandler: AuthorizationHandler<ManageCategoryRequirement>
 {

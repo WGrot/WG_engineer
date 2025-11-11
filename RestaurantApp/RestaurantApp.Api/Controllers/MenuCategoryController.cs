@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 

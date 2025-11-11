@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
