@@ -19,6 +19,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 using RestaurantApp.Api.Services;
@@ -112,7 +113,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHan
 builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
-
+builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationHandler>();
 
 
 
@@ -221,7 +222,7 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageEmployees)));
     
     options.AddPolicy("ViewReports", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ViewReports)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManagePermissions)));
     
 });
 
