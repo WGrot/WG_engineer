@@ -266,6 +266,26 @@
 .logout-icon-btn:hover {
     background: rgba(255, 100, 100, 0.3);
 }
+.menu-section-title {
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 1rem 0 1rem 0;
+    position: relative;
+}
+
+.menu-section-title::after {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    margin: 0.4rem auto 0;
+    border-radius: 2px;
+}
 
 /* Responsywność */
 @media (max-width: 1080px) {
@@ -321,4 +341,7 @@
         padding: 10px 14px;
         font-size: 0.9rem;
     }
+    
+    
+    
 }

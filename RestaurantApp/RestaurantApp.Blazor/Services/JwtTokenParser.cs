@@ -26,7 +26,7 @@ public class JwtTokenParser
             foreach (var kvp in keyValuePairs)
             {
                 var key = kvp.Key;
-                var value = kvp.Value?.ToString() ?? "";
+                var value = kvp.Value;
 
                 // Mapuj JWT claims na .NET claims
                 var claimType = key switch
@@ -38,9 +38,20 @@ public class JwtTokenParser
                 };
 
                 // Pomiń role, bo już je obsłużyliśmy
-                if (!key.Contains("role", StringComparison.OrdinalIgnoreCase))
+                if (key.Contains("role", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Jeśli value jest tablicą (JSON array), dodaj osobny claim dla każdego elementu
+                if (value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
                 {
-                    claims.Add(new Claim(claimType, value));
+                    foreach (var element in jsonElement.EnumerateArray())
+                    {
+                        claims.Add(new Claim(claimType, element.GetString() ?? ""));
+                    }
+                }
+                else
+                {
+                    claims.Add(new Claim(claimType, value?.ToString() ?? ""));
                 }
             }
         }

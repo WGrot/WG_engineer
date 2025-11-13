@@ -1,0 +1,26 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+@inject PermissionService PermissionService
+@using RestaurantApp.Blazor.Services
+@implements IDisposable
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var isEmployee = await PermissionService.IsEmployeeAsync();
+        
+        if (isEmployee)
+        {
+            NavigationManager.NavigateTo("/RestaurantDashboard", replace: true);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/homepage", replace: true);
+        }
+    }
+
+    public void Dispose()
+    {
+
+    }
+}

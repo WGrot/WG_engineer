@@ -42,4 +42,29 @@ public class PermissionService
             c.Type == $"restaurant:{restaurantId}:permission" && 
             c.Value == permission);
     }
+    
+    public async Task<bool> HasAnyPermissionAsync(int restaurantId, IEnumerable<string> permissions)
+    {
+        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        return user.Claims.Any(c => 
+            c.Type == $"restaurant:{restaurantId}:permission" && 
+            permissions.Contains(c.Value));
+    }
+    
+    public async Task<bool> IsRestaurantEmployeeAsync(int restaurantId)
+    {
+        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        return user.Claims.Any(c => 
+            c.Type == "restaurant_employee" && 
+            c.Value == restaurantId.ToString());
+    }
+    
+    public async Task<bool> IsEmployeeAsync()
+    {
+        return (await GetUserRestaurantsAsync()).Any();
+    }
 }

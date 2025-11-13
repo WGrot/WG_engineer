@@ -2,17 +2,30 @@
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Users
+@using RestaurantApp.Shared.Models
 @inject AuthService AuthService
 @inject NavigationManager Navigation
+@inject PermissionService PermissionService
+@inject TokenStorageService TokenStorageService
 @implements IDisposable
 
 <header class="top-header">
     <div class="container-fluid">
         <div class="header-content">
             <div class="brand">
-                <a href="/" class="brand-link">
-                    <h1>Food Site</h1>
-                </a>
+                @if (isEmployee)
+                {
+                    <a href="/RestaurantDashboard" class="brand-link">
+                        <h1>Food Site</h1>for employees
+                    </a>
+                }
+                else
+                {
+                    <a href="/homepage" class="brand-link">
+                        <h1>Food Site</h1>
+                    </a>
+                }
+
             </div>
             <div class="header-actions">
                 @if (_isAuthenticated && _currentUser != null)
@@ -79,6 +92,7 @@
         <nav class="menu-nav">
             @if (_isAuthenticated)
             {
+                <h3 class="menu-section-title">User options</h3>
                 <a href="/profile" class="menu-item" @onclick="CloseMenu">
                     <span>My Profile</span>
                 </a>
@@ -88,12 +102,37 @@
                 <a href="/settings" class="menu-item" @onclick="CloseMenu">
                     <span>Settings</span>
                 </a>
-                <a href="/manage-reservations" class="menu-item" @onclick="CloseMenu">
-                    <span>Manage reservations</span>
-                </a>
-                <a href="/my-reviews" class="menu-item" @onclick="CloseMenu">
+                <a href="/my-reviews" class="menu-item mb-4" @onclick="CloseMenu">
                     <span>My reviews</span>
                 </a>
+                if (isEmployee)
+                {
+                    <h3 class="menu-section-title" >Employee options</h3>
+                    if (canManageReservations)
+                    {
+                        <a href="/manage-reservations" class="menu-item" @onclick="CloseMenu">
+                            <span>Manage reservations</span>
+                        </a>
+                    }
+
+                    if (canEditRestaurant)
+                    {
+                        <a style="cursor: pointer" class="menu-item" @onclick="NavigateToEditRestaurant">
+                            <span>Edit Restaurant</span>
+                        </a>
+                    }
+                    
+                    <a href="/RestaurantDashboard" class="menu-item" @onclick="CloseMenu">
+                        <span>Go to Dashboard</span>
+                    </a>
+                    
+                    <a href="/homepage" class="menu-item" @onclick="CloseMenu">
+                        <span>Go to User View</span>
+                    </a>
+                    <a style="cursor: pointer" class="menu-item" @onclick="NavigateToRestaurant">
+                        <span>See restaurant profile</span>
+                    </a>
+                }
             }
             else
             {
@@ -144,9 +183,14 @@
     private ResponseUserDto? _currentUser;
     private Timer? _refreshTimer;
 
+    private bool isEmployee = false;
+    private bool canManageReservations = false;
+    private bool canEditRestaurant = false;
+
     protected override async Task OnInitializedAsync()
     {
         await CheckAuthenticationStatus();
+
 
         // Odświeżaj status co 30 sekund
         _refreshTimer = new Timer(async _ =>
@@ -167,6 +211,20 @@
             if (_isAuthenticated)
             {
                 _currentUser = await AuthService.GetCurrentUserAsync();
+                isEmployee = await PermissionService.IsEmployeeAsync();
+                string activeRestaurantIdString = await TokenStorageService.GetActiveRestaurantAsync();
+                int activeRestaurantId = int.Parse(activeRestaurantIdString);
+                canManageReservations = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
+                {
+                    PermissionType.ManageReservations.ToString(),
+                });
+                canEditRestaurant = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
+                {
+                    PermissionType.ManageMenu.ToString(),
+                    //PermissionType.ManageEmployees.ToString(),
+                    PermissionType.ManageTables.ToString(),
+                    //PermissionType.ManageRestaurantSettings.ToString()  
+                });
             }
             else
             {
@@ -178,6 +236,20 @@
             Console.WriteLine($"Error checking auth status: {ex.Message}");
             _isAuthenticated = false;
             _currentUser = null;
+        }
+    }
+
+    private async Task CheckPermissionsAsync()
+    {
+        if (_isAuthenticated)
+        {
+            // canManageReservations = await PermissionService.HasPermissionAsync(PermissionType.ManageReservations.ToString());
+            // canEditRestaurant = await PermissionService.CanEditRestaurantAsync();
+        }
+        else
+        {
+            canManageReservations = false;
+            canEditRestaurant = false;
         }
     }
 
@@ -208,8 +280,28 @@
         Navigation.NavigateTo("/", true); // Force reload
     }
 
+
+    private async Task NavigateToEditRestaurant()
+    {
+        CloseMenu();
+
+        var restaurantId = await TokenStorageService.GetActiveRestaurantAsync();
+
+        Navigation.NavigateTo($"/restaurant/edit/{restaurantId}");
+    }
+    
+    private async Task NavigateToRestaurant()
+    {
+        CloseMenu();
+
+        var restaurantId = await TokenStorageService.GetActiveRestaurantAsync();
+
+        Navigation.NavigateTo($"/restaurant/{restaurantId}");
+    }
+
     public void Dispose()
     {
         _refreshTimer?.Dispose();
     }
+
 }
