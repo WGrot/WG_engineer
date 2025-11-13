@@ -249,7 +249,8 @@ public partial class RestaurantReviewsTab : ComponentBase
         {
             Rating = existingUserReview!.Rating,
             Content = existingUserReview.Content,
-            PhotosUrls = existingUserReview.PhotosUrls
+            PhotosUrls = existingUserReview.PhotosUrls,
+            UserId = existingUserReview.UserId
         };
         var response = await Http.PutAsJsonAsync($"/api/Reviews/{existingUserReview!.Id}", dto);
         if(response.IsSuccessStatusCode)
