@@ -12,10 +12,18 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Dodaj autoryzację
 builder.Services.AddAuthorizationCore();
 
-// Zarejestruj handler
+// 1. Podstawowe usługi (bez zależności)
+builder.Services.AddScoped<TokenStorageService>();
+builder.Services.AddScoped<JwtTokenParser>();
+
+// 2. AuthenticationStateProvider
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<JwtAuthenticationStateProvider>());
+
+// 3. HttpClient handler i configuration
 builder.Services.AddScoped<AuthorizedHttpMessageHandler>();
 
-// Skonfiguruj HttpClient z handlerem
 builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<AuthorizedHttpMessageHandler>();
@@ -26,21 +34,11 @@ builder.Services.AddScoped(sp =>
     return httpClient;
 });
 
-// Zarejestruj AuthService
+// 4. AuthService (zależy od powyższych)
 builder.Services.AddScoped<AuthService>();
 
-// Zarejestruj JwtAuthenticationStateProvider
-builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
-    provider.GetRequiredService<JwtAuthenticationStateProvider>());
-
+// 5. Inne serwisy
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<PermissionService>();
-// Połącz AuthService z JwtAuthenticationStateProvider
-var host = builder.Build();
 
-var authService = host.Services.GetRequiredService<AuthService>();
-var authStateProvider = host.Services.GetRequiredService<JwtAuthenticationStateProvider>();
-authService.SetAuthenticationStateProvider(authStateProvider);
-
-await host.RunAsync();
+await builder.Build().RunAsync();

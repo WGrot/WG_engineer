@@ -36,12 +36,6 @@ public class EmployeesController : ControllerBase
 
         if (!string.IsNullOrEmpty(userId))
         {
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, "SameUser");
-
-            if (!authorizationResult.Succeeded)
-            {
-                return Forbid();
-            }
         
             return (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
         }

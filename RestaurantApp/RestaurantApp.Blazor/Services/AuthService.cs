@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using RestaurantApp.Blazor.Models.DTO;
 using RestaurantApp.Shared.DTOs;
@@ -11,19 +12,19 @@ namespace RestaurantApp.Blazor.Services;
 public class AuthService
 {
     private readonly HttpClient _httpClient;
-    private readonly IJSRuntime _jsRuntime;
-    private JwtAuthenticationStateProvider? _authStateProvider;
-    private const string TOKEN_KEY = "authToken";
-    private const string USER_KEY = "userInfo";
+    private readonly TokenStorageService _tokenStorage;
+    private readonly JwtTokenParser _tokenParser;
+    private readonly AuthenticationStateProvider _authStateProvider;
 
-
-    public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
+    public AuthService(
+        HttpClient httpClient,
+        TokenStorageService tokenStorage,
+        JwtTokenParser tokenParser,
+        AuthenticationStateProvider authStateProvider)
     {
         _httpClient = httpClient;
-        _jsRuntime = jsRuntime;
-    }
-    public void SetAuthenticationStateProvider(JwtAuthenticationStateProvider authStateProvider)
-    {
+        _tokenStorage = tokenStorage;
+        _tokenParser = tokenParser;
         _authStateProvider = authStateProvider;
     }
 
@@ -31,37 +32,41 @@ public class AuthService
     {
         try
         {
-            var loginRequest = new
-            {
-                Email = email,
-                Password = password
-            };
-
+            var loginRequest = new { Email = email, Password = password };
             var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var content = await response.Content.ReadAsStringAsync();
+            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (loginResponse == null || string.IsNullOrEmpty(loginResponse.Token))
+                return false;
+
+            // Zapisz dane w storage
+            await _tokenStorage.SaveTokenAsync(loginResponse.Token);
+            await _tokenStorage.SaveUserAsync(loginResponse.ResponseUser);
+
+            // Zapisz aktywną restaurację jeśli jest w tokenie
+            var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(loginResponse.Token);
+            if (!string.IsNullOrEmpty(activeRestaurant))
             {
-                var content = await response.Content.ReadAsStringAsync();
-                var loginResponse = JsonSerializer.Deserialize<LoginResponse>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
-                {
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TOKEN_KEY, loginResponse.Token);
-                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY,
-                        JsonSerializer.Serialize(loginResponse.ResponseUser));
-
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.Token);
-
-                    // Powiadom o zalogowaniu
-                    _authStateProvider?.NotifyUserAuthentication(loginResponse.Token);
-
-                    return true;
-                }
+                await _tokenStorage.SaveActiveRestaurantAsync(activeRestaurant);
             }
 
-            return false;
+            // Ustaw header Authorization
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.Token);
+
+            // Powiadom AuthenticationStateProvider o zmianie
+            if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
+            {
+                jwtProvider.NotifyUserAuthentication(loginResponse.Token);
+            }
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -70,42 +75,50 @@ public class AuthService
         }
     }
 
-    public async Task<string?> GetTokenAsync()
-    {
-        return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
-    }
-
     public async Task LogoutAsync()
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TOKEN_KEY);
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", USER_KEY);
+        // Wyczyść storage
+        await _tokenStorage.ClearAllAsync();
+
+        // Usuń header Authorization
         _httpClient.DefaultRequestHeaders.Authorization = null;
-        
-        // Powiadom o wylogowaniu
-        _authStateProvider?.NotifyUserLogout();
+
+        // Powiadom AuthenticationStateProvider o wylogowaniu
+        if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
+        {
+            jwtProvider.NotifyUserLogout();
+        }
     }
 
     public async Task<bool> IsAuthenticatedAsync()
     {
-        var token = await GetTokenAsync();
-        return !string.IsNullOrEmpty(token);
+        var token = await _tokenStorage.GetTokenAsync();
+        
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        // Sprawdź czy token nie wygasł
+        if (_tokenParser.IsTokenExpired(token))
+        {
+            await LogoutAsync();
+            return false;
+        }
+
+        return true;
     }
-    
+
     public async Task<ResponseUserDto?> GetCurrentUserAsync()
     {
-        try
-        {
-            var userJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", USER_KEY);
-            if (!string.IsNullOrEmpty(userJson))
-            {
-                return JsonSerializer.Deserialize<ResponseUserDto>(userJson, 
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            }
-        }
-        catch
-        {
-            // Ignore
-        }
-        return null;
+        return await _tokenStorage.GetUserAsync();
+    }
+
+    public async Task<string?> GetActiveRestaurantAsync()
+    {
+        return await _tokenStorage.GetActiveRestaurantAsync();
+    }
+
+    public async Task SetActiveRestaurantAsync(string restaurantId)
+    {
+        await _tokenStorage.SaveActiveRestaurantAsync(restaurantId);
     }
 }
