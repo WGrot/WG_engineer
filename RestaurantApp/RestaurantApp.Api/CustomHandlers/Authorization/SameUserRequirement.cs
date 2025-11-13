@@ -5,10 +5,10 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization;
 public class SameUserRequirement: IAuthorizationRequirement
 {
 
-    public string ParameterName { get; }
+    public string UserId { get; }
     
-    public SameUserRequirement(string parameterName = "userId")
+    public SameUserRequirement(string userId)
     {
-        ParameterName = parameterName;
+        UserId = userId;
     }
 }

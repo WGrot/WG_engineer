@@ -200,10 +200,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("SameUser", policy =>
-    {
-        policy.Requirements.Add(new SameUserRequirement("userId"));
-    });
     
     options.AddPolicy("RestaurantEmployee", policy =>
         policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement()));

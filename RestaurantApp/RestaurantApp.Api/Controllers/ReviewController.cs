@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
@@ -17,10 +18,12 @@ namespace RestaurantApp.Api.Controllers;
 public class ReviewsController : ControllerBase
 {
     private readonly IReviewService _reviewService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public ReviewsController(IReviewService reviewService)
+    public ReviewsController(IReviewService reviewService, IAuthorizationService authorizationService)
     {
         _reviewService = reviewService;
+        _authorizationService = authorizationService;
     }
 
     [HttpGet("{id}")]
@@ -75,6 +78,16 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto createReviewDto)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new SameUserRequirement(createReviewDto.UserId));
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var review = await _reviewService.CreateAsync(createReviewDto);
         return review.ToActionResult();
     }
@@ -82,6 +95,16 @@ public class ReviewsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReviewDto updateReviewDto)
     {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new SameUserRequirement(updateReviewDto.UserId));
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        
         var review = await _reviewService.UpdateAsync(id, updateReviewDto);
         return review.ToActionResult();
     }
@@ -89,6 +112,7 @@ public class ReviewsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        
         var result = await _reviewService.DeleteAsync(id);
         return result.ToActionResult();
     }
