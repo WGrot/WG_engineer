@@ -76,7 +76,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, true)
         );
 
         if (!authResult.Succeeded)
@@ -101,7 +101,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, true)
         );
 
         if (!authResult.Succeeded)
@@ -154,7 +154,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, true)
         );
 
         if (!authResult.Succeeded)
@@ -173,7 +173,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, true)
         );
 
         if (!authResult.Succeeded)
@@ -215,7 +215,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, true)
         );
 
         if (!authResult.Succeeded)
@@ -240,7 +240,7 @@ public class ReservationController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageReservationRequirement(id)
+            new ManageReservationRequirement(id, false)
         );
 
         if (!authResult.Succeeded)

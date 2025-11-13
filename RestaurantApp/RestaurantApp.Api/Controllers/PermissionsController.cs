@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
+using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
@@ -85,7 +87,7 @@ public class PermissionsController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageMenuItemVariantRequirement(permissionDto.RestaurantEmployeeId)
+            new ManagePermissionRequirement(permissionDto.RestaurantEmployeeId)
         );
 
         if (!authResult.Succeeded)
@@ -122,7 +124,7 @@ public class PermissionsController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageMenuItemVariantRequirement(id)
+            new ManagePermissionRequirement(id)
         );
 
         if (!authResult.Succeeded)
@@ -141,7 +143,7 @@ public class PermissionsController : ControllerBase
         var authResult = await _authorizationService.AuthorizeAsync(
             User, 
             null, 
-            new ManageMenuItemVariantRequirement(id)
+            new ManagePermissionRequirement(id)
         );
 
         if (!authResult.Succeeded)

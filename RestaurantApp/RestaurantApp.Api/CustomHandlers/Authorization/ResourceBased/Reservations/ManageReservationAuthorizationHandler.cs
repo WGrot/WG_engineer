@@ -45,12 +45,16 @@ public class ManageReservationAuthorizationHandler
                 return;
             }
 
-            // ŚCIEŻKA 1: Czy jest właścicielem?
-            if (reservationData.UserId == userId)
+            if (!requirement.NeedToBeEmployee)
             {
-                context.Succeed(requirement);
-                return;
+                // ŚCIEŻKA 1: Czy jest właścicielem?
+                if (reservationData.UserId == userId)
+                {
+                    context.Succeed(requirement);
+                    return;
+                }
             }
+
 
             // ŚCIEŻKA 2: Czy jest pracownikiem z uprawnieniami?
             var hasPermission = await _context.RestaurantEmployees

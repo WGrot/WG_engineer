@@ -5,9 +5,11 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservati
 public class ManageReservationRequirement: IAuthorizationRequirement
 {
     public int ReservationId { get; }
+    public bool NeedToBeEmployee = true;
 
-    public ManageReservationRequirement(int reservationId)
+    public ManageReservationRequirement(int reservationId, bool needToBeEmployee)
     {
         ReservationId = reservationId;
+        NeedToBeEmployee = needToBeEmployee;
     }
 }
