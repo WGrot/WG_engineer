@@ -82,7 +82,8 @@ public partial class MyReviewsPage : ComponentBase
             {
                 Rating = updatedReview!.Rating,
                 Content = updatedReview.Content,
-                PhotosUrls = updatedReview.PhotosUrls
+                PhotosUrls = updatedReview.PhotosUrls,
+                UserId = updatedReview.UserId,
             };
             var response = await Http.PutAsJsonAsync($"/api/Reviews/{updatedReview!.Id}", dto);
 
