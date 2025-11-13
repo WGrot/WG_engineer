@@ -26,11 +26,11 @@
                     }
                     
                     <div class="mb-3">
-                        <label class="form-label">Imię</label>
+                        <label class="form-label">First name</label>
                         <input type="text" class="form-control" @bind="firstName" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nazwisko</label>
+                        <label class="form-label">last name</label>
                         <input type="text" class="form-control" @bind="lastName" />
                     </div>
                     <div class="mb-3">
@@ -38,13 +38,13 @@
                         <input type="email" class="form-control" @bind="email" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Telefon</label>
+                        <label class="form-label">Phone</label>
                         <input type="tel" class="form-control" @bind="phoneNumber" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Rola</label>
+                        <label class="form-label">Role</label>
                         <select class="form-control" @bind="selectedRole">
-                            <option value="">-- Wybierz rolę --</option>
+                            <option value="">-- Select role --</option>
                             @foreach (var role in Enum.GetValues<RestaurantRole>())
                             {
                                 <option value="@role">@role</option>
@@ -53,18 +53,20 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Close">Anuluj</button>
-                    <button type="button" class="btn btn-primary" @onclick="Save" disabled="@isSaving">
-                        @if (isSaving)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                            <span>Zapisywanie...</span>
-                        }
-                        else
-                        {
-                            <span>Zapisz</span>
-                        }
-                    </button>
+                    <div class="d-flex">
+                        <button type="button" class="button button--primary btn-primary" @onclick="Save" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <span>Save</span>
+                            }
+                        </button>
+                        <button type="button" class="button button--grey" @onclick="Close">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,7 +78,7 @@
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public int RestaurantId { get; set; }
     [Parameter] public EventCallback<CreateUserResponse> OnEmployeeAdded { get; set; }
-    [Parameter] public string Title { get; set; } = "Dodaj nowego pracownika";
+    [Parameter] public string Title { get; set; } = "Add new employee account";
     
     private bool isSaving = false;
     private string firstName = "";
@@ -112,13 +114,13 @@
             string.IsNullOrWhiteSpace(lastName) || 
             string.IsNullOrWhiteSpace(email))
         {
-            errorMessage = "Proszę wypełnić wszystkie wymagane pola (Imię, Nazwisko, Email)";
+            errorMessage = "Please fill all required fields";
             return;
         }
 
         if (!selectedRole.HasValue)
         {
-            errorMessage = "Proszę wybrać rolę pracownika";
+            errorMessage = "Please select a role for the employee";
             return;
         }
 
@@ -147,7 +149,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
-                successMessage = $"Pracownik został dodany pomyślnie! Email: {result?.Email}";
+                successMessage = $"Employee added, email: {result?.Email}";
                 
                 // Notify parent component
                 await OnEmployeeAdded.InvokeAsync(result);
@@ -162,7 +164,7 @@
             else
             {
                 var errorResponse = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Błąd podczas dodawania pracownika: {errorResponse}";
+                errorMessage = $"Error: {errorResponse}";
             }
         }
         catch (Exception ex)

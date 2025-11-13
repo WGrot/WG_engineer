@@ -99,8 +99,8 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
-                    <button type="button" class="btn btn-primary" @onclick="SaveChanges" disabled="@(isSaving || isLoadingPermissions)">
+                    <button type="button" class="button button--grey " @onclick="Close">Cancel</button>
+                    <button type="button" class="button button--primary" @onclick="SaveChanges" disabled="@(isSaving || isLoadingPermissions)">
                         @if (isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>

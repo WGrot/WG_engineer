@@ -39,9 +39,10 @@ public class UserController : ControllerBase
         [FromQuery] string? firstName = null, 
         [FromQuery] string? lastName = null, 
         [FromQuery] string? email = null, 
-        [FromQuery] string? phoneNumber = null)
+        [FromQuery] string? phoneNumber = null,
+        [FromQuery] int? amount = null)
     {
-        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email);
+        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email, amount);
         return result.ToActionResult();
     }
     

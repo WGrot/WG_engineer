@@ -9,9 +9,11 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
-<h3>RestaurantEmployeesTab</h3>
+<div class="d-flex justify-content-center">
+    <button @onclick="OpenAddEmployeeModal" class="button--primary button--lg button  mb-3 me-3 w-50">Add new employee</button>
+    <button @onclick="OpenSearchEmployeeModal" class="button--primary button button--lg mb-3 w-50">Search for existing employee accounts</button>
+</div>
 
-<button @onclick="OpenAddEmployeeModal" class="btn btn-primary mb-3">Add new employee</button>
 
 <!-- Modal dodawania pracownika -->
 <AddEmployeeModal
@@ -19,6 +21,12 @@
     RestaurantId="Id"
     OnEmployeeAdded="HandleEmployeeAdded"
     Title="Dodaj nowego pracownika" />
+
+<!-- Modal dodawania pracownika -->
+<SearchUserModal
+    @bind-IsVisible="showSearch"
+    RestaurantId="Id"
+    Title="Search for existing employee accounts" />
 
 <!-- Modal zarządzania uprawnieniami -->
 <ManagePermissionsModal
@@ -81,7 +89,7 @@ else
         @foreach (var employee in employees)
         {
             <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card">
+                <div class="card reservation-card">
                     <div class="card-body">
                         <h5 class="card-title">
                             <i class="bi bi-person-fill"></i> @employee.FirstName @employee.LastName
@@ -103,11 +111,11 @@ else
                             }
                         </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-primary flex-fill"
+                            <button class="button button--primary button--outline flex-fill"
                                     @onclick="() => OpenPermissionsModal(employee)">
-                                <i class="bi bi-shield-lock"></i> Manage Permissions
+                                <i class=" me-1 bi bi-shield-lock"></i> Manage Permissions
                             </button>
-                            <button class="btn btn-sm btn-outline-danger"
+                            <button class="button button--red button--outline"
                                     @onclick="() => RemoveEmployee(employee)"
                                     title="Delete Employee">
                                 <i class="bi bi-trash"></i>
@@ -129,6 +137,7 @@ else
     private List<RestaurantEmployeeDto> employees = new List<RestaurantEmployeeDto>();
 
     // Modal visibility states
+    private bool showSearch = false;
     private bool showAddEmployeeModal = false;
     private bool showSuccessModal = false;
     private bool showPermissionsModal = false;
@@ -169,6 +178,11 @@ else
         showAddEmployeeModal = true;
     }
 
+    private void OpenSearchEmployeeModal()
+    {
+        showSearch = true;
+    }
+    
     private void OpenPermissionsModal(RestaurantEmployeeDto employee)
     {
         selectedEmployee = employee;

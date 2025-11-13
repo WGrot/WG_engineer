@@ -50,7 +50,8 @@ public class UserService : IUserService
         return Result<ResponseUserDto>.Success(responseUserDto);
     }
 
-    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string? email)
+    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName,
+        string? phoneNumber, string? email, int? amount)
     {
         try
         {
@@ -75,6 +76,9 @@ public class UserService : IUserService
             {
                 query = query.Where(u => u.Email.ToLower().Contains(email.ToLower()));
             }
+            
+            var takeAmount = amount.HasValue && amount.Value > 0 ? amount.Value : 50;
+            query = query.Take(takeAmount);
 
             var users = await query.ToListAsync();
             

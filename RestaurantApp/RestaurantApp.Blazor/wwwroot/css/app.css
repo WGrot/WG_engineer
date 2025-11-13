@@ -363,3 +363,8 @@ code {
 .reservation-card .badge {
     font-size: 0.75rem;
 }
+
+.form-check-input:checked {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color-strong) !important;
+}
