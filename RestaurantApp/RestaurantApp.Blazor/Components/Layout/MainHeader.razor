@@ -107,7 +107,7 @@
                 </a>
                 if (isEmployee)
                 {
-                    <h3 class="menu-section-title" >Employee options</h3>
+                    <h3 class="menu-section-title">Employee options</h3>
                     if (canManageReservations)
                     {
                         <a href="/manage-reservations" class="menu-item" @onclick="CloseMenu">
@@ -121,11 +121,11 @@
                             <span>Edit Restaurant</span>
                         </a>
                     }
-                    
+
                     <a href="/RestaurantDashboard" class="menu-item" @onclick="CloseMenu">
                         <span>Go to Dashboard</span>
                     </a>
-                    
+
                     <a href="/homepage" class="menu-item" @onclick="CloseMenu">
                         <span>Go to User View</span>
                     </a>
@@ -213,18 +213,21 @@
                 _currentUser = await AuthService.GetCurrentUserAsync();
                 isEmployee = await PermissionService.IsEmployeeAsync();
                 string activeRestaurantIdString = await TokenStorageService.GetActiveRestaurantAsync();
-                int activeRestaurantId = int.Parse(activeRestaurantIdString);
-                canManageReservations = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
+                if (!string.IsNullOrEmpty(activeRestaurantIdString))
                 {
-                    PermissionType.ManageReservations.ToString(),
-                });
-                canEditRestaurant = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
-                {
-                    PermissionType.ManageMenu.ToString(),
-                    //PermissionType.ManageEmployees.ToString(),
-                    PermissionType.ManageTables.ToString(),
-                    //PermissionType.ManageRestaurantSettings.ToString()  
-                });
+                    int activeRestaurantId = int.Parse(activeRestaurantIdString);
+                    canManageReservations = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
+                    {
+                        PermissionType.ManageReservations.ToString(),
+                    });
+                    canEditRestaurant = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
+                    {
+                        PermissionType.ManageMenu.ToString(),
+                        //PermissionType.ManageEmployees.ToString(),
+                        PermissionType.ManageTables.ToString(),
+                        //PermissionType.ManageRestaurantSettings.ToString()  
+                    });
+                }
             }
             else
             {
@@ -289,7 +292,7 @@
 
         Navigation.NavigateTo($"/restaurant/edit/{restaurantId}");
     }
-    
+
     private async Task NavigateToRestaurant()
     {
         CloseMenu();

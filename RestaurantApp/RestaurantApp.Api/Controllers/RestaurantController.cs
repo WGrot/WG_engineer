@@ -107,6 +107,22 @@ public class RestaurantController : ControllerBase
         var createdRestaurantResult = await _restaurantService.CreateAsync(restaurantDto);
         return createdRestaurantResult.ToActionResult();
     }
+    
+    // POST: api/Restaurant
+    [HttpPost("create-as-user")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateAsUser([FromBody] CreateRestaurantDto restaurantDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var createdRestaurantResult = await _restaurantService.CreateAsUserAsync(restaurantDto);
+        return createdRestaurantResult.ToActionResult();
+    }
 
     // PUT: api/Restaurant/5
     [HttpPut("{id}")]

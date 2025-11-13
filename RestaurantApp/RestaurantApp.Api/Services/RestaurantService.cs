@@ -58,13 +58,13 @@ public class RestaurantService : IRestaurantService
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
-        if (pageSize > 50) pageSize = 50; 
-        
+        if (pageSize > 50) pageSize = 50;
+
         var query = _context.Restaurants
             .Include(r => r.Menu)
             .Include(r => r.OpeningHours)
             .AsQueryable();
-        
+
 
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -75,7 +75,7 @@ public class RestaurantService : IRestaurantService
         {
             query = query.Where(r => r.Address.ToLower().Contains(address.ToLower()));
         }
-        
+
         query = sortBy?.ToLower() switch
         {
             "name_ascending" => query.OrderBy(r => r.Name),
@@ -86,7 +86,7 @@ public class RestaurantService : IRestaurantService
         };
 
         var totalCount = await query.CountAsync();
-    
+
         // Paginacja
         var restaurants = await query
             .Skip((page - 1) * pageSize)
@@ -201,7 +201,7 @@ public class RestaurantService : IRestaurantService
         };
 
         InitializedOpeningHours(restaurant);
-        
+
         // Add opening hours if provided
         if (restaurantDto.OpeningHours?.Any() == true)
         {
@@ -212,6 +212,62 @@ public class RestaurantService : IRestaurantService
         await _context.SaveChangesAsync();
 
         return Result<Restaurant>.Success(restaurant.ToDto());
+    }
+
+    public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto)
+    {
+        _logger.LogInformation("Creating new restaurant: {RestaurantName}", dto.Name);
+
+        Result validationResult = await ValidateRestaurantUniquenessAsync(dto.Name, dto.Address);
+        // Walidacja biznesowa
+        if (validationResult.IsFailure)
+        {
+            return Result<RestaurantDto>.Failure("A restaurant with the same name and address already exists.");
+        }
+
+        Restaurant restaurant = new Restaurant
+        {
+            Name = dto.Name,
+            Address = dto.Address
+        };
+
+        InitializedOpeningHours(restaurant);
+
+        _context.Restaurants.Add(restaurant);
+        
+        await _context.SaveChangesAsync();
+
+        RestaurantEmployee ownerEmployee = new RestaurantEmployee
+        {
+            UserId = dto.OwnerId,
+            RestaurantId = restaurant.Id,
+            Role = RestaurantRole.Owner,
+            CreatedAt = DateTime.Now.ToUniversalTime(),
+            IsActive = true,
+        };
+
+        _context.Add(ownerEmployee);
+        
+        await _context.SaveChangesAsync();
+        
+        var permissions = new List<RestaurantPermission>();
+
+        foreach (PermissionType permissionType in Enum.GetValues(typeof(PermissionType)))
+        {
+            permissions.Add(new RestaurantPermission
+            {
+                RestaurantEmployeeId = ownerEmployee.Id,
+                Permission = permissionType
+            });
+        }
+        foreach(var permission in permissions)
+        {
+            _context.RestaurantPermissions.Add(permission);
+        } 
+        
+        await _context.SaveChangesAsync();
+
+        return Result.Success(restaurant.ToDto());
     }
 
     public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)
@@ -257,6 +313,7 @@ public class RestaurantService : IRestaurantService
         {
             return Result.Failure("Name cannot be empty");
         }
+
         if (string.IsNullOrWhiteSpace(dto.Address))
         {
             return Result.Failure("Address cannot be empty");
@@ -274,6 +331,7 @@ public class RestaurantService : IRestaurantService
         {
             restaurant.Description = dto.Description;
         }
+
         await _context.SaveChangesAsync();
 
         return Result.Success();
@@ -536,7 +594,8 @@ public class RestaurantService : IRestaurantService
             // Usuń z storage
             string bucketName = "images";
             var deletedImage = await _storageService.DeleteFileByUrlAsync(restaurant.photosUrls[photoIndex]);
-            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(restaurant.photosThumbnailsUrls[photoIndex]);
+            var deletedThumbnail =
+                await _storageService.DeleteFileByUrlAsync(restaurant.photosThumbnailsUrls[photoIndex]);
 
             if (!deletedImage || !deletedThumbnail)
             {
@@ -578,7 +637,7 @@ public class RestaurantService : IRestaurantService
             .Where(r => r.RestaurantId == restaurantId
                         && r.ReservationDate >= lastWeek && r.ReservationDate < tomorrow)
             .ToListAsync();
-        
+
         dto.TodayReservations = todayReservations.Count;
         dto.ReservationsLastWeek = lastWeekReservations.Count;
 
@@ -597,11 +656,11 @@ public class RestaurantService : IRestaurantService
     //         RestaurantId = restaurantId ?? 0
     //     }).ToList();
     // }
-    
+
     private void InitializedOpeningHours(Restaurant restaurant)
     {
         restaurant.OpeningHours = new List<OpeningHours>();
-        
+
         foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
         {
             var hours = new OpeningHours
@@ -614,6 +673,5 @@ public class RestaurantService : IRestaurantService
             restaurant.OpeningHours ??= new List<OpeningHours>();
             restaurant.OpeningHours.Add(hours);
         }
-        
     }
 }

@@ -20,6 +20,7 @@ public interface IRestaurantService
     Task<Result<IEnumerable<RestaurantDto>>> GetOpenNowAsync();
     Task<Result<OpenStatusDto>> CheckIfOpenAsync(int restaurantId, TimeOnly? time = null, DayOfWeek? dayOfWeek = null);
     Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto);
+    Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto);
     Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto);
     Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
     Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
