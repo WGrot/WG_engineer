@@ -5,21 +5,22 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
 
-public class ManageMenuItemVariantAuthorizationHandler: AuthorizationHandler<ManageMenuItemVariantRequirement>
+public class ManageMenuItemVariantAuthorizationHandler : AuthorizationHandler<ManageMenuItemVariantRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManageMenuItemVariantAuthorizationHandler> _logger;
 
-    public ManageMenuItemVariantAuthorizationHandler(ApiDbContext context)
+    public ManageMenuItemVariantAuthorizationHandler(ApiDbContext context, ILogger<ManageMenuItemVariantAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ManageMenuItemVariantRequirement requirement)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
             context.Fail();
@@ -28,51 +29,30 @@ public class ManageMenuItemVariantAuthorizationHandler: AuthorizationHandler<Man
 
         try
         {
-
-            var variant = await _context.MenuItemVariants
+            // bazowe zapytanie – aktywni pracownicy użytkownika
+            var query = _context.RestaurantEmployees
                 .AsNoTracking()
-                .Include(v => v.MenuItem)           
-                    .ThenInclude(mi => mi.Menu)     
-                .FirstOrDefaultAsync(v => v.Id == requirement.MenuItemVariantId);
+                .Where(e => e.UserId == userId && e.IsActive);
 
-            if (variant?.MenuItem?.Menu == null)
-            {
-                context.Fail();
-                return;
-            }
+            // filtr po wariancie
+            query = query.Where(e =>
+                e.Restaurant.Menu != null &&
+                e.Restaurant.Menu.Items
+                    .Any(i => i.Variants.Any(v => v.Id == requirement.MenuItemVariantId)));
 
-            var restaurantId = variant.MenuItem.Menu.RestaurantId;
-            
-            var employee = await _context.RestaurantEmployees
-                .AsNoTracking()
-                .FirstOrDefaultAsync(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == restaurantId &&
-                    er.IsActive);
+            // sprawdzenie uprawnienia ManageMenu
+            var hasPermission = await query
+                .SelectMany(e => e.Permissions)
+                .AnyAsync(p => p.Permission == PermissionType.ManageMenu);
 
-            if (employee == null)
-            {
-                context.Fail();
-                return;
-            }
-
-            var hasManageMenuPermission = await _context.RestaurantPermissions
-                .AsNoTracking()
-                .AnyAsync(ep =>
-                    ep.RestaurantEmployeeId == employee.Id &&
-                    ep.Permission == PermissionType.ManageMenu);
-
-            if (hasManageMenuPermission)
-            {
+            if (hasPermission)
                 context.Succeed(requirement);
-            }
             else
-            {
                 context.Fail();
-            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Authorization error in ManageMenuItemVariantAuthorizationHandler");
             context.Fail();
         }
     }

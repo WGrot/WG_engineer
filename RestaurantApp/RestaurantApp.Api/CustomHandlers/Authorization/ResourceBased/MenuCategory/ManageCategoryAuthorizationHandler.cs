@@ -5,21 +5,22 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 
-public class ManageCategoryAuthorizationHandler: AuthorizationHandler<ManageCategoryRequirement>
+public class ManageCategoryAuthorizationHandler : AuthorizationHandler<ManageCategoryRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManageCategoryAuthorizationHandler> _logger;
 
-    public ManageCategoryAuthorizationHandler(ApiDbContext context)
+    public ManageCategoryAuthorizationHandler(ApiDbContext context, ILogger<ManageCategoryAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ManageCategoryRequirement requirement)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
             context.Fail();
@@ -28,52 +29,30 @@ public class ManageCategoryAuthorizationHandler: AuthorizationHandler<ManageCate
 
         try
         {
-            // Pobierz kategorię wraz z Menu i Restaurant
-            var category = await _context.MenuCategories
+            // składamy zapytanie bazowe po pracownikach użytkownika
+            var query = _context.RestaurantEmployees
                 .AsNoTracking()
-                .Include(c => c.Menu)
-                .FirstOrDefaultAsync(c => c.Id == requirement.CategoryId);
+                .Where(e => e.UserId == userId && e.IsActive);
 
-            if (category?.Menu == null)
-            {
-                context.Fail();
-                return;
-            }
+            // teraz zawężamy po kategorii — szukamy pracownika, który pracuje
+            // w restauracji posiadającej menu z daną kategorią
+            query = query.Where(e =>
+                e.Restaurant.Menu != null &&
+                e.Restaurant.Menu.Categories.Any(c => c.Id == requirement.CategoryId));
 
-            var restaurantId = category.Menu.RestaurantId;
+            // sprawdzamy czy ma uprawnienie ManageMenu
+            var hasPermission = await query
+                .SelectMany(e => e.Permissions)
+                .AnyAsync(p => p.Permission == PermissionType.ManageMenu);
 
-            // Sprawdź czy użytkownik pracuje w tej restauracji
-            var employee = await _context.RestaurantEmployees
-                .AsNoTracking()
-                .FirstOrDefaultAsync(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == restaurantId &&
-                    er.IsActive);
-
-            if (employee == null)
-            {
-                context.Fail();
-                return;
-            }
-
-            // Sprawdź uprawnienie ManageMenu
-            var hasManageMenuPermission = await _context.RestaurantPermissions
-                .AsNoTracking()
-                .AnyAsync(ep =>
-                    ep.RestaurantEmployeeId == employee.Id &&
-                    ep.Permission == PermissionType.ManageMenu);
-
-            if (hasManageMenuPermission)
-            {
+            if (hasPermission)
                 context.Succeed(requirement);
-            }
             else
-            {
                 context.Fail();
-            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Authorization error in ManageCategoryAuthorizationHandler");
             context.Fail();
         }
     }

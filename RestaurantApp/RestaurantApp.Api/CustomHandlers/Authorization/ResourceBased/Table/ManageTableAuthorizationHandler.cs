@@ -5,13 +5,17 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 
-public class ManageTableAuthorizationHandler: AuthorizationHandler<ManageTableRequirement>
+public class ManageTableAuthorizationHandler : AuthorizationHandler<ManageTableRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManageTableAuthorizationHandler> _logger;
 
-    public ManageTableAuthorizationHandler(ApiDbContext context)
+    public ManageTableAuthorizationHandler(
+        ApiDbContext context,
+        ILogger<ManageTableAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
@@ -28,34 +32,25 @@ public class ManageTableAuthorizationHandler: AuthorizationHandler<ManageTableRe
 
         try
         {
-            int? restaurantId = 0;
-            if (requirement.RestaurantId == null)
+            // ✅ JEDNO zapytanie zamiast dwóch!
+            var query = _context.RestaurantEmployees
+                .AsNoTracking()
+                .Where(er => er.UserId == userId && er.IsActive);
+
+            // Dynamiczne dodanie warunku w zależności od requirement
+            if (requirement.RestaurantId.HasValue)
             {
-                restaurantId = await _context.Tables
-                    .AsNoTracking()
-                    .Where(t => t.Id == requirement.TableId)
-                    .Select(t => t.RestaurantId)
-                    .FirstOrDefaultAsync();
+                query = query.Where(er => er.RestaurantId == requirement.RestaurantId.Value);
             }
             else
             {
-                restaurantId = requirement.RestaurantId.Value;
+                // JOIN przez EF - wciąż jedno zapytanie SQL
+                query = query.Where(er => er.Restaurant.Tables
+                    .Any(t => t.Id == requirement.TableId));
             }
 
-            
-
-            if (restaurantId == 0)
-            {
-                context.Fail();
-                return;
-            }
-
-            var hasPermission = await _context.RestaurantEmployees
-                .AsNoTracking()
-                .Where(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == restaurantId &&
-                    er.IsActive)
+            // Sprawdzenie uprawnień w tym samym zapytaniu
+            var hasPermission = await query
                 .SelectMany(er => er.Permissions)
                 .AnyAsync(p => p.Permission == PermissionType.ManageTables);
 
@@ -68,8 +63,11 @@ public class ManageTableAuthorizationHandler: AuthorizationHandler<ManageTableRe
                 context.Fail();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, 
+                "Authorization failed for user {UserId}, table {TableId}, restaurant {RestaurantId}",
+                userId, requirement.TableId, requirement.RestaurantId);
             context.Fail();
         }
     }

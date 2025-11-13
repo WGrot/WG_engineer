@@ -5,22 +5,23 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 
-public class ManageReservationAuthorizationHandler
+public class ManageReservationAuthorizationHandler 
     : AuthorizationHandler<ManageReservationRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManageReservationAuthorizationHandler> _logger;
 
-    public ManageReservationAuthorizationHandler(ApiDbContext context)
+    public ManageReservationAuthorizationHandler(ApiDbContext context, ILogger<ManageReservationAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ManageReservationRequirement requirement)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
             context.Fail();
@@ -29,54 +30,44 @@ public class ManageReservationAuthorizationHandler
 
         try
         {
-            var reservationData = await _context.Reservations
+            // Pobieramy dane rezerwacji (tylko potrzebne pola)
+            var reservation = await _context.Reservations
                 .AsNoTracking()
                 .Where(r => r.Id == requirement.ReservationId)
-                .Select(r => new
-                {
-                    r.UserId,
-                    r.RestaurantId
-                })
+                .Select(r => new { r.UserId, r.RestaurantId })
                 .FirstOrDefaultAsync();
 
-            if (reservationData == null)
+            if (reservation == null)
             {
                 context.Fail();
                 return;
             }
 
-            if (!requirement.NeedToBeEmployee)
+            // Ścieżka 1: właściciel rezerwacji (jeśli wymóg tego nie blokuje)
+            if (!requirement.NeedToBeEmployee && reservation.UserId == userId)
             {
-                // ŚCIEŻKA 1: Czy jest właścicielem?
-                if (reservationData.UserId == userId)
-                {
-                    context.Succeed(requirement);
-                    return;
-                }
+                context.Succeed(requirement);
+                return;
             }
 
-
-            // ŚCIEŻKA 2: Czy jest pracownikiem z uprawnieniami?
+            // Ścieżka 2: aktywny pracownik z uprawnieniem ManageReservations
             var hasPermission = await _context.RestaurantEmployees
                 .AsNoTracking()
-                .Where(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == reservationData.RestaurantId &&
-                    er.IsActive)
-                .SelectMany(er => er.Permissions)
+                .Where(e =>
+                    e.UserId == userId &&
+                    e.IsActive &&
+                    e.RestaurantId == reservation.RestaurantId)
+                .SelectMany(e => e.Permissions)
                 .AnyAsync(p => p.Permission == PermissionType.ManageReservations);
 
             if (hasPermission)
-            {
                 context.Succeed(requirement);
-            }
             else
-            {
                 context.Fail();
-            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Authorization error in ManageReservationAuthorizationHandler");
             context.Fail();
         }
     }

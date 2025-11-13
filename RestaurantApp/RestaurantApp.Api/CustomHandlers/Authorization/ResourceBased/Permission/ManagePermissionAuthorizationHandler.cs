@@ -5,13 +5,17 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
 
-public class ManagePermissionAuthorizationHandler: AuthorizationHandler<ManagePermissionRequirement>
+public class ManagePermissionAuthorizationHandler : AuthorizationHandler<ManagePermissionRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManagePermissionAuthorizationHandler> _logger;
 
-    public ManagePermissionAuthorizationHandler(ApiDbContext context)
+    public ManagePermissionAuthorizationHandler(
+        ApiDbContext context,
+        ILogger<ManagePermissionAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
@@ -28,40 +32,22 @@ public class ManagePermissionAuthorizationHandler: AuthorizationHandler<ManagePe
 
         try
         {
-
-            var permission = await _context.RestaurantPermissions
+            // ✅ JEDNO zapytanie zamiast trzech!
+            var hasPermission = await _context.RestaurantPermissions
                 .AsNoTracking()
-                .Include(p => p.RestaurantEmployee)           
-                .FirstOrDefaultAsync(v => v.Id == requirement.PermissionId);
+                .Where(p => p.Id == requirement.PermissionId)
+                .Where(p => p.RestaurantEmployee.RestaurantId != null) // Walidacja
+                .Join(
+                    _context.RestaurantEmployees.AsNoTracking()
+                        .Where(er => er.UserId == userId && er.IsActive),
+                    targetPermission => targetPermission.RestaurantEmployee.RestaurantId,
+                    currentEmployee => currentEmployee.RestaurantId,
+                    (targetPermission, currentEmployee) => currentEmployee
+                )
+                .SelectMany(emp => emp.Permissions)
+                .AnyAsync(p => p.Permission == PermissionType.ManagePermissions);
 
-            if (permission?.RestaurantEmployee.RestaurantId == null)
-            {
-                context.Fail();
-                return;
-            }
-
-            var restaurantId = permission.RestaurantEmployee.RestaurantId;
-            
-            var employee = await _context.RestaurantEmployees
-                .AsNoTracking()
-                .FirstOrDefaultAsync(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == restaurantId &&
-                    er.IsActive);
-
-            if (employee == null)
-            {
-                context.Fail();
-                return;
-            }
-
-            var hasManagePermission = await _context.RestaurantPermissions
-                .AsNoTracking()
-                .AnyAsync(ep =>
-                    ep.RestaurantEmployeeId == employee.Id &&
-                    ep.Permission == PermissionType.ManagePermissions);
-
-            if (hasManagePermission)
+            if (hasPermission)
             {
                 context.Succeed(requirement);
             }
@@ -70,8 +56,11 @@ public class ManagePermissionAuthorizationHandler: AuthorizationHandler<ManagePe
                 context.Fail();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, 
+                "Authorization failed for user {UserId}, permission {PermissionId}",
+                userId, requirement.PermissionId);
             context.Fail();
         }
     }

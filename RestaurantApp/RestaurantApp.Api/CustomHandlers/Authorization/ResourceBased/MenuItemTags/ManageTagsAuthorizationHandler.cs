@@ -5,21 +5,22 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 
-public class ManageTagsAuthorizationHandler: AuthorizationHandler<ManageTagsRequirement>
+public class ManageTagsAuthorizationHandler : AuthorizationHandler<ManageTagsRequirement>
 {
     private readonly ApiDbContext _context;
+    private readonly ILogger<ManageTagsAuthorizationHandler> _logger;
 
-    public ManageTagsAuthorizationHandler(ApiDbContext context)
+    public ManageTagsAuthorizationHandler(ApiDbContext context, ILogger<ManageTagsAuthorizationHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ManageTagsRequirement requirement)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
             context.Fail();
@@ -28,46 +29,25 @@ public class ManageTagsAuthorizationHandler: AuthorizationHandler<ManageTagsRequ
 
         try
         {
-            // Pobierz kategorię wraz z Menu i Restaurant
-            var tag = await _context.MenuItemTags
+            var query = _context.RestaurantEmployees
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == requirement.TagId);
-            
+                .Where(e => e.UserId == userId && e.IsActive);
 
-            var restaurantId = tag.RestaurantId;
+            query = query.Where(e =>
+                e.Restaurant.MenuItemTags.Any(t => t.Id == requirement.TagId));
 
-            // Sprawdź czy użytkownik pracuje w tej restauracji
-            var employee = await _context.RestaurantEmployees
-                .AsNoTracking()
-                .FirstOrDefaultAsync(er =>
-                    er.UserId == userId &&
-                    er.RestaurantId == restaurantId &&
-                    er.IsActive);
+            var hasPermission = await query
+                .SelectMany(e => e.Permissions)
+                .AnyAsync(p => p.Permission == PermissionType.ManageMenu);
 
-            if (employee == null)
-            {
-                context.Fail();
-                return;
-            }
-
-            // Sprawdź uprawnienie ManageMenu
-            var hasManageMenuPermission = await _context.RestaurantPermissions
-                .AsNoTracking()
-                .AnyAsync(ep =>
-                    ep.RestaurantEmployeeId == employee.Id &&
-                    ep.Permission == PermissionType.ManageMenu);
-
-            if (hasManageMenuPermission)
-            {
+            if (hasPermission)
                 context.Succeed(requirement);
-            }
             else
-            {
                 context.Fail();
-            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Authorization error in ManageTagsAuthorizationHandler");
             context.Fail();
         }
     }
