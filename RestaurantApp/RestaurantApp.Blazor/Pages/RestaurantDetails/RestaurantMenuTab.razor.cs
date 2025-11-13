@@ -14,6 +14,7 @@ public partial class RestaurantMenuTab : ComponentBase
     [Inject] private HttpClient Http { get; set; } = null!;
     [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
+    private List<MenuItemDto> uncategorizedItems = new();
     private HashSet<int> expandedCategories = new();
     private bool showUncategorized = false;
     
@@ -43,6 +44,13 @@ public partial class RestaurantMenuTab : ComponentBase
         try
         {
             menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            foreach (var item in menu.Items)
+            {
+                if (item.CategoryId == null)
+                {
+                    uncategorizedItems.Add(item);
+                }
+            }
             
         }
         catch (Exception ex)

@@ -21,6 +21,7 @@ public partial class MenuTab : ComponentBase
 
     private MenuDto? menu;
     private List<MenuItemTagDto> tags = new();
+    private List<MenuItemDto> uncategorizedItems = new();
     private HashSet<int> expandedCategories = new();
 
     private bool showAddCategory = false;
@@ -61,6 +62,13 @@ public partial class MenuTab : ComponentBase
         try
         {
             menu =await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            foreach (var item in menu.Items)
+            {
+                if (item.CategoryId == null)
+                {
+                    uncategorizedItems.Add(item);
+                }
+            }
         }
         catch (Exception ex)
         {

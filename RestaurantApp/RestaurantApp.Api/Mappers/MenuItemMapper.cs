@@ -18,6 +18,7 @@ public static class MenuItemMapper
             CurrencyCode = entity.Price.CurrencyCode,
             ImageUrl = entity.ImageUrl,
             ThumbnailUrl = entity.ThumbnailUrl,
+            CategoryId = entity.CategoryId,
             // Mapuj tagi używając MenuItemTagMapper
             Tags = entity.Tags?.ToDto().ToList() ?? new List<MenuItemTagDto>()
         };
@@ -39,7 +40,8 @@ public static class MenuItemMapper
             Description = dto.Description,
             Price = dto.Price.ToEntity(),
             ImageUrl = dto.ImageUrl,
-            ThumbnailUrl = dto.ThumbnailUrl
+            ThumbnailUrl = dto.ThumbnailUrl,
+            CategoryId = dto.CategoryId
         };
 
         // Mapuj tagi

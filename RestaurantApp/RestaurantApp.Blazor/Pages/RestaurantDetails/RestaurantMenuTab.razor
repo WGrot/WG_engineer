@@ -53,7 +53,7 @@
 
                 <div class="collapse @(showUncategorized ? "show" : "")">
                     <div class="card-body bg-white">
-                        @foreach (var item in menu.Items)
+                        @foreach (var item in uncategorizedItems)
                         {
                             <MenuItemComponent Item="item"/>
                         }
