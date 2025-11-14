@@ -1,0 +1,95 @@
+﻿.notification-list-container {
+    position: absolute;
+    top: 60px; /* Dostosuj do wysokości swojego MainHeader */
+    right: 15px;
+    width: 350px;
+    max-width: 90vw;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    z-index: 1050; /* Musi być nad resztą treści */
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.notification-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.clear-all-btn {
+    background: none;
+    border: none;
+    color: var(--bs-primary); /* Użyj koloru z Twojego motywu */
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.notification-items {
+    overflow-y: auto;
+    max-height: 420px;
+}
+
+.no-notifications {
+    padding: 20px;
+    text-align: center;
+    color: #777;
+}
+
+.notification-item {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+/* Kolory w zależności od typu */
+.notification-item.notification-info { border-left: 4px solid #0dcaf0; }
+.notification-item.notification-success { border-left: 4px solid #198754; }
+.notification-item.notification-warning { border-left: 4px solid #ffc107; }
+.notification-item.notification-error { border-left: 4px solid #dc3545; }
+
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-content strong {
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.notification-content p {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #555;
+}
+
+.dismiss-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #999;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 10px;
+}
+
+.dismiss-btn:hover {
+    color: #333;
+}

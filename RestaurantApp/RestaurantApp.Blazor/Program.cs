@@ -41,6 +41,7 @@ builder.Services.AddScoped<AuthService>();
 // 5. Inne serwisy
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantServie>();
+builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddScoped<PermissionService>();
 
 await builder.Build().RunAsync();

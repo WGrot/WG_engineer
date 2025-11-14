@@ -1,13 +1,12 @@
 ﻿@using RestaurantApp.Blazor.Services
-@using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Blazor.Services.Interfaces
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Shared.Models
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject PermissionService PermissionService
 @inject TokenStorageService TokenStorageService
+@inject NotificationService NotificationService
 @inject IRestaurantService RestaurantService
 @implements IDisposable
 
@@ -31,7 +30,8 @@
             </div>
             <div class="header-actions">
                 <div class="card-body d-flex flex-column justify-content-center">
-                    @if (isEmployee && userRestaurantNames.Count > 1){
+                    @if (isEmployee && userRestaurantNames.Count > 1)
+                    {
                         <button class="user-btn dropdown dropdown-toggle"
                                 data-bs-toggle="dropdown"
                                 style="cursor: pointer;">
@@ -56,8 +56,8 @@
                 @if (_isAuthenticated && _currentUser != null)
                 {
                     <div class="dropdown">
-                        <button class="user-btn dropdown-toggle" 
-                                data-bs-toggle="dropdown" 
+                        <button class="user-btn dropdown-toggle"
+                                data-bs-toggle="dropdown"
                                 aria-expanded="false">
                             <span class="user-icon">
                                 <i class="bi bi-person-circle"></i>
@@ -67,17 +67,17 @@
 
                         <ul class="dropdown-menu">
 
-                                <a class="dropdown-item" href="/profile">
-                                    <i class="bi bi-person"></i> My profile
-                                </a>
+                            <a class="dropdown-item" href="/profile">
+                                <i class="bi bi-person"></i> My profile
+                            </a>
 
-                                <a class="dropdown-item" href="/my-reservations">
-                                    <i class="bi bi-bag"></i> My reservations
-                                </a>
+                            <a class="dropdown-item" href="/my-reservations">
+                                <i class="bi bi-bag"></i> My reservations
+                            </a>
 
-                                <button class="dropdown-item" @onclick="HandleLogout">
-                                    <i class="bi bi-box-arrow-right"></i> Log out
-                                </button>
+                            <button class="dropdown-item" @onclick="HandleLogout">
+                                <i class="bi bi-box-arrow-right"></i> Log out
+                            </button>
                         </ul>
 
                     </div>
@@ -92,9 +92,16 @@
                     </a>
                 }
 
-                <button class="menu-btn">
+                <button class="menu-btn" @onclick="ToggleNotifications">
                     <span class="globe-icon">
-                        <i class="bi bi-globe"></i>
+                        <i class="bi bi-bell"></i>
+
+                        @if (NotificationService.UnreadCount > 0)
+                        { 
+                            <span class="notification-badge">
+                              @NotificationService.UnreadCount
+                            </span>
+                        }
                     </span>
                 </button>
                 <button class="hamburger-btn" @onclick="ToggleMenu">
@@ -230,7 +237,7 @@
     private bool isEmployee = false;
     private bool canManageReservations = false;
     private bool canEditRestaurant = false;
-    
+
     string activeRestaurantName = "";
     List<(int Id, string Name)> userRestaurantNames = new();
 
@@ -241,7 +248,9 @@
         userRestaurantNames = await RestaurantService.GetRestaurantNames();
         string activeRestaurantIdString = await TokenStorageService.GetActiveRestaurantAsync();
         activeRestaurantName = userRestaurantNames.FirstOrDefault(r => r.Id.ToString() == activeRestaurantIdString).Name ?? "No restaurant selected";
+
         
+        NotificationService.OnChange += StateHasChanged;
         _refreshTimer = new Timer(async _ =>
         {
             await InvokeAsync(async () =>
@@ -274,7 +283,7 @@
                         PermissionType.ManageMenu.ToString(),
                         PermissionType.ManageEmployees.ToString(),
                         PermissionType.ManageTables.ToString(),
-                        PermissionType.ManageRestaurantSettings.ToString()  
+                        PermissionType.ManageRestaurantSettings.ToString()
                     });
                 }
             }
@@ -354,8 +363,13 @@
     public void Dispose()
     {
         _refreshTimer?.Dispose();
+        NotificationService.OnChange -= StateHasChanged;
     }
-
+    private void ToggleNotifications()
+    {
+        NotificationService.ToggleListVisibility();
+    }
+    
 
     private async Task SwitchActiveRestaurant(int id)
     {
@@ -363,4 +377,5 @@
         activeRestaurantName = userRestaurantNames.FirstOrDefault(n => n.Id == id).Name ?? "No restaurant selected";
         StateHasChanged();
     }
+
 }

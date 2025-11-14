@@ -1,0 +1,43 @@
+﻿@page "/test-page"
+@using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.Common
+@inject NotificationService NotificationService
+
+<h3>Strona Testowa Powiadomień</h3>
+
+<button class="btn btn-success" @onclick="AddSuccess">Dodaj Sukces</button>
+<button class="btn btn-danger" @onclick="AddError">Dodaj Błąd</button>
+<button class="btn btn-info" @onclick="AddInfo">Dodaj Info</button>
+
+@code {
+    private void AddSuccess()
+    {
+        NotificationService.AddNotification(new Notification
+        {
+            Title = "Udało się!",
+            Content = "Operacja zakończona pomyślnie.",
+            Type = NotificationType.Success
+        });
+    }
+
+    private void AddError()
+    {
+        NotificationService.AddNotification(new Notification
+        {
+            Title = "Błąd Krytyczny",
+            Content = "Nie można było połączyć się z serwerem.",
+            Type = NotificationType.Error
+        });
+    }
+
+    private void AddInfo()
+    {
+        NotificationService.AddNotification(new Notification
+        {
+            Title = "Informacja",
+            Content = "Zamówienie #123 zmieniło status na 'W realizacji'.",
+            Type = NotificationType.Info
+        });
+    }
+}
