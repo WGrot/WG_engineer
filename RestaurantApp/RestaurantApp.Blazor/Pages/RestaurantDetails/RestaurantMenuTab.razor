@@ -2,11 +2,10 @@
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Shared.DTOs.Menu.MenuItems
 
-<h3 class="mb-4">Menu</h3>
-
 @if (menu != null)
 {
     <div class="menu-container">
+        <h3 class="mb-4 my-3 w-100 text-center">Menu</h3>
         @foreach (var category in menu.Categories.OrderBy(c => c.DisplayOrder))
         {
             var isExpanded = expandedCategories.Contains(category.Id);
@@ -37,7 +36,7 @@
                 </div>
             </div>
         }
-        
+
         @if (menu.Items?.Any() == true)
         {
             <div class="card shadow-sm mb-3 border-0 rounded-3">
@@ -74,7 +73,11 @@
 
     
 }
+else if(isLoading)
+{
+    <LoadingSpinner Title="Loading restaurant menu..."></LoadingSpinner>
+}
 else
 {
-    <div class="text-muted">Loading menu data...</div>
+    <div><h3 class="mb-4 my-3 w-100 text-center">This restaurant doesn't have menu configured</h3></div>
 }

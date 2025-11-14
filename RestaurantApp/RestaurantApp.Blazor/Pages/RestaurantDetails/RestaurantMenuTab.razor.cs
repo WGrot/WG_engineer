@@ -17,6 +17,7 @@ public partial class RestaurantMenuTab : ComponentBase
     private List<MenuItemDto> uncategorizedItems = new();
     private HashSet<int> expandedCategories = new();
     private bool showUncategorized = false;
+    private bool isLoading = false;
     
     private bool showItemDetailsModal = false;
     private MenuItemDto selectedMenuItem = null!;
@@ -41,6 +42,7 @@ public partial class RestaurantMenuTab : ComponentBase
     }
     private async Task LoadMenu()
     {
+        isLoading = true;
         try
         {
             menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
@@ -56,6 +58,9 @@ public partial class RestaurantMenuTab : ComponentBase
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading menu: {ex.Message}");
+        }finally
+        {
+            isLoading = false;
         }
     }
     

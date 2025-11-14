@@ -36,6 +36,7 @@ public partial class MenuTab : ComponentBase
     private CreateMenuCategoryDto newCategory = new();
     private MenuItemDto newItem = new();
 
+    private CreateMenuDto newMenu = new();
     
     private CreateMenuItemTagDto newTag;
     private bool showAddTag = false;
@@ -152,13 +153,9 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            var newMenuDto = new MenuDto
-            {
-                Name = "Default Menu",
-                Description = "This is the default menu."
-            };
-
-            var response = await Http.PostAsJsonAsync($"api/Menu/restaurant/{Id}", newMenuDto);
+            newMenu.RestaurantId = Id;
+            newCategory.IsActive = true;
+            var response = await Http.PostAsJsonAsync($"/api/Menu", newMenu);
             if (response.IsSuccessStatusCode)
             {
                 await LoadMenu();

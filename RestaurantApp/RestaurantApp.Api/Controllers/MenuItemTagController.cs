@@ -28,7 +28,7 @@ public class MenuItemTagController : ControllerBase
 
     // GET: api/MenuItemTag
     [HttpGet]
-    public async Task<IActionResult> GetTags([FromBody] int? restaurantId)
+    public async Task<IActionResult> GetTags([FromQuery] int? restaurantId)
     {
         var tags = await _tagService.GetTagsAsync(restaurantId);
         return tags.ToActionResult();
