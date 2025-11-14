@@ -93,3 +93,41 @@
 .dismiss-btn:hover {
     color: #333;
 }
+
+/* Plik: NotificationList.razor.css */
+
+.notification-list-container {
+    position: absolute;
+    top: 60px; /* Dostosuj do wysokości swojego MainHeader */
+    right: 15px;
+    width: 350px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    z-index: 1050;
+
+    /* --- NOWE STYLE DLA EFEKTU FADE --- */
+
+    /* Domyślnie ukryty */
+    opacity: 0;
+    transform: translateY(-10px); /* Delikatny ruch w górę */
+    visibility: hidden; /* Ukrywa element (lepsze niż display:none) */
+    pointer-events: none; /* Ignoruje kliknięcia, gdy ukryty */
+
+    /* Definicja przejścia (animacji) */
+    transition: opacity 0.3s ease-out,
+    transform 0.3s ease-out,
+    visibility 0.3s ease-out;
+}
+
+/* Klasa dodawana przez Blazor, gdy IsListVisible = true */
+.notification-list-container.visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto; /* Pozwala na kliknięcia, gdy widoczny */
+}
+
+
+/* ... reszta twoich styli (.notification-header, .notification-item itd.) ... */

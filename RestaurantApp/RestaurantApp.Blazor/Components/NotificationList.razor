@@ -5,48 +5,49 @@
 @inject NotificationService NotificationService
 @implements IDisposable
 
-@if (NotificationService.IsListVisible)
-{
-    <div class="notification-list-container">
-        <div class="notification-header">
-            <h4>Powiadomienia</h4>
-            @if (NotificationService.Notifications.Any())
-            {
-                <button class="clear-all-btn" @onclick="ClearAll">Wyczyść wszystko</button>
-            }
-        </div>
-
-        <div class="notification-items">
-            @if (NotificationService.Notifications.Any())
-            {
-                // Wyświetlamy od najnowszego
-                @foreach (var notification in NotificationService.Notifications.Reverse())
-                {
-                    <div class="notification-item @GetCssClass(notification.Type)">
-                        <div class="notification-content">
-                            <strong>@notification.Title</strong>
-                            <p>@notification.Content</p>
-                        </div>
-                        <button class="dismiss-btn" @onclick="() => Remove(notification)">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="no-notifications">
-                    <p>Brak nowych powiadomień.</p>
-                </div>
-            }
-        </div>
-    </div>
+@{
+    var containerClass = NotificationService.IsListVisible ? "visible" : "";
 }
+
+<div class="notification-list-container @containerClass">
+
+    <div class="notification-header">
+        <h4>Powiadomienia</h4>
+        @if (NotificationService.Notifications.Any())
+        {
+            <button class="clear-all-btn" @onclick="ClearAll">Wyczyść wszystko</button>
+        }
+    </div>
+    
+    <div class="notification-items">
+        @if (NotificationService.Notifications.Any())
+        {
+            @foreach (var notification in NotificationService.Notifications.Reverse())
+            {
+                <div class="notification-item @GetCssClass(notification.Type)">
+                    
+                    <div class="notification-content">
+                        <strong>@notification.Title</strong>
+                        <p>@notification.Content</p>
+                    </div>
+                    <button class="dismiss-btn" @onclick="() => Remove(notification)">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    </div>
+            }
+        }
+        else
+        {
+            <div class="no-notifications">
+                <p>Brak nowych powiadomień.</p>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     protected override void OnInitialized()
     {
-        // Subskrybuj zdarzenie. Gdy serwis zawoła OnChange, Blazor przerysuje ten komponent.
         NotificationService.OnChange += StateHasChanged;
     }
 
@@ -55,9 +56,11 @@
         NotificationType.Success => "notification-success",
         NotificationType.Error => "notification-error",
         NotificationType.Warning => "notification-warning",
-        NotificationType.Info => "notification-info"
+        NotificationType.Info => "notification-info",
+        _ => "notification-info"
     };
 
+    // Ta metoda jest wywoływana przez przycisk 'x' (dismiss-btn)
     private void Remove(Notification notification)
     {
         NotificationService.RemoveNotification(notification);
@@ -68,7 +71,6 @@
         NotificationService.ClearAll();
     }
 
-    // WAŻNE: Zawsze odsubskrybuj zdarzenia, aby uniknąć wycieków pamięci
     public void Dispose()
     {
         NotificationService.OnChange -= StateHasChanged;
