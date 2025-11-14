@@ -38,6 +38,9 @@ public partial class AvailableTablesView : ComponentBase
     private async Task LoadTables()
     {
         tables.Clear();
+        availableCount = 0;
+        freeSeats = 0;
+        availableTableIds.Clear();
         tables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{RestaurantId}");
     }
     

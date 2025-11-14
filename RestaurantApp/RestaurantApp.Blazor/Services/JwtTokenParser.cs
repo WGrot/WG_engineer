@@ -5,6 +5,12 @@ namespace RestaurantApp.Blazor.Services;
 
 public class JwtTokenParser
 {
+    private readonly TokenStorageService _tokenStorageService;
+
+    public JwtTokenParser(TokenStorageService tokenStorageService)
+    {
+        _tokenStorageService = tokenStorageService;
+    }
     public IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
         var claims = new List<Claim>();
@@ -93,6 +99,30 @@ public class JwtTokenParser
         catch
         {
             return null;
+        }
+    }
+    
+    public async Task< List<string>> GetAllUserRestaurantIds()
+    {
+        try
+        {
+            var token = await _tokenStorageService.GetTokenAsync();
+            if (token == null)
+            {
+                return new List<string>();
+            }
+            var claims = ParseClaimsFromJwt(token);
+            
+            var restaurantClaims = claims
+                .Where(c => c.Type == "restaurant_employee")
+                .Select(c => c.Value)
+                .ToList();
+
+            return restaurantClaims;
+        }
+        catch
+        {
+            return new List<string>();
         }
     }
 

@@ -651,6 +651,21 @@ public class RestaurantService : IRestaurantService
         return Result<RestaurantDashboardDataDto>.Success(dto);
     }
 
+    public async Task<Result<List<RestaurantDto>>> GetRestaurantNames(List<int> ids)
+    {
+        var restaurants = await _context.Restaurants
+            .Where(r => ids.Contains(r.Id))
+            .OrderBy(r => r.Id)
+            .Select(r => new RestaurantDto
+            {
+                Id = r.Id,
+                Name = r.Name
+            })
+            .ToListAsync();
+
+        return Result<List<RestaurantDto>>.Success(restaurants);
+    }
+
 
     // private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
     // {

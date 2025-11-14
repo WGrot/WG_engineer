@@ -31,4 +31,5 @@ public interface IRestaurantService
     Task<Result> DeleteRestaurantPhoto(int restaurantId, int photoIndex);
     
     Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId);
+    Task<Result<List<RestaurantDto>>> GetRestaurantNames(List<int> ids);
 }

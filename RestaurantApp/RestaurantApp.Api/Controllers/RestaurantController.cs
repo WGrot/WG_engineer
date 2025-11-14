@@ -25,7 +25,6 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var restaurantsResult = await _restaurantService.GetAllAsync();
@@ -34,8 +33,6 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant/5
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var restaurantResult = await _restaurantService.GetByIdAsync(id);
@@ -45,7 +42,6 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant/search?name=pizza
     [HttpGet("search")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Search(
         [FromQuery] string? name = null,
         [FromQuery] string? address = null,
@@ -59,8 +55,6 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant/5/tables
     [HttpGet("{id}/tables")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRestaurantTables(int id)
     {
         var tablesResult = await _restaurantService.GetTablesAsync(id);
@@ -69,7 +63,7 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant/open-now
     [HttpGet("open-now")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+
     public async Task<IActionResult> GetOpenNow()
     {
         var openRestaurantsResult = await _restaurantService.GetOpenNowAsync();
@@ -78,8 +72,6 @@ public class RestaurantController : ControllerBase
 
     // GET: api/Restaurant/5/is-open
     [HttpGet("{id}/is-open")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> IsRestaurantOpen(
         int id,
         [FromQuery] string? time = null,
@@ -95,8 +87,6 @@ public class RestaurantController : ControllerBase
     // POST: api/Restaurant
     [HttpPost]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] RestaurantDto restaurantDto)
     {
         if (!ModelState.IsValid)
@@ -111,8 +101,6 @@ public class RestaurantController : ControllerBase
     // POST: api/Restaurant
     [HttpPost("create-as-user")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateAsUser([FromBody] CreateRestaurantDto restaurantDto)
     {
         if (!ModelState.IsValid)
@@ -126,9 +114,6 @@ public class RestaurantController : ControllerBase
 
     // PUT: api/Restaurant/5
     [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] RestaurantDto updateRestaurantDto)
     {
         if (!ModelState.IsValid)
@@ -144,9 +129,6 @@ public class RestaurantController : ControllerBase
     // PATCH: api/Restaurant/5/address
     [HttpPatch("{id}/basic-info")]
     [Authorize(Policy = "RestaurantEmployee")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateName(int id, [FromBody] RestaurantBasicInfoDto dto)
     {
         var result = await _restaurantService.UpdateBasicInfoAsync(id, dto);
@@ -155,9 +137,6 @@ public class RestaurantController : ControllerBase
 
     // PATCH: api/Restaurant/5/opening-hours
     [HttpPatch("{id}/opening-hours")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
         var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
@@ -166,9 +145,6 @@ public class RestaurantController : ControllerBase
 
     // DELETE: api/Restaurant/5
     [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _restaurantService.DeleteAsync(id);
@@ -206,6 +182,13 @@ public class RestaurantController : ControllerBase
     [HttpGet("{id}/dashboard-data")]
     public IActionResult GetDashboardData(int id){
         var result = _restaurantService.GetRestaurantDashboardData(id);
+        return result.Result.ToActionResult();
+    }
+    
+    [HttpGet("names")]
+    public IActionResult GetNames([FromQuery] List<int> ids)
+    {
+        var result = _restaurantService.GetRestaurantNames(ids);
         return result.Result.ToActionResult();
     }
 }

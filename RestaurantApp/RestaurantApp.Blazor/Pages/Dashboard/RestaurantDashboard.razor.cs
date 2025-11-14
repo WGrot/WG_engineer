@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
+using RestaurantApp.Blazor.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Restaurant;
@@ -16,6 +17,9 @@ public partial class RestaurantDashboard : ComponentBase
     
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+    
+    [Inject] private TokenStorageService TokenStorageService { get; set; } = null!;
+    [Inject] private IRestaurantService RestaurantService { get; set; } = default!;
     
     public RestaurantDto? loadedRestaurant { get; set; }
     public List<RestaurantEmployeeDto> restaurantEmployeeList { get; set; }
@@ -32,25 +36,31 @@ public partial class RestaurantDashboard : ComponentBase
     
     private RestaurantDashboardDataDto? dto;
     private ReservationSearchParameters pendingSearchParams = new();
+    private List<(int Id, string Name)> userRestaurantNames = new();
     
     
     protected override async Task OnInitializedAsync()
     {
+        await LoadDashboardData();
+    }
+    
+    private async Task LoadDashboardData()
+    {
         isLoading = true;
         await LoadUserData();
         await LoadRestaurantEmployeeData();
-        await LoadRestaurantData(restaurantEmployeeList[0].RestaurantId);
+        int.TryParse(await TokenStorageService.GetActiveRestaurantAsync(), out int restaurantId);
+        await LoadRestaurantData(restaurantId);
         await LoadDashboardStatistics();
+        userRestaurantNames = await RestaurantService.GetRestaurantNames();
         
-        
-        
-        if (loadedRestaurant != null)
+        if (restaurantId != null)
         {
             pendingSearchParams.Page = 1;
             pendingSearchParams.PageSize = 4;
             pendingSearchParams.SortBy = "oldest";
             pendingSearchParams.Status = ReservationStatus.Pending;
-            pendingSearchParams.RestaurantId = loadedRestaurant.Id;
+            pendingSearchParams.RestaurantId = restaurantId;
         }
         isLoading = false;
     }
@@ -94,5 +104,40 @@ public partial class RestaurantDashboard : ComponentBase
     {
         availableTables = summary.availableTables;
         freeSeats = summary.freeSeats;
+    }
+
+    private async Task SwitchActiveRestaurant(int restaurantId)
+    {
+        pendingSearchParams = new ReservationSearchParameters
+        {
+            Page = 1,
+            PageSize = 4,
+            SortBy = "oldest",
+            Status = ReservationStatus.Pending,
+            RestaurantId = restaurantId
+        };
+        
+        await TokenStorageService.SaveActiveRestaurantAsync(restaurantId.ToString());
+        await LoadRestaurantData(restaurantId);
+        await LoadDashboardStatistics();
+        StateHasChanged();
+    }
+
+    private async Task GetRestaurantNames()
+    {
+        string querryString = "";
+        foreach (var restaurant in restaurantEmployeeList)
+        {
+            querryString = querryString + "ids=" + restaurant.RestaurantId + "&";
+        }
+        
+        List<RestaurantDto> responseData= new();
+        responseData = await Http.GetFromJsonAsync<List<RestaurantDto>>($"api/restaurant/names?{querryString}");
+        
+        foreach (var restaurant in responseData)
+        {
+            userRestaurantNames.Add((restaurant.Id, restaurant.Name ?? ""));
+        }
+        
     }
 }

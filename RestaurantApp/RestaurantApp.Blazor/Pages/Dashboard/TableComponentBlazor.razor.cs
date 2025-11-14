@@ -33,11 +33,14 @@ public partial class TableComponentBlazor : ComponentBase
     
     private string HeaderClass => isAvailable ? "bg-light" :  "bg-purple";
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
         await LoadTableAvailability();
+
         TrimmedAvailability = TrimEdges(TableAvailibilitymap);
+        
     }
+    
 
     private async Task LoadTableAvailability()
     {

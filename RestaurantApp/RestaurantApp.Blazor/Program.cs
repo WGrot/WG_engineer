@@ -16,6 +16,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<TokenStorageService>();
 builder.Services.AddScoped<JwtTokenParser>();
 
+
 // 2. AuthenticationStateProvider
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
@@ -39,6 +40,7 @@ builder.Services.AddScoped<AuthService>();
 
 // 5. Inne serwisy
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IRestaurantService, RestaurantServie>();
 builder.Services.AddScoped<PermissionService>();
 
 await builder.Build().RunAsync();

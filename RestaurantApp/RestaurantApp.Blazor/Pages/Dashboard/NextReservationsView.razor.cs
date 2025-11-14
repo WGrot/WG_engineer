@@ -82,6 +82,7 @@ public partial class NextReservationsView : ComponentBase
     {
         try
         {
+            searchParameters.RestaurantId = RestaurantId;
             var queryString = searchParameters.BuildQueryString();
             reservations.Clear();
             var response =
