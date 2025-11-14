@@ -265,6 +265,13 @@ public class RestaurantService : IRestaurantService
             _context.RestaurantPermissions.Add(permission);
         } 
         
+        var restaurantSettings = new RestaurantSettings
+        {
+            RestaurantId = restaurant.Id,
+            ReservationsNeedConfirmation = true,    
+        };
+        _context.RestaurantSettings.Add(restaurantSettings);
+        
         await _context.SaveChangesAsync();
 
         return Result.Success(restaurant.ToDto());

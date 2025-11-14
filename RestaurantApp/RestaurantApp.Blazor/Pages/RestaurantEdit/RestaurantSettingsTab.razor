@@ -3,46 +3,53 @@
 @using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.DTOs.Settings
 @using RestaurantApp.Shared.Models
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Services
 @inject HttpClient Http
-<h3>RestaurantSettingsTab</h3>
+@inject AuthService AuthService
+<div class="container">
 
-@if(settings != null){
-    <div class="form-check form-switch mb-2">
-        <input class="form-check-input"
-               type="checkbox"
-               id ="needConfirmationCheckbox"
-               checked="@settings.ReservationsNeedConfirmation"
-               @onchange="@((ChangeEventArgs e) => ToggleNeedConfirmation())">
-        <label class="form-check-label" for="needConfirmationCheckbox">
-            Does Reservations need confirmation?
-        </label>
-    </div>
-}
-else
-{
-    <div>
-        loading      
-    </div>
+    <h3 class="text-center mb-3">Configure restaurant settings</h3>
 
-}
+    @if (settings != null)
+    {
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="needConfirmationCheckbox"
+                   checked="@settings.ReservationsNeedConfirmation"
+                   @onchange="@((ChangeEventArgs e) => ToggleNeedConfirmation())">
+            <label class="form-check-label" for="needConfirmationCheckbox">
+                Does Reservations need confirmation?
+            </label>
+        </div>
+        
+        <div>
+            <button class="button button--red" @onclick="DeleteRestaurant">Delete Restaurant</button>
+        </div>
+    }
+    else if(isLoading)
+    {
+        <LoadingSpinner Title="Loading settings..."/>
+    }
+    
+</div>
 
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
     private SettingsDto settings;
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSettings();
     }
-    
+
     private async Task LoadSettings()
     {
-        if (restaurant.Settings == null)
-        {
-            await CreateSettingsForRestuarant();
-        }
+        isLoading = true;
 
         var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
         if (response.IsSuccessStatusCode)
@@ -54,30 +61,27 @@ else
             settings = new SettingsDto();
             await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
         }
+        
+        isLoading = false;
     }
-    
+
     private async Task ToggleNeedConfirmation()
     {
         settings.ReservationsNeedConfirmation = !settings.ReservationsNeedConfirmation;
         await UpdateSettings();
     }
 
-    private async Task CreateSettingsForRestuarant()
+    private async Task DeleteRestaurant()
     {
-        CreateRestaurantSettingsDto dto = new CreateRestaurantSettingsDto
-        {
-            ReservationsNeedConfirmation = false,
-            RestaurantId = Id
-        };
-        
-        var response = await Http.PostAsJsonAsync($"api/RestaurantSettings/", dto);
+        var response =  await Http.DeleteAsync($"api/Restaurant/{Id}");
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine("Ustawienia zaktualizowane pomyślnie.");
+            Console.WriteLine("Restauracja usunięta pomyślnie.");
+            await AuthService.LogoutAsync();
         }
         else
         {
-            Console.WriteLine($"Błąd podczas aktualizacji ustawień: {response.StatusCode}");
+            Console.WriteLine($"Błąd podczas usuwania restauracji: {response.StatusCode}");
         }
     }
     
@@ -88,8 +92,8 @@ else
             ReservationsNeedConfirmation = settings.ReservationsNeedConfirmation,
             Id = settings.Id,
             RestaurantId = settings.RestaurantId
-        }; 
-        
+        };
+
         var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
         if (response.IsSuccessStatusCode)
         {

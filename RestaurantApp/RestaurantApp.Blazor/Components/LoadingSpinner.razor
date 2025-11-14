@@ -1,0 +1,13 @@
+﻿<div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+    <div class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status"
+             style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted">@Title</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Loading...";
+}
