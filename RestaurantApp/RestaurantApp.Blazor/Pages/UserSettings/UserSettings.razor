@@ -1,0 +1,67 @@
+﻿@page "/UserSettings"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using RestaurantApp.Blazor.Components.Layout
+@using RestaurantApp.Shared.DTOs.Users
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthStateProvider
+<AuthorizeView>
+    <Authorized>
+
+        <!-- Header with restaurant branding -->
+        <div class="restaurant-header bg-primary text-white">
+            <div class="container py-4">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                            <div
+                                class="text-white">
+                                <i class="bi bi-person-circle" style="font-size: 4.5rem;"></i>
+                            </div>
+                    </div>
+                    <div class="col-auto">
+                        <h1 class="h2 mb-1">@(userDto.FirstName + " " + userDto.LastName)</h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="bi bi-envelope me-1"></i>
+                            @userDto.Email
+                        </p>
+                        @if(!string.IsNullOrEmpty(userDto.PhoneNumber)){
+                            <p class="mb-0 opacity-75">
+                                <i class="bi bi-telephone"></i>
+                                @userDto.PhoneNumber
+                            </p>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin 
+            UseReturnUrl="true"/>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    ResponseUserDto userDto = new ResponseUserDto();
+    ClaimsPrincipal currentUser = new ClaimsPrincipal();
+    private string currentUserId = "";
+
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadUserData();
+    }
+    
+    private async Task LoadUserData()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        currentUser = authState.User;
+        if (currentUser.Identity?.IsAuthenticated == true)
+        {
+            currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        userDto = await Http.GetFromJsonAsync<ResponseUserDto>($"api/User/{currentUserId}");
+    }
+
+}
