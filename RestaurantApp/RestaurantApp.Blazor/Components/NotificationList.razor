@@ -12,10 +12,10 @@
 <div class="notification-list-container @containerClass">
 
     <div class="notification-header">
-        <h4>Powiadomienia</h4>
+        <h4>Notifications</h4>
         @if (NotificationService.Notifications.Any())
         {
-            <button class="clear-all-btn" @onclick="ClearAll">Wyczyść wszystko</button>
+            <button class="clear-all-btn" @onclick="ClearAll">Clear all</button>
         }
     </div>
     
@@ -39,7 +39,7 @@
         else
         {
             <div class="no-notifications">
-                <p>Brak nowych powiadomień.</p>
+                <p>No new notifications.</p>
             </div>
         }
     </div>
