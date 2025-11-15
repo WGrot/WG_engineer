@@ -77,4 +77,17 @@ public class AuthController : ControllerBase
         var result = await _authService.GetAllUsersAsync();
         return result.ToActionResult();
     }
+    
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var result = await _authService.ChangePasswordAsync(userId, request);
+
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
 }

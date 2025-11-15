@@ -1,5 +1,11 @@
 ﻿<h3>SecuritySettings</h3>
 
+<button class="btn btn-primary" @onclick="() => showChangePasswordModal = true">
+    Change Password
+</button>
+<ChangePasswordModal
+    @bind-IsVisible="showChangePasswordModal"
+    ></ChangePasswordModal>
 @code {
-    
+    private bool showChangePasswordModal = false;
 }

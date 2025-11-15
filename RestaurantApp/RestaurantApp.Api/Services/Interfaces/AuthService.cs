@@ -140,4 +140,33 @@ public class AuthService : IAuthService
     {
         throw new NotImplementedException();
     }
+    
+    public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
+    {
+        if (string.IsNullOrEmpty(userId))
+            return Result.Unauthorized("User not logged in");
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Result.Unauthorized("User not logged in");
+        
+        IdentityResult changeResult = await _userManager.ChangePasswordAsync(
+            user,
+            request.CurrentPassword,
+            request.NewPassword
+        );
+
+        if (!changeResult.Succeeded)
+        {
+            var result = Result.Failure("Password change failed", 400);
+            foreach (var error in changeResult.Errors)
+                result.Error += $"{error.Code}: {error.Description}\n";
+            return result;
+        }
+        
+        await _signInManager.RefreshSignInAsync(user);
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        return Result.Success();
+    }
 }

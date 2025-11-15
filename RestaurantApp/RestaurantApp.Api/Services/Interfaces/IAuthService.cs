@@ -14,6 +14,7 @@ public interface IAuthService
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
     Result GetDebugAuthInfo(bool isAuthenticated, string authenticationType, IEnumerable<ClaimDto> claims);
+    Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
 }
 
 
