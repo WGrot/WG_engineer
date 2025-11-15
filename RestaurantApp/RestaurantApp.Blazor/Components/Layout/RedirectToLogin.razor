@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        Nav.NavigateTo("/login");
+    }
+
+}

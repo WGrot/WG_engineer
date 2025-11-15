@@ -2,13 +2,23 @@
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.Common
+@using RestaurantApp.Blazor.Components.Layout
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NotificationService NotificationService
 
-<h3>Strona Testowa Powiadomień</h3>
+<AuthorizeView>
+    <Authorized>
+        <h3>Strona Testowa Powiadomień</h3>
 
-<button class="btn btn-success" @onclick="AddSuccess">Dodaj Sukces</button>
-<button class="btn btn-danger" @onclick="AddError">Dodaj Błąd</button>
-<button class="btn btn-info" @onclick="AddInfo">Dodaj Info</button>
+        <button class="btn btn-success" @onclick="AddSuccess">Dodaj Sukces</button>
+        <button class="btn btn-danger" @onclick="AddError">Dodaj Błąd</button>
+        <button class="btn btn-info" @onclick="AddInfo">Dodaj Info</button>
+    </Authorized>
+<NotAuthorized>
+    <RedirectToLogin />
+</NotAuthorized>
+</AuthorizeView>
+
 
 @code {
     private void AddSuccess()
