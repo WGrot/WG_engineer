@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -172,7 +173,25 @@ public class UserService : IUserService
         
         return Result<CreateUserDto>.Created(resultDto);
     }
-    
+
+    public async Task<Result> UpdateUserAsync(UpdateUserDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(dto.Id);
+
+        if (user == null)
+            throw new Exception("User not found");
+        
+        user.UpdateFromDto(dto);
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            return Result.Failure(errors);
+        }
+        return Result.Success();
+    }
     private string GenerateSecurePassword(int length = 16)
     {
         const string lowercase = "abcdefghijklmnopqrstuvwxyz";

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
@@ -84,6 +85,22 @@ public class UserController : ControllerBase
             );
         }
         
+        return result.ToActionResult();
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateUserAsync(UpdateUserDto dto)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, 
+            null, 
+            new SameUserRequirement(dto.Id));
+
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+        var result = await _userService.UpdateUserAsync(dto);
         return result.ToActionResult();
     }
 }

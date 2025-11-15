@@ -144,17 +144,16 @@
             @if (_isAuthenticated)
             {
                 <h3 class="menu-section-title">User options</h3>
-                <a href="/profile" class="menu-item" @onclick="CloseMenu">
-                    <span>My Profile</span>
-                </a>
+
                 <a href="/my-reservations" class="menu-item" @onclick="CloseMenu">
                     <span>My reservations</span>
                 </a>
-                <a href="/settings" class="menu-item" @onclick="CloseMenu">
-                    <span>Settings</span>
-                </a>
-                <a href="/my-reviews" class="menu-item mb-4" @onclick="CloseMenu">
+
+                <a href="/my-reviews" class="menu-item " @onclick="CloseMenu">
                     <span>My reviews</span>
+                </a>
+                <a href="/UserSettings" class="menu-item mb-4" @onclick="CloseMenu">
+                    <span>Profile settings</span>
                 </a>
                 if (isEmployee)
                 {

@@ -1,5 +1,154 @@
-﻿<h3>UserInfo</h3>
+﻿@using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Shared.DTOs.Users
+@using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.Common
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+@inject NotificationService NotificationService
+
+@if (user != null)
+{
+    <div class="container mt-4">
+        <div class="row justify-content-evenly">
+            <div class="col-lg-8 col-12 w-100">
+                <div>
+                    <div class="text-center w-100">
+                        <h3 class="mb-3">Change user information</h3>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">
+                                First Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="firstName"
+                                   @bind="modifiedUser.FirstName"
+                                   @bind:after="() => changesMade = true"
+                                   required />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">
+                                Last Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="lastName"
+                                   @bind="modifiedUser.LastName"
+                                   @bind:after="() => changesMade = true"
+                                   required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">
+                                Phone Number <span class="text-danger">*</span>
+                            </label>
+                            <input type="tel"
+                                   class="form-control"
+                                   id="phone"
+                                   @bind="modifiedUser.PhoneNumber"
+                                   @bind:after="() => changesMade = true"
+                                   required />
+                        </div>
+                    </div>
+                </div>
+
+                @if (changesMade)
+                {
+                    <div class="row justify-content-center mb-3">
+                        <div class="d-flex justify-content-center gap-3">
+                            <button class="base-button" @onclick="SaveChanges">Save Changes</button>
+                            <button class="grey-button" @onclick="CancelChanges">Cancel</button>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <LoadingSpinner/>
+}
 
 @code {
-    
+    [Parameter] public required ResponseUserDto? user { get; set; }
+    private ResponseUserDto modifiedUser = new();
+    private bool changesMade = false;
+
+    protected override void OnParametersSet()
+    {
+        if (user != null)
+        {
+            modifiedUser = new ResponseUserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber
+            };
+        }
+    }
+
+    private void CancelChanges()
+    {
+        if (user != null)
+        {
+            modifiedUser = new ResponseUserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber
+            };
+        }
+        changesMade = false;
+    }
+
+    private async Task SaveChanges()
+    {
+        try
+        {
+            var dto = new UpdateUserDto()
+            {
+               // Id = modifiedUser.Id,
+                FirstName = modifiedUser.FirstName,
+                LastName = modifiedUser.LastName,
+                PhoneNumber = modifiedUser.PhoneNumber
+            };
+
+            var result = await Http.PatchAsJsonAsync($"api/User/{modifiedUser.Id}", dto);
+            if (result.IsSuccessStatusCode)
+            {
+                changesMade = false;
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Success",
+                    Content = "User data has been updated successfully.",
+                    Type = NotificationType.Success
+                });
+            }
+            else
+            {
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Error",
+                    Content = $"Error updating user try again later or contact support, Status Code: {result.StatusCode}",
+                    Type = NotificationType.Error
+                });
+            }
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error saving data: {e.Message}");
+        }
+    }
 }

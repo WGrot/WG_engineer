@@ -84,7 +84,7 @@ using RestaurantApp.Shared.Common;
             try
             {
                 // Ustaw opóźnienie (np. 4 sekundy)
-                await Task.Delay(2000, token);
+                await Task.Delay(6000, token);
 
                 // Jeśli przez 4 sekundy nikt nie anulował zadania
                 // (np. klikając dzwonek), ukryj listę.

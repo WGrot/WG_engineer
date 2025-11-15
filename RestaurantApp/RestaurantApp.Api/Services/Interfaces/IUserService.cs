@@ -11,4 +11,6 @@ public interface IUserService
     Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName, string? phoneNumber,
         string? email, int? amount);
     Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto);
+    
+    Task<Result> UpdateUserAsync(UpdateUserDto userDto);
 }

@@ -5,6 +5,7 @@
 @using RestaurantApp.Shared.DTOs.Users
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
+
 <AuthorizeView>
     <Authorized>
 
@@ -76,7 +77,7 @@
                 {
                     case "info":
                         <div class="tab-pane fade show active">
-                            <UserInfo />
+                            <UserInfo user="userDto"/>
                         </div>
                         break;
                     case "security":
