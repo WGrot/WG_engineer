@@ -6,7 +6,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Nav.NavigateTo("/login");
+        var returnUrl = 
+            Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}");
     }
 
 }

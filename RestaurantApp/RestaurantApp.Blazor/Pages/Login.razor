@@ -58,6 +58,9 @@
 </div>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? returnUrl { get; set; }
     private LoginRequest _loginRequest = new();
     private bool _isLoading = false;
     private string _errorMessage = string.Empty;
@@ -74,7 +77,15 @@
 
             if (success)
             {
-                Navigation.NavigateTo("/", true);
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    Navigation.NavigateTo(returnUrl, true);
+                }
+                else
+                {
+                    Navigation.NavigateTo("/", true);
+                }
+                
             }
             else
             {
