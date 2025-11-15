@@ -15,7 +15,8 @@
         <button class="btn btn-info" @onclick="AddInfo">Dodaj Info</button>
     </Authorized>
 <NotAuthorized>
-    <RedirectToLogin />
+    <RedirectToLogin 
+        UseReturnUrl="true"/>
 </NotAuthorized>
 </AuthorizeView>
 

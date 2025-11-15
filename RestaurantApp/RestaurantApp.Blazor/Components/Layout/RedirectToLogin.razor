@@ -3,12 +3,23 @@
 @inject NavigationManager Nav
 
 @code {
-
+    
+    [Parameter]
+    public bool UseReturnUrl { get; set; } = true;
+    
     protected override async Task OnInitializedAsync()
     {
-        var returnUrl = 
-            Nav.ToBaseRelativePath(Nav.Uri);
-        Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}");
+        if (UseReturnUrl)
+        {
+            var returnUrl = 
+                Nav.ToBaseRelativePath(Nav.Uri);
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}");  
+        }else
+        {
+
+            Nav.NavigateTo($"/login");
+        }
+
     }
 
 }
