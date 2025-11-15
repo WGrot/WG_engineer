@@ -13,10 +13,10 @@
             <div class="container py-4">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                            <div
-                                class="text-white">
-                                <i class="bi bi-person-circle" style="font-size: 4.5rem;"></i>
-                            </div>
+                        <div
+                            class="text-white">
+                            <i class="bi bi-person-circle" style="font-size: 4.5rem;"></i>
+                        </div>
                     </div>
                     <div class="col-auto">
                         <h1 class="h2 mb-1">@(userDto.FirstName + " " + userDto.LastName)</h1>
@@ -35,6 +35,63 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-light border-bottom sticky-top">
+            <div class="container">
+                <ul class="nav nav-tabs nav-fill border-0 pt-2" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "info" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "info")"
+                                type="button">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Info
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "security" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "security")"
+                                type="button">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Security Settings
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link @(activeTab == "employee-settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "employee-settings")"
+                                type="button">
+                            <i class="bi bi-person-badge me-2"></i>
+                            Employee Settings
+                        </button>
+                    </li>
+                    
+
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="container my-4">
+            <div class="tab-content">
+                @switch (activeTab)
+                {
+                    case "info":
+                        <div class="tab-pane fade show active">
+                            <UserInfo />
+                        </div>
+                        break;
+                    case "security":
+                        <div class="tab-pane fade show active">
+                            <SecuritySettings />
+                        </div>
+                        break;
+                    case "employee-settings":
+                        <div class="tab-pane fade show active">
+                            <EmployeeSettings />
+                        </div>
+                        break;
+                }
+            </div>
+        </div>
         
     </Authorized>
     <NotAuthorized>
@@ -46,7 +103,9 @@
     ResponseUserDto userDto = new ResponseUserDto();
     ClaimsPrincipal currentUser = new ClaimsPrincipal();
     private string currentUserId = "";
-
+    string activeTab = "info";
+    
+    
     protected async override Task OnInitializedAsync()
     {
         await LoadUserData();

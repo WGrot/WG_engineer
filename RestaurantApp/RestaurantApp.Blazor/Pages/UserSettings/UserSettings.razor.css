@@ -1,1 +1,29 @@
-﻿
+﻿.nav-tabs .nav-link {
+    color: #6c757d;
+    background-color: transparent;
+    border: none;
+    position: relative;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: white;
+    border-bottom: 3px solid #667eea;
+}
+
+.nav-tabs .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #667eea;
+}
