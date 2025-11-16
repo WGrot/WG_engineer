@@ -1,11 +1,63 @@
-﻿<h3>SecuritySettings</h3>
+﻿@using System.Net
+@using System.Security.Claims
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.DTOs.Auth.TwoFactor
+@inject HttpClient Http
+<h3>SecuritySettings</h3>
 
 <button class="btn btn-primary" @onclick="() => showChangePasswordModal = true">
     Change Password
 </button>
+
+<button class="btn btn-primary" @onclick="OpenEnable2FAModal">
+    Enable2FA
+</button>
 <ChangePasswordModal
     @bind-IsVisible="showChangePasswordModal"
-    ></ChangePasswordModal>
+></ChangePasswordModal>
+
+<Enable2FaModal
+    @bind-IsVisible="showEnable2FAModal"
+    CurrentUserId="currentUserId"
+    Enable2FAData="enable2FAData"
+    On2FAEnabled="Handle2FAEnabled" 
+   />
+
 @code {
+    [Inject]
+    public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     private bool showChangePasswordModal = false;
+    private bool showEnable2FAModal = false;
+    private string currentUserId;
+    
+    private Enable2FAResponse? enable2FAData = null;
+
+    private async Task OpenEnable2FAModal()
+    {
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity?.IsAuthenticated == true)
+        {
+            currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+        
+        var dto = new Enable2FARequest
+        {
+            UserId = currentUserId
+        };
+        
+        var response = await Http.PostAsJsonAsync("api/TwoFactor/enable", dto);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            enable2FAData = await response.Content.ReadFromJsonAsync<Enable2FAResponse>();
+            showEnable2FAModal = true;
+        }
+    }
+
+    private async Task Handle2FAEnabled()
+    {
+        Console.WriteLine("2FA został włączony!");
+    }
 }

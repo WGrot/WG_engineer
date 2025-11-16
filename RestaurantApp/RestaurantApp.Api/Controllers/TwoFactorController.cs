@@ -12,11 +12,13 @@ public class TwoFactorController : ControllerBase
 {
     private readonly ApiDbContext _context;
     private readonly ITwoFactorService _twoFactorService;
+    private readonly IAesEncryptionService _encryptionService;
 
-    public TwoFactorController(ApiDbContext context, ITwoFactorService twoFactorService)
+    public TwoFactorController(ApiDbContext context, ITwoFactorService twoFactorService, IAesEncryptionService encryptionService)
     {
         _context = context;
         _twoFactorService = twoFactorService;
+        _encryptionService = encryptionService;
     }
 
     [HttpPost("enable")]
@@ -35,9 +37,10 @@ public class TwoFactorController : ControllerBase
         var secretKey = _twoFactorService.GenerateSecretKey();
         var qrCodeUri = _twoFactorService.GenerateQrCodeUri(user.Email!, secretKey);
         var qrCodeImage = _twoFactorService.GenerateQrCodeImage(qrCodeUri);
+        var encryptedSecretKey = _encryptionService.Encrypt(secretKey);
 
         // Zapisz klucz (2FA nie jest jeszcze aktywne, dopóki nie zostanie zweryfikowane)
-        user.TwoFactorSecretKey = secretKey;
+        user.TwoFactorSecretKey = encryptedSecretKey;
         await _context.SaveChangesAsync();
 
         return Ok(new Enable2FAResponse

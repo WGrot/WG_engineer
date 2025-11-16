@@ -6,6 +6,12 @@ namespace RestaurantApp.Api.Services;
 
 public class TwoFactorService: ITwoFactorService
 {
+    private readonly IAesEncryptionService _encryptionService;
+    
+    public TwoFactorService(IAesEncryptionService aesEncryptionService)
+    {
+        _encryptionService = aesEncryptionService;
+    }
     public string GenerateSecretKey()
     {
         var key = KeyGeneration.GenerateRandomKey(20);
@@ -25,11 +31,12 @@ public class TwoFactorService: ITwoFactorService
         return qrCode.GetGraphic(20);
     }
 
-    public bool ValidateCode(string secretKey, string code)
+    public bool ValidateCode(string encryptedKey, string code)
     {
-        var key = Base32Encoding.ToBytes(secretKey);
-        var totp = new Totp(key);
         
+        var decryptedSecretKey = Base32Encoding.ToBytes(_encryptionService.Decrypt(encryptedKey));
+        
+        var totp = new Totp(decryptedSecretKey);
         return totp.VerifyTotp(code, out _, new VerificationWindow(2, 2));
     }
 }

@@ -115,7 +115,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandle
 builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationHandler>();
 
-
+builder.Services.AddScoped<IAesEncryptionService, AesEncryptionService>();
 
 
 builder.Services.AddScoped<IBucketService, BucketService>();

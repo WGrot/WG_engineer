@@ -1,0 +1,192 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.Common
+@using RestaurantApp.Shared.DTOs.Auth
+@using RestaurantApp.Shared.Models
+@using RestaurantApp.Shared.DTOs.Auth.TwoFactor
+
+@inject HttpClient Http
+@inject NotificationService NotificationService
+
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enable Two-Factor Authentication</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (Enable2FAData != null)
+                    {
+                        <div class="text-center mb-4">
+                            <h6 class="mb-3">Scan the QR code with your authenticator app</h6>
+                            <div class="d-flex justify-content-center mb-3">
+                                <img src="@GetQrCodeDataUrl()" alt="QR Code" class="img-fluid" style="max-width: 250px;" />
+                            </div>
+                            <p class="text-muted small">
+                                Or enter this key manually: <br />
+                                <code class="user-select-all">@Enable2FAData.SecretKey</code>
+                            </p>
+                        </div>
+
+                        <EditForm Model="model" OnValidSubmit="Submit">
+                            <div class="mb-3">
+                                <label class="form-label">Enter the 6-digit code from your app</label>
+                                <InputText class="form-control text-center" 
+                                           @bind-Value="model.Code" 
+                                           placeholder="000000"
+                                           maxlength="6"
+                                           style="font-size: 1.5rem; letter-spacing: 0.5rem;" />
+                                <ValidationMessage For="@(() => model.Code)" />
+                            </div>
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                        </EditForm>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Generating QR code...</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex gap-2 w-100 justify-content-end">
+                        <button type="button" class="button button--grey" @onclick="Close" disabled="@isSaving">
+                            Cancel
+                        </button>
+                        <button type="button" class="button button--primary btn-primary" @onclick="Submit" disabled="@(isSaving || Enable2FAData == null)">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>Enabling...</span>
+                            }
+                            else
+                            {
+                                <span>Enable 2FA</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public Enable2FAResponse? Enable2FAData { get; set; }
+    [Parameter] public EventCallback On2FAEnabled { get; set; }
+    [Parameter] public string CurrentUserId {get; set; } = string.Empty;
+
+    private Verify2FAModel model = new();
+    private bool isSaving = false;
+
+    private async Task Close()
+    {
+        ClearForm();
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private void ClearForm()
+    {
+        model = new();
+        isSaving = false;
+    }
+
+    private string GetQrCodeDataUrl()
+    {
+        if (Enable2FAData?.QrCodeImage == null || Enable2FAData.QrCodeImage.Length == 0)
+            return string.Empty;
+
+        var base64 = Convert.ToBase64String(Enable2FAData.QrCodeImage);
+        return $"data:image/png;base64,{base64}";
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(model.Code) || model.Code.Length != 6)
+        {
+            NotificationService.AddNotification(new Notification
+            {
+                Title = "Error",
+                Content = "Please enter a valid 6-digit code.",
+                Type = NotificationType.Error
+            });
+            return;
+        }
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            
+            
+            var result = await Http.PostAsJsonAsync("api/TwoFactor/verify-and-enable", new Verify2FARequest
+            {
+                Code = model.Code,
+                UserId = CurrentUserId
+            });
+
+            if (result.IsSuccessStatusCode)
+            {
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Success",
+                    Content = "Two-factor authentication has been enabled successfully.",
+                    Type = NotificationType.Success
+                });
+
+                await On2FAEnabled.InvokeAsync();
+                await Close();
+            }
+            else
+            {
+                var errorContent = await result.Content.ReadAsStringAsync();
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Error",
+                    Content = errorContent.Contains("Invalid") 
+                        ? "Invalid verification code. Please try again." 
+                        : "An error occurred while enabling 2FA. Please try again.",
+                    Type = NotificationType.Error
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.AddNotification(new Notification
+            {
+                Title = "Error",
+                Content = "An unexpected error occurred. Please try again.",
+                Type = NotificationType.Error
+            });
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    public class Verify2FAModel
+    {
+        [Required(ErrorMessage = "Verification code is required")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Code must be 6 digits")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Code must contain only digits")]
+        public string Code { get; set; } = string.Empty;
+    }
+}
