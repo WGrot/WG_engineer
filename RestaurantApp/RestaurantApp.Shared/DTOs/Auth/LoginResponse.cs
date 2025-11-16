@@ -6,4 +6,6 @@ public class LoginResponse
 {
     public string Token { get; set; } = string.Empty;
     public ResponseUserDto ResponseUser { get; set; } = new();
+    
+    public bool RequiresTwoFactor { get; set; }
 }

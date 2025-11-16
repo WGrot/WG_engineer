@@ -27,6 +27,8 @@
         </PackageReference>
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="Otp.NET" Version="1.4.0" />
+        <PackageReference Include="QRCoder" Version="1.7.0" />
         <PackageReference Include="SkiaSharp" Version="3.119.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.0" />

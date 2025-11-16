@@ -14,16 +14,19 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IJwtService _jwtService;
+    private readonly ITwoFactorService _twoFactorService;
 
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IJwtService jwtService)
+        IJwtService jwtService,
+        ITwoFactorService twoFactorService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtService = jwtService;
+        _twoFactorService = twoFactorService;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -54,21 +57,27 @@ public class AuthService : IAuthService
     }
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+{
+    var user = await _userManager.FindByEmailAsync(request.Email);
+    if (user == null)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
-        {
-            return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
-        }
+        return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
+    }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
-        if (result.Succeeded)
+    if (!result.Succeeded)
+    {
+        return Result<LoginResponse>.Failure("Incorrect email or password", 401);
+    }
+
+    if (user.TwoFactorEnabled)
+    {
+        if (string.IsNullOrEmpty(request.TwoFactorCode))
         {
-            var token = await _jwtService.GenerateJwtTokenAsync(user);
-            var response = new LoginResponse
+            var responseWithout2FA = new LoginResponse
             {
-                Token = token,
+                RequiresTwoFactor = true,
                 ResponseUser = new ResponseUserDto
                 {
                     Id = user.Id,
@@ -77,11 +86,51 @@ public class AuthService : IAuthService
                     LastName = user.LastName
                 }
             };
-            return Result<LoginResponse>.Success(response);
+            return Result<LoginResponse>.Success(responseWithout2FA);
         }
 
-        return Result<LoginResponse>.Failure(result.ToString(), 401);
+        // Sprawdź blokadę konta
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
+        }
+
+        if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
+        {
+            return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
+        }
+
+        bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.TwoFactorCode);
+        
+        if (!isValid)
+        {
+            // Zwiększ licznik nieudanych prób
+            await _userManager.AccessFailedAsync(user);
+            
+            return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
+        }
+
+        // Zresetuj licznik po udanej weryfikacji
+        await _userManager.ResetAccessFailedCountAsync(user);
     }
+
+    var token = await _jwtService.GenerateJwtTokenAsync(user, user.TwoFactorEnabled);
+    
+    var response = new LoginResponse
+    {
+        Token = token,
+        RequiresTwoFactor = false,
+        ResponseUser = new ResponseUserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName
+        }
+    };
+    
+    return Result<LoginResponse>.Success(response);
+}
 
     public async Task<Result> LogoutAsync()
     {
@@ -123,7 +172,7 @@ public class AuthService : IAuthService
     public async Task<Result<List<ResponseUserDto>>> GetAllUsersAsync()
     {
         var users = await _userManager.Users.ToListAsync();
-    
+
         var userDtos = users.Select(user => new ResponseUserDto
         {
             Id = user.Id,
@@ -140,7 +189,7 @@ public class AuthService : IAuthService
     {
         throw new NotImplementedException();
     }
-    
+
     public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
     {
         if (string.IsNullOrEmpty(userId))
@@ -149,7 +198,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             return Result.Unauthorized("User not logged in");
-        
+
         IdentityResult changeResult = await _userManager.ChangePasswordAsync(
             user,
             request.CurrentPassword,
@@ -163,7 +212,7 @@ public class AuthService : IAuthService
                 result.Error += $"{error.Code}: {error.Description}\n";
             return result;
         }
-        
+
         await _signInManager.RefreshSignInAsync(user);
         await _userManager.UpdateSecurityStampAsync(user);
 

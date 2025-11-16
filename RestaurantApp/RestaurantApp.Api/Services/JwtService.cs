@@ -22,7 +22,7 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
+    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified = false)
     {
         var claims = new List<Claim>
         {
@@ -30,6 +30,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim("jti", Guid.NewGuid().ToString()),
+            new Claim("2fa_verified", is2FAVerified.ToString().ToLower())
         };
 
 

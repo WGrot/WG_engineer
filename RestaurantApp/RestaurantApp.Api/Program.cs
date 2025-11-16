@@ -101,7 +101,7 @@ builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
 builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
 builder.Services.AddScoped<IMenuCategoryService, MenuCategoryService>();
-
+builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
@@ -114,6 +114,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthoriza
 builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationHandler>();
+
 
 
 
