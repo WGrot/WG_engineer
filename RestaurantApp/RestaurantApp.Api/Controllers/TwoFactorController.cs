@@ -85,8 +85,7 @@ public class TwoFactorController : ControllerBase
         var user = await _context.Users.FindAsync(userId);
         if (user == null || !user.TwoFactorEnabled)
             return BadRequest("2FA nie jest włączone");
-
-        // Weryfikuj kod przed wyłączeniem
+        
         if (!_twoFactorService.ValidateCode(user.TwoFactorSecretKey!, request.Code))
             return BadRequest("Nieprawidłowy kod");
 

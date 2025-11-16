@@ -1,11 +1,13 @@
-﻿@if (IsVisible)
+﻿@* TwoFactorVerificationModal.razor *@
+
+@if (IsVisible)
 {
     <div class="modal-backdrop fade show"></div>
     <div class="modal fade show d-block" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Two factor authentication</h5>
+                    <h5 class="modal-title">@Title</h5>
                     <button type="button" class="btn-close" @onclick="Cancel" disabled="@IsLoading"></button>
                 </div>
                 <div class="modal-body">
@@ -15,33 +17,41 @@
                             @ErrorMessage
                         </div>
                     }
-                    
-                    <p>Enter two factor authentication code</p>
-                    
+
+                    @if (!string.IsNullOrEmpty(WarningMessage))
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            @WarningMessage
+                        </div>
+                    }
+
+                    <p>@Description</p>
+
                     <EditForm Model="@this" OnValidSubmit="@Submit">
                         <div class="form-group">
-                            <InputText @bind-Value="TwoFactorCode" 
-                                      class="form-control text-center fs-4 letter-spacing"
-                                      placeholder="000000"
-                                      maxlength="6"
-                                      disabled="@IsLoading"
-                                      @ref="codeInput" />
+                            <InputText @bind-Value="TwoFactorCode"
+                                       class="form-control text-center fs-4 letter-spacing"
+                                       placeholder="000000"
+                                       maxlength="6"
+                                       disabled="@IsLoading"
+                                       @ref="codeInput" />
                         </div>
                     </EditForm>
                 </div>
                 <div class="modal-footer">
                     <button class="button button--grey" @onclick="Cancel" disabled="@IsLoading">
-                        Cancel
+                        @CancelButtonText
                     </button>
-                    <button  class="button button--primary" @onclick="Submit" disabled="@(IsLoading || string.IsNullOrEmpty(TwoFactorCode) || TwoFactorCode.Length != 6)">
+                    <button class="button @SubmitButtonClass" @onclick="Submit"
+                            disabled="@(IsLoading || string.IsNullOrEmpty(TwoFactorCode) || TwoFactorCode.Length != 6)">
                         @if (IsLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            <span>Verifying...</span>
+                            <span>@LoadingText</span>
                         }
                         else
                         {
-                            <span>Verify</span>
+                            <span>@SubmitButtonText</span>
                         }
                     </button>
                 </div>
@@ -54,8 +64,16 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public string? WarningMessage { get; set; }
     [Parameter] public EventCallback<string> OnSubmit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    
+    [Parameter] public string Title { get; set; } = "Two factor authentication";
+    [Parameter] public string Description { get; set; } = "Enter two factor authentication code";
+    [Parameter] public string SubmitButtonText { get; set; } = "Verify";
+    [Parameter] public string CancelButtonText { get; set; } = "Cancel";
+    [Parameter] public string LoadingText { get; set; } = "Verifying...";
+    [Parameter] public string SubmitButtonClass { get; set; } = "button--primary";
 
     private string TwoFactorCode { get; set; } = string.Empty;
     private InputText? codeInput;
@@ -86,6 +104,7 @@
     {
         TwoFactorCode = string.Empty;
         ErrorMessage = null;
+        WarningMessage = null;
     }
 }
 

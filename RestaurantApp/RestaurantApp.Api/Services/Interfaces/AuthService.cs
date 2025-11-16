@@ -78,12 +78,13 @@ public class AuthService : IAuthService
             var responseWithout2FA = new LoginResponse
             {
                 RequiresTwoFactor = true,
-                ResponseUser = new ResponseUserDto
+                ResponseUser = new ResponseUserLoginDto()
                 {
                     Id = user.Id,
                     Email = user.Email,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    TwoFactorEnabled = user.TwoFactorEnabled
                 }
             };
             return Result<LoginResponse>.Success(responseWithout2FA);
@@ -120,12 +121,13 @@ public class AuthService : IAuthService
     {
         Token = token,
         RequiresTwoFactor = false,
-        ResponseUser = new ResponseUserDto
+        ResponseUser = new ResponseUserLoginDto()
         {
             Id = user.Id,
             Email = user.Email,
             FirstName = user.FirstName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            TwoFactorEnabled = user.TwoFactorEnabled
         }
     };
     

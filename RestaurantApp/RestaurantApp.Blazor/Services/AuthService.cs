@@ -131,6 +131,12 @@ public class AuthService
     {
         return await _tokenStorage.GetUserAsync();
     }
+    
+    public async Task<bool> IsTwoFactorEnabledAsync()
+    {
+        var user = await _tokenStorage.GetUserAsync();
+        return user?.TwoFactorEnabled ?? false;
+    }
 
     public async Task<string?> GetActiveRestaurantAsync()
     {

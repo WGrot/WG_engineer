@@ -2,16 +2,28 @@
 @using System.Security.Claims
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Auth.TwoFactor
+@using RestaurantApp.Blazor.Components
 @inject HttpClient Http
+
 <h3>SecuritySettings</h3>
 
 <button class="btn btn-primary" @onclick="() => showChangePasswordModal = true">
     Change Password
 </button>
 
-<button class="btn btn-primary" @onclick="OpenEnable2FAModal">
-    Enable2FA
-</button>
+@if(is2FAEnabled)
+{
+    <button class="button button--red" @onclick="OpenDisable2FAModal">
+        Disable 2FA
+    </button>
+}
+else
+{
+    <button class="button button--primary" @onclick="OpenEnable2FAModal">
+        Enable 2FA
+    </button>
+}
+
 <ChangePasswordModal
     @bind-IsVisible="showChangePasswordModal"
 ></ChangePasswordModal>
@@ -20,35 +32,111 @@
     @bind-IsVisible="showEnable2FAModal"
     CurrentUserId="currentUserId"
     Enable2FAData="enable2FAData"
-    On2FAEnabled="Handle2FAEnabled" 
-   />
+    On2FAEnabled="Handle2FAEnabled"
+/>
+
+<!-- Modal do wyłączania 2FA -->
+<TwoFactorModal
+    IsVisible="showDisable2FAModal"
+    IsLoading="isDisabling2FA"
+    ErrorMessage="@disable2FAErrorMessage"
+    WarningMessage="This action will disable two-factor authentication. Your account will be less secure."
+    Title="Disable Two-Factor Authentication"
+    Description="Please enter your 2FA code to confirm disabling two-factor authentication"
+    SubmitButtonText="Disable 2FA"
+    SubmitButtonClass="button--red"
+    LoadingText="Disabling..."
+    OnSubmit="HandleDisable2FA"
+    OnCancel="CancelDisable2FA"
+/>
 
 @code {
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
+    [Inject] public AuthService Auth { get; set; } = default!;
+
     private bool showChangePasswordModal = false;
     private bool showEnable2FAModal = false;
-    private string currentUserId;
-    
-    private Enable2FAResponse? enable2FAData = null;
+    private bool showDisable2FAModal = false;
 
-    private async Task OpenEnable2FAModal()
+    private string currentUserId;
+    private bool is2FAEnabled = false;
+    private Enable2FAResponse? enable2FAData = null;
+    
+    private bool isDisabling2FA = false;
+    private string? disable2FAErrorMessage = null;
+
+    protected override async Task OnInitializedAsync()
     {
-        
+        is2FAEnabled = await Auth.IsTwoFactorEnabledAsync();
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         if (currentUser.Identity?.IsAuthenticated == true)
         {
             currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
-        
+    }
+
+    private void OpenDisable2FAModal()
+    {
+        disable2FAErrorMessage = null;
+        showDisable2FAModal = true;
+    }
+
+    private async Task HandleDisable2FA(string code)
+    {
+        isDisabling2FA = true;
+        disable2FAErrorMessage = null;
+
+        try
+        {
+            var dto = new Verify2FARequest
+            {
+                UserId = currentUserId,
+                Code  = code
+            };
+
+            var response = await Http.PostAsJsonAsync("api/TwoFactor/disable", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                is2FAEnabled = false;
+                showDisable2FAModal = false;
+                Console.WriteLine("2FA został wyłączony!");
+            }
+            else
+            {
+                disable2FAErrorMessage = "Invalid 2FA code. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            disable2FAErrorMessage = "An error occurred. Please try again.";
+            Console.WriteLine($"Error disabling 2FA: {ex.Message}");
+        }
+        finally
+        {
+            isDisabling2FA = false;
+        }
+    }
+
+    private void CancelDisable2FA()
+    {
+        showDisable2FAModal = false;
+        disable2FAErrorMessage = null;
+    }
+
+    private async Task OpenEnable2FAModal()
+    {
         var dto = new Enable2FARequest
         {
             UserId = currentUserId
         };
-        
+
         var response = await Http.PostAsJsonAsync("api/TwoFactor/enable", dto);
-        
+
         if (response.IsSuccessStatusCode)
         {
             enable2FAData = await response.Content.ReadFromJsonAsync<Enable2FAResponse>();
@@ -58,6 +146,7 @@
 
     private async Task Handle2FAEnabled()
     {
+        is2FAEnabled = true;
         Console.WriteLine("2FA został włączony!");
     }
 }

@@ -31,14 +31,14 @@ public class TokenStorageService
         await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TOKEN_KEY);
     }
 
-    public async Task<ResponseUserDto?> GetUserAsync()
+    public async Task<ResponseUserLoginDto?> GetUserAsync()
     {
         try
         {
             var userJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", USER_KEY);
             if (!string.IsNullOrEmpty(userJson))
             {
-                return JsonSerializer.Deserialize<ResponseUserDto>(userJson,
+                return JsonSerializer.Deserialize<ResponseUserLoginDto>(userJson,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
         }
@@ -49,7 +49,7 @@ public class TokenStorageService
         return null;
     }
 
-    public async Task SaveUserAsync(ResponseUserDto user)
+    public async Task SaveUserAsync(ResponseUserLoginDto user)
     {
         var json = JsonSerializer.Serialize(user);
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY, json);
