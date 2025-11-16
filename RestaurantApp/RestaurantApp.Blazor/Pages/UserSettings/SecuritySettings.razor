@@ -5,24 +5,87 @@
 @using RestaurantApp.Blazor.Components
 @inject HttpClient Http
 
-<h3>SecuritySettings</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-lg-8 col-xl-6 mx-auto">
+            <!-- Header -->
+            <div class="text-center w-100">
+                <h3 class="mb-3 fw-bold">Security Settings</h3>
+                <p class="text-muted">Manage your account security and authentication methods</p>
+            </div>
 
-<button class="btn btn-primary" @onclick="() => showChangePasswordModal = true">
-    Change Password
-</button>
 
-@if(is2FAEnabled)
-{
-    <button class="button button--red" @onclick="OpenDisable2FAModal">
-        Disable 2FA
-    </button>
-}
-else
-{
-    <button class="button button--primary" @onclick="OpenEnable2FAModal">
-        Enable 2FA
-    </button>
-}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-primary bg-opacity-10 rounded p-3">
+                                <i class="bi bi-key-fill fs-4 text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-2">Password</h5>
+                            <p class="card-text text-muted small mb-3">
+                                Change your password to keep your account secure. Use a strong, unique password.
+                            </p>
+                            <button class="button button--primary button--outline" @onclick="() => showChangePasswordModal = true">
+                                <i class="bi bi-pencil me-2"></i>Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="@(is2FAEnabled ? "bg-success" : "bg-warning") bg-opacity-10 rounded p-3">
+                                <i class="bi bi-shield-check fs-4 @(is2FAEnabled ? "text-success" : "text-warning")"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <h5 class="card-title mb-0 me-2">Two-Factor Authentication</h5>
+                                @if(is2FAEnabled)
+                                {
+                                    <span class="badge bg-success">Enabled</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Disabled</span>
+                                }
+                            </div>
+                            <p class="card-text text-muted small mb-3">
+                                @if(is2FAEnabled)
+                                {
+                                    <text>Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when signing in.</text>
+                                }
+                                else
+                                {
+                                    <text>Add an extra layer of security to your account. You'll need to enter a code from your authenticator app when signing in.</text>
+                                }
+                            </p>
+                            @if(is2FAEnabled)
+                            {
+                                <button class="button button--red button--outline" @onclick="OpenDisable2FAModal">
+                                    <i class="bi bi-shield-x me-2"></i>Disable 2FA
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="button button--primary button--outline" @onclick="OpenEnable2FAModal">
+                                    <i class="bi bi-shield-check me-2"></i>Enable 2FA
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <ChangePasswordModal
     @bind-IsVisible="showChangePasswordModal"
@@ -35,7 +98,6 @@ else
     On2FAEnabled="Handle2FAEnabled"
 />
 
-<!-- Modal do wyłączania 2FA -->
 <TwoFactorModal
     IsVisible="showDisable2FAModal"
     IsLoading="isDisabling2FA"
@@ -49,6 +111,7 @@ else
     OnSubmit="HandleDisable2FA"
     OnCancel="CancelDisable2FA"
 />
+
 
 @code {
     [Inject]
