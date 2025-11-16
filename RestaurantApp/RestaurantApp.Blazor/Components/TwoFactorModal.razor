@@ -1,0 +1,96 @@
+﻿@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Two factor authentication</h5>
+                    <button type="button" class="btn-close" @onclick="Cancel" disabled="@IsLoading"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+                    
+                    <p>Enter two factor authentication code</p>
+                    
+                    <EditForm Model="@this" OnValidSubmit="@Submit">
+                        <div class="form-group">
+                            <InputText @bind-Value="TwoFactorCode" 
+                                      class="form-control text-center fs-4 letter-spacing"
+                                      placeholder="000000"
+                                      maxlength="6"
+                                      disabled="@IsLoading"
+                                      @ref="codeInput" />
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="modal-footer">
+                    <button class="button button--grey" @onclick="Cancel" disabled="@IsLoading">
+                        Cancel
+                    </button>
+                    <button  class="button button--primary" @onclick="Submit" disabled="@(IsLoading || string.IsNullOrEmpty(TwoFactorCode) || TwoFactorCode.Length != 6)">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span>Verifying...</span>
+                        }
+                        else
+                        {
+                            <span>Verify</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public EventCallback<string> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string TwoFactorCode { get; set; } = string.Empty;
+    private InputText? codeInput;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsVisible && codeInput?.Element != null)
+        {
+            await codeInput.Element.Value.FocusAsync();
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (!string.IsNullOrEmpty(TwoFactorCode) && TwoFactorCode.Length == 6)
+        {
+            await OnSubmit.InvokeAsync(TwoFactorCode);
+        }
+    }
+
+    private async Task Cancel()
+    {
+        TwoFactorCode = string.Empty;
+        await OnCancel.InvokeAsync();
+    }
+
+    public void ClearCode()
+    {
+        TwoFactorCode = string.Empty;
+        ErrorMessage = null;
+    }
+}
+
+<style>
+    .letter-spacing {
+        letter-spacing: 0.5rem;
+    }
+</style>

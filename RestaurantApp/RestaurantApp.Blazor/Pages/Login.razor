@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using RestaurantApp.Blazor.Components
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Auth
 @using Services
@@ -57,39 +58,53 @@
     </div>
 </div>
 
+<TwoFactorModal IsVisible="@_showTwoFactorModal"
+                IsLoading="@_isVerifying2FA"
+                ErrorMessage="@_twoFactorError"
+                OnSubmit="@HandleTwoFactorSubmit"
+                OnCancel="@HandleTwoFactorCancel"
+                @ref="_twoFactorModalRef" />
+
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
     public string? returnUrl { get; set; }
+    
     private LoginRequest _loginRequest = new();
     private bool _isLoading = false;
     private string _errorMessage = string.Empty;
+    
+
+    private bool _showTwoFactorModal = false;
+    private bool _isVerifying2FA = false;
+    private string? _twoFactorError;
+    private TwoFactorModal? _twoFactorModalRef;
 
     private async Task HandleLogin()
     {
         _isLoading = true;
         _errorMessage = string.Empty;
-        StateHasChanged(); 
+        StateHasChanged();
 
         try
         {
-            var success = await AuthService.LoginAsync(_loginRequest.Email, _loginRequest.Password);
+            var (success, requiresTwoFactor, errorMessage) = 
+                await AuthService.LoginAsync(_loginRequest.Email, _loginRequest.Password);
 
-            if (success)
+            if (requiresTwoFactor)
             {
-                if (!string.IsNullOrEmpty(returnUrl))
-                {
-                    Navigation.NavigateTo(returnUrl, true);
-                }
-                else
-                {
-                    Navigation.NavigateTo("/", true);
-                }
-                
+                // Pokaż modal 2FA
+                _showTwoFactorModal = true;
+                _twoFactorError = null;
+            }
+            else if (success)
+            {
+                // Przekieruj po udanym logowaniu
+                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl, true);
             }
             else
             {
-                _errorMessage = "Nieprawidłowy email lub hasło";
+                _errorMessage = errorMessage ?? "Nieprawidłowy email lub hasło";
             }
         }
         catch (HttpRequestException)
@@ -107,5 +122,46 @@
             StateHasChanged();
         }
     }
-    
+
+    private async Task HandleTwoFactorSubmit(string twoFactorCode)
+    {
+        _isVerifying2FA = true;
+        _twoFactorError = null;
+        StateHasChanged();
+
+        try
+        {
+            var (success, requiresTwoFactor, errorMessage) = 
+                await AuthService.LoginAsync(_loginRequest.Email, _loginRequest.Password, twoFactorCode);
+
+            if (success)
+            {
+                _showTwoFactorModal = false;
+                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl, true);
+            }
+            else
+            {
+                _twoFactorError = errorMessage ?? "Nieprawidłowy kod 2FA. Spróbuj ponownie.";
+                _twoFactorModalRef?.ClearCode();
+            }
+        }
+        catch (Exception ex)
+        {
+            _twoFactorError = "Wystąpił błąd podczas weryfikacji. Spróbuj ponownie.";
+            Console.WriteLine($"2FA verification error: {ex.Message}");
+        }
+        finally
+        {
+            _isVerifying2FA = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleTwoFactorCancel()
+    {
+        _showTwoFactorModal = false;
+        _twoFactorError = null;
+        _isLoading = false;
+        StateHasChanged();
+    }
 }

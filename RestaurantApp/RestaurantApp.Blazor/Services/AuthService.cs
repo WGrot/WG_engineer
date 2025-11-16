@@ -28,52 +28,72 @@ public class AuthService
         _authStateProvider = authStateProvider;
     }
 
-    public async Task<bool> LoginAsync(string email, string password)
+    public async Task<(bool Success, bool RequiresTwoFactor, string? ErrorMessage)> LoginAsync(
+    string email, 
+    string password, 
+    string? twoFactorCode = null)
+{
+    try
     {
-        try
+        var loginRequest = new LoginRequest 
+        { 
+            Email = email, 
+            Password = password,
+            TwoFactorCode = twoFactorCode
+        };
+        
+        var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
+
+        if (!response.IsSuccessStatusCode)
         {
-            var loginRequest = new { Email = email, Password = password };
-            var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (false, false, errorResponse.Error);
+        }
 
-            if (!response.IsSuccessStatusCode)
-                return false;
+        var content = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<LoginResponse>(content,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            var content = await response.Content.ReadAsStringAsync();
-            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(content,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (result == null)
+            return (false, false, "Błąd podczas logowania");
 
-            if (loginResponse == null || string.IsNullOrEmpty(loginResponse.Token))
-                return false;
+        // Jeśli wymaga 2FA, zwróć informację
+        if (result.RequiresTwoFactor)
+        {
+            return (false, true, null);
+        }
 
-            // Zapisz dane w storage
-            await _tokenStorage.SaveTokenAsync(loginResponse.Token);
-            await _tokenStorage.SaveUserAsync(loginResponse.ResponseUser);
+        // Jeśli mamy token, zapisz i zaloguj
+        if (!string.IsNullOrEmpty(result.Token))
+        {
+            await _tokenStorage.SaveTokenAsync(result.Token);
+            await _tokenStorage.SaveUserAsync(result.ResponseUser);
 
-            // Zapisz aktywną restaurację jeśli jest w tokenie
-            var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(loginResponse.Token);
+            var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(result.Token);
             if (!string.IsNullOrEmpty(activeRestaurant))
             {
                 await _tokenStorage.SaveActiveRestaurantAsync(activeRestaurant);
             }
 
-            // Ustaw header Authorization
             _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.Token);
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
 
-            // Powiadom AuthenticationStateProvider o zmianie
             if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
             {
-                jwtProvider.NotifyUserAuthentication(loginResponse.Token);
+                jwtProvider.NotifyUserAuthentication(result.Token);
             }
 
-            return true;
+            return (true, false, null);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Login error: {ex.Message}");
-            return false;
-        }
+
+        return (false, false, "Błąd podczas logowania");
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Login error: {ex.Message}");
+        return (false, false, "Wystąpił błąd podczas logowania");
+    }
+}
 
     public async Task LogoutAsync()
     {
