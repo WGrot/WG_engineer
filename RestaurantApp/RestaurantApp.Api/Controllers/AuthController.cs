@@ -15,13 +15,16 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         IAuthService authService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _authService = authService;
         _emailService = emailService;
+        _configuration = configuration;
     }
     
     [HttpPost("register")]
@@ -49,13 +52,16 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
     {
         var result = await _authService.ConfirmEmailAsync(userId, token);
-    
+        var frontendUrl = _configuration["AppURL:FrontendUrl"];
         if (result.IsSuccess)
         {
-            return Ok(new { message = "Email verified correctly" });
+            return Redirect($"{frontendUrl}/email-verified"); 
         }
-    
-        return BadRequest(result);
+        else
+        {
+            return BadRequest(result);
+        }
+        
     }
 
     [HttpPost("logout")]

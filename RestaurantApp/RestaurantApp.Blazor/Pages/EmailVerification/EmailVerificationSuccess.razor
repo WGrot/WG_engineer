@@ -1,0 +1,32 @@
+﻿@page "/email-verified"
+@inject NavigationManager Navigation
+
+<div class="verification-page">
+    <div class="verification-container">
+        <div class="verification-card">
+            <div class="icon-container">
+                <i class="bi bi-check-circle-fill success-icon"></i>
+            </div>
+            
+            <h2 class="verification-title">Email Verified!</h2>
+            
+            <p class="verification-message">
+                Your email has been successfully verified. 
+                You can now log in to your account and start using the application.
+            </p>
+            
+            
+            <button @onclick="GoToLogin" class="login-btn">
+                <span>Go to Login</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}
+
