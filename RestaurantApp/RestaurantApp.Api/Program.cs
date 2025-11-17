@@ -86,6 +86,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
         s3Config
     );
 });
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<ITableService, TableService>();

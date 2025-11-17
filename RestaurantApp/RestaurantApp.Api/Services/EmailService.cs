@@ -1,0 +1,41 @@
+﻿using MailKit.Net.Smtp;
+using MimeKit;
+using RestaurantApp.Api.Services.Interfaces;
+
+namespace RestaurantApp.Api.Services;
+
+public class EmailService: IEmailService
+{
+    private readonly IConfiguration _config;
+
+    public EmailService(IConfiguration config)
+    {
+        _config = config;
+    }
+    
+    public async Task SendEmilAsync(string to, string subject, string body)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(
+            _config["EmailSettings:FromName"],
+            _config["EmailSettings:FromEmail"]
+        ));
+        message.To.Add(new MailboxAddress("", to));
+        message.Subject = subject;
+        message.Body = new TextPart("html") { Text = body };
+
+        using var client = new SmtpClient();
+        await client.ConnectAsync(
+            _config["EmailSettings:SmtpServer"],
+            int.Parse(_config["EmailSettings:Port"]),
+            false
+        );
+        await client.AuthenticateAsync(
+            _config["EmailSettings:Username"],
+            _config["EmailSettings:Password"]
+        );
+        await client.SendAsync(message);
+        await client.DisconnectAsync(true);
+    }
+    
+}
