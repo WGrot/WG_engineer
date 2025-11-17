@@ -14,13 +14,16 @@ namespace RestaurantApp.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IEmailService _emailService;
 
     public AuthController(
-        IAuthService authService)
+        IAuthService authService,
+        IEmailService emailService)
     {
         _authService = authService;
+        _emailService = emailService;
     }
-
+    
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -40,12 +43,39 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginAsync(request);
         return result.ToActionResult();
     }
+    
+    [HttpGet("confirm-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+    {
+        var result = await _authService.ConfirmEmailAsync(userId, token);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "Email verified correctly" });
+        }
+    
+        return BadRequest(result);
+    }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         var result = await _authService.LogoutAsync();
         return result.ToActionResult();
+    }
+    
+    [HttpDelete("users/{userId}")]
+    public async Task<IActionResult> DeleteUser(string userId)
+    {
+        var result = await _authService.DeleteUserAsync(userId);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "User deleted successfully" });
+        }
+    
+        return BadRequest(result);
     }
 
 
@@ -90,4 +120,6 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+    
+    
 }

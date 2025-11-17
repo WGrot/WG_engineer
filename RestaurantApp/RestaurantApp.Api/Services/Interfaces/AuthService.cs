@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Domain.Models;
@@ -15,18 +16,24 @@ public class AuthService : IAuthService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IJwtService _jwtService;
     private readonly ITwoFactorService _twoFactorService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IJwtService jwtService,
-        ITwoFactorService twoFactorService)
+        ITwoFactorService twoFactorService,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtService = jwtService;
         _twoFactorService = twoFactorService;
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -37,13 +44,33 @@ public class AuthService : IAuthService
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            EmailConfirmed = true
+            EmailConfirmed = false
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
         {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            // Zakoduj token do URL
+            var encodedToken = WebUtility.UrlEncode(token);
+            var encodedUserId = WebUtility.UrlEncode(user.Id);
+
+            var apiUrl = _configuration["AppURL:ApiUrl"];
+            var confirmationLink = $"{apiUrl}/api/Auth/confirm-email?userId={encodedUserId}&token={encodedToken}";
+
+            // Przygotuj treść emaila
+            var emailBody = $@"""
+                <h2>Hello {user.FirstName}!</h2>
+                <p>Thank you for registering in DineOps, Click this link to verify your email:</p>
+                <p><a href='{confirmationLink}'>Confirm email</a></p>
+                <p>If you didn't sign in to our site ignore this message</p>
+            """;
+
+            // Wyślij email
+            await _emailService.SendEmilAsync(user.Email, "Confirm your email", emailBody);
+
             return Result.Success();
         }
 
@@ -57,82 +84,82 @@ public class AuthService : IAuthService
     }
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
-{
-    var user = await _userManager.FindByEmailAsync(request.Email);
-    if (user == null)
     {
-        return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
-    }
-
-    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-
-    if (!result.Succeeded)
-    {
-        return Result<LoginResponse>.Failure("Incorrect email or password", 401);
-    }
-
-    if (user.TwoFactorEnabled)
-    {
-        if (string.IsNullOrEmpty(request.TwoFactorCode))
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
         {
-            var responseWithout2FA = new LoginResponse
+            return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+
+        if (!result.Succeeded)
+        {
+            return Result<LoginResponse>.Failure("Incorrect email or password", 401);
+        }
+
+        if (user.TwoFactorEnabled)
+        {
+            if (string.IsNullOrEmpty(request.TwoFactorCode))
             {
-                RequiresTwoFactor = true,
-                ResponseUser = new ResponseUserLoginDto()
+                var responseWithout2FA = new LoginResponse
                 {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    TwoFactorEnabled = user.TwoFactorEnabled
-                }
-            };
-            return Result<LoginResponse>.Success(responseWithout2FA);
+                    RequiresTwoFactor = true,
+                    ResponseUser = new ResponseUserLoginDto()
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        TwoFactorEnabled = user.TwoFactorEnabled
+                    }
+                };
+                return Result<LoginResponse>.Success(responseWithout2FA);
+            }
+
+            // Sprawdź blokadę konta
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
+            }
+
+            if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
+            {
+                return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
+            }
+
+            bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.TwoFactorCode);
+
+            if (!isValid)
+            {
+                // Zwiększ licznik nieudanych prób
+                await _userManager.AccessFailedAsync(user);
+
+                return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
+            }
+
+            // Zresetuj licznik po udanej weryfikacji
+            await _userManager.ResetAccessFailedCountAsync(user);
         }
 
-        // Sprawdź blokadę konta
-        if (await _userManager.IsLockedOutAsync(user))
+        var token = await _jwtService.GenerateJwtTokenAsync(user, user.TwoFactorEnabled);
+
+        var response = new LoginResponse
         {
-            return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
-        }
+            Token = token,
+            RequiresTwoFactor = false,
+            ResponseUser = new ResponseUserLoginDto()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                TwoFactorEnabled = user.TwoFactorEnabled
+            }
+        };
 
-        if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
-        {
-            return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
-        }
-
-        bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.TwoFactorCode);
-        
-        if (!isValid)
-        {
-            // Zwiększ licznik nieudanych prób
-            await _userManager.AccessFailedAsync(user);
-            
-            return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
-        }
-
-        // Zresetuj licznik po udanej weryfikacji
-        await _userManager.ResetAccessFailedCountAsync(user);
+        return Result<LoginResponse>.Success(response);
     }
-
-    var token = await _jwtService.GenerateJwtTokenAsync(user, user.TwoFactorEnabled);
-    
-    var response = new LoginResponse
-    {
-        Token = token,
-        RequiresTwoFactor = false,
-        ResponseUser = new ResponseUserLoginDto()
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            TwoFactorEnabled = user.TwoFactorEnabled
-        }
-    };
-    
-    return Result<LoginResponse>.Success(response);
-}
 
     public async Task<Result> LogoutAsync()
     {
@@ -217,6 +244,69 @@ public class AuthService : IAuthService
 
         await _signInManager.RefreshSignInAsync(user);
         await _userManager.UpdateSecurityStampAsync(user);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ConfirmEmailAsync(string userId, string token)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            return Result.Failure("Nieprawidłowe dane weryfikacyjne", 400);
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure("Użytkownik nie istnieje", 404);
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Result.Success();
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        if (!result.Succeeded)
+        {
+            var failureResult = Result.Failure("Weryfikacja nie powiodła się", 400);
+            foreach (var error in result.Errors)
+            {
+                failureResult.Error += $"{error.Code}: {error.Description}\n";
+            }
+
+            return failureResult;
+        }
+
+        return Result.Success();
+    }
+    
+    public async Task<Result> DeleteUserAsync(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Result.Failure("User ID is required", 400);
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+    
+        if (user == null)
+        {
+            return Result.Failure("User not found", 404);
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+    
+        if (!result.Succeeded)
+        {
+            var deleteResult = Result.Failure("Failed to delete user", 400);
+            foreach (var error in result.Errors)
+            {
+                deleteResult.Error += $"{error.Code}: {error.Description}\n";
+            }
+            return deleteResult;
+        }
 
         return Result.Success();
     }
