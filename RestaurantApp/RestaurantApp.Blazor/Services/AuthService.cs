@@ -127,7 +127,7 @@ public class AuthService
         return true;
     }
 
-    public async Task<ResponseUserDto?> GetCurrentUserAsync()
+    public async Task<ResponseUserLoginDto?> GetCurrentUserAsync()
     {
         return await _tokenStorage.GetUserAsync();
     }
@@ -138,6 +138,11 @@ public class AuthService
         return user?.TwoFactorEnabled ?? false;
     }
 
+    public async Task<bool> IsEmailVerifiedAsync()
+    {
+        var user = await _tokenStorage.GetUserAsync();
+        return user?.EmailVerified ?? false;
+    }
     public async Task<string?> GetActiveRestaurantAsync()
     {
         return await _tokenStorage.GetActiveRestaurantAsync();

@@ -1,9 +1,15 @@
 ﻿@using System.Net
 @using System.Security.Claims
+@using System.Text.Json
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Auth.TwoFactor
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Shared.Common
+@using RestaurantApp.Shared.DTOs.Auth
+@using RestaurantApp.Shared.DTOs.Users
+@using RestaurantApp.Shared.Models
 @inject HttpClient Http
+@inject NotificationService NotificationService
 
 <div class="container">
     <div class="row">
@@ -83,6 +89,48 @@
                     </div>
                 </div>
             </div>
+
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="@(isEmailVerified ? "bg-success" : "bg-warning") bg-opacity-10 rounded p-3">
+                                <i class="bi bi-envelope-check fs-4 @(isEmailVerified ? "text-success" : "text-warning")"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <h5 class="card-title mb-0 me-2">Email </h5>
+                                @if(isEmailVerified)
+                                {
+                                    <span class="badge bg-success">Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Not Verified</span>
+                                }
+                            </div>
+                            <p class="card-text text-muted small mb-3">
+                                @if(isEmailVerified)
+                                {
+                                    <text>Your email is verified. Your account is secure.</text>
+                                }
+                                else
+                                {
+                                    <text>Your email is not verified. Please verify your email to secure your account and access all features.</text>
+                                }
+                            </p>
+                            @if(!isEmailVerified)
+                            {
+                                <button class="button button--primary button--outline" @onclick="SendVerifyEmail">
+                                    <i class="bi bi-shield-check me-2"></i>Verify your e-mail
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -126,13 +174,17 @@
     private string currentUserId;
     private bool is2FAEnabled = false;
     private Enable2FAResponse? enable2FAData = null;
+    ResponseUserLoginDto userResponse;
     
+    private bool isEmailVerified = false;
     private bool isDisabling2FA = false;
     private string? disable2FAErrorMessage = null;
+    
+    private string emailErrorMessage = string.Empty;
+    private string emailSuccessMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        is2FAEnabled = await Auth.IsTwoFactorEnabledAsync();
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
@@ -140,6 +192,10 @@
         {
             currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
+        userResponse = await Auth.GetCurrentUserAsync();
+        is2FAEnabled = userResponse.TwoFactorEnabled;
+        isEmailVerified = userResponse.EmailVerified;
+
     }
 
     private void OpenDisable2FAModal()
@@ -211,5 +267,73 @@
     {
         is2FAEnabled = true;
         Console.WriteLine("2FA został włączony!");
+    }
+    
+    private async Task SendVerifyEmail()
+    {
+        try
+        {
+            ResendEmailRequest content = new ResendEmailRequest
+            {
+                Email = userResponse.Email!
+            };
+            
+
+            var response = await Http.PostAsJsonAsync("/api/Auth/resend-confirmation-email", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                emailSuccessMessage = "Verification email sent successfully! Please check your inbox.";
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(errorContent);
+                    if (errorResponse != null && errorResponse.ContainsKey("message"))
+                    {
+                        emailErrorMessage = errorResponse["message"].ToString() ?? "Failed to send verification email.";
+                    }
+                    else
+                    {
+                        emailErrorMessage = "Failed to send verification email. Please try again later.";
+                    }
+                }
+                catch
+                {
+                    emailErrorMessage = "Failed to send verification email. Please try again later.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            emailErrorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Resend verification error: {ex}");
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(emailSuccessMessage))
+            {
+                NotificationService.AddNotification(new Notification()
+                {
+                    Title = "Success",
+                    Content = emailSuccessMessage,
+                    Type = NotificationType.Success,
+                });
+            }
+            else
+            {
+                NotificationService.AddNotification(new Notification()
+                {
+                    Title = "Error",
+                    Content = emailErrorMessage,
+                    Type = NotificationType.Error,
+                });
+            }
+            
+            StateHasChanged();
+        }
     }
 }

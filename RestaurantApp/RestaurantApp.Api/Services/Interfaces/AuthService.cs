@@ -113,7 +113,7 @@ public class AuthService : IAuthService
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         TwoFactorEnabled = user.TwoFactorEnabled,
-                        EmailVeryfied = user.EmailConfirmed
+                        EmailVerified = user.EmailConfirmed
                     }
                 };
                 return Result<LoginResponse>.Success(responseWithout2FA);
@@ -157,7 +157,7 @@ public class AuthService : IAuthService
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 TwoFactorEnabled = user.TwoFactorEnabled,
-                EmailVeryfied = user.EmailConfirmed
+                EmailVerified = user.EmailConfirmed
             }
         };
 
