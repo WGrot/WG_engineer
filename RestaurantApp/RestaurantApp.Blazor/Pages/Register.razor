@@ -114,7 +114,7 @@
                 
                 // Opcjonalnie: przekieruj na stronę logowania po kilku sekundach
                 await Task.Delay(2000);
-                Navigation.NavigateTo("/login");
+                Navigation.NavigateTo($"/email-verification?email={Uri.EscapeDataString(_registerModel.Email)}");
             }
             else
             {

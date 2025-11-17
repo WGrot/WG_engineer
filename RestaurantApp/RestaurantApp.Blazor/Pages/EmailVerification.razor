@@ -1,0 +1,144 @@
+﻿@page "/email-verification"
+@using System.Text.Json
+@using System.Text
+@using RestaurantApp.Shared.DTOs.Auth
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="verification-page">
+    <div class="verification-container">
+        <div class="verification-card">
+            <div class="icon-container">
+                <i class="bi bi-envelope-check-fill verification-icon"></i>
+            </div>
+            
+            <h2 class="verification-title">Verify Your Email</h2>
+            
+            <p class="verification-message">
+                We've sent a verification email to your address. 
+                Please check your inbox and click the verification link to activate your account.
+            </p>
+            
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @_errorMessage
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(_successMessage))
+            {
+                <div class="alert alert-success">
+                    @_successMessage
+                </div>
+            }
+            
+            <div class="info-box">
+                <p class="info-text">Didn't receive the email?</p>
+                <p class="info-subtext">Check your spam folder or request a new verification email.</p>
+            </div>
+            
+            <button @onclick="ResendVerificationEmail" class="resend-btn" disabled="@_isLoading">
+                @if (_isLoading)
+                {
+                    <span>Sending...</span>
+                }
+                else
+                {
+                    <span>Resend Verification Email</span>
+                }
+            </button>
+            
+            <div class="login-link">
+                <span>Already verified?</span><br />
+                <a href="/login">Go to Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "email")]
+    public string? Email { get; set; }
+    
+    private bool _isLoading = false;
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+    private DateTime? _lastSentTime = null;
+    private const int ResendCooldownSeconds = 60;
+    
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(Email))
+        {
+            Navigation.NavigateTo("/register");
+        }
+    }
+    
+    private async Task ResendVerificationEmail()
+    {
+        if (_lastSentTime.HasValue)
+        {
+            var secondsSinceLastSend = (DateTime.Now - _lastSentTime.Value).TotalSeconds;
+            if (secondsSinceLastSend < ResendCooldownSeconds)
+            {
+                var remainingSeconds = (int)(ResendCooldownSeconds - secondsSinceLastSend);
+                _errorMessage = $"Please wait {remainingSeconds} seconds before requesting another email.";
+                return;
+            }
+        }
+        
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+        
+        try
+        {
+            ResendEmailRequest content = new ResendEmailRequest
+            {
+                Email = Email!
+            };
+            
+
+            var response = await Http.PostAsJsonAsync("/api/Auth/resend-confirmation-email", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _successMessage = "Verification email sent successfully! Please check your inbox.";
+                _lastSentTime = DateTime.Now;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                
+                try
+                {
+                    var errorResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(errorContent);
+                    if (errorResponse != null && errorResponse.ContainsKey("message"))
+                    {
+                        _errorMessage = errorResponse["message"].ToString() ?? "Failed to send verification email.";
+                    }
+                    else
+                    {
+                        _errorMessage = "Failed to send verification email. Please try again later.";
+                    }
+                }
+                catch
+                {
+                    _errorMessage = "Failed to send verification email. Please try again later.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Resend verification error: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

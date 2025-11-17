@@ -122,4 +122,18 @@ public class AuthController : ControllerBase
     }
     
     
+    [HttpPost("resend-confirmation-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendEmailRequest request)
+    {
+        var result = await _authService.ResendEmailConfirmationAsync(request.Email);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "Email have been resent" });
+        }
+    
+        return BadRequest(result);
+    }
+    
 }

@@ -86,11 +86,12 @@ public class AuthService : IAuthService
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
+        
         if (user == null)
         {
             return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
         }
-
+        
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
         if (!result.Succeeded)
@@ -111,7 +112,8 @@ public class AuthService : IAuthService
                         Email = user.Email,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
-                        TwoFactorEnabled = user.TwoFactorEnabled
+                        TwoFactorEnabled = user.TwoFactorEnabled,
+                        EmailVeryfied = user.EmailConfirmed
                     }
                 };
                 return Result<LoginResponse>.Success(responseWithout2FA);
@@ -154,7 +156,8 @@ public class AuthService : IAuthService
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                TwoFactorEnabled = user.TwoFactorEnabled
+                TwoFactorEnabled = user.TwoFactorEnabled,
+                EmailVeryfied = user.EmailConfirmed
             }
         };
 
@@ -307,6 +310,49 @@ public class AuthService : IAuthService
             }
             return deleteResult;
         }
+
+        return Result.Success();
+    }
+    
+    public async Task<Result> ResendEmailConfirmationAsync(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            return Result.Failure("Email is required", 400);
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+    
+        if (user == null)
+        {
+            // Ze względów bezpieczeństwa zwracamy sukces, żeby nie ujawniać czy email istnieje
+            return Result.Success();
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Result.Failure("Email is already confirmed", 400);
+        }
+
+        // Wygeneruj nowy token weryfikacyjny
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+        var encodedUserId = WebUtility.UrlEncode(user.Id);
+    
+        // Pobierz URL z konfiguracji
+        var apiUrl = _configuration["AppURL:ApiUrl"];
+        var confirmationLink = $"{apiUrl}/api/Auth/confirm-email?userId={encodedUserId}&token={encodedToken}";
+    
+        // Przygotuj treść emaila
+        var emailBody = $@"
+            <h2>Hello {user.FirstName}!</h2>
+            <p>TO confirm your email in DineOps click this link</p>
+            <p><a href='{confirmationLink}'>Potwierdź email</a></p>
+            <p>If you didn't sign in to our site ignore this message.</p>
+        ";
+    
+        // Wyślij email
+        await _emailService.SendEmilAsync(user.Email, "Confirm email address", emailBody);
 
         return Result.Success();
     }
