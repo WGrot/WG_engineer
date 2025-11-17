@@ -18,6 +18,8 @@ public interface IAuthService
     Task<Result> ConfirmEmailAsync(string userId, string token);
     Task<Result> DeleteUserAsync(string userId);
     Task<Result> ResendEmailConfirmationAsync(string email);
+    Task<Result> ForgotPasswordAsync(string email);
+    Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
 }
 
 

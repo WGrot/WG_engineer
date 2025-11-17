@@ -86,12 +86,12 @@ public class AuthService : IAuthService
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-        
+
         if (user == null)
         {
             return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
         }
-        
+
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
         if (!result.Succeeded)
@@ -284,7 +284,7 @@ public class AuthService : IAuthService
 
         return Result.Success();
     }
-    
+
     public async Task<Result> DeleteUserAsync(string userId)
     {
         if (string.IsNullOrEmpty(userId))
@@ -293,14 +293,14 @@ public class AuthService : IAuthService
         }
 
         var user = await _userManager.FindByIdAsync(userId);
-    
+
         if (user == null)
         {
             return Result.Failure("User not found", 404);
         }
 
         var result = await _userManager.DeleteAsync(user);
-    
+
         if (!result.Succeeded)
         {
             var deleteResult = Result.Failure("Failed to delete user", 400);
@@ -308,12 +308,13 @@ public class AuthService : IAuthService
             {
                 deleteResult.Error += $"{error.Code}: {error.Description}\n";
             }
+
             return deleteResult;
         }
 
         return Result.Success();
     }
-    
+
     public async Task<Result> ResendEmailConfirmationAsync(string email)
     {
         if (string.IsNullOrEmpty(email))
@@ -322,7 +323,7 @@ public class AuthService : IAuthService
         }
 
         var user = await _userManager.FindByEmailAsync(email);
-    
+
         if (user == null)
         {
             // Ze względów bezpieczeństwa zwracamy sukces, żeby nie ujawniać czy email istnieje
@@ -338,11 +339,11 @@ public class AuthService : IAuthService
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebUtility.UrlEncode(token);
         var encodedUserId = WebUtility.UrlEncode(user.Id);
-    
+
         // Pobierz URL z konfiguracji
         var apiUrl = _configuration["AppURL:ApiUrl"];
         var confirmationLink = $"{apiUrl}/api/Auth/confirm-email?userId={encodedUserId}&token={encodedToken}";
-    
+
         // Przygotuj treść emaila
         var emailBody = $@"
             <h2>Hello {user.FirstName}!</h2>
@@ -350,9 +351,98 @@ public class AuthService : IAuthService
             <p><a href='{confirmationLink}'>Potwierdź email</a></p>
             <p>If you didn't sign in to our site ignore this message.</p>
         ";
-    
+
         // Wyślij email
         await _emailService.SendEmilAsync(user.Email, "Confirm email address", emailBody);
+
+        return Result.Success();
+    }
+
+
+    public async Task<Result> ForgotPasswordAsync(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            return Result.Failure("Email is required", 400);
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            return Result.Success();
+        }
+        
+        if (!user.EmailConfirmed)
+        {
+            return Result.Failure("Email is not confirmed", 400);
+        }
+        
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+        var encodedUserId = WebUtility.UrlEncode(user.Id);
+
+        // Utwórz link do frontendu (nie API!)
+        var frontendUrl = _configuration["AppURL:FrontendUrl"];
+        var resetLink = $"{frontendUrl}/reset-password?userId={encodedUserId}&token={encodedToken}";
+
+        // Przygotuj treść emaila
+        var emailBody = $@"
+        <h2>Hello {user.FirstName}!</h2>
+        <p>You requested to reset your password in DineOps.</p>
+        <p><a href='{resetLink}'>Reset Password</a></p>
+        <p>This link will expire in 24 hours.</p>
+        <p>If you didn't request a password reset, please ignore this message.</p>
+    ";
+
+        // Wyślij email
+        await _emailService.SendEmilAsync(user.Email, "Reset Your Password", emailBody);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        if (string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.Token))
+        {
+            return Result.Failure("Invalid reset data", 400);
+        }
+
+        var user = await _userManager.FindByIdAsync(request.UserId);
+
+        if (user == null)
+        {
+            return Result.Failure("User not found", 404);
+        }
+
+        // Zresetuj hasło używając tokenu
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            request.Token,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var resetResult = Result.Failure("Password reset failed", 400);
+            foreach (var error in result.Errors)
+            {
+                resetResult.Error += $"{error.Code}: {error.Description}\n";
+            }
+
+            return resetResult;
+        }
+
+        // Opcjonalnie: wyloguj użytkownika ze wszystkich sesji
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        // Opcjonalnie: wyślij email potwierdzający zmianę hasła
+        var emailBody = $@"
+        <h2>Hello {user.FirstName}!</h2>
+        <p>Your password has been successfully changed.</p>
+        <p>If you didn't make this change, please contact support immediately.</p>
+    ";
+
+        await _emailService.SendEmilAsync(user.Email, "Password Changed Successfully", emailBody);
 
         return Result.Success();
     }

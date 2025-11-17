@@ -142,4 +142,38 @@ public class AuthController : ControllerBase
         return BadRequest(result);
     }
     
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _authService.ForgotPasswordAsync(request.Email);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "If the email exists, a password reset link has been sent" });
+        }
+
+        return BadRequest(result);
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _authService.ResetPasswordAsync(request);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "Password has been reset successfully" });
+        }
+
+        return BadRequest(result);
+    }
+    
 }
