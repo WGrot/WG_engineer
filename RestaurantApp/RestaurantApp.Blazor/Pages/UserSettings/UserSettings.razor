@@ -2,9 +2,11 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using RestaurantApp.Blazor.Components.Layout
+@using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Users
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
+@inject PermissionService PermissionService
 
 <AuthorizeView>
     <Authorized>
@@ -56,16 +58,17 @@
                             Security Settings
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link @(activeTab == "employee-settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "employee-settings")"
-                                type="button">
-                            <i class="bi bi-person-badge me-2"></i>
-                            Employee Settings
-                        </button>
-                    </li>
-                    
-
+                    @if (isEmployee)
+                    {
+                        <li class="nav-item">
+                            <button class="nav-link @(activeTab == "employee-settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                    @onclick="@(() => activeTab = "employee-settings")"
+                                    type="button">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Employee Info
+                            </button>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -87,7 +90,8 @@
                         break;
                     case "employee-settings":
                         <div class="tab-pane fade show active">
-                            <EmployeeSettings />
+                            <EmployeeSettings 
+                                UserId="@userDto.Id"/>
                         </div>
                         break;
                 }
@@ -106,6 +110,8 @@
     private string currentUserId = "";
     string activeTab = "info";
     
+    private bool isEmployee = false;
+    
     
     protected async override Task OnInitializedAsync()
     {
@@ -120,7 +126,7 @@
         {
             currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
-
+        isEmployee = await PermissionService.IsEmployeeAsync();
         userDto = await Http.GetFromJsonAsync<ResponseUserDto>($"api/User/{currentUserId}");
     }
 

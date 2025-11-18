@@ -67,7 +67,7 @@
 
                         <ul class="dropdown-menu">
 
-                            <a class="dropdown-item" href="/profile">
+                            <a class="dropdown-item" href="/UserSettings">
                                 <i class="bi bi-person"></i> My profile
                             </a>
 
@@ -114,25 +114,6 @@
     </div>
 </header>
 
-<!-- User Dropdown Menu -->
-@if (_isAuthenticated && isUserMenuOpen)
-{
-    <div class="user-dropdown">
-        <a href="/profile" class="dropdown-item">
-            <i class="bi bi-person"></i>
-            My profile
-        </a>
-        <a href="/my-reservations" class="dropdown-item">
-            <i class="bi bi-bag"></i>
-            My reservations
-        </a>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" @onclick="HandleLogout">
-            <i class="bi bi-box-arrow-right"></i>
-            Log out
-        </button>
-    </div>
-}
 
 <!-- Overlay -->
 <div class="menu-overlay @(isMenuOpen ? "active" : "")" @onclick="CloseMenu"></div>

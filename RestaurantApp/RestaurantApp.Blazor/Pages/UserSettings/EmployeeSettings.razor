@@ -1,5 +1,63 @@
-﻿<h3>EmployeeSettings</h3>
+﻿@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.DTOs.Employees
+@using RestaurantApp.Shared.DTOs.Permissions
+@inject HttpClient Http
+<div calss = "container mt-4">
+    <h3 class="mb-4 fw-bold text-center">
+         User employment and permissions info
+    </h3>
+    <div class="row g-3 justify-content-center">
+        @foreach (var employeeDto in _employeeDtos)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shop"></i> @employeeDto.Restaurant.Name
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-primary fs-6">@employeeDto.Role.ToString()</span>
+                        </div>
+
+                        <h6 class="text-muted mb-2">Permissions:</h6>
+                        <ul class="list-unstyled">
+                            @foreach (var permission in employeeDto.Permissions)
+                            {
+                                <li class="mb-1">
+                                    <i class="bi bi-check-circle-fill text-secondary"></i>
+                                    @permission.Permission.ToString()
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+</div>
+
+
+
 
 @code {
+    [Parameter] public string UserId { get; set; }
+
+    private List<RestaurantEmployeeDto> _employeeDtos = new();
+    protected override async Task OnInitializedAsync()
+    {
+        _employeeDtos = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"/api/Employees?userId={UserId}");
+        foreach (var dto in _employeeDtos)
+        {
+            List<RestaurantPermissionDto> permissions = await GetPermissions(dto);
+            dto.Permissions = permissions;
+        }
+    }
     
-}
+    private async Task<List<RestaurantPermissionDto>> GetPermissions(RestaurantEmployeeDto dto)
+    {
+        return await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"/api/Permissions/employee/{dto.Id}");
+    }
+} 
