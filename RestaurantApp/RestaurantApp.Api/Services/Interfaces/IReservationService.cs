@@ -24,14 +24,11 @@ public interface IReservationService
     Task<Result<TableReservationDto>> GetTableReservationByIdAsync(int reservationId);
     Task<Result<TableReservationDto>> CreateTableReservationAsync(CreateTableReservationDto tableReservationDto);
     Task<Result> UpdateTableReservationAsync(int reservationId, TableReservationDto tableReservationDto);
-    Task<Result> DeleteTableReservationAsync(int reservationId);
 
   
     Task<Result<IEnumerable<ReservationDto>>> GetReservationsByTableIdAsync(int tableId);
 
     // Metody pomocnicze
-    Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime, TimeOnly endTime,
-        int? excludeReservationId = null);
     Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
     
     Task<Result> CancelUserReservation(int reservationId);

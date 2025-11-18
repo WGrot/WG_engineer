@@ -179,7 +179,7 @@ public class ReservationController : ControllerBase
             return Forbid();
         }
         
-        var result = await _reservationService.DeleteTableReservationAsync(id);
+        var result = await _reservationService.DeleteReservationAsync(id);
         return result.ToActionResult();
     }
 

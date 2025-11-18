@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using RestaurantApp.Api.Helpers.QueryBuilders;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Email.Templates.Reservations;
@@ -74,7 +75,7 @@ public class ReservationService : IReservationService
         searchParams.UserId = userId;
 
         // --- 2. Pobranie bazowego zapytania (z centralnej metody) ---
-        var queryResult = GetReservationsQuery(searchParams);
+        var queryResult = ReservationQueryBuilder.BuildQuery(_context, searchParams);
 
         // Sprawdzenie błędów walidacji z metody GetReservationsQuery
         if (!queryResult.IsSuccess)
@@ -231,7 +232,7 @@ public class ReservationService : IReservationService
         }
 
         // Wykorzystaj istniejącą metodę do budowania zapytania
-        var queryResult = GetReservationsQuery(searchParams);
+        var queryResult = ReservationQueryBuilder.BuildQuery(_context, searchParams);
 
         if (!queryResult.IsSuccess)
             return Result<PaginatedReservationsDto>.Failure(queryResult.Error, queryResult.StatusCode);
@@ -424,45 +425,9 @@ public class ReservationService : IReservationService
         await _context.SaveChangesAsync();
         return Result.Success();
     }
-
-    public async Task<Result> DeleteTableReservationAsync(int reservationId)
-    {
-        var existing = await _context.TableReservations
-            .FirstOrDefaultAsync(r => r.Id == reservationId);
-
-        if (existing == null)
-        {
-            return Result.NotFound($"Reservation with id {reservationId} not found");
-        }
-
-        _context.TableReservations.Remove(existing);
-        await _context.SaveChangesAsync();
-        return Result.Success();
-    }
-
+    
     // ===== METODY POMOCNICZE =====
-
-    public async Task<bool> IsTableAvailableAsync(int tableId, DateTime date, TimeOnly startTime,
-        TimeOnly endTime,
-        int? excludeReservationId = null)
-    {
-        var query = _context.TableReservations
-            .Where(r => r.TableId == tableId &&
-                        r.ReservationDate == date &&
-                        r.Status != ReservationStatus.Cancelled);
-
-        if (excludeReservationId.HasValue)
-        {
-            query = query.Where(r => r.Id != excludeReservationId.Value);
-        }
-
-        var hasConflict = await query
-            .AnyAsync(r => (r.StartTime <= startTime && r.EndTime > startTime) ||
-                           (r.StartTime < endTime && r.EndTime >= endTime) ||
-                           (r.StartTime >= startTime && r.EndTime <= endTime));
-
-        return !hasConflict;
-    }
+    
 
     public async Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status)
     {
@@ -500,7 +465,7 @@ public class ReservationService : IReservationService
         ReservationSearchParameters searchParams)
     {
         // 1. Użyj nowej, centralnej metody do pobrania IQueryable
-        var queryResult = GetReservationsQuery(searchParams);
+        var queryResult = ReservationQueryBuilder.BuildQuery(_context, searchParams);
 
         // 2. Sprawdź, czy walidacja (np. dat) się powiodła
         if (!queryResult.IsSuccess)
@@ -518,133 +483,5 @@ public class ReservationService : IReservationService
         var resultEntities = await query.ToListAsync();
 
         return Result<IEnumerable<ReservationDto>>.Success(resultEntities.ToDtoList());
-    }
-
-
-    private Result<IQueryable<ReservationBase>> GetReservationsQuery(
-        ReservationSearchParameters searchParams)
-    {
-        // --- Walidacja ---
-        if (searchParams.ReservationDate.HasValue &&
-            searchParams.ReservationDateTo.HasValue &&
-            searchParams.ReservationDateFrom > searchParams.ReservationDateTo)
-        {
-            return Result<IQueryable<ReservationBase>>.Failure(
-                "Invalid date range: 'reservationDateFrom' cannot be later than 'reservationDateTo'", 400);
-        }
-
-        // --- Normalizacja dat ---
-        if (searchParams.ReservationDate.HasValue)
-        {
-            searchParams.ReservationDate =
-                DateTime.SpecifyKind((DateTime)searchParams.ReservationDate, DateTimeKind.Utc);
-        }
-
-        if (searchParams.ReservationDateFrom.HasValue)
-        {
-            searchParams.ReservationDateFrom =
-                DateTime.SpecifyKind((DateTime)searchParams.ReservationDateFrom, DateTimeKind.Utc);
-        }
-
-        if (searchParams.ReservationDateTo.HasValue)
-        {
-            searchParams.ReservationDateTo =
-                DateTime.SpecifyKind((DateTime)searchParams.ReservationDateTo, DateTimeKind.Utc);
-        }
-
-        // --- Budowanie zapytania ---
-        var query = _context.Reservations
-            .Include(r => r.Restaurant)
-            .AsQueryable();
-
-        // --- Filtrowanie (cała logika skopiowana z SearchReservationsAsync) ---
-        if (searchParams.RestaurantId.HasValue)
-        {
-            query = query.Where(r => r.RestaurantId == searchParams.RestaurantId.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchParams.RestaurantName))
-        {
-            query = query.Where(r => r.Restaurant.Name.ToLower().Contains(searchParams.RestaurantName.ToLower()));
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchParams.UserId))
-        {
-            query = query.Where(r => r.UserId == searchParams.UserId);
-        }
-
-        if (searchParams.Status.HasValue)
-        {
-            query = query.Where(r => r.Status == searchParams.Status.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchParams.CustomerName))
-        {
-            query = query.Where(r => r.CustomerName.ToLower().Contains(searchParams.CustomerName.ToLower()));
-        }
-
-        // Filtrowanie po emailu klienta (case-insensitive)
-        if (!string.IsNullOrWhiteSpace(searchParams.CustomerEmail))
-        {
-            query = query.Where(r => r.CustomerEmail.ToLower().Contains(searchParams.CustomerEmail.ToLower()));
-        }
-
-        // Filtrowanie po numerze telefonu klienta
-        if (!string.IsNullOrWhiteSpace(searchParams.CustomerPhone))
-        {
-            // Usuwamy spacje i myślniki z numeru telefonu dla lepszego dopasowania
-            var normalizedPhone = searchParams.CustomerPhone.Replace(" ", "").Replace("-", "");
-            query = query.Where(r => r.CustomerPhone.Replace(" ", "").Replace("-", "").Contains(normalizedPhone));
-        }
-
-        // Filtrowanie po konkretnej dacie rezerwacji
-        if (searchParams.ReservationDate.HasValue)
-        {
-            var dateOnly = searchParams.ReservationDate.Value.Date;
-            query = query.Where(r => r.ReservationDate.Date == dateOnly);
-        }
-
-        // Alternatywnie: filtrowanie po zakresie dat
-        if (searchParams.ReservationDateFrom.HasValue)
-        {
-            query = query.Where(r => r.ReservationDate >= searchParams.ReservationDateFrom.Value);
-        }
-
-        if (searchParams.ReservationDateTo.HasValue)
-        {
-            query = query.Where(r => r.ReservationDate <= searchParams.ReservationDateTo.Value);
-        }
-
-        // Filtrowanie po notatkach (case-insensitive)
-        if (!string.IsNullOrWhiteSpace(searchParams.Notes))
-        {
-            query = query.Where(r => r.Notes != null && r.Notes.ToLower().Contains(searchParams.Notes.ToLower()));
-        }
-
-        var now = DateTime.UtcNow;
-        var currentTime = TimeOnly.FromDateTime(now);
-        query = searchParams.SortBy?.ToLower() switch
-        {
-            "oldest" => query
-                .OrderBy(r => r.CreatedAt)
-                .ThenBy(r => r.StartTime),
-
-            "next" => query
-                .Where(r => r.ReservationDate == now.Date && r.StartTime >= currentTime
-                            || (r.ReservationDate > now.Date))
-                .OrderBy(r => r.ReservationDate)
-                .ThenBy(r => r.StartTime),
-
-            "newest" => query
-                .OrderByDescending(r => r.CreatedAt)
-                .ThenByDescending(r => r.StartTime),
-
-            _ => query
-                .OrderByDescending(r => r.ReservationDate)
-                .ThenByDescending(r => r.StartTime)
-        };
-
-
-        return Result<IQueryable<ReservationBase>>.Success(query);
     }
 }
