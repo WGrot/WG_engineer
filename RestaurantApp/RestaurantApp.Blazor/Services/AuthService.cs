@@ -16,6 +16,7 @@ public class AuthService
     private readonly JwtTokenParser _tokenParser;
     private readonly AuthenticationStateProvider _authStateProvider;
 
+    public event Action? OnLogout;
     public AuthService(
         HttpClient httpClient,
         TokenStorageService tokenStorage,
@@ -108,6 +109,8 @@ public class AuthService
         {
             jwtProvider.NotifyUserLogout();
         }
+        
+        OnLogout?.Invoke();
     }
 
     public async Task<bool> IsAuthenticatedAsync()

@@ -10,7 +10,9 @@ public class TokenStorageService
     private const string TOKEN_KEY = "authToken";
     private const string USER_KEY = "userInfo";
     private const string ACTIVE_RESTAURANT_KEY = "activeRestaurant";
-
+    
+    public event Func<Task>? OnActiveResturantChanged;
+    
     public TokenStorageService(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
@@ -68,6 +70,7 @@ public class TokenStorageService
     public async Task SaveActiveRestaurantAsync(string restaurantId)
     {
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ACTIVE_RESTAURANT_KEY, restaurantId);
+        await NotifyActiveRestaurantChanged();
     }
 
     public async Task RemoveActiveRestaurantAsync()
@@ -80,5 +83,13 @@ public class TokenStorageService
         await RemoveTokenAsync();
         await RemoveUserAsync();
         await RemoveActiveRestaurantAsync();
+    }
+    
+    protected async Task NotifyActiveRestaurantChanged()
+    {
+        if (OnActiveResturantChanged != null)
+        {
+            await OnActiveResturantChanged.Invoke();
+        }
     }
 }

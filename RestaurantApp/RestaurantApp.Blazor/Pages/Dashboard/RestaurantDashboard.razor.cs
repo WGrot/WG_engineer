@@ -9,9 +9,10 @@ using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
 
+
 namespace RestaurantApp.Blazor.Pages.Dashboard;
 
-public partial class RestaurantDashboard : ComponentBase
+public partial class RestaurantDashboard : ComponentBase, IDisposable
 {
     [Inject] private HttpClient Http { get; set; } = null!;
     
@@ -42,6 +43,7 @@ public partial class RestaurantDashboard : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await LoadDashboardData();
+        TokenStorageService.OnActiveResturantChanged +=  LoadDashboardData;
     }
     
     private async Task LoadDashboardData()
@@ -63,6 +65,7 @@ public partial class RestaurantDashboard : ComponentBase
             pendingSearchParams.RestaurantId = restaurantId;
         }
         isLoading = false;
+        StateHasChanged();
     }
 
     private async Task LoadUserData()
@@ -140,4 +143,11 @@ public partial class RestaurantDashboard : ComponentBase
         }
         
     }
+    
+    
+    public void Dispose()
+    {
+        TokenStorageService.OnActiveResturantChanged -=  LoadDashboardData;
+    }
+
 }

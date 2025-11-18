@@ -5,42 +5,156 @@
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.Common
 @inject HttpClient Http
 @inject AuthService AuthService
-<div class="container">
+@inject NotificationService NotificationService
+@inject NavigationManager Nav
 
-    <h3 class="text-center mb-3">Configure restaurant settings</h3>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <h3 class="text-center mb-4">
+                <i class="bi bi-gear-fill me-2"></i>
+                Restaurant Settings
+            </h3>
 
-    @if (settings != null)
-    {
-        <div class="form-check form-switch mb-2">
-            <input class="form-check-input"
-                   type="checkbox"
-                   id="needConfirmationCheckbox"
-                   checked="@settings.ReservationsNeedConfirmation"
-                   @onchange="@((ChangeEventArgs e) => ToggleNeedConfirmation())">
-            <label class="form-check-label" for="needConfirmationCheckbox">
-                Does Reservations need confirmation?
-            </label>
+            @if (settings != null)
+            {
+                <!-- Reservation Settings Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Reservation Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   style="cursor: pointer;"
+                                   type="checkbox"
+                                   id="needConfirmationCheckbox"
+                                   checked="@settings.ReservationsNeedConfirmation"
+                                   @onchange="@((ChangeEventArgs e) => ToggleNeedConfirmation())">
+                            <label class="form-check-label" style="cursor: pointer;" for="needConfirmationCheckbox">
+                                Require confirmation for reservations
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            When enabled, reservations will need manual approval
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Success/Error Messages -->
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        @successMessage
+                        <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        @errorMessage
+                        <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+                    </div>
+                }
+
+                <!-- Danger Zone -->
+                <div class="card shadow-sm border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Danger Zone
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                <h6 class="mb-1">Delete Restaurant</h6>
+                                <p class="text-muted mb-0 small">
+                                    This action is permanent and cannot be undone. All data will be lost.
+                                </p>
+                            </div>
+                            <button class="btn btn-danger" @onclick="ShowDeleteModal">
+                                <i class="bi bi-trash-fill me-2"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if(isLoading)
+            {
+                <LoadingSpinner Title="Loading settings..."/>
+            }
+            
         </div>
-        
-        <div>
-            <button class="button button--red" @onclick="DeleteRestaurant">Delete Restaurant</button>
-        </div>
-    }
-    else if(isLoading)
-    {
-        <LoadingSpinner Title="Loading settings..."/>
-    }
-    
+    </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<ConfirmationModal @bind-IsVisible="showDeleteModal"
+                    Title="Confirm Restaurant Deletion"
+                    Message="Are you sure you want to permanently delete this restaurant? All reservations, menus, and settings will be lost."
+                    IsProcessing="isDeleting"
+                    ConfirmButtonText="Yes, Delete Restaurant"
+                    cancelButtonText="Cancel"
+                    OnConfirm="DeleteRestaurant"
+                    OnCancel="HideDeleteModal" />
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    }
+    
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+    
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+    
+    .btn {
+        transition: all 0.2s;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+</style>
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
+    
     private SettingsDto settings;
     private bool isLoading = false;
+    private bool showDeleteModal = false;
+    private bool isDeleting = false;
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,18 +165,28 @@
     {
         isLoading = true;
 
-        var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
-        if (response.IsSuccessStatusCode)
+        try
         {
-            settings = await response.Content.ReadFromJsonAsync<SettingsDto>();
+            var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
+            if (response.IsSuccessStatusCode)
+            {
+                settings = await response.Content.ReadFromJsonAsync<SettingsDto>();
+            }
+            else
+            {
+                settings = new SettingsDto { RestaurantId = Id };
+                await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            settings = new SettingsDto();
-            await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
+            errorMessage = $"Error loading settings: {ex.Message}";
+            settings = new SettingsDto { RestaurantId = Id };
         }
-        
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task ToggleNeedConfirmation()
@@ -71,38 +195,85 @@
         await UpdateSettings();
     }
 
+    private void ShowDeleteModal()
+    {
+        showDeleteModal = true;
+    }
+
+    private void HideDeleteModal()
+    {
+        showDeleteModal = false;
+    }
+
     private async Task DeleteRestaurant()
     {
-        var response =  await Http.DeleteAsync($"api/Restaurant/{Id}");
-        if (response.IsSuccessStatusCode)
+        isDeleting = true;
+        errorMessage = string.Empty;
+        
+        try
         {
-            Console.WriteLine("Restauracja usunięta pomyślnie.");
-            await AuthService.LogoutAsync();
+            var response = await Http.DeleteAsync($"api/Restaurant/{Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                StateHasChanged();
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Info",
+                    Content = "Restaurant has been deleted. You will be logged out.",
+                    Type = NotificationType.Info,
+                });
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo($"/login");  
+            }
+            else
+            {
+                errorMessage = $"Error deleting restaurant: {response.StatusCode}";
+                showDeleteModal = false;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas usuwania restauracji: {response.StatusCode}");
+            errorMessage = $"An error occurred: {ex.Message}";
+            showDeleteModal = false;
+        }
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
         }
     }
     
     private async Task UpdateSettings()
     {
-        UpdateRestaurantSettingsDto dto = new UpdateRestaurantSettingsDto
+        try
         {
-            ReservationsNeedConfirmation = settings.ReservationsNeedConfirmation,
-            Id = settings.Id,
-            RestaurantId = settings.RestaurantId
-        };
+            UpdateRestaurantSettingsDto dto = new UpdateRestaurantSettingsDto
+            {
+                ReservationsNeedConfirmation = settings.ReservationsNeedConfirmation,
+                Id = settings.Id,
+                RestaurantId = settings.RestaurantId
+            };
 
-        var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
-        if (response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Ustawienia zaktualizowane pomyślnie.");
+            var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Settings updated successfully!";
+                StateHasChanged();
+                NotificationService.AddNotification(new Notification
+                {
+                    Title = "Success",
+                    Content = "Restaurant settings have been updated.",
+                    Type = NotificationType.Success,
+                });
+            }
+            else
+            {
+                errorMessage = $"Error updating settings: {response.StatusCode}";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas aktualizacji ustawień: {response.StatusCode}");
+            errorMessage = $"An error occurred: {ex.Message}";
         }
     }
-
 }

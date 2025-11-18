@@ -2,11 +2,13 @@
 @using RestaurantApp.Blazor.Services.Interfaces
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Shared.Models
+
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject PermissionService PermissionService
 @inject TokenStorageService TokenStorageService
 @inject NotificationService NotificationService
+
 @inject IRestaurantService RestaurantService
 @implements IDisposable
 
@@ -221,6 +223,8 @@
     string activeRestaurantName = "";
     List<(int Id, string Name)> userRestaurantNames = new();
 
+
+    
     protected override async Task OnInitializedAsync()
     {
         await CheckAuthenticationStatus();
@@ -231,6 +235,8 @@
 
         
         NotificationService.OnChange += StateHasChanged;
+        AuthService.OnLogout += HandleOnLogOutEvent;
+        TokenStorageService.OnActiveResturantChanged +=  ChangeActiveRestaurantDisplayName;
         _refreshTimer = new Timer(async _ =>
         {
             await InvokeAsync(async () =>
@@ -321,6 +327,14 @@
         Navigation.NavigateTo("/", true); // Force reload
     }
 
+    private void HandleOnLogOutEvent()
+    {
+        CloseMenu();
+        _isAuthenticated = false;
+        userRestaurantNames.Clear();
+        _currentUser = null;
+        StateHasChanged();
+    }
 
     private async Task NavigateToEditRestaurant()
     {
@@ -344,6 +358,8 @@
     {
         _refreshTimer?.Dispose();
         NotificationService.OnChange -= StateHasChanged;
+        AuthService.OnLogout -= HandleOnLogOutEvent;
+        TokenStorageService.OnActiveResturantChanged -=  ChangeActiveRestaurantDisplayName;
     }
     private void ToggleNotifications()
     {
@@ -355,6 +371,13 @@
     {
         await TokenStorageService.SaveActiveRestaurantAsync(id.ToString());
         activeRestaurantName = userRestaurantNames.FirstOrDefault(n => n.Id == id).Name ?? "No restaurant selected";
+        StateHasChanged();
+    }
+    
+    private async Task ChangeActiveRestaurantDisplayName()
+    {
+        string activeRestaurantIdString = await TokenStorageService.GetActiveRestaurantAsync();
+        activeRestaurantName = userRestaurantNames.FirstOrDefault(r => r.Id.ToString() == activeRestaurantIdString).Name ?? "No restaurant selected";
         StateHasChanged();
     }
 

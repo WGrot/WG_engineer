@@ -71,8 +71,7 @@ public partial class NextReservationsView : ComponentBase
                 RestaurantId = RestaurantId,
             };
         }
-
-
+        
         await LoadReservations();
     }
 
