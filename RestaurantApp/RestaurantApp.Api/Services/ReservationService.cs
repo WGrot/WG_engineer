@@ -5,7 +5,10 @@ using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using RestaurantApp.Api.Mappers;
+using RestaurantApp.Api.Services.Email;
+using RestaurantApp.Api.Services.Email.Templates.Reservations;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
@@ -19,14 +22,18 @@ public class ReservationService : IReservationService
     private readonly ApiDbContext _context;
     private readonly IRestaurantService _restaurantService;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IEmailService _emailService;
+    private readonly IEmailComposer _emailComposer;
 
 
     public ReservationService(ApiDbContext context, IRestaurantService restaurantService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor, IEmailComposer emailComposer, IEmailService emailService)
     {
         _context = context;
         _restaurantService = restaurantService;
         _httpContextAccessor = httpContextAccessor;
+        _emailComposer = emailComposer;
+        _emailService = emailService;
     }
 
     public async Task<Result<ReservationDto>> GetReservationByIdAsync(int reservationId)
@@ -237,7 +244,6 @@ public class ReservationService : IReservationService
         // Walidacja paginacji
         int page = searchParams.Page < 1 ? 1 : searchParams.Page;
         int pageSize = Math.Clamp(searchParams.PageSize, 1, 50);
-        
 
 
         // Wykonanie zapytania i paginacja
@@ -278,12 +284,11 @@ public class ReservationService : IReservationService
     public async Task<Result<TableReservationDto>> CreateTableReservationAsync(
         CreateTableReservationDto tableReservationDto)
     {
-        // Sprawdzenie czy stolik istnieje i jest dostępny
-        var tableExists = await _context.Tables
-            .AnyAsync(t => t.Id == tableReservationDto.TableId &&
-                           t.RestaurantId == tableReservationDto.RestaurantId);
+        var table = await _context.Tables
+            .FirstOrDefaultAsync(t => t.Id == tableReservationDto.TableId &&
+                                      t.RestaurantId == tableReservationDto.RestaurantId);
 
-        if (!tableExists)
+        if (table == null)
         {
             return Result<TableReservationDto>.NotFound(
                 $"Table {tableReservationDto.TableId} not found in restaurant {tableReservationDto.RestaurantId}");
@@ -315,11 +320,19 @@ public class ReservationService : IReservationService
             return Result<TableReservationDto>.Failure("Table is already reserved for this time period", 409);
         }
 
-        var restaurant = await _restaurantService.GetByIdAsync(tableReservationDto.RestaurantId);
+        var restaurant = _context.Restaurants
+            .Include(r => r.Settings)
+            .FirstOrDefault(r => r.Id == tableReservationDto.RestaurantId);
 
+        if (string.IsNullOrEmpty(tableReservationDto.UserId))
+        {
+            tableReservationDto.UserId = _context.Users.FirstOrDefault(u => u.Email == tableReservationDto.CustomerEmail).Id;
+        }
+        
         ReservationStatus initialStatus = ReservationStatus.Confirmed;
 
-        if (restaurant.Value.Settings?.ReservationsNeedConfirmation == true)
+        var needsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true;
+        if (needsConfirmation)
         {
             initialStatus = ReservationStatus.Pending;
         }
@@ -337,13 +350,25 @@ public class ReservationService : IReservationService
             EndTime = tableReservationDto.EndTime,
             Notes = tableReservationDto.Notes,
             TableId = tableReservationDto.TableId,
+            Table = table,
             Status = initialStatus,
             CreatedAt = DateTime.UtcNow,
-            NeedsConfirmation = restaurant.Value.Settings?.ReservationsNeedConfirmation == true
+            NeedsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true
         };
 
         _context.TableReservations.Add(reservation);
         await _context.SaveChangesAsync();
+        if (needsConfirmation)
+        {
+            var email = new ReservationCreatedEmail(reservation);
+            await _emailComposer.SendAsync(reservation.CustomerEmail, email); 
+        }
+        else
+        {
+            var email = new ReservationConfirmedEmail(reservation);
+            await _emailComposer.SendAsync(reservation.CustomerEmail, email); 
+        }
+
 
         return Result<TableReservationDto>.Success(reservation.ToTableReservationDto());
     }
@@ -456,7 +481,7 @@ public class ReservationService : IReservationService
     public async Task<Result> CancelUserReservation(int reservationId)
     {
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
+
         var reservation = _context.Reservations
             .FirstOrDefault(r => r.Id == reservationId && r.UserId == userId);
 
@@ -464,7 +489,7 @@ public class ReservationService : IReservationService
         {
             return Result.Failure("Reservation not found or does not belong to the user", 404);
         }
-        
+
         reservation.Status = ReservationStatus.Cancelled;
         _context.Reservations.Update(reservation);
         await _context.SaveChangesAsync();
@@ -537,6 +562,7 @@ public class ReservationService : IReservationService
         {
             query = query.Where(r => r.RestaurantId == searchParams.RestaurantId.Value);
         }
+
         if (!string.IsNullOrWhiteSpace(searchParams.RestaurantName))
         {
             query = query.Where(r => r.Restaurant.Name.ToLower().Contains(searchParams.RestaurantName.ToLower()));
@@ -605,7 +631,7 @@ public class ReservationService : IReservationService
 
             "next" => query
                 .Where(r => r.ReservationDate == now.Date && r.StartTime >= currentTime
-                            || (r.ReservationDate > now.Date ))
+                            || (r.ReservationDate > now.Date))
                 .OrderBy(r => r.ReservationDate)
                 .ThenBy(r => r.StartTime),
 
@@ -617,8 +643,8 @@ public class ReservationService : IReservationService
                 .OrderByDescending(r => r.ReservationDate)
                 .ThenByDescending(r => r.StartTime)
         };
-        
-        
+
+
         return Result<IQueryable<ReservationBase>>.Success(query);
     }
 }

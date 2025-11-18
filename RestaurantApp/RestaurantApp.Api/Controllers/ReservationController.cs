@@ -130,14 +130,12 @@ public class ReservationController : ControllerBase
         var reservations = await _reservationService.GetReservationsByTableIdAsync(tableId);
         return reservations.ToActionResult();
     }
-
-    // POST: api/reservation/table
+    
     [HttpPost("table")]
-    [Authorize]
     public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto tableReservationDto)
     {
         var reservation = await _reservationService.CreateTableReservationAsync(tableReservationDto);
-
+        
         return reservation.ToActionResult();
     }
 

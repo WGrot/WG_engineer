@@ -13,7 +13,7 @@ public class EmailService: IEmailService
         _config = config;
     }
     
-    public async Task SendEmilAsync(string to, string subject, string body)
+    public async Task SendEmailAsync(string to, string subject, string body)
     {
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(

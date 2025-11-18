@@ -69,7 +69,7 @@ public class AuthService : IAuthService
             """;
 
             // Wyślij email
-            await _emailService.SendEmilAsync(user.Email, "Confirm your email", emailBody);
+            await _emailService.SendEmailAsync(user.Email, "Confirm your email", emailBody);
 
             return Result.Success();
         }
@@ -353,7 +353,7 @@ public class AuthService : IAuthService
         ";
 
         // Wyślij email
-        await _emailService.SendEmilAsync(user.Email, "Confirm email address", emailBody);
+        await _emailService.SendEmailAsync(user.Email, "Confirm email address", emailBody);
 
         return Result.Success();
     }
@@ -396,7 +396,7 @@ public class AuthService : IAuthService
     ";
 
         // Wyślij email
-        await _emailService.SendEmilAsync(user.Email, "Reset Your Password", emailBody);
+        await _emailService.SendEmailAsync(user.Email, "Reset Your Password", emailBody);
 
         return Result.Success();
     }
@@ -442,7 +442,7 @@ public class AuthService : IAuthService
         <p>If you didn't make this change, please contact support immediately.</p>
     ";
 
-        await _emailService.SendEmilAsync(user.Email, "Password Changed Successfully", emailBody);
+        await _emailService.SendEmailAsync(user.Email, "Password Changed Successfully", emailBody);
 
         return Result.Success();
     }
