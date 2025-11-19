@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
+using RestaurantApp.Api.Services.Email;
+using RestaurantApp.Api.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -18,13 +20,15 @@ public class UserService : IUserService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmployeeService _employeeService;
     private readonly IPasswordService _passwordService;
+    private readonly IEmailComposer _emailComposer;
     
-    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService, IPasswordService passwordService)
+    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService, IPasswordService passwordService, IEmailComposer emailComposer)
     {
         _context = context;
         _userManager = userManager;
         _employeeService = employeeService;
         _passwordService = passwordService;
+        _emailComposer = _emailComposer;
     }
 
     public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
@@ -172,6 +176,10 @@ public class UserService : IUserService
             RestaurantId = userDto.RestaurantId,
             Password = generatedPassword
         };
+
+        var emailBody = new EmployeeAccontCreated(user.FirstName, generatedPassword);
+        
+        await _emailComposer.SendAsync( user.Email ,emailBody);
         
         return Result<CreateUserDto>.Created(resultDto);
     }
