@@ -16,22 +16,22 @@ public class RestaurantController : ControllerBase
 {
     private readonly IRestaurantService _restaurantService;
     private readonly ILogger<RestaurantController> _logger;
+    private readonly IRestaurantImageService _imageService;
 
-    public RestaurantController(IRestaurantService restaurantService, ILogger<RestaurantController> logger)
+    public RestaurantController(IRestaurantService restaurantService, ILogger<RestaurantController> logger, IRestaurantImageService imageService)
     {
         _restaurantService = restaurantService;
         _logger = logger;
+        _imageService = imageService;
     }
-
-    // GET: api/Restaurant
+    
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var restaurantsResult = await _restaurantService.GetAllAsync();
         return restaurantsResult.ToActionResult();
     }
-
-    // GET: api/Restaurant/5
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -39,8 +39,7 @@ public class RestaurantController : ControllerBase
 
         return restaurantResult.ToActionResult();
     }
-
-    // GET: api/Restaurant/search?name=pizza
+    
     [HttpGet("search")]
     public async Task<IActionResult> Search(
         [FromQuery] string? name = null,
@@ -52,16 +51,14 @@ public class RestaurantController : ControllerBase
         var restaurants = await _restaurantService.SearchAsync(name, address, page, pageSize, sortBy);
         return restaurants.ToActionResult();
     }
-
-    // GET: api/Restaurant/5/tables
+    
     [HttpGet("{id}/tables")]
     public async Task<IActionResult> GetRestaurantTables(int id)
     {
         var tablesResult = await _restaurantService.GetTablesAsync(id);
         return tablesResult.ToActionResult();
     }
-
-    // GET: api/Restaurant/open-now
+    
     [HttpGet("open-now")]
 
     public async Task<IActionResult> GetOpenNow()
@@ -69,8 +66,7 @@ public class RestaurantController : ControllerBase
         var openRestaurantsResult = await _restaurantService.GetOpenNowAsync();
         return openRestaurantsResult.ToActionResult();
     }
-
-    // GET: api/Restaurant/5/is-open
+    
     [HttpGet("{id}/is-open")]
     public async Task<IActionResult> IsRestaurantOpen(
         int id,
@@ -83,8 +79,7 @@ public class RestaurantController : ControllerBase
         var statusResult = await _restaurantService.CheckIfOpenAsync(id, checkTime, checkDay);
         return statusResult.ToActionResult();
     }
-
-    // POST: api/Restaurant
+    
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] RestaurantDto restaurantDto)
@@ -98,21 +93,14 @@ public class RestaurantController : ControllerBase
         return createdRestaurantResult.ToActionResult();
     }
     
-    // POST: api/Restaurant
     [HttpPost("create-as-user")]
     [Authorize]
     public async Task<IActionResult> CreateAsUser([FromBody] CreateRestaurantDto restaurantDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var createdRestaurantResult = await _restaurantService.CreateAsUserAsync(restaurantDto);
         return createdRestaurantResult.ToActionResult();
     }
-
-    // PUT: api/Restaurant/5
+    
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] RestaurantDto updateRestaurantDto)
     {
@@ -125,8 +113,6 @@ public class RestaurantController : ControllerBase
         return result.ToActionResult();
     }
     
-
-    // PATCH: api/Restaurant/5/address
     [HttpPatch("{id}/basic-info")]
     [Authorize(Policy = "RestaurantEmployee")]
     public async Task<IActionResult> UpdateName(int id, [FromBody] RestaurantBasicInfoDto dto)
@@ -134,16 +120,14 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.UpdateBasicInfoAsync(id, dto);
         return result.ToActionResult();
     }
-
-    // PATCH: api/Restaurant/5/opening-hours
+    
     [HttpPatch("{id}/opening-hours")]
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
         var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
         return result.ToActionResult();
     }
-
-    // DELETE: api/Restaurant/5
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -154,41 +138,41 @@ public class RestaurantController : ControllerBase
     [HttpPost("{id}/upload-profile-photo")]
     public async Task<IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
     {
-        var result = await _restaurantService.UploadRestaurantProfilePhoto(image, id);
+        var result = await _imageService.UploadProfilePhotoAsync(id, image);
         return result.ToActionResult();
     }
 
     [HttpPost("{id}/upload-restaurant-photos")]
     public async Task<IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
     {
-        var result = await _restaurantService.UploadRestaurantPhotos(imageList, id);
+        var result = await _imageService.UploadGalleryPhotosAsync(id, imageList);
         return result.ToActionResult();
     }
 
     [HttpDelete("{id}/delete-profile-photo")]
     public async Task<IActionResult> DeleteProfilePhoto(int id)
     {
-        var result = await _restaurantService.DeleteRestaurantProfilePicture(id);
+        var result = await _imageService.DeleteProfilePhotoAsync(id);
         return result.ToActionResult();
     }
 
     [HttpDelete("{id}/delete-photo")]
     public async Task<IActionResult> DeleteRestaurantPhoto(int id, int photoIndex)
     {
-        var result = await _restaurantService.DeleteRestaurantPhoto(id, photoIndex);
+        var result = await _imageService.DeleteGalleryPhotoAsync(id, photoIndex);
         return result.ToActionResult();
     }
     
     [HttpGet("{id}/dashboard-data")]
-    public IActionResult GetDashboardData(int id){
-        var result = _restaurantService.GetRestaurantDashboardData(id);
-        return result.Result.ToActionResult();
+    public async Task< IActionResult> GetDashboardData(int id){
+        var result = await _restaurantService.GetRestaurantDashboardData(id);
+        return result.ToActionResult();
     }
     
     [HttpGet("names")]
-    public IActionResult GetNames([FromQuery] List<int> ids)
+    public async Task<IActionResult> GetNames([FromQuery] List<int> ids)
     {
-        var result = _restaurantService.GetRestaurantNames(ids);
-        return result.Result.ToActionResult();
+        var result = await _restaurantService.GetRestaurantNames(ids);
+        return result.ToActionResult();
     }
 }

@@ -216,65 +216,62 @@ public class RestaurantService : IRestaurantService
 
     public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto)
     {
-        _logger.LogInformation("Creating new restaurant: {RestaurantName}", dto.Name);
+        _logger.LogInformation("Creating new restaurant with owner: {RestaurantName}", dto.Name);
 
-        Result validationResult = await ValidateRestaurantUniquenessAsync(dto.Name, dto.Address);
-        // Walidacja biznesowa
-        if (validationResult.IsFailure)
-        {
-            return Result<RestaurantDto>.Failure("A restaurant with the same name and address already exists.");
-        }
-
-        Restaurant restaurant = new Restaurant
-        {
-            Name = dto.Name,
-            Address = dto.Address
-        };
-
-        InitializedOpeningHours(restaurant);
-
-        _context.Restaurants.Add(restaurant);
+        var validationResult = await ValidateRestaurantUniquenessAsync(dto.Name, dto.Address);
+        if (validationResult.IsFailure) return Result<RestaurantDto>.Failure(validationResult.Error);
         
-        await _context.SaveChangesAsync();
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
-        RestaurantEmployee ownerEmployee = new RestaurantEmployee
+        try
         {
-            UserId = dto.OwnerId,
-            RestaurantId = restaurant.Id,
-            Role = RestaurantRole.Owner,
-            CreatedAt = DateTime.Now.ToUniversalTime(),
-            IsActive = true,
-        };
-
-        _context.Add(ownerEmployee);
-        
-        await _context.SaveChangesAsync();
-        
-        var permissions = new List<RestaurantPermission>();
-
-        foreach (PermissionType permissionType in Enum.GetValues(typeof(PermissionType)))
-        {
-            permissions.Add(new RestaurantPermission
+            var restaurant = new Restaurant { Name = dto.Name, Address = dto.Address };
+            InitializedOpeningHours(restaurant);
+            _context.Restaurants.Add(restaurant);
+            await _context.SaveChangesAsync();
+                
+            var ownerEmployee = new RestaurantEmployee
             {
-                RestaurantEmployeeId = ownerEmployee.Id,
-                Permission = permissionType
-            });
-        }
-        foreach(var permission in permissions)
-        {
-            _context.RestaurantPermissions.Add(permission);
-        } 
-        
-        var restaurantSettings = new RestaurantSettings
-        {
-            RestaurantId = restaurant.Id,
-            ReservationsNeedConfirmation = true,    
-        };
-        _context.RestaurantSettings.Add(restaurantSettings);
-        
-        await _context.SaveChangesAsync();
+                UserId = dto.OwnerId,
+                RestaurantId = restaurant.Id,
+                Role = RestaurantRole.Owner,
+                CreatedAt = DateTime.UtcNow, 
+                IsActive = true,
+            };
+            _context.Add(ownerEmployee);
+            await _context.SaveChangesAsync(); 
 
-        return Result.Success(restaurant.ToDto());
+            await AssignAllPermissionsToEmployeeAsync(ownerEmployee.Id);
+            
+            var settings = new RestaurantSettings { RestaurantId = restaurant.Id, ReservationsNeedConfirmation = true };
+            _context.RestaurantSettings.Add(settings);
+
+            await _context.SaveChangesAsync();
+        
+            // Zatwierdź transakcję
+            await transaction.CommitAsync();
+
+            return Result.Success(restaurant.ToDto());
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Failed to create restaurant as user");
+            return Result<RestaurantDto>.Failure("Could not create restaurant due to an internal error.");
+        }
+    }
+    
+    private async Task AssignAllPermissionsToEmployeeAsync(int employeeId)
+    {
+        var permissions = Enum.GetValues(typeof(PermissionType))
+            .Cast<PermissionType>()
+            .Select(p => new RestaurantPermission
+            {
+                RestaurantEmployeeId = employeeId,
+                Permission = p
+            });
+        
+        await _context.RestaurantPermissions.AddRangeAsync(permissions);
     }
 
     public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)
@@ -373,13 +370,6 @@ public class RestaurantService : IRestaurantService
             return Result.NotFound($"Restaurant with ID {id} not found.");
         }
 
-        // Walidacja biznesowa przed usunięciem
-        var validationResult = await ValidateRestaurantDeletionAsync(id, restaurant);
-        if (validationResult.IsFailure)
-        {
-            return validationResult;
-        }
-
         _context.Restaurants.Remove(restaurant);
         await _context.SaveChangesAsync();
 
@@ -406,31 +396,6 @@ public class RestaurantService : IRestaurantService
         return Result.Success();
     }
 
-    private async Task<Result> ValidateRestaurantDeletionAsync(int id, Restaurant restaurant)
-    {
-        // Check if restaurant has any tables
-        // var hasTables = await _context.Tables.AnyAsync(t => t.RestaurantId == id);
-        // if (hasTables)
-        // {
-        //     return Result.Failure($"Cannot delete restaurant with tables.");
-        // }
-        //
-        // // Check if restaurant has active menu items
-        // if (restaurant.Menu != null)
-        // {
-        //     var hasActiveMenu = await _context.Menus
-        //         .Where(m => m.RestaurantId == id && m.IsActive)
-        //         .AnyAsync();
-        //
-        //     if (hasActiveMenu)
-        //     {
-        //         return Result.Failure($"Cannot delete restaurant with active menu.");
-        //     }
-        // }
-
-        return Result.Success();
-    }
-
     private async Task UpdateRestaurantOpeningHoursAsync(Restaurant restaurant, List<OpeningHoursDto> newHours)
     {
         // Remove existing opening hours
@@ -446,185 +411,6 @@ public class RestaurantService : IRestaurantService
         await Task.CompletedTask;
     }
 
-    public async Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId)
-    {
-        try
-        {
-            // Sprawdź uprawnienia i pobierz restaurację
-            var restaurant = await _context.Restaurants
-                .Include(r => r.Settings)
-                .FirstOrDefaultAsync(r => r.Id == restaurantId);
-            if (restaurant == null)
-            {
-                return Result<ImageUploadResult>.NotFound("Restaurant not found");
-            }
-
-            // Usuń stare logo jeśli istnieje
-            if (!string.IsNullOrEmpty(restaurant.profileUrl))
-            {
-                await _storageService.DeleteFileByUrlAsync(restaurant.profileUrl);
-                await _storageService.DeleteFileByUrlAsync(restaurant.profileThumbnailUrl);
-            }
-
-            // Upload nowego logo
-            var stream = file.OpenReadStream();
-            var uploadResult = await _storageService.UploadImageAsync(
-                stream,
-                file.FileName,
-                ImageType.RestaurantProfile,
-                restaurantId,
-                generateThumbnail: true
-            );
-
-            // Zaktualizuj URL w bazie danych
-            restaurant.profileUrl = uploadResult.OriginalUrl;
-            restaurant.profileThumbnailUrl = uploadResult.ThumbnailUrl;
-
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Logo uploaded successfully for restaurant {restaurantId}");
-
-            return Result<ImageUploadResult>.Success(uploadResult);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error uploading logo for restaurant {restaurantId}");
-            return Result<ImageUploadResult>.Failure("An error occurred while uploading the logo.");
-        }
-    }
-
-    public async Task<Result<List<ImageUploadResult>>> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
-    {
-        try
-        {
-            List<ImageUploadResult> uploadResults = new List<ImageUploadResult>();
-            // Sprawdź uprawnienia i pobierz restaurację
-            var restaurant = await _context.Restaurants
-                .Include(r => r.Settings)
-                .FirstOrDefaultAsync(r => r.Id == id);
-            if (restaurant == null)
-            {
-                return Result<List<ImageUploadResult>>.NotFound("Restaurant not found");
-            }
-
-            if (restaurant.photosUrls == null)
-            {
-                restaurant.photosUrls = new List<string>();
-            }
-
-            if (restaurant.photosThumbnailsUrls == null)
-            {
-                restaurant.photosThumbnailsUrls = new List<string>();
-            }
-
-            foreach (var image in imageList)
-            {
-                // Upload nowego logo
-                var stream = image.OpenReadStream();
-                var uploadResult = await _storageService.UploadImageAsync(
-                    stream,
-                    image.FileName,
-                    ImageType.RestaurantPhotos,
-                    id,
-                    generateThumbnail: true
-                );
-                restaurant.photosUrls.Add(uploadResult.OriginalUrl);
-                restaurant.photosThumbnailsUrls.Add(uploadResult.ThumbnailUrl);
-                uploadResults.Add(uploadResult);
-            }
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Logo uploaded successfully for restaurant {id}");
-
-            return Result<List<ImageUploadResult>>.Success(uploadResults);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error uploading logo for restaurant {id}");
-            return Result<List<ImageUploadResult>>.Failure("An error occurred while uploading the logo.");
-        }
-    }
-
-
-    public async Task<Result> DeleteRestaurantProfilePicture(int restaurantId)
-    {
-        try
-        {
-            var restaurant = await _context.Restaurants
-                .Include(r => r.Settings)
-                .FirstOrDefaultAsync(r => r.Id == restaurantId);
-            if (restaurant == null)
-            {
-                return Result.Failure("Restaurant not found.");
-            }
-
-            // Usuń z storage
-            string bucketName = "images";
-            var deletedImage = await _storageService.DeleteFileByUrlAsync(restaurant.profileUrl);
-            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(restaurant.profileThumbnailUrl);
-
-            if (!deletedImage || !deletedThumbnail)
-            {
-                return Result.Failure("Failed to delete image from storage.");
-            }
-
-
-            restaurant.profileUrl = null;
-            restaurant.profileThumbnailUrl = null;
-
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Image deleted successfully for restaurant {restaurantId}");
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error deleting image for restaurant {restaurantId}");
-            return Result.Failure("An error occurred while deleting the image.");
-        }
-    }
-
-    public async Task<Result> DeleteRestaurantPhoto(int restaurantId, int photoIndex)
-    {
-        try
-        {
-            var restaurant = await _context.Restaurants
-                .FirstOrDefaultAsync(r => r.Id == restaurantId);
-            if (restaurant == null)
-            {
-                return Result.Failure("Restaurant not found.");
-            }
-
-            // Usuń z storage
-            string bucketName = "images";
-            var deletedImage = await _storageService.DeleteFileByUrlAsync(restaurant.photosUrls[photoIndex]);
-            var deletedThumbnail =
-                await _storageService.DeleteFileByUrlAsync(restaurant.photosThumbnailsUrls[photoIndex]);
-
-            if (!deletedImage || !deletedThumbnail)
-            {
-                return Result.Failure("Failed to delete image from storage.");
-            }
-
-
-            restaurant.photosUrls.RemoveAt(photoIndex);
-            restaurant.photosThumbnailsUrls.RemoveAt(photoIndex);
-
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Image deleted successfully for restaurant {restaurantId}");
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error deleting image for restaurant {restaurantId}");
-            return Result.Failure("An error occurred while deleting the image.");
-        }
-    }
 
     public async Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId)
     {
@@ -666,18 +452,6 @@ public class RestaurantService : IRestaurantService
         return Result<List<RestaurantDto>>.Success(restaurants);
     }
 
-
-    // private List<OpeningHours> MapOpeningHours(List<OpeningHoursDto> dtos, int? restaurantId = null)
-    // {
-    //     return dtos.Select(oh => new OpeningHours
-    //     {
-    //         DayOfWeek = (DayOfWeek)oh.DayOfWeek,
-    //         OpenTime = TimeOnly.Parse(oh.OpenTime),
-    //         CloseTime = TimeOnly.Parse(oh.CloseTime),
-    //         IsClosed = oh.IsClosed,
-    //         RestaurantId = restaurantId ?? 0
-    //     }).ToList();
-    // }
 
     private void InitializedOpeningHours(Restaurant restaurant)
     {

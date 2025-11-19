@@ -25,10 +25,6 @@ public interface IRestaurantService
     Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
     Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
     Task<Result> DeleteAsync(int id);
-    Task<Result<ImageUploadResult>> UploadRestaurantProfilePhoto(IFormFile file, int restaurantId);
-    Task<Result<List<ImageUploadResult>>> UploadRestaurantPhotos(List<IFormFile> imageList, int id);
-    Task<Result> DeleteRestaurantProfilePicture(int restaurantId);
-    Task<Result> DeleteRestaurantPhoto(int restaurantId, int photoIndex);
     
     Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId);
     Task<Result<List<RestaurantDto>>> GetRestaurantNames(List<int> ids);
