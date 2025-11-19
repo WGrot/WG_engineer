@@ -2,6 +2,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Api.Helpers;
+using RestaurantApp.Api.Services.Email;
+using RestaurantApp.Api.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
@@ -18,6 +21,8 @@ public class AuthService : IAuthService
     private readonly ITwoFactorService _twoFactorService;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly IUrlHelper _urlHelper;
+    private readonly IEmailComposer _emailComposer;
 
 
     public AuthService(
@@ -26,7 +31,9 @@ public class AuthService : IAuthService
         IJwtService jwtService,
         ITwoFactorService twoFactorService,
         IEmailService emailService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IUrlHelper urlHelper,
+        IEmailComposer emailComposer)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -34,6 +41,8 @@ public class AuthService : IAuthService
         _twoFactorService = twoFactorService;
         _emailService = emailService;
         _configuration = configuration;
+        _urlHelper = urlHelper;
+        _emailComposer = emailComposer;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -52,29 +61,15 @@ public class AuthService : IAuthService
         if (result.Succeeded)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-            // Zakoduj token do URL
-            var encodedToken = WebUtility.UrlEncode(token);
-            var encodedUserId = WebUtility.UrlEncode(user.Id);
-
-            var apiUrl = _configuration["AppURL:ApiUrl"];
-            var confirmationLink = $"{apiUrl}/api/Auth/confirm-email?userId={encodedUserId}&token={encodedToken}";
-
-            // Przygotuj treść emaila
-            var emailBody = $@"""
-                <h2>Hello {user.FirstName}!</h2>
-                <p>Thank you for registering in DineOps, Click this link to verify your email:</p>
-                <p><a href='{confirmationLink}'>Confirm email</a></p>
-                <p>If you didn't sign in to our site ignore this message</p>
-            """;
-
-            // Wyślij email
-            await _emailService.SendEmailAsync(user.Email, "Confirm your email", emailBody);
+            var confirmationLink = _urlHelper.GenerateEmailConfirmationLink(user.Id, token);
+            
+            var email = new AccountRegisteredEmail(user.FirstName, confirmationLink);
+            await _emailComposer.SendAsync(user.Email, email);
 
             return Result.Success();
         }
 
-        Result registerResult = Result.Failure("Rejestracja nie powiodła się\n", 400);
+        Result registerResult = Result.Failure("Error during registration", 400);
         foreach (var error in result.Errors)
         {
             registerResult.Error += error.Code + error.Description + "\n";
@@ -134,13 +129,11 @@ public class AuthService : IAuthService
 
             if (!isValid)
             {
-                // Zwiększ licznik nieudanych prób
                 await _userManager.AccessFailedAsync(user);
 
                 return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
             }
-
-            // Zresetuj licznik po udanej weryfikacji
+            
             await _userManager.ResetAccessFailedCountAsync(user);
         }
 
@@ -172,22 +165,12 @@ public class AuthService : IAuthService
 
     public async Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
+        var validationResult = await ValidateUserAsync(userId);
+        if (validationResult.IsFailure)
         {
-            return Result<ResponseUserDto>.Unauthorized("User not looged in");
+            return Result.Failure<ResponseUserDto>(validationResult.Error);
         }
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Result<ResponseUserDto>.Unauthorized($"User not looged in");
-        }
-
-        var user = await _userManager.FindByIdAsync(userId);
-
-        if (user == null)
-        {
-            return Result<ResponseUserDto>.Unauthorized($"User not looged in");
-        }
+        var user = validationResult.Value!;
 
         var response = new ResponseUserDto
         {
@@ -216,11 +199,7 @@ public class AuthService : IAuthService
 
         return Result<List<ResponseUserDto>>.Success(userDtos);
     }
-
-    public Result GetDebugAuthInfo(bool isAuthenticated, string authenticationType, IEnumerable<ClaimDto> claims)
-    {
-        throw new NotImplementedException();
-    }
+    
 
     public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
     {
@@ -231,11 +210,7 @@ public class AuthService : IAuthService
         if (user == null)
             return Result.Unauthorized("User not logged in");
 
-        IdentityResult changeResult = await _userManager.ChangePasswordAsync(
-            user,
-            request.CurrentPassword,
-            request.NewPassword
-        );
+        IdentityResult changeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
         if (!changeResult.Succeeded)
         {
@@ -255,13 +230,13 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
         {
-            return Result.Failure("Nieprawidłowe dane weryfikacyjne", 400);
+            return Result.Failure("Incorrect verification data", 400);
         }
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return Result.Failure("Użytkownik nie istnieje", 404);
+            return Result.Failure("User does not exist", 404);
         }
 
         if (user.EmailConfirmed)
@@ -273,7 +248,7 @@ public class AuthService : IAuthService
 
         if (!result.Succeeded)
         {
-            var failureResult = Result.Failure("Weryfikacja nie powiodła się", 400);
+            var failureResult = Result.Failure("Email verification failed", 400);
             foreach (var error in result.Errors)
             {
                 failureResult.Error += $"{error.Code}: {error.Description}\n";
@@ -287,17 +262,12 @@ public class AuthService : IAuthService
 
     public async Task<Result> DeleteUserAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
+        var validationResult = await ValidateUserAsync(userId);
+        if (validationResult.IsFailure)
         {
-            return Result.Failure("User ID is required", 400);
+            return validationResult;
         }
-
-        var user = await _userManager.FindByIdAsync(userId);
-
-        if (user == null)
-        {
-            return Result.Failure("User not found", 404);
-        }
+        var user = validationResult.Value!;
 
         var result = await _userManager.DeleteAsync(user);
 
@@ -326,7 +296,6 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            // Ze względów bezpieczeństwa zwracamy sukces, żeby nie ujawniać czy email istnieje
             return Result.Success();
         }
 
@@ -334,26 +303,11 @@ public class AuthService : IAuthService
         {
             return Result.Failure("Email is already confirmed", 400);
         }
-
-        // Wygeneruj nowy token weryfikacyjny
+        
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = WebUtility.UrlEncode(token);
-        var encodedUserId = WebUtility.UrlEncode(user.Id);
-
-        // Pobierz URL z konfiguracji
-        var apiUrl = _configuration["AppURL:ApiUrl"];
-        var confirmationLink = $"{apiUrl}/api/Auth/confirm-email?userId={encodedUserId}&token={encodedToken}";
-
-        // Przygotuj treść emaila
-        var emailBody = $@"
-            <h2>Hello {user.FirstName}!</h2>
-            <p>TO confirm your email in DineOps click this link</p>
-            <p><a href='{confirmationLink}'>Potwierdź email</a></p>
-            <p>If you didn't sign in to our site ignore this message.</p>
-        ";
-
-        // Wyślij email
-        await _emailService.SendEmailAsync(user.Email, "Confirm email address", emailBody);
+        var confirmationLink = _urlHelper.GenerateEmailConfirmationLink(user.Id, token);
+        var emailBody = new EmailConfirmationEmail(user.UserName, confirmationLink);
+        await _emailComposer.SendAsync(user.Email, emailBody);
 
         return Result.Success();
     }
@@ -379,24 +333,10 @@ public class AuthService : IAuthService
         }
         
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var encodedToken = WebUtility.UrlEncode(token);
-        var encodedUserId = WebUtility.UrlEncode(user.Id);
-
-        // Utwórz link do frontendu (nie API!)
-        var frontendUrl = _configuration["AppURL:FrontendUrl"];
-        var resetLink = $"{frontendUrl}/reset-password?userId={encodedUserId}&token={encodedToken}";
-
-        // Przygotuj treść emaila
-        var emailBody = $@"
-        <h2>Hello {user.FirstName}!</h2>
-        <p>You requested to reset your password in DineOps.</p>
-        <p><a href='{resetLink}'>Reset Password</a></p>
-        <p>This link will expire in 24 hours.</p>
-        <p>If you didn't request a password reset, please ignore this message.</p>
-    ";
-
-        // Wyślij email
-        await _emailService.SendEmailAsync(user.Email, "Reset Your Password", emailBody);
+        var resetLink = _urlHelper.GeneratePasswordResetLink(user.Id, token);
+        
+        var emailBody = new ForgotPasswordEmail(user.UserName, resetLink);
+        await _emailComposer.SendAsync(user.Email, emailBody);
 
         return Result.Success();
     }
@@ -408,18 +348,14 @@ public class AuthService : IAuthService
             return Result.Failure("Invalid reset data", 400);
         }
 
-        var user = await _userManager.FindByIdAsync(request.UserId);
-
-        if (user == null)
+        var validationResult = await ValidateUserAsync(request.UserId);
+        if (validationResult.IsFailure)
         {
-            return Result.Failure("User not found", 404);
+            return validationResult;
         }
-
-        // Zresetuj hasło używając tokenu
-        var result = await _userManager.ResetPasswordAsync(
-            user,
-            request.Token,
-            request.NewPassword);
+        var user = validationResult.Value!;
+        
+        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
         if (!result.Succeeded)
         {
@@ -428,22 +364,26 @@ public class AuthService : IAuthService
             {
                 resetResult.Error += $"{error.Code}: {error.Description}\n";
             }
-
             return resetResult;
         }
-
-        // Opcjonalnie: wyloguj użytkownika ze wszystkich sesji
+        
         await _userManager.UpdateSecurityStampAsync(user);
-
-        // Opcjonalnie: wyślij email potwierdzający zmianę hasła
-        var emailBody = $@"
-        <h2>Hello {user.FirstName}!</h2>
-        <p>Your password has been successfully changed.</p>
-        <p>If you didn't make this change, please contact support immediately.</p>
-    ";
-
-        await _emailService.SendEmailAsync(user.Email, "Password Changed Successfully", emailBody);
+        var emailBody = new PasswordResetEmail(user.UserName);
+        await _emailComposer.SendAsync(user.Email, emailBody);
 
         return Result.Success();
     }
+    
+    private async Task<Result<ApplicationUser>> ValidateUserAsync(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+            return Result<ApplicationUser>.Failure("User ID is required", 400);
+        
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Result<ApplicationUser>.Failure("User not found", 404);
+        
+        return Result.Success(user);
+    }
 }
+

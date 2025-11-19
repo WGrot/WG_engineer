@@ -31,7 +31,6 @@
     {
         <div class="container mt-4">
             <div class="row justify-content-evenly">
-                <!-- Messages Section -->
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
                     <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
@@ -77,7 +76,6 @@
                                 </div>
                             </div>
                             .
-                            <!-- Time Selection Section -->
                             <div class="row mb-4">
                                 <div class="col-md-4 mb-3">
                                     <label for="startTime" class="form-label">
@@ -376,20 +374,17 @@
             isCheckingAvailability = true;
             errorMessage = "";
             successMessage = "";
-
-            // Validate end time is after start time
+            
             if (endTime <= startTime)
             {
                 errorMessage = "End time must be after start time.";
                 availableTables = new List<TableDto>();
                 return;
             }
-
-            // Create TimeOnly from DateTime
+            
             var startTimeOnly = TimeOnly.FromDateTime(startTime);
             var endTimeOnly = TimeOnly.FromDateTime(endTime);
-
-            // Check if the restaurant is open at this time
+            
             var dayOfWeek = selectedDate.DayOfWeek;
             var openingHours = restaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == dayOfWeek);
 
@@ -406,8 +401,7 @@
                 availableTables = new List<TableDto>();
                 return;
             }
-
-            // Check each table for availability
+            
             var availableTablesList = new List<TableDto>();
 
             foreach (var table in allTables.Where(t => t.Capacity >= numberOfGuests))
@@ -440,22 +434,18 @@
 
             if (reservations == null || !reservations.Any())
                 return true;
-
-            // Check if there's any overlapping reservation on the same date
+            
             foreach (var reservation in reservations)
             {
-                // Skip cancelled reservations
                 if (reservation.Status == ReservationStatus.Cancelled)
                     continue;
-
-                // Check if it's the same date
+                
                 if (reservation.ReservationDate.Date != date.Date)
                     continue;
-
-                // Check for time overlap
+                
                 if (startTime < reservation.EndTime && endTime > reservation.StartTime)
                 {
-                    return false; // Table is not available
+                    return false;
                 }
             }
 
@@ -504,7 +494,7 @@
                 EndTime = TimeOnly.FromDateTime(endTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                UserId = userId // This should be replaced with actual user ID from authentication
+                UserId = userId 
             };
 
             var response = await Http.PostAsJsonAsync("api/Reservation/table", reservation);

@@ -22,6 +22,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVaria
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
+using RestaurantApp.Api.Helpers;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Interfaces;
@@ -89,6 +90,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IEmailComposer, EmailComposer>();
+builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IMenuService, MenuService>();

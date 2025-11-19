@@ -13,7 +13,6 @@ public interface IAuthService
     Task<Result> LogoutAsync();
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
-    Result GetDebugAuthInfo(bool isAuthenticated, string authenticationType, IEnumerable<ClaimDto> claims);
     Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
     Task<Result> ConfirmEmailAsync(string userId, string token);
     Task<Result> DeleteUserAsync(string userId);

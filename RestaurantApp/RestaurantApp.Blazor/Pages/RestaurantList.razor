@@ -211,7 +211,6 @@
     
     protected override async Task OnInitializedAsync()
     {
-        // Pobierz parametry z query string
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         
@@ -294,7 +293,7 @@
         }
         catch (Exception ex)
         {
-            currentPage--; // Cofnij stronę w przypadku błędu
+            currentPage--;
         }
         finally
         {
@@ -360,14 +359,12 @@
         var currentDay = now.DayOfWeek;
         var currentTime = TimeOnly.FromDateTime(now);
         
-        // Znajdź godziny otwarcia dla dzisiejszego dnia
         var todayHours = restaurant.OpeningHours
             .FirstOrDefault(h => h.DayOfWeek == currentDay);
         
         if (todayHours == null)
             return false;
         
-        // Użyj metody IsOpenAt z modelu OpeningHours
         return todayHours.IsOpenAt(currentTime);
     }
     
