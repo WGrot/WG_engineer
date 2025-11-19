@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Mappers;
+using RestaurantApp.Api.Services.Email;
+using RestaurantApp.Api.Services.Email.Templates.Restaurant;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -20,12 +22,14 @@ public class RestaurantService : IRestaurantService
     private readonly ApiDbContext _context;
     private readonly ILogger<RestaurantService> _logger;
     private readonly IStorageService _storageService;
+    private readonly IEmailComposer _emailComposer;
 
-    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService)
+    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService, IEmailComposer emailComposer)
     {
         _context = context;
         _logger = logger;
         _storageService = storageService;
+        _emailComposer = emailComposer;
     }
 
     public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
@@ -210,6 +214,7 @@ public class RestaurantService : IRestaurantService
 
         _context.Restaurants.Add(restaurant);
         await _context.SaveChangesAsync();
+        
 
         return Result<Restaurant>.Success(restaurant.ToDto());
     }
@@ -251,6 +256,9 @@ public class RestaurantService : IRestaurantService
             // Zatwierdź transakcję
             await transaction.CommitAsync();
 
+            var user = _context.Users.FirstOrDefault(u => u.Id == dto.OwnerId);
+            var emailBody = new RestaurantCreatedEmail(user.FirstName, dto);
+            _emailComposer.SendAsync(user.Email, emailBody);
             return Result.Success(restaurant.ToDto());
         }
         catch (Exception ex)

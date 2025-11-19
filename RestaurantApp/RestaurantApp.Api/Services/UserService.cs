@@ -28,7 +28,7 @@ public class UserService : IUserService
         _userManager = userManager;
         _employeeService = employeeService;
         _passwordService = passwordService;
-        _emailComposer = _emailComposer;
+        _emailComposer = emailComposer;
     }
 
     public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
