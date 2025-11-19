@@ -15,7 +15,7 @@ public interface IAuthService
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
     Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
     Task<Result> ConfirmEmailAsync(string userId, string token);
-    Task<Result> DeleteUserAsync(string userId);
+
     Task<Result> ResendEmailConfirmationAsync(string email);
     Task<Result> ForgotPasswordAsync(string email);
     Task<Result> ResetPasswordAsync(ResetPasswordRequest request);

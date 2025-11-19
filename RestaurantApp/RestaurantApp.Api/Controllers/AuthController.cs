@@ -71,18 +71,7 @@ public class AuthController : ControllerBase
         return result.ToActionResult();
     }
     
-    [HttpDelete("users/{userId}")]
-    public async Task<IActionResult> DeleteUser(string userId)
-    {
-        var result = await _authService.DeleteUserAsync(userId);
-    
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "User deleted successfully" });
-        }
-    
-        return BadRequest(result);
-    }
+
 
 
     [HttpGet("debug-auth")]

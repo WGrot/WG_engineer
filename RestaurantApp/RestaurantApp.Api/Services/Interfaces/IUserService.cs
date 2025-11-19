@@ -13,4 +13,6 @@ public interface IUserService
     Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto);
     
     Task<Result> UpdateUserAsync(UpdateUserDto userDto);
+    
+    Task<Result> DeleteUserAsync(string userId);
 }

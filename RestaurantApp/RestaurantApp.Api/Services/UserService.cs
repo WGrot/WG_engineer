@@ -217,4 +217,29 @@ public class UserService : IUserService
     
         return new string(password.OrderBy(x => Guid.NewGuid()).ToArray());
     }
+    
+    public async Task<Result> DeleteUserAsync(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+            return Result<ApplicationUser>.Failure("User ID is required", 400);
+        
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Result<ApplicationUser>.Failure("User not found", 404);
+
+        var result = await _userManager.DeleteAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var deleteResult = Result.Failure("Failed to delete user", 400);
+            foreach (var error in result.Errors)
+            {
+                deleteResult.Error += $"{error.Code}: {error.Description}\n";
+            }
+
+            return deleteResult;
+        }
+
+        return Result.Success();
+    }
 }

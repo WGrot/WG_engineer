@@ -103,4 +103,17 @@ public class UserController : ControllerBase
         var result = await _userService.UpdateUserAsync(dto);
         return result.ToActionResult();
     }
+    
+    [HttpDelete("/{userId}")]
+    public async Task<IActionResult> DeleteUser(string userId)
+    {
+        var result = await _userService.DeleteUserAsync(userId);
+    
+        if (result.IsSuccess)
+        {
+            return Ok(new { message = "User deleted successfully" });
+        }
+    
+        return BadRequest(result);
+    }
 }

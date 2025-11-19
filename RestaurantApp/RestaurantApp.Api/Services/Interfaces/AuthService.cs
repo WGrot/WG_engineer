@@ -260,30 +260,7 @@ public class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteUserAsync(string userId)
-    {
-        var validationResult = await ValidateUserAsync(userId);
-        if (validationResult.IsFailure)
-        {
-            return validationResult;
-        }
-        var user = validationResult.Value!;
-
-        var result = await _userManager.DeleteAsync(user);
-
-        if (!result.Succeeded)
-        {
-            var deleteResult = Result.Failure("Failed to delete user", 400);
-            foreach (var error in result.Errors)
-            {
-                deleteResult.Error += $"{error.Code}: {error.Description}\n";
-            }
-
-            return deleteResult;
-        }
-
-        return Result.Success();
-    }
+    
 
     public async Task<Result> ResendEmailConfirmationAsync(string email)
     {
