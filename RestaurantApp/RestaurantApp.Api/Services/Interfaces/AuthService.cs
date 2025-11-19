@@ -201,30 +201,7 @@ public class AuthService : IAuthService
     }
     
 
-    public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
-    {
-        if (string.IsNullOrEmpty(userId))
-            return Result.Unauthorized("User not logged in");
 
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-            return Result.Unauthorized("User not logged in");
-
-        IdentityResult changeResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
-
-        if (!changeResult.Succeeded)
-        {
-            var result = Result.Failure("Password change failed", 400);
-            foreach (var error in changeResult.Errors)
-                result.Error += $"{error.Code}: {error.Description}\n";
-            return result;
-        }
-
-        await _signInManager.RefreshSignInAsync(user);
-        await _userManager.UpdateSecurityStampAsync(user);
-
-        return Result.Success();
-    }
 
     public async Task<Result> ConfirmEmailAsync(string userId, string token)
     {
@@ -290,66 +267,7 @@ public class AuthService : IAuthService
     }
 
 
-    public async Task<Result> ForgotPasswordAsync(string email)
-    {
-        if (string.IsNullOrEmpty(email))
-        {
-            return Result.Failure("Email is required", 400);
-        }
 
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user == null)
-        {
-            return Result.Success();
-        }
-        
-        if (!user.EmailConfirmed)
-        {
-            return Result.Failure("Email is not confirmed", 400);
-        }
-        
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var resetLink = _urlHelper.GeneratePasswordResetLink(user.Id, token);
-        
-        var emailBody = new ForgotPasswordEmail(user.UserName, resetLink);
-        await _emailComposer.SendAsync(user.Email, emailBody);
-
-        return Result.Success();
-    }
-
-    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
-    {
-        if (string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.Token))
-        {
-            return Result.Failure("Invalid reset data", 400);
-        }
-
-        var validationResult = await ValidateUserAsync(request.UserId);
-        if (validationResult.IsFailure)
-        {
-            return validationResult;
-        }
-        var user = validationResult.Value!;
-        
-        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
-
-        if (!result.Succeeded)
-        {
-            var resetResult = Result.Failure("Password reset failed", 400);
-            foreach (var error in result.Errors)
-            {
-                resetResult.Error += $"{error.Code}: {error.Description}\n";
-            }
-            return resetResult;
-        }
-        
-        await _userManager.UpdateSecurityStampAsync(user);
-        var emailBody = new PasswordResetEmail(user.UserName);
-        await _emailComposer.SendAsync(user.Email, emailBody);
-
-        return Result.Success();
-    }
     
     private async Task<Result<ApplicationUser>> ValidateUserAsync(string userId)
     {

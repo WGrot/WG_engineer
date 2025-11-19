@@ -17,12 +17,14 @@ public class UserService : IUserService
     private readonly ApiDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmployeeService _employeeService;
+    private readonly IPasswordService _passwordService;
     
-    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService)
+    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService, IPasswordService passwordService)
     {
         _context = context;
         _userManager = userManager;
         _employeeService = employeeService;
+        _passwordService = passwordService;
     }
 
     public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
@@ -117,7 +119,7 @@ public class UserService : IUserService
         }
 
         // Wygeneruj hasło
-        string generatedPassword = GenerateSecurePassword();
+        string generatedPassword = _passwordService.GenerateSecurePassword();
 
         // Stwórz użytkownika
         var user = new ApplicationUser
@@ -192,31 +194,7 @@ public class UserService : IUserService
         }
         return Result.Success();
     }
-    private string GenerateSecurePassword(int length = 16)
-    {
-        const string lowercase = "abcdefghijklmnopqrstuvwxyz";
-        const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const string digits = "0123456789";
-        const string special = "!@#$%^&*";
-        const string allChars = lowercase + uppercase + digits + special;
     
-        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-        var bytes = new byte[length];
-        rng.GetBytes(bytes);
-    
-        var password = new char[length];
-        password[0] = uppercase[bytes[0] % uppercase.Length];
-        password[1] = lowercase[bytes[1] % lowercase.Length];
-        password[2] = digits[bytes[2] % digits.Length];
-        password[3] = special[bytes[3] % special.Length];
-    
-        for (int i = 4; i < length; i++)
-        {
-            password[i] = allChars[bytes[i] % allChars.Length];
-        }
-    
-        return new string(password.OrderBy(x => Guid.NewGuid()).ToArray());
-    }
     
     public async Task<Result> DeleteUserAsync(string userId)
     {

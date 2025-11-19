@@ -13,12 +13,12 @@ public interface IAuthService
     Task<Result> LogoutAsync();
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
-    Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
+    //Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
     Task<Result> ConfirmEmailAsync(string userId, string token);
 
     Task<Result> ResendEmailConfirmationAsync(string email);
-    Task<Result> ForgotPasswordAsync(string email);
-    Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
+    //Task<Result> ForgotPasswordAsync(string email);
+    //Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
 }
 
 

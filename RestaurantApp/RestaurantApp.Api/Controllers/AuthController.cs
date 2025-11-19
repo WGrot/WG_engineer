@@ -14,7 +14,6 @@ namespace RestaurantApp.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
 
     public AuthController(
@@ -23,10 +22,9 @@ public class AuthController : ControllerBase
         IConfiguration configuration)
     {
         _authService = authService;
-        _emailService = emailService;
         _configuration = configuration;
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -46,7 +44,7 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginAsync(request);
         return result.ToActionResult();
     }
-    
+
     [HttpGet("confirm-email")]
     [AllowAnonymous]
     public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
@@ -55,13 +53,12 @@ public class AuthController : ControllerBase
         var frontendUrl = _configuration["AppURL:FrontendUrl"];
         if (result.IsSuccess)
         {
-            return Redirect($"{frontendUrl}/email-verified"); 
+            return Redirect($"{frontendUrl}/email-verified");
         }
         else
         {
             return BadRequest(result);
         }
-        
     }
 
     [HttpPost("logout")]
@@ -70,8 +67,6 @@ public class AuthController : ControllerBase
         var result = await _authService.LogoutAsync();
         return result.ToActionResult();
     }
-    
-
 
 
     [HttpGet("debug-auth")]
@@ -96,73 +91,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("users")]
-    // Opcjonalnie - możesz wymagać autoryzacji
     public async Task<IActionResult> GetAllUsers()
     {
         var result = await _authService.GetAllUsersAsync();
         return result.ToActionResult();
     }
-    
-    [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var result = await _authService.ChangePasswordAsync(userId, request);
 
-        if (!result.IsSuccess)
-            return StatusCode(result.StatusCode, result);
-
-        return Ok(result);
-    }
-    
-    
     [HttpPost("resend-confirmation-email")]
     [AllowAnonymous]
     public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendEmailRequest request)
     {
         var result = await _authService.ResendEmailConfirmationAsync(request.Email);
-    
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "Email have been resent" });
-        }
-    
-        return BadRequest(result);
+        return result.ToActionResult();
     }
-    
-    [HttpPost("forgot-password")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _authService.ForgotPasswordAsync(request.Email);
-    
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "If the email exists, a password reset link has been sent" });
-        }
-
-        return BadRequest(result);
-    }
-
-    [HttpPost("reset-password")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _authService.ResetPasswordAsync(request);
-    
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "Password has been reset successfully" });
-        }
-
-        return BadRequest(result);
-    }
-    
 }
