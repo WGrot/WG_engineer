@@ -86,12 +86,12 @@ public class RestaurantService : IRestaurantService
             "name_descending" => query.OrderByDescending(r => r.Name),
             "worst" => query.OrderBy(r => r.AverageRating),
             "best" => query.OrderByDescending(r => r.AverageRating),
-            _ => query.OrderBy(r => r.Name) // domyślnie sortuj po nazwie
+            _ => query.OrderBy(r => r.Name) 
         };
 
         var totalCount = await query.CountAsync();
 
-        // Paginacja
+
         var restaurants = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -99,7 +99,7 @@ public class RestaurantService : IRestaurantService
 
         var result = new PaginatedRestaurantsDto
         {
-            Restaurants = restaurants.ToDtoList(), // lub restaurants.ToDtoList() jeśli masz mapowanie na DTO
+            Restaurants = restaurants.ToDtoList(), 
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,

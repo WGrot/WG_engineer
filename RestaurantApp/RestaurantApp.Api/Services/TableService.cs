@@ -174,6 +174,49 @@ public class TableService : ITableService
 
         return Result.Success();
     }
+    
+    public async Task<Result<TableAvailabilityResultDto>> CheckTableAvailabilityAsync(
+        int tableId, 
+        DateTime date, 
+        TimeOnly startTime, 
+        TimeOnly endTime)
+    {
+        // Sprawdź czy stół istnieje
+        var tableExists = await _context.Tables.AnyAsync(t => t.Id == tableId);
+        if (!tableExists)
+            return Result<TableAvailabilityResultDto>.NotFound($"Table with ID {tableId} not found.");
+
+        // Walidacja czasu
+        if (endTime <= startTime)
+            return Result<TableAvailabilityResultDto>.ValidationError("End time must be after start time.");
+
+        // Konwertuj date na UTC i pobierz tylko datę
+        var dateUtc = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+
+        // Zoptymalizowane query - sprawdza czy istnieje jakakolwiek konfliktująca rezerwacja
+        var hasConflict = await _context.Reservations
+            .OfType<TableReservation>()
+            .Where(r => 
+                r.TableId == tableId &&
+                r.ReservationDate.Date == dateUtc && // Teraz używa UTC
+                r.Status != ReservationStatus.Cancelled &&
+                // Sprawdzenie nakładania się przedziałów czasowych
+                r.StartTime < endTime && 
+                r.EndTime > startTime
+            )
+            .AnyAsync();
+
+        var result = new TableAvailabilityResultDto
+        {
+            IsAvailable = !hasConflict,
+            Message = hasConflict 
+                ? "Table is not available for the selected time slot." 
+                : "Table is available."
+        };
+
+        return Result<TableAvailabilityResultDto>.Success(result);
+    }
+    
 
     public async Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date)
     {

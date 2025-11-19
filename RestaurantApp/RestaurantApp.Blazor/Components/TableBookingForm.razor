@@ -430,26 +430,14 @@
     {
         try
         {
-            var reservations = await Http.GetFromJsonAsync<List<ReservationDto>>($"api/Reservation/reservation/table/{tableId}");
-
-            if (reservations == null || !reservations.Any())
-                return true;
-            
-            foreach (var reservation in reservations)
-            {
-                if (reservation.Status == ReservationStatus.Cancelled)
-                    continue;
-                
-                if (reservation.ReservationDate.Date != date.Date)
-                    continue;
-                
-                if (startTime < reservation.EndTime && endTime > reservation.StartTime)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            var url = $"api/Table/{tableId}/check-availability" +
+                      $"?date={date:yyyy-MM-dd}" +
+                      $"&startTime={startTime:HH:mm:ss}" +
+                      $"&endTime={endTime:HH:mm:ss}";
+        
+            var response = await Http.GetFromJsonAsync<TableAvailabilityResultDto>(url);
+        
+            return response?.IsAvailable ?? false;
         }
         catch (Exception ex)
         {

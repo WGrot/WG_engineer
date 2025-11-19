@@ -84,6 +84,17 @@ namespace RestaurantApp.Api.Controllers
             return (await _tableService.UpdateTableCapacityAsync(id, capacity)).ToActionResult();
         }
 
+        [HttpGet("{id}/check-availability")]
+        public async Task<IActionResult> CheckTableAvailability(
+            int id,
+            [FromQuery] DateTime date,
+            [FromQuery] TimeOnly startTime,
+            [FromQuery] TimeOnly endTime)
+        {
+            return (await _tableService.CheckTableAvailabilityAsync(id, date, startTime, endTime))
+                .ToActionResult();
+        }
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTable(int id)
         {
