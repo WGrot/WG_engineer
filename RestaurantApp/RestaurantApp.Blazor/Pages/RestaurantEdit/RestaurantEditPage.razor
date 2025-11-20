@@ -7,7 +7,7 @@
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@inject TokenStorageService TokenStorageService
+@inject MemoryTokenStore TokenStorageService
 
 <div class="edit-container">
 
@@ -118,14 +118,14 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadRestaurant();
-        TokenStorageService.OnActiveResturantChanged +=  LoadRestaurant;
+        //TokenStorageService.OnActiveResturantChanged +=  LoadRestaurant;
     }
 
     private async Task LoadRestaurant()
     {
         try
         {
-            Id = int.Parse(await TokenStorageService.GetActiveRestaurantAsync());
+            Id = int.Parse(TokenStorageService.GetActiveRestaurant());
             restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{Id}");
         }
         catch (Exception ex)
@@ -141,7 +141,7 @@
     
     public void Dispose()
     {
-        TokenStorageService.OnActiveResturantChanged -= LoadRestaurant;
+        //TokenStorageService.OnActiveResturantChanged -= LoadRestaurant;
     }
 
 }

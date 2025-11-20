@@ -1,43 +1,31 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.JSInterop;
+﻿using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using RestaurantApp.Blazor.Services;
 
-namespace RestaurantApp.Blazor.Services;
-
-public class AuthorizedHttpMessageHandler: DelegatingHandler
+public class AuthorizedHttpMessageHandler : DelegatingHandler
 {
-    private readonly IJSRuntime _jsRuntime;
-    private const string TOKEN_KEY = "authToken";
+    private readonly MemoryTokenStore _tokenStore;
 
-    public AuthorizedHttpMessageHandler(IJSRuntime jsRuntime)
+    public AuthorizedHttpMessageHandler(MemoryTokenStore store)
     {
-        _jsRuntime = jsRuntime;
-        InnerHandler = new HttpClientHandler();
+        _tokenStore = store;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, 
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        try
+        // ✅ DODAJ - wysyłaj credentials (cookies) z każdym requestem
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+
+        var token = _tokenStore.GetAccessToken();
+
+        if (!string.IsNullOrEmpty(token))
         {
-            // Pobierz token z localStorage
-            var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
-                
-            if (!string.IsNullOrEmpty(token))
-            {
-                // Dodaj token do nagłówków
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                Console.WriteLine("Token added to request");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error adding token: {ex.Message}");
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
         }
 
-        return await base.SendAsync(request, cancellationToken);
+        return await base.SendAsync(request, ct);
     }
 }

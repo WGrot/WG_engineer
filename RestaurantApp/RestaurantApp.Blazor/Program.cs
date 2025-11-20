@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.Authorization;
 using RestaurantApp.Blazor;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Blazor.Services.Interfaces;
@@ -9,39 +9,64 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Dodaj autoryzację
 builder.Services.AddAuthorizationCore();
 
-// 1. Podstawowe usługi (bez zależności)
-builder.Services.AddScoped<TokenStorageService>();
+// Singletony
+builder.Services.AddSingleton<MemoryTokenStore>();
+
+// Scoped services
 builder.Services.AddScoped<JwtTokenParser>();
-
-
-// 2. AuthenticationStateProvider
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
-    provider.GetRequiredService<JwtAuthenticationStateProvider>());
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-// 3. HttpClient handler i configuration
-builder.Services.AddScoped<AuthorizedHttpMessageHandler>();
+// HttpClient - WAŻNE: credentials w handlerze
+builder.Services.AddTransient<AuthorizedHttpMessageHandler>();
 
+// HttpClient Scoped, ale handler przez DI
 builder.Services.AddScoped(sp =>
 {
-    var handler = sp.GetRequiredService<AuthorizedHttpMessageHandler>();
-    var httpClient = new HttpClient(handler)
+    var tokenStore = sp.GetRequiredService<MemoryTokenStore>();
+    var handler = new AuthorizedHttpMessageHandler(tokenStore)
+    {
+        InnerHandler = new HttpClientHandler()
+    };
+
+    return new HttpClient(handler)
     {
         BaseAddress = new Uri("http://localhost:5031/")
     };
-    return httpClient;
 });
 
-// 4. AuthService (zależy od powyższych)
 builder.Services.AddScoped<AuthService>();
-
-// 5. Inne serwisy
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantServie>();
-builder.Services.AddSingleton<NotificationService>();
+builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<PermissionService>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+// ✅ Spróbuj odświeżyć token przy starcie - w scope!
+try
+{
+    using (var scope = host.Services.CreateScope())
+    {
+        var auth = scope.ServiceProvider.GetRequiredService<AuthService>();
+        var refreshed = await auth.TryRefreshTokenAsync();
+        
+        if (refreshed)
+        {
+            Console.WriteLine("✅ Token odświeżony przy starcie aplikacji");
+        }
+        else
+        {
+            Console.WriteLine("⚠️ Brak refresh tokena lub wygasł");
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ Błąd przy refresh tokena: {ex.Message}");
+}
+
+await host.RunAsync();

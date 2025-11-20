@@ -40,7 +40,7 @@ else
         _isAuthenticated = await AuthService.IsAuthenticatedAsync();
         if (_isAuthenticated)
         {
-            _currentUser = await AuthService.GetCurrentUserAsync();
+            _currentUser = AuthService.GetCurrentUserAsync();
         }
     }
 

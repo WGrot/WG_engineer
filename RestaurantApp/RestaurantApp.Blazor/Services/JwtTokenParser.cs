@@ -5,9 +5,9 @@ namespace RestaurantApp.Blazor.Services;
 
 public class JwtTokenParser
 {
-    private readonly TokenStorageService _tokenStorageService;
+    private readonly MemoryTokenStore _tokenStorageService;
 
-    public JwtTokenParser(TokenStorageService tokenStorageService)
+    public JwtTokenParser(MemoryTokenStore tokenStorageService)
     {
         _tokenStorageService = tokenStorageService;
     }
@@ -106,7 +106,7 @@ public class JwtTokenParser
     {
         try
         {
-            var token = await _tokenStorageService.GetTokenAsync();
+            var token = _tokenStorageService.GetAccessToken();
             if (token == null)
             {
                 return new List<string>();

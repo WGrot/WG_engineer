@@ -100,7 +100,7 @@
             else if (success)
             {
                 // Przekieruj po udanym logowaniu
-                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl, true);
+                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
             }
             else
             {
@@ -137,7 +137,7 @@
             if (success)
             {
                 _showTwoFactorModal = false;
-                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl, true);
+                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
             }
             else
             {

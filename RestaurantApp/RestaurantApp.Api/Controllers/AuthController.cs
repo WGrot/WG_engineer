@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Auth;
+using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -62,10 +64,7 @@ public class AuthController : ControllerBase
         Response.Cookies.Append(cookieName, refreshToken, cookieOptions);
 
         // zwracamy access token i profile usera (nie refresh token)
-        return Ok(new {
-            accessToken = data.Token,
-            user = data.ResponseUser
-        });
+        return loginRes.ToActionResult();
     }
 
     
@@ -100,8 +99,11 @@ public class AuthController : ControllerBase
             Path = "/"
         };
         Response.Cookies.Append(cookieName, newRefresh!, cookieOptions);
-
-        return Ok(new { accessToken = newAccess });
+        var result = new RefreshResponse
+        {
+            Token = newAccess
+        };
+        return Result.Success(result).ToActionResult();
     }
     
     [HttpGet("confirm-email")]
@@ -133,6 +135,15 @@ public class AuthController : ControllerBase
 
         // Usuń cookie u klienta
         Response.Cookies.Delete(cookieName);
+        
+        Response.Cookies.Append("refreshToken", "", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.Zero,
+            Path = "/"
+        });
 
         return Ok();
     }

@@ -6,11 +6,11 @@ namespace RestaurantApp.Blazor.Services;
 
 public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private readonly TokenStorageService _tokenStorage;
+    private readonly MemoryTokenStore _tokenStorage;
     private readonly JwtTokenParser _tokenParser;
 
     public JwtAuthenticationStateProvider(
-        TokenStorageService tokenStorage,
+        MemoryTokenStore tokenStorage,
         JwtTokenParser tokenParser)
     {
         _tokenStorage = tokenStorage;
@@ -19,7 +19,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var token = await _tokenStorage.GetTokenAsync();
+        var token =  _tokenStorage.GetAccessToken();
 
         if (string.IsNullOrEmpty(token))
         {

@@ -53,12 +53,12 @@
     void GoToLogin()
     {
         var returnUrl = Uri.EscapeDataString(new Uri(Navigation.Uri).PathAndQuery);
-        Navigation.NavigateTo($"/login?returnUrl={returnUrl}", true);
+        Navigation.NavigateTo($"/login?returnUrl={returnUrl}");
     }
     
     private async Task CreateRestaurant()
     {
-        var currentUser = await AuthService.GetCurrentUserAsync();
+        var currentUser = AuthService.GetCurrentUserAsync();
         var restaurantDto = new CreateRestaurantDto
         {
             Name = restaurantName,
@@ -70,7 +70,7 @@
         var response = await Http.PostAsJsonAsync("api/Restaurant/create-as-user", restaurantDto);
         if (response.IsSuccessStatusCode)
         {
-            Navigation.NavigateTo($"/homepage", true);
+            Navigation.NavigateTo($"/homepage");
         }
 
     }

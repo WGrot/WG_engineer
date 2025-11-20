@@ -1,158 +1,162 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 using RestaurantApp.Blazor.Models.DTO;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Auth;
+using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Blazor.Services;
 
 public class AuthService
 {
-    private readonly HttpClient _httpClient;
-    private readonly TokenStorageService _tokenStorage;
+    private readonly HttpClient _http;
+    private readonly MemoryTokenStore _tokens;
     private readonly JwtTokenParser _tokenParser;
     private readonly AuthenticationStateProvider _authStateProvider;
 
     public event Action? OnLogout;
+
     public AuthService(
-        HttpClient httpClient,
-        TokenStorageService tokenStorage,
+        HttpClient http,
+        MemoryTokenStore tokens,
         JwtTokenParser tokenParser,
         AuthenticationStateProvider authStateProvider)
     {
-        _httpClient = httpClient;
-        _tokenStorage = tokenStorage;
+        _http = http;
+        _tokens = tokens;
         _tokenParser = tokenParser;
         _authStateProvider = authStateProvider;
     }
 
-    public async Task<(bool Success, bool RequiresTwoFactor, string? ErrorMessage)> LoginAsync(
-    string email, 
-    string password, 
-    string? twoFactorCode = null)
-{
-    try
+    // ---------------------------------------------
+    // LOGIN
+    // ---------------------------------------------
+    public async Task<(bool Success, bool RequiresTwoFactor, string? Error)> LoginAsync(
+        string email, 
+        string password,
+        string? code = null)
     {
-        var loginRequest = new LoginRequest 
-        { 
-            Email = email, 
+        var dto = new LoginRequest
+        {
+            Email = email,
             Password = password,
-            TwoFactorCode = twoFactorCode
+            TwoFactorCode = code
         };
-        
-        var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
+
+        var response = await _http.PostAsJsonAsync("api/auth/login", dto);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, false, errorResponse.Error);
+            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (false, false, error?.Error);
         }
 
-        var content = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<LoginResponse>(content,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var login = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
-        if (result == null)
-            return (false, false, "Błąd podczas logowania");
+        if (login == null)
+            return (false, false, "Błąd loginu");
 
-        // Jeśli wymaga 2FA, zwróć informację
-        if (result.RequiresTwoFactor)
-        {
+        if (login.RequiresTwoFactor)
             return (false, true, null);
-        }
 
-        // Jeśli mamy token, zapisz i zaloguj
-        if (!string.IsNullOrEmpty(result.Token))
-        {
-            await _tokenStorage.SaveTokenAsync(result.Token);
-            await _tokenStorage.SaveUserAsync(result.ResponseUser);
+        if (string.IsNullOrEmpty(login.Token))
+            return (false, false, "Brak tokenu");
 
-            var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(result.Token);
-            if (!string.IsNullOrEmpty(activeRestaurant))
-            {
-                await _tokenStorage.SaveActiveRestaurantAsync(activeRestaurant);
-            }
+        // Zapisujemy token *in memory*
+        SetTokenState(login.Token, login.ResponseUser);
 
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
-
-            if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
-            {
-                jwtProvider.NotifyUserAuthentication(result.Token);
-            }
-
-            return (true, false, null);
-        }
-
-        return (false, false, "Błąd podczas logowania");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Login error: {ex.Message}");
-        return (false, false, "Wystąpił błąd podczas logowania");
-    }
-}
-
-    public async Task LogoutAsync()
-    {
-        // Wyczyść storage
-        await _tokenStorage.ClearAllAsync();
-
-        // Usuń header Authorization
-        _httpClient.DefaultRequestHeaders.Authorization = null;
-
-        // Powiadom AuthenticationStateProvider o wylogowaniu
-        if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
-        {
-            jwtProvider.NotifyUserLogout();
-        }
-        
-        OnLogout?.Invoke();
+        return (true, false, null);
     }
 
-    public async Task<bool> IsAuthenticatedAsync()
+    private void SetTokenState(string token, ResponseUserLoginDto user)
     {
-        var token = await _tokenStorage.GetTokenAsync();
-        
-        if (string.IsNullOrEmpty(token))
+        _tokens.SetAccessToken(token);
+        _tokens.SetUser(user);
+
+        var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(token);
+        if (!string.IsNullOrEmpty(activeRestaurant))
+            _tokens.SetActiveRestaurant(activeRestaurant);
+
+        if (_authStateProvider is JwtAuthenticationStateProvider jwt)
+            jwt.NotifyUserAuthentication(token);
+    }
+
+    // ---------------------------------------------
+    // REFRESH TOKEN
+    // ---------------------------------------------
+    public async Task<bool> TryRefreshTokenAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/refresh");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        var response = await _http.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
             return false;
 
-        // Sprawdź czy token nie wygasł
-        if (_tokenParser.IsTokenExpired(token))
-        {
-            await LogoutAsync();
+        var data = await response.Content.ReadFromJsonAsync<RefreshResponse>();
+
+        if (data == null || string.IsNullOrWhiteSpace(data.Token))
             return false;
-        }
+
+        _tokens.SetAccessToken(data.Token);
+        _http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", data.Token);
+
+        if (_authStateProvider is JwtAuthenticationStateProvider jwt)
+            jwt.NotifyUserAuthentication(data.Token);
 
         return true;
     }
 
-    public async Task<ResponseUserLoginDto?> GetCurrentUserAsync()
+    // ---------------------------------------------
+    // LOGOUT
+    // ---------------------------------------------
+    public async Task LogoutAsync()
     {
-        return await _tokenStorage.GetUserAsync();
+        _tokens.Clear();
+        _http.DefaultRequestHeaders.Authorization = null;
+
+        if (_authStateProvider is JwtAuthenticationStateProvider jwt)
+            jwt.NotifyUserLogout();
+
+        OnLogout?.Invoke();
+
+        await Task.CompletedTask;
     }
     
-    public async Task<bool> IsTwoFactorEnabledAsync()
+    public async Task<bool> IsAuthenticatedAsync()
     {
-        var user = await _tokenStorage.GetUserAsync();
-        return user?.TwoFactorEnabled ?? false;
+        var token = _tokens.GetAccessToken();
+
+        // 1. Brak access tokena → spróbuj odświeżyć
+        if (string.IsNullOrEmpty(token))
+        {
+            var refreshed = await TryRefreshTokenAsync();
+            return refreshed;
+        }
+
+        // 2. Token jest → sprawdzamy czy wygasł
+        if (_tokenParser.IsTokenExpired(token))
+        {
+            // Spróbuj odświeżyć przez cookie
+            var refreshed = await TryRefreshTokenAsync();
+
+            if (!refreshed)
+            {
+                await LogoutAsync();
+                return false;
+            }
+
+            return true; // odświeżenie udane
+        }
+
+        // 3. Token jest i nie wygasł → OK
+        return true;
     }
 
-    public async Task<bool> IsEmailVerifiedAsync()
-    {
-        var user = await _tokenStorage.GetUserAsync();
-        return user?.EmailVerified ?? false;
-    }
-    public async Task<string?> GetActiveRestaurantAsync()
-    {
-        return await _tokenStorage.GetActiveRestaurantAsync();
-    }
-
-    public async Task SetActiveRestaurantAsync(string restaurantId)
-    {
-        await _tokenStorage.SaveActiveRestaurantAsync(restaurantId);
-    }
+    public ResponseUserLoginDto? GetCurrentUserAsync() => _tokens.GetUser();
 }

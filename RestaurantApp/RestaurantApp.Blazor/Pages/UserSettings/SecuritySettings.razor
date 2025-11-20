@@ -208,7 +208,7 @@
         {
             currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
-        userResponse = await Auth.GetCurrentUserAsync();
+        userResponse = Auth.GetCurrentUserAsync();
         is2FAEnabled = userResponse.TwoFactorEnabled;
         isEmailVerified = userResponse.EmailVerified;
 
