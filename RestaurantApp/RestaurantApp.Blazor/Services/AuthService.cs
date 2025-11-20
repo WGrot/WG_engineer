@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 using RestaurantApp.Blazor.Models.DTO;
+using RestaurantApp.Blazor.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Auth;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
@@ -17,19 +18,22 @@ public class AuthService
     private readonly MemoryTokenStore _tokens;
     private readonly JwtTokenParser _tokenParser;
     private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly ICurrentUserDataService _currentUserDataService;
 
     public event Action? OnLogout;
-
+    public event Func<Task>? OnLogin;
     public AuthService(
         HttpClient http,
         MemoryTokenStore tokens,
         JwtTokenParser tokenParser,
-        AuthenticationStateProvider authStateProvider)
+        AuthenticationStateProvider authStateProvider,
+        ICurrentUserDataService currentUserDataService)
     {
         _http = http;
         _tokens = tokens;
         _tokenParser = tokenParser;
         _authStateProvider = authStateProvider;
+        _currentUserDataService = currentUserDataService;
     }
 
     // ---------------------------------------------
@@ -65,21 +69,22 @@ public class AuthService
 
         if (string.IsNullOrEmpty(login.Token))
             return (false, false, "Brak tokenu");
-
-        // Zapisujemy token *in memory*
+        
         SetTokenState(login.Token, login.ResponseUser);
 
+        OnLogin?.Invoke();
+        
         return (true, false, null);
     }
 
     private void SetTokenState(string token, ResponseUserLoginDto user)
     {
         _tokens.SetAccessToken(token);
-        _tokens.SetUser(user);
+        _currentUserDataService.SetUser(user);
 
         var activeRestaurant = _tokenParser.GetActiveRestaurantFromToken(token);
         if (!string.IsNullOrEmpty(activeRestaurant))
-            _tokens.SetActiveRestaurant(activeRestaurant);
+            _currentUserDataService.SetActiveRestaurant(activeRestaurant);
 
         if (_authStateProvider is JwtAuthenticationStateProvider jwt)
             jwt.NotifyUserAuthentication(token);
@@ -118,6 +123,7 @@ public class AuthService
     public async Task LogoutAsync()
     {
         _tokens.Clear();
+        await _currentUserDataService.Clear();
         _http.DefaultRequestHeaders.Authorization = null;
 
         if (_authStateProvider is JwtAuthenticationStateProvider jwt)
@@ -158,5 +164,5 @@ public class AuthService
         return true;
     }
 
-    public ResponseUserLoginDto? GetCurrentUserAsync() => _tokens.GetUser();
+    public async Task<ResponseUserLoginDto?> GetCurrentUserAsync() => await _currentUserDataService.GetUser();
 }

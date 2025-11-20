@@ -38,6 +38,7 @@ builder.Services.AddScoped(sp =>
     };
 });
 
+builder.Services.AddScoped<ICurrentUserDataService, CurrentUserDataService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantServie>();
@@ -46,7 +47,6 @@ builder.Services.AddScoped<PermissionService>();
 
 var host = builder.Build();
 
-// ✅ Spróbuj odświeżyć token przy starcie - w scope!
 try
 {
     using (var scope = host.Services.CreateScope())
@@ -56,17 +56,17 @@ try
         
         if (refreshed)
         {
-            Console.WriteLine("✅ Token odświeżony przy starcie aplikacji");
+            Console.WriteLine(" Token odświeżony przy starcie aplikacji");
         }
         else
         {
-            Console.WriteLine("⚠️ Brak refresh tokena lub wygasł");
+            Console.WriteLine("️ Brak refresh tokena lub wygasł");
         }
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"❌ Błąd przy refresh tokena: {ex.Message}");
+    Console.WriteLine($" Błąd przy refresh tokena: {ex.Message}");
 }
 
 await host.RunAsync();

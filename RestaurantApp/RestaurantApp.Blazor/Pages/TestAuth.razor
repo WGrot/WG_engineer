@@ -1,10 +1,12 @@
 ﻿@page "/TestAuth"
 @using RestaurantApp.Blazor.Models.DTO
+@using RestaurantApp.Blazor.Services.Interfaces
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Users
 @using Services
 @inject HttpClient Http
 @inject AuthService AuthService
+@inject ICurrentUserDataService userDataService
 
 <h3>Test Autoryzacji</h3>
 
@@ -40,7 +42,7 @@ else
         _isAuthenticated = await AuthService.IsAuthenticatedAsync();
         if (_isAuthenticated)
         {
-            _currentUser = AuthService.GetCurrentUserAsync();
+            _currentUser = await userDataService.GetUser();
         }
     }
 

@@ -20,6 +20,8 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     
     [Inject] private MemoryTokenStore TokenStorageService { get; set; } = null!;
+    
+    [Inject] private ICurrentUserDataService userDataService { get; set; } = default!;
     [Inject] private IRestaurantService RestaurantService { get; set; } = default!;
     
     public RestaurantDto? loadedRestaurant { get; set; }
@@ -43,7 +45,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
     protected override async Task OnInitializedAsync()
     {
         await LoadDashboardData();
-        //TokenStorageService.OnActiveResturantChanged +=  LoadDashboardData;
+        userDataService.OnActiveRestaurantChanged +=  LoadDashboardData;
     }
     
     private async Task LoadDashboardData()
@@ -51,7 +53,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
         isLoading = true;
         await LoadUserData();
         await LoadRestaurantEmployeeData();
-        int.TryParse(TokenStorageService.GetActiveRestaurant(), out int restaurantId);
+        int.TryParse(await userDataService.GetActiveRestaurant(), out int restaurantId);
         await LoadRestaurantData(restaurantId);
         await LoadDashboardStatistics();
         userRestaurantNames = await RestaurantService.GetRestaurantNames();
@@ -120,7 +122,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
             RestaurantId = restaurantId
         };
         
-        TokenStorageService.SetActiveRestaurant(restaurantId.ToString());
+        userDataService.SetActiveRestaurant(restaurantId.ToString());
         await LoadRestaurantData(restaurantId);
         await LoadDashboardStatistics();
         StateHasChanged();
@@ -147,7 +149,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
     
     public void Dispose()
     {
-        //TokenStorageService.OnActiveResturantChanged -=  LoadDashboardData;
+        userDataService.OnActiveRestaurantChanged -=  LoadDashboardData;
     }
 
 }

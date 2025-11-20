@@ -4,12 +4,14 @@
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Auth.TwoFactor
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Services.Interfaces
 @using RestaurantApp.Shared.Common
 @using RestaurantApp.Shared.DTOs.Auth
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
 @inject NotificationService NotificationService
+@inject ICurrentUserDataService userDataService
 
 <div class="container">
     <div class="row">
@@ -208,7 +210,7 @@
         {
             currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
-        userResponse = Auth.GetCurrentUserAsync();
+        userResponse = await userDataService.GetUser();
         is2FAEnabled = userResponse.TwoFactorEnabled;
         isEmailVerified = userResponse.EmailVerified;
 

@@ -5,11 +5,11 @@ namespace RestaurantApp.Blazor.Services;
 
 public class JwtTokenParser
 {
-    private readonly MemoryTokenStore _tokenStorageService;
+    private readonly MemoryTokenStore _memoryTokenStore;
 
-    public JwtTokenParser(MemoryTokenStore tokenStorageService)
+    public JwtTokenParser(MemoryTokenStore memoryTokenStore)
     {
-        _tokenStorageService = tokenStorageService;
+        _memoryTokenStore = memoryTokenStore;
     }
     public IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
@@ -106,7 +106,7 @@ public class JwtTokenParser
     {
         try
         {
-            var token = _tokenStorageService.GetAccessToken();
+            var token = _memoryTokenStore.GetAccessToken();
             if (token == null)
             {
                 return new List<string>();

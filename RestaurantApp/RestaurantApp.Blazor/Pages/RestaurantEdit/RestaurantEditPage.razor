@@ -4,10 +4,12 @@
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
+@using RestaurantApp.Blazor.Services.Interfaces
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject MemoryTokenStore TokenStorageService
+@inject ICurrentUserDataService userDataService
 
 <div class="edit-container">
 
@@ -125,7 +127,7 @@
     {
         try
         {
-            Id = int.Parse(TokenStorageService.GetActiveRestaurant());
+            Id = int.Parse(await userDataService.GetActiveRestaurant());
             restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{Id}");
         }
         catch (Exception ex)

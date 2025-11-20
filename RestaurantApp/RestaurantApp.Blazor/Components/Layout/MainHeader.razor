@@ -8,6 +8,7 @@
 @inject PermissionService PermissionService
 @inject MemoryTokenStore TokenStorageService
 @inject NotificationService NotificationService
+@inject ICurrentUserDataService userDataService
 
 @inject IRestaurantService RestaurantService
 @implements IDisposable
@@ -230,13 +231,14 @@
         await CheckAuthenticationStatus();
 
         userRestaurantNames = await RestaurantService.GetRestaurantNames();
-        string activeRestaurantIdString = TokenStorageService.GetActiveRestaurant();
+        string activeRestaurantIdString = await userDataService.GetActiveRestaurant();
         activeRestaurantName = userRestaurantNames.FirstOrDefault(r => r.Id.ToString() == activeRestaurantIdString).Name ?? "No restaurant selected";
 
         
         NotificationService.OnChange += StateHasChanged;
         AuthService.OnLogout += HandleOnLogOutEvent;
-        //TokenStorageService +=  ChangeActiveRestaurantDisplayName;
+        AuthService.OnLogin += CheckAuthenticationStatus;
+        userDataService.OnActiveRestaurantChanged += ChangeActiveRestaurantDisplayName;
         _refreshTimer = new Timer(async _ =>
         {
             await InvokeAsync(async () =>
@@ -254,9 +256,9 @@
             _isAuthenticated = await AuthService.IsAuthenticatedAsync();
             if (_isAuthenticated)
             {
-                _currentUser = AuthService.GetCurrentUserAsync();
+                _currentUser = await userDataService.GetUser();
                 isEmployee = await PermissionService.IsEmployeeAsync();
-                string activeRestaurantIdString = TokenStorageService.GetActiveRestaurant();
+                string activeRestaurantIdString = await userDataService.GetActiveRestaurant();
                 if (!string.IsNullOrEmpty(activeRestaurantIdString))
                 {
                     int activeRestaurantId = int.Parse(activeRestaurantIdString);
@@ -340,7 +342,7 @@
     {
         CloseMenu();
 
-        var restaurantId = TokenStorageService.GetActiveRestaurant();
+        var restaurantId = await userDataService.GetActiveRestaurant();
 
         Navigation.NavigateTo($"/restaurant/edit/{restaurantId}");
     }
@@ -349,7 +351,7 @@
     {
         CloseMenu();
 
-        var restaurantId = TokenStorageService.GetActiveRestaurant();
+        var restaurantId = await userDataService.GetActiveRestaurant();
 
         Navigation.NavigateTo($"/restaurant/{restaurantId}");
     }
@@ -359,7 +361,8 @@
         _refreshTimer?.Dispose();
         NotificationService.OnChange -= StateHasChanged;
         AuthService.OnLogout -= HandleOnLogOutEvent;
-        //TokenStorageService.OnActiveResturantChanged -=  ChangeActiveRestaurantDisplayName;
+        userDataService.OnActiveRestaurantChanged -=  ChangeActiveRestaurantDisplayName;
+        AuthService.OnLogin -= CheckAuthenticationStatus;
     }
     private void ToggleNotifications()
     {
@@ -369,14 +372,14 @@
 
     private async Task SwitchActiveRestaurant(int id)
     {
-        TokenStorageService.SetActiveRestaurant(id.ToString());
+        await userDataService.SetActiveRestaurant(id.ToString());
         activeRestaurantName = userRestaurantNames.FirstOrDefault(n => n.Id == id).Name ?? "No restaurant selected";
         StateHasChanged();
     }
     
     private async Task ChangeActiveRestaurantDisplayName()
     {
-        string activeRestaurantIdString = TokenStorageService.GetActiveRestaurant();
+        string activeRestaurantIdString = await userDataService.GetActiveRestaurant();
         activeRestaurantName = userRestaurantNames.FirstOrDefault(r => r.Id.ToString() == activeRestaurantIdString).Name ?? "No restaurant selected";
         StateHasChanged();
     }

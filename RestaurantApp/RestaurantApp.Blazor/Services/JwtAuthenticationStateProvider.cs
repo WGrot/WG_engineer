@@ -62,7 +62,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         }
         catch
         {
-            // W razie błędu, powiadom o stanie niezalogowanym
             NotifyUserLogout();
         }
     }

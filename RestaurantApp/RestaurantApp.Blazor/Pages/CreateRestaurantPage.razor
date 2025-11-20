@@ -1,10 +1,12 @@
 ﻿@page "/CreateRestaurant"
 @using Microsoft.AspNetCore.Components.Authorization
 @using RestaurantApp.Blazor.Services
+@using RestaurantApp.Blazor.Services.Interfaces
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject HttpClient Http
+@inject ICurrentUserDataService userDataService
 
 <AuthorizeView>
     <Authorized>
@@ -58,7 +60,7 @@
     
     private async Task CreateRestaurant()
     {
-        var currentUser = AuthService.GetCurrentUserAsync();
+        var currentUser = await AuthService.GetCurrentUserAsync();
         var restaurantDto = new CreateRestaurantDto
         {
             Name = restaurantName,
