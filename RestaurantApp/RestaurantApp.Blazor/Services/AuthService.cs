@@ -113,7 +113,7 @@ public class AuthService
 
         if (_authStateProvider is JwtAuthenticationStateProvider jwt)
             jwt.NotifyUserAuthentication(data.Token);
-
+        Console.WriteLine("token refresher");
         return true;
     }
 

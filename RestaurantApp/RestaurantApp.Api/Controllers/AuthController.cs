@@ -43,27 +43,29 @@ public class AuthController : ControllerBase
     {
         var loginRes = await _authService.LoginAsync(request);
         if (loginRes.IsFailure)
-            return StatusCode(loginRes.StatusCode , loginRes.Error);
+            return StatusCode(loginRes.StatusCode, loginRes.Error);
 
         var data = loginRes.Value!;
-        // data.RefreshToken nie null (ustawiliśmy wcześniej w AuthService)
+        
+        if (data.RequiresTwoFactor)
+        {
+            return loginRes.ToActionResult();
+        }
+        
         var refreshToken = data.RefreshToken;
         var refreshExpiresAt = data.RefreshExpiresAt;
 
-        // Ustaw cookie HttpOnly z refresh tokenem
         var cookieName = _configuration["JwtConfig:RefreshCookieName"] ?? "refreshToken";
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = !_configuration.GetValue<bool>("Kestrel:AllowInsecureCookies"), // false w prod nie powinno występować
+            Secure = !_configuration.GetValue<bool>("Kestrel:AllowInsecureCookies"),
             SameSite = SameSiteMode.Lax,
             Expires = refreshExpiresAt,
             Path = "/",
-            // Domain = "example.com" // opcjonalnie
         };
         Response.Cookies.Append(cookieName, refreshToken, cookieOptions);
 
-        // zwracamy access token i profile usera (nie refresh token)
         return loginRes.ToActionResult();
     }
 
@@ -82,12 +84,10 @@ public class AuthController : ControllerBase
 
         if (!success)
         {
-            // Jeśli rotacja nie powiodła się -> usuń cookie i zwróć 401
             Response.Cookies.Delete(cookieName);
             return Unauthorized("Invalid refresh token");
         }
-
-        // ustaw nowy cookie (rotowany)
+        
         var refreshDays = int.Parse(_configuration["JwtConfig:RefreshTokenDays"] ?? "14");
         var newExpires = DateTime.UtcNow.AddDays(refreshDays);
         var cookieOptions = new CookieOptions
