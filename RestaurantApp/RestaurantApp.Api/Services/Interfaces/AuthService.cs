@@ -23,7 +23,8 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IUrlHelper _urlHelper;
     private readonly IEmailComposer _emailComposer;
-
+    private readonly ITokenService _tokenService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
@@ -33,7 +34,9 @@ public class AuthService : IAuthService
         IEmailService emailService,
         IConfiguration configuration,
         IUrlHelper urlHelper,
-        IEmailComposer emailComposer)
+        IEmailComposer emailComposer,
+        ITokenService tokenService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -43,6 +46,8 @@ public class AuthService : IAuthService
         _configuration = configuration;
         _urlHelper = urlHelper;
         _emailComposer = emailComposer;
+        _tokenService = tokenService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -79,86 +84,84 @@ public class AuthService : IAuthService
     }
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+{
+    var user = await _userManager.FindByEmailAsync(request.Email);
+    if (user == null)
+        return Result<LoginResponse>.Unauthorized("Incorrect email or password");
+
+    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+    if (!result.Succeeded)
+        return Result<LoginResponse>.Failure("Incorrect email or password", 401);
+
+    if (user.TwoFactorEnabled)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-
-        if (user == null)
+        if (string.IsNullOrEmpty(request.TwoFactorCode))
         {
-            return Result<LoginResponse>.Unauthorized($"Incorrect email or password");
-        }
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-
-        if (!result.Succeeded)
-        {
-            return Result<LoginResponse>.Failure("Incorrect email or password", 401);
-        }
-
-        if (user.TwoFactorEnabled)
-        {
-            if (string.IsNullOrEmpty(request.TwoFactorCode))
+            var responseWithout2FA = new LoginResponse
             {
-                var responseWithout2FA = new LoginResponse
+                RequiresTwoFactor = true,
+                ResponseUser = new ResponseUserLoginDto
                 {
-                    RequiresTwoFactor = true,
-                    ResponseUser = new ResponseUserLoginDto()
-                    {
-                        Id = user.Id,
-                        Email = user.Email,
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        TwoFactorEnabled = user.TwoFactorEnabled,
-                        EmailVerified = user.EmailConfirmed
-                    }
-                };
-                return Result<LoginResponse>.Success(responseWithout2FA);
-            }
-
-            // Sprawdź blokadę konta
-            if (await _userManager.IsLockedOutAsync(user))
-            {
-                return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
-            }
-
-            if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
-            {
-                return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
-            }
-
-            bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.TwoFactorCode);
-
-            if (!isValid)
-            {
-                await _userManager.AccessFailedAsync(user);
-
-                return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
-            }
-            
-            await _userManager.ResetAccessFailedCountAsync(user);
+                    Id = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    TwoFactorEnabled = user.TwoFactorEnabled,
+                    EmailVerified = user.EmailConfirmed
+                }
+            };
+            return Result<LoginResponse>.Success(responseWithout2FA);
         }
 
-        var token = await _jwtService.GenerateJwtTokenAsync(user, user.TwoFactorEnabled);
+        if (await _userManager.IsLockedOutAsync(user))
+            return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
 
-        var response = new LoginResponse
+        if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
+            return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
+
+        bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.TwoFactorCode);
+        if (!isValid)
         {
-            Token = token,
-            RequiresTwoFactor = false,
-            ResponseUser = new ResponseUserLoginDto()
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                TwoFactorEnabled = user.TwoFactorEnabled,
-                EmailVerified = user.EmailConfirmed
-            }
-        };
+            await _userManager.AccessFailedAsync(user);
+            return Result<LoginResponse>.Unauthorized("Invalid 2FA code");
+        }
 
-        return Result<LoginResponse>.Success(response);
+        await _userManager.ResetAccessFailedCountAsync(user);
     }
 
-    public async Task<Result> LogoutAsync()
+    // Generujemy access + refresh (ale refresh token wyłącznie jako string — cookie ustawi kontroler)
+    var ip = _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+    var (accessToken, refreshToken, refreshExpiresAt) = await _tokenService.GenerateTokensAsync(user, user.TwoFactorEnabled, ip);
+
+    var response = new LoginResponse
     {
+        Token = accessToken,
+        // nie przechowujemy refresh w serwisie; controller ustawi cookie
+        RequiresTwoFactor = false,
+        ResponseUser = new ResponseUserLoginDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            TwoFactorEnabled = user.TwoFactorEnabled,
+            EmailVerified = user.EmailConfirmed
+        },
+        // dodatkowe pola dla convenience
+        RefreshToken = refreshToken,
+        RefreshExpiresAt = refreshExpiresAt
+    };
+
+    return Result<LoginResponse>.Success(response);
+}
+
+    public async Task<Result> LogoutAsync(string? presentedRefreshToken)
+    {
+        if (!string.IsNullOrEmpty(presentedRefreshToken))
+        {
+            var ip = _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+            await _tokenService.RevokeRefreshTokenAsync(presentedRefreshToken, ip, "logout");
+        }
         await _signInManager.SignOutAsync();
         return Result.Success();
     }

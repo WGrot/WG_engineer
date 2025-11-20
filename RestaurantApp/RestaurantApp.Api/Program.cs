@@ -90,6 +90,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IEmailComposer, EmailComposer>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();

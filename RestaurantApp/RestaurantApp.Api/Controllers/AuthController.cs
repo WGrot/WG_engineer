@@ -15,14 +15,15 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IConfiguration _configuration;
-
+    private readonly ITokenService _tokenService;
     public AuthController(
         IAuthService authService,
         IEmailService emailService,
-        IConfiguration configuration)
+        IConfiguration configuration, ITokenService tokenService)
     {
         _authService = authService;
         _configuration = configuration;
+        _tokenService = tokenService;
     }
 
     [HttpPost("register")]
@@ -38,13 +39,71 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        var loginRes = await _authService.LoginAsync(request);
+        if (loginRes.IsFailure)
+            return StatusCode(loginRes.StatusCode , loginRes.Error);
 
-        var result = await _authService.LoginAsync(request);
-        return result.ToActionResult();
+        var data = loginRes.Value!;
+        // data.RefreshToken nie null (ustawiliśmy wcześniej w AuthService)
+        var refreshToken = data.RefreshToken;
+        var refreshExpiresAt = data.RefreshExpiresAt;
+
+        // Ustaw cookie HttpOnly z refresh tokenem
+        var cookieName = _configuration["JwtConfig:RefreshCookieName"] ?? "refreshToken";
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = !_configuration.GetValue<bool>("Kestrel:AllowInsecureCookies"), // false w prod nie powinno występować
+            SameSite = SameSiteMode.Lax,
+            Expires = refreshExpiresAt,
+            Path = "/",
+            // Domain = "example.com" // opcjonalnie
+        };
+        Response.Cookies.Append(cookieName, refreshToken, cookieOptions);
+
+        // zwracamy access token i profile usera (nie refresh token)
+        return Ok(new {
+            accessToken = data.Token,
+            user = data.ResponseUser
+        });
     }
 
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var cookieName = _configuration["JwtConfig:RefreshCookieName"] ?? "refreshToken";
+        if (!Request.Cookies.TryGetValue(cookieName, out var presentedRefreshToken) || string.IsNullOrEmpty(presentedRefreshToken))
+        {
+            return Unauthorized("Refresh token not found");
+        }
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var (success, newAccess, newRefresh) = await _tokenService.ValidateAndRotateRefreshTokenAsync(presentedRefreshToken, ip);
+
+        if (!success)
+        {
+            // Jeśli rotacja nie powiodła się -> usuń cookie i zwróć 401
+            Response.Cookies.Delete(cookieName);
+            return Unauthorized("Invalid refresh token");
+        }
+
+        // ustaw nowy cookie (rotowany)
+        var refreshDays = int.Parse(_configuration["JwtConfig:RefreshTokenDays"] ?? "14");
+        var newExpires = DateTime.UtcNow.AddDays(refreshDays);
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = !_configuration.GetValue<bool>("Kestrel:AllowInsecureCookies"),
+            SameSite = SameSiteMode.Lax,
+            Expires = newExpires,
+            Path = "/"
+        };
+        Response.Cookies.Append(cookieName, newRefresh!, cookieOptions);
+
+        return Ok(new { accessToken = newAccess });
+    }
+    
     [HttpGet("confirm-email")]
     [AllowAnonymous]
     public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
@@ -64,8 +123,18 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        var result = await _authService.LogoutAsync();
-        return result.ToActionResult();
+        var cookieName = _configuration["JwtConfig:RefreshCookieName"] ?? "refreshToken";
+        string? presentedRefreshToken = null;
+        if (Request.Cookies.TryGetValue(cookieName, out var cookieVal))
+            presentedRefreshToken = cookieVal;
+
+        // Revoke token server-side
+        await _authService.LogoutAsync(presentedRefreshToken);
+
+        // Usuń cookie u klienta
+        Response.Cookies.Delete(cookieName);
+
+        return Ok();
     }
 
 

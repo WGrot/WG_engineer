@@ -10,7 +10,7 @@ public interface IAuthService
 {
     Task<Result> RegisterAsync(RegisterRequest request);
     Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
-    Task<Result> LogoutAsync();
+    Task<Result> LogoutAsync(string? presentedRefreshToken);
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
     //Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
