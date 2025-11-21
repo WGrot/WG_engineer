@@ -79,9 +79,8 @@ public class EmployeeService : IEmployeeService
         {
             var user = await _context.Users.FindAsync(employee.UserId);
             if (user == null)
-                return Result.Failure<IEnumerable<RestaurantEmployeeDto>>(
-                    $"User with ID {employee.UserId} not found", 404
-                );
+                continue;
+                
     
             var dto = new RestaurantEmployeeDto
             {
