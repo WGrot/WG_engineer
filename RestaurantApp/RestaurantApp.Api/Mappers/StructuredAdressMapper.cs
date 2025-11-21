@@ -26,4 +26,22 @@ public static class StructuredAdressMapper
             Country = structuredAddress.Country
         };
     }
+
+    public static GeoLocationDto ToDto(this GeoLocation geoLocation)
+    {
+        return new GeoLocationDto
+        {
+            Latitude = geoLocation.Latitude,
+            Longitude = geoLocation.Longitude
+        };
+    }
+    
+    public static GeoLocation ToEntity(this GeoLocationDto dto)
+    {
+        return new GeoLocation()
+        {
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude
+        };
+    }
 }
