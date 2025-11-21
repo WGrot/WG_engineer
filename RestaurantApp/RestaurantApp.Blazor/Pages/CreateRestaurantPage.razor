@@ -21,29 +21,29 @@
                 <h3 class="text-center">Restaurant name</h3>
                 <div class="mb-3 text-start">
                     <label for="restaurantName" class="form-label">Restaurant Name</label>
-                    <input type="text" class="form-control" id="restaurantName" @bind="restaurantName" placeholder="Enter restaurant name" required>
+                    <input type="text" class="form-control" id="restaurantName" @bind="restaurantName" placeholder="Enter restaurant name">
                 </div>
 
                 <h3 class="text-center">Restaurant Address data</h3>
 
                 <div class="mb-3 text-start">
                     <label for="street" class="form-label">Street</label>
-                    <input type="text" class="form-control" id="street" @bind="addressDto.Street" placeholder="Enter restaurant address" required>
+                    <input type="text" class="form-control" id="street" @bind="addressDto.Street" placeholder="Enter restaurant address">
                 </div>
 
                 <div class="mb-3 text-start">
                     <label for="city" class="form-label">City</label>
-                    <input type="text" class="form-control" id="city" @bind="addressDto.City" placeholder="Enter restaurant address" required>
+                    <input type="text" class="form-control" id="city" @bind="addressDto.City" placeholder="Enter restaurant address">
                 </div>
 
                 <div class="mb-3 text-start">
                     <label for="postal" class="form-label">Postal Code</label>
-                    <input type="text" class="form-control" id="postal" @bind="addressDto.PostalCode" placeholder="Enter restaurant address" required>
+                    <input type="text" class="form-control" id="postal" @bind="addressDto.PostalCode" placeholder="Enter restaurant address">
                 </div>
 
                 <div class="mb-3 text-start">
                     <label for="country" class="form-label">Country</label>
-                    <input type="text" class="form-control" id="country" @bind="addressDto.Country" placeholder="Enter restaurant address" required>
+                    <input type="text" class="form-control" id="country" @bind="addressDto.Country" placeholder="Enter restaurant address">
                 </div>
 
                 @if (!string.IsNullOrEmpty(errorMessage))
