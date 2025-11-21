@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Shared.Models;
+﻿using NetTopologySuite.Geometries;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Domain.Models;
 
@@ -10,6 +11,7 @@ public class Restaurant
     
     public StructuredAddress? StructuredAddress { get; set; }
     public GeoLocation? Location { get; set; }
+    public Point? LocationPoint { get; set; }
     
     public Menu? Menu { get; set; }
 

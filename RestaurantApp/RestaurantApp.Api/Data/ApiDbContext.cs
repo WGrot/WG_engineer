@@ -190,6 +190,13 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
                 loc.HasIndex(l => new { l.Latitude, l.Longitude })
                     .HasDatabaseName("IX_Restaurant_Location");
             });
+
+            entity.Property(r => r.LocationPoint)
+                .HasColumnName("LocationPoint")
+                .HasColumnType("geography(POINT,4326)");
+                
+            entity.HasIndex(r => r.LocationPoint)
+                .HasMethod("GIST"); 
         });
     }
 }

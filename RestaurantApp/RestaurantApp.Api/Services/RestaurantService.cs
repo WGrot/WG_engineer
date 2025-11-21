@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Mappers;
@@ -26,7 +27,8 @@ public class RestaurantService : IRestaurantService
     private readonly IEmailComposer _emailComposer;
     private readonly IGeocodingService _geocodingService;
 
-    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService, IEmailComposer emailComposer, IGeocodingService geocodingService)
+    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService,
+        IEmailComposer emailComposer, IGeocodingService geocodingService)
     {
         _context = context;
         _logger = logger;
@@ -89,7 +91,7 @@ public class RestaurantService : IRestaurantService
             "name_descending" => query.OrderByDescending(r => r.Name),
             "worst" => query.OrderBy(r => r.AverageRating),
             "best" => query.OrderByDescending(r => r.AverageRating),
-            _ => query.OrderBy(r => r.Name) 
+            _ => query.OrderBy(r => r.Name)
         };
 
         var totalCount = await query.CountAsync();
@@ -102,7 +104,7 @@ public class RestaurantService : IRestaurantService
 
         var result = new PaginatedRestaurantsDto
         {
-            Restaurants = restaurants.ToDtoList(), 
+            Restaurants = restaurants.ToDtoList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -217,7 +219,7 @@ public class RestaurantService : IRestaurantService
 
         _context.Restaurants.Add(restaurant);
         await _context.SaveChangesAsync();
-        
+
 
         return Result<Restaurant>.Success(restaurant.ToDto());
     }
@@ -228,7 +230,7 @@ public class RestaurantService : IRestaurantService
 
         var validationResult = await ValidateRestaurantUniquenessAsync(dto.Name, dto.Address);
         if (validationResult.IsFailure) return Result<RestaurantDto>.Failure(validationResult.Error);
-        
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -237,39 +239,39 @@ public class RestaurantService : IRestaurantService
             if (dto.StructuresAddress != null)
             {
                 if (!string.IsNullOrEmpty(dto.StructuresAddress.City) &&
-                    !string.IsNullOrEmpty(dto.StructuresAddress.Street)&&
-                    !string.IsNullOrEmpty(dto.StructuresAddress.PostalCode)&&
+                    !string.IsNullOrEmpty(dto.StructuresAddress.Street) &&
+                    !string.IsNullOrEmpty(dto.StructuresAddress.PostalCode) &&
                     !string.IsNullOrEmpty(dto.StructuresAddress.Country))
                 {
-                restaurant.StructuredAddress = dto.StructuresAddress.ToEntity();
-                restaurant.Address = dto.StructuresAddress.ToEntity().ToCombinedString();
+                    restaurant.StructuredAddress = dto.StructuresAddress.ToEntity();
+                    restaurant.Address = dto.StructuresAddress.ToEntity().ToCombinedString();
                 }
             }
 
             InitializedOpeningHours(restaurant);
             _context.Restaurants.Add(restaurant);
             await _context.SaveChangesAsync();
-                
+
             var ownerEmployee = new RestaurantEmployee
             {
                 UserId = dto.OwnerId,
                 RestaurantId = restaurant.Id,
                 Role = RestaurantRole.Owner,
-                CreatedAt = DateTime.UtcNow, 
+                CreatedAt = DateTime.UtcNow,
                 IsActive = true,
             };
             _context.Add(ownerEmployee);
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
 
             await AssignAllPermissionsToEmployeeAsync(ownerEmployee.Id);
-            
+
             var settings = new RestaurantSettings { RestaurantId = restaurant.Id, ReservationsNeedConfirmation = true };
             _context.RestaurantSettings.Add(settings);
 
             await _context.SaveChangesAsync();
 
             await GeocodeRestaurant(restaurant);
-            
+
             // Zatwierdź transakcję
             await transaction.CommitAsync();
 
@@ -285,7 +287,7 @@ public class RestaurantService : IRestaurantService
             return Result<RestaurantDto>.Failure("Could not create restaurant due to an internal error.");
         }
     }
-    
+
     private async Task AssignAllPermissionsToEmployeeAsync(int employeeId)
     {
         var permissions = Enum.GetValues(typeof(PermissionType))
@@ -295,7 +297,7 @@ public class RestaurantService : IRestaurantService
                 RestaurantEmployeeId = employeeId,
                 Permission = p
             });
-        
+
         await _context.RestaurantPermissions.AddRangeAsync(permissions);
     }
 
@@ -408,7 +410,7 @@ public class RestaurantService : IRestaurantService
         {
             return Result.NotFound($"Restaurant with ID {id} not found.");
         }
-        
+
         restaurant.StructuredAddress = dto.ToEntity();
 
         await GeocodeRestaurant(restaurant);
@@ -456,7 +458,7 @@ public class RestaurantService : IRestaurantService
     {
         if (restaurant.StructuredAddress != null)
         {
-            if (!string.IsNullOrEmpty(restaurant.StructuredAddress.Street) && 
+            if (!string.IsNullOrEmpty(restaurant.StructuredAddress.Street) &&
                 !string.IsNullOrEmpty(restaurant.StructuredAddress.City))
             {
                 // Structured geocoding - lepsze wyniki
@@ -469,8 +471,8 @@ public class RestaurantService : IRestaurantService
                 restaurant.Location = new GeoLocation();
                 restaurant.Location.Latitude = (double)lat;
                 restaurant.Location.Longitude = (double)lon;
+                restaurant.LocationPoint = new Point((double)lon, (double)lat) { SRID = 4326 };
             }
-            
         }
         else if (!string.IsNullOrEmpty(restaurant.Address))
         {
@@ -480,7 +482,7 @@ public class RestaurantService : IRestaurantService
             restaurant.Location.Latitude = (double)lat;
             restaurant.Location.Longitude = (double)lon;
         }
-    
+
         _context.Restaurants.Update(restaurant);
         await _context.SaveChangesAsync();
     }
@@ -543,5 +545,135 @@ public class RestaurantService : IRestaurantService
             restaurant.OpeningHours ??= new List<OpeningHours>();
             restaurant.OpeningHours.Add(hours);
         }
+    }
+
+
+    public async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsAsync(
+        double userLatitude,
+        double userLongitude,
+        double radiusKm = 10)
+    {
+        try
+        {
+            // Spróbuj użyć PostGIS jeśli dane są dostępne
+            return await GetNearbyRestaurantsWithPostGISAsync(userLatitude, userLongitude, radiusKm);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "PostGIS query failed, falling back to standard method");
+            // Fallback do starej metody jeśli PostGIS nie działa
+            return await GetNearbyRestaurantsStandardAsync(userLatitude, userLongitude, radiusKm);
+        }
+    }
+
+    private async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsWithPostGISAsync(
+        double userLatitude,
+        double userLongitude,
+        double radiusKm = 10)
+    {
+        var radiusMeters = radiusKm * 1000;
+        var userPoint = new Point(userLongitude, userLatitude) { SRID = 4326 };
+
+        // Pobierz dane z bazy (bez wyciągania Y i X w SQL)
+        var nearbyRestaurants = await _context.Restaurants
+            .Where(r => r.LocationPoint != null && 
+                        r.LocationPoint.IsWithinDistance(userPoint, radiusMeters))
+            .Select(r => new 
+            {
+                r.Id,
+                r.Name,
+                r.Address,
+                r.LocationPoint, // Pobierz cały Point
+                Distance = r.LocationPoint.Distance(userPoint) / 1000
+            })
+            .OrderBy(r => r.Distance)
+            .ToListAsync();
+
+        // Wyciągnij współrzędne po stronie klienta
+        var result = nearbyRestaurants.Select(r => new NearbyRestaurantDto
+        {
+            Id = r.Id,
+            Name = r.Name,
+            Address = r.Address,
+            Distance = Math.Round(r.Distance, 2),
+            Latitude = r.LocationPoint.Y,  // Teraz działa, bo to C#
+            Longitude = r.LocationPoint.X  // Teraz działa, bo to C#
+        });
+
+        return Result<IEnumerable<NearbyRestaurantDto>>.Success(result);
+    }
+
+
+    public async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsStandardAsync(
+        double userLatitude,
+        double userLongitude,
+        double radiusKm = 10)
+    {
+        // Get all restaurants with location data
+        var restaurants = await _context.Restaurants
+            .Where(r => r.Location != null)
+            .Select(r => new
+            {
+                r.Id,
+                r.Name,
+                r.Address,
+                Latitude = r.Location.Latitude,
+                Longitude = r.Location.Longitude
+            })
+            .ToListAsync();
+
+        var nearbyRestaurants = new List<NearbyRestaurantDto>();
+
+        foreach (var restaurant in restaurants)
+        {
+            // Calculate distance using Haversine formula
+            var distance = CalculateDistance(
+                userLatitude,
+                userLongitude,
+                restaurant.Latitude,
+                restaurant.Longitude);
+
+            if (distance <= radiusKm)
+            {
+                nearbyRestaurants.Add(new NearbyRestaurantDto
+                {
+                    Id = restaurant.Id,
+                    Name = restaurant.Name,
+                    Address = restaurant.Address,
+                    Distance = Math.Round(distance, 2),
+                    Latitude = restaurant.Latitude,
+                    Longitude = restaurant.Longitude
+                });
+            }
+        }
+
+        // Sort by distance (closest first)
+        var sortedRestaurants = nearbyRestaurants
+            .OrderBy(r => r.Distance)
+            .ToList();
+
+        return Result<IEnumerable<NearbyRestaurantDto>>.Success(sortedRestaurants);
+    }
+
+// Helper method - Haversine formula for calculating distance
+    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371; // Earth's radius in kilometers
+
+        var dLat = ToRadians(lat2 - lat1);
+        var dLon = ToRadians(lon2 - lon1);
+
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        return R * c; // Distance in kilometers
+    }
+
+    private double ToRadians(double degrees)
+    {
+        return degrees * (Math.PI / 180);
     }
 }

@@ -31,4 +31,10 @@ public interface IRestaurantService
     
     Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId);
     Task<Result<List<RestaurantDto>>> GetRestaurantNames(List<int> ids);
+
+
+    Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsAsync(
+        double userLatitude,
+        double userLongitude,
+        double radiusKm = 10);
 }

@@ -183,4 +183,33 @@ public class RestaurantController : ControllerBase
         var result = await _restaurantService.GetRestaurantNames(ids);
         return result.ToActionResult();
     }
+    
+    [HttpGet("nearby")]
+    public async Task<IActionResult> GetNearbyRestaurants(
+        [FromQuery] double latitude,
+        [FromQuery] double longitude,
+        [FromQuery] double radius = 10)
+    {
+        if (latitude < -90 || latitude > 90)
+        {
+            return BadRequest("Invalid latitude. Must be between -90 and 90.");
+        }
+    
+        if (longitude < -180 || longitude > 180)
+        {
+            return BadRequest("Invalid longitude. Must be between -180 and 180.");
+        }
+    
+        if (radius <= 0 || radius > 100)
+        {
+            return BadRequest("Invalid radius. Must be between 0 and 100 km.");
+        }
+
+        var result = await _restaurantService.GetNearbyRestaurantsAsync(
+            latitude, 
+            longitude, 
+            radius);
+        
+        return result.ToActionResult();
+    }
 }

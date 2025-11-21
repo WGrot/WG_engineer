@@ -64,7 +64,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Default"),
+        o => o.UseNetTopologySuite()
+    ));
 
 builder.Services.Configure<StorageConfiguration>(
     builder.Configuration.GetSection("MinIO"));
