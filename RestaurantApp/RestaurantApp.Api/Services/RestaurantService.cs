@@ -23,13 +23,15 @@ public class RestaurantService : IRestaurantService
     private readonly ILogger<RestaurantService> _logger;
     private readonly IStorageService _storageService;
     private readonly IEmailComposer _emailComposer;
+    private readonly IGeocodingService _geocodingService;
 
-    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService, IEmailComposer emailComposer)
+    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService, IEmailComposer emailComposer, IGeocodingService geocodingService)
     {
         _context = context;
         _logger = logger;
         _storageService = storageService;
         _emailComposer = emailComposer;
+        _geocodingService = geocodingService;
     }
 
     public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
@@ -231,6 +233,18 @@ public class RestaurantService : IRestaurantService
         try
         {
             var restaurant = new Restaurant { Name = dto.Name, Address = dto.Address };
+            if (dto.StructuresAddress != null)
+            {
+                if (!string.IsNullOrEmpty(dto.StructuresAddress.City) &&
+                    !string.IsNullOrEmpty(dto.StructuresAddress.Street)&&
+                    !string.IsNullOrEmpty(dto.StructuresAddress.PostalCode)&&
+                    !string.IsNullOrEmpty(dto.StructuresAddress.Country))
+                {
+                restaurant.StructuredAddress = dto.StructuresAddress.ToEntity();
+                restaurant.Address = dto.StructuresAddress.ToEntity().ToCombinedString();
+                }
+            }
+
             InitializedOpeningHours(restaurant);
             _context.Restaurants.Add(restaurant);
             await _context.SaveChangesAsync();
@@ -252,7 +266,9 @@ public class RestaurantService : IRestaurantService
             _context.RestaurantSettings.Add(settings);
 
             await _context.SaveChangesAsync();
-        
+
+            await GeocodeRestaurant(restaurant);
+            
             // Zatwierdź transakcję
             await transaction.CommitAsync();
 
@@ -417,6 +433,39 @@ public class RestaurantService : IRestaurantService
 
         // Explicit tracking for EF Core
         await Task.CompletedTask;
+    }
+
+    private async Task GeocodeRestaurant(Restaurant restaurant)
+    {
+        if (restaurant.StructuredAddress != null)
+        {
+            if (!string.IsNullOrEmpty(restaurant.StructuredAddress.Street) && 
+                !string.IsNullOrEmpty(restaurant.StructuredAddress.City))
+            {
+                // Structured geocoding - lepsze wyniki
+                var (lat, lon) = await _geocodingService.GeocodeStructuredAsync(
+                    restaurant.StructuredAddress.Street,
+                    restaurant.StructuredAddress.City,
+                    restaurant.StructuredAddress.PostalCode ?? null,
+                    restaurant.StructuredAddress.Country ?? "Polska"
+                );
+                restaurant.Location = new GeoLocation();
+                restaurant.Location.Latitude = (double)lat;
+                restaurant.Location.Longitude = (double)lon;
+            }
+            
+        }
+        else if (!string.IsNullOrEmpty(restaurant.Address))
+        {
+            // Fallback do prostego geokodowania
+            var (lat, lon) = await _geocodingService.GeocodeAddressAsync(restaurant.Address);
+            restaurant.Location = new GeoLocation();
+            restaurant.Location.Latitude = (double)lat;
+            restaurant.Location.Longitude = (double)lon;
+        }
+    
+        _context.Restaurants.Update(restaurant);
+        await _context.SaveChangesAsync();
     }
 
 

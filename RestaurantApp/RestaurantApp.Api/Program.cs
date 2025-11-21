@@ -90,6 +90,12 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IEmailComposer, EmailComposer>();
+builder.Services.AddHttpClient<IGeocodingService, NominatimGeocodingService>(client =>
+{
+    client.BaseAddress = new Uri("https://nominatim.openstreetmap.org/");
+    client.DefaultRequestHeaders.Add("User-Agent", "RestaurantManagementApp/1.0");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();

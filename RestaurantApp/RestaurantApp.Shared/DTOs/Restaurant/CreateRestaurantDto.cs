@@ -1,8 +1,12 @@
-﻿namespace RestaurantApp.Shared.DTOs.Restaurant;
+﻿using RestaurantApp.Shared.DTOs.GeoCoding;
+
+namespace RestaurantApp.Shared.DTOs.Restaurant;
 
 public class CreateRestaurantDto
 {
     public string OwnerId { get; set; }= string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    
+    public StructuresAddressDto? StructuresAddress { get; set; } = new StructuresAddressDto();
 }

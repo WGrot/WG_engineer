@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Blazor.Services.Interfaces
+@using RestaurantApp.Shared.DTOs.GeoCoding
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject NavigationManager Navigation
 @inject AuthService AuthService
@@ -25,6 +26,26 @@
                 <div class="mb-3 text-start">
                     <label for="restaurantAddress" class="form-label">Restaurant Address</label>
                     <input type="text" class="form-control" id="restaurantAddress" @bind="restaurantAddress" placeholder="Enter restaurant address">
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label for="street" class="form-label">Street</label>
+                    <input type="text" class="form-control" id="street" @bind="addressDto.Street" placeholder="Enter restaurant address">
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" @bind="addressDto.City" placeholder="Enter restaurant address">
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label for="postal" class="form-label">Postal Code</label>
+                    <input type="text" class="form-control" id="postal" @bind="addressDto.PostalCode" placeholder="Enter restaurant address">
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label for="country" class="form-label">Country</label>
+                    <input type="text" class="form-control" id="country" @bind="addressDto.Country" placeholder="Enter restaurant address">
                 </div>
 
                 <button type="submit" class="button button--lg button--primary px-5 w-100" @onclick="CreateRestaurant">
@@ -51,6 +72,7 @@
     
     private string restaurantName = "";
     private string restaurantAddress = "";
+    private StructuresAddressDto addressDto = new StructuresAddressDto();
     
     void GoToLogin()
     {
@@ -65,7 +87,8 @@
         {
             Name = restaurantName,
             Address = restaurantAddress,
-            OwnerId = currentUser.Id
+            OwnerId = currentUser.Id,
+            StructuresAddress = addressDto
 
         };
 
