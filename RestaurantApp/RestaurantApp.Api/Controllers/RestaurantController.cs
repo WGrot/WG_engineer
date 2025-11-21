@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Models;
@@ -125,6 +126,13 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
         var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
+        return result.ToActionResult();
+    }
+    
+    [HttpPatch("{id}/structured-address")]
+    public async Task<IActionResult> UpdateStructuredAddress(int id, [FromBody] StructuresAddressDto newAddress)
+    {
+        var result = await _restaurantService.UpdateStructuredAddressAsync(id, newAddress);
         return result.ToActionResult();
     }
     

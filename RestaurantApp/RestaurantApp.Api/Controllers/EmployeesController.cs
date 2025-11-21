@@ -22,7 +22,6 @@ public class EmployeesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<IActionResult> GetAll([FromQuery] int? restaurantId, [FromQuery] string? userId)
     {
         if (restaurantId.HasValue)
@@ -44,18 +43,7 @@ public class EmployeesController : ControllerBase
         return (await _employeeService.GetAllAsync()).ToActionResult();
     }
 
-    // [HttpGet("{id}")]
-    //
-    // public async Task<IActionResult> GetById(int id, [FromQuery] int restaurantId)
-    // {
-    //     var authorizationResult = await _authorizationService.AuthorizeAsync(
-    //         User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
-    //
-    //     if (!authorizationResult.Succeeded)
-    //         return Forbid();
-    //     
-    //     return (await _employeeService.GetByIdAsync(id)).ToActionResult();
-    // }
+
 
 
     [HttpPost]

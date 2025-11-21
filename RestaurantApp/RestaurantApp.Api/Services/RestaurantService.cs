@@ -9,6 +9,7 @@ using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 using RestaurantApp.Shared.DTOs.Restaurant;
@@ -397,6 +398,22 @@ public class RestaurantService : IRestaurantService
         _context.Restaurants.Remove(restaurant);
         await _context.SaveChangesAsync();
 
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto)
+    {
+        var restaurant = _context.Restaurants.FirstOrDefault(r => r.Id == id);
+        if (restaurant == null)
+        {
+            return Result.NotFound($"Restaurant with ID {id} not found.");
+        }
+        
+        restaurant.StructuredAddress = dto.ToEntity();
+
+        await GeocodeRestaurant(restaurant);
+        restaurant.Address = dto.ToEntity().ToCombinedString();
+        await _context.SaveChangesAsync();
         return Result.Success();
     }
 

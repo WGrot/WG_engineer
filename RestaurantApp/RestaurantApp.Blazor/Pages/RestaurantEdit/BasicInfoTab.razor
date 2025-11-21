@@ -1,6 +1,7 @@
 ﻿@using RestaurantApp.Blazor.Extensions
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Shared.DTOs
+@using RestaurantApp.Shared.DTOs.GeoCoding
 @using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
@@ -17,7 +18,7 @@
 
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 h-100">
                             <label for="name" class="form-label">
                                 Restaurant name <span class="text-danger">*</span>
                             </label>
@@ -27,17 +28,65 @@
                                    @bind="modifiedRestaurant.Name"
                                    @bind:after="() => changesMade = true"
                                    required/>
+
+                            <label for="description" class="form-label">
+                                Restaurant description: <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                                class="form-control"
+                                id="description"
+                                rows="8"
+                                @bind="modifiedRestaurant.Description"
+                                @bind:after="() => changesMade = true">
+                        </textarea>
+
+
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">
-                                Restaurant Address: <span class="text-danger">*</span>
+                            @* <label for="address" class="form-label"> *@
+                            @*     Restaurant Address: <span class="text-danger">*</span> *@
+                            @* </label> *@
+                            @* <input class="form-control" *@
+                            @*        id="address" *@
+                            @*        @bind="modifiedRestaurant.Address" *@
+                            @*        @bind:after="() => changesMade = true" *@
+                            @*        required/> *@
+
+                            <label for="street" class="form-label">
+                                Street: <span class="text-danger">*</span>
                             </label>
-                            <input type="tel"
-                                   class="form-control"
-                                   id="address"
-                                   @bind="modifiedRestaurant.Address"
-                                   @bind:after="() => changesMade = true"
+                            <input class="form-control"
+                                   id="street"
+                                   @bind="modifiedRestaurant.StructuredAddress.Street"
+                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   required/>
+
+                            <label for="city" class="form-label">
+                                City: <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control"
+                                   id="city"
+                                   @bind="modifiedRestaurant.StructuredAddress.City"
+                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   required/>
+
+                            <label for="postal-code" class="form-label">
+                                Postal code: <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control"
+                                   id="postal-code"
+                                   @bind="modifiedRestaurant.StructuredAddress.PostalCode"
+                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   required/>
+
+                            <label for="country" class="form-label">
+                                Country: <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control"
+                                   id="country"
+                                   @bind="modifiedRestaurant.StructuredAddress.Country"
+                                   @bind:after="() => {changesMade = true; addressModified = true; }"
                                    required/>
                         </div>
 
@@ -48,16 +97,7 @@
                 </div>
 
                 <div class="col mb-3">
-                    <label for="description" class="form-label">
-                        Restaurant description: <span class="text-danger">*</span>
-                    </label>
-                    <textarea
-                            class="form-control"
-                            id="description"
-                            rows="4"
-                            @bind="modifiedRestaurant.Description"
-                            @bind:after="() => changesMade = true">
-                        </textarea>
+                   
                 </div>
 
                 @if (changesMade)
@@ -95,12 +135,17 @@ else
     [Parameter] public required RestaurantDto? restaurant { get; set; }
     private RestaurantDto modifiedRestaurant = new RestaurantDto();
     private bool changesMade = false;
+    private bool addressModified = false;
 
     protected override void OnParametersSet()
     {
         if (restaurant != null)
         {
             modifiedRestaurant = restaurant;
+            if (restaurant.StructuredAddress == null)
+            {
+                modifiedRestaurant.StructuredAddress = new StructuresAddressDto();
+            }
         }
     }
 
@@ -117,11 +162,17 @@ else
             {
                 Name = modifiedRestaurant.Name,
                 Address = modifiedRestaurant.Address,
-                Description = modifiedRestaurant.Description
+                Description = modifiedRestaurant.Description,
             };
             await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/basic-info", dto, "X-Restaurant-Id", Id.ToString());
 
+            if (addressModified)
+            {
+                var result = await Http.PatchAsJsonAsync($"api/restaurant/{Id}/structured-address", modifiedRestaurant.StructuredAddress);
+            }
+
             changesMade = false;
+            addressModified = false;
         }
         catch (Exception e)
         {

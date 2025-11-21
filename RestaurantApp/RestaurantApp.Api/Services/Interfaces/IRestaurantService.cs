@@ -2,6 +2,7 @@
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
+using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 using RestaurantApp.Shared.DTOs.Restaurant;
@@ -25,6 +26,8 @@ public interface IRestaurantService
     Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
     Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours);
     Task<Result> DeleteAsync(int id);
+    
+    Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto);
     
     Task<Result<RestaurantDashboardDataDto>> GetRestaurantDashboardData(int restaurantId);
     Task<Result<List<RestaurantDto>>> GetRestaurantNames(List<int> ids);
