@@ -154,5 +154,42 @@ public class ApiDbContext : IdentityDbContext<ApplicationUser>
             .WithOne(mi => mi.Menu)
             .HasForeignKey(mi => mi.MenuId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<Restaurant>(entity =>
+        {
+            entity.OwnsOne(r => r.StructuredAddress, sa =>
+            {
+                sa.Property(a => a.Street)
+                    .HasColumnName("StructuredAddress_Street")
+                    .HasMaxLength(200);
+                    
+                sa.Property(a => a.City)
+                    .HasColumnName("StructuredAddress_City")
+                    .HasMaxLength(100);
+                    
+                sa.Property(a => a.PostalCode)
+                    .HasColumnName("StructuredAddress_PostalCode")
+                    .HasMaxLength(20);
+                    
+                sa.Property(a => a.Country)
+                    .HasColumnName("StructuredAddress_Country")
+                    .HasMaxLength(100)
+                    .HasDefaultValue("Poland");
+            });
+            
+            entity.OwnsOne(r => r.Location, loc =>
+            {
+                loc.Property(l => l.Latitude)
+                    .HasColumnName("Location_Latitude")
+                    .HasPrecision(10, 7);
+                    
+                loc.Property(l => l.Longitude)
+                    .HasColumnName("Location_Longitude")
+                    .HasPrecision(10, 7);
+                
+                loc.HasIndex(l => new { l.Latitude, l.Longitude })
+                    .HasDatabaseName("IX_Restaurant_Location");
+            });
+        });
     }
 }

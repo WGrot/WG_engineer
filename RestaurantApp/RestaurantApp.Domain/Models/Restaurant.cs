@@ -8,6 +8,9 @@ public class Restaurant
     public string Name { get; set; }
     public string Address { get; set; }
     
+    public StructuredAddress? StructuredAddress { get; set; }
+    public GeoLocation? Location { get; set; }
+    
     public Menu? Menu { get; set; }
 
     public string? Description { get; set; }
@@ -24,13 +27,8 @@ public class Restaurant
     public List<string>? photosThumbnailsUrls { get; set; }
     
     public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
-    
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-    
-    // DODANE: Relacja do stołów
     public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
-    
-    // DODANE: Relacja do rezerwacji
     public virtual ICollection<ReservationBase> Reservations { get; set; } = new List<ReservationBase>();
     
     public double AverageRating { get; set; } = 0;
