@@ -325,14 +325,16 @@
         CloseMenu();
         await AuthService.LogoutAsync();
         _isAuthenticated = false;
+        isEmployee = false;
         _currentUser = null;
-        Navigation.NavigateTo("/"); // Force reload
+        Navigation.NavigateTo("/");
     }
 
     private void HandleOnLogOutEvent()
     {
         CloseMenu();
         _isAuthenticated = false;
+        isEmployee = false;
         userRestaurantNames.Clear();
         _currentUser = null;
         StateHasChanged();
