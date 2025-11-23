@@ -553,17 +553,20 @@ public class RestaurantService : IRestaurantService
         double userLongitude,
         double radiusKm = 10)
     {
-        try
-        {
-            // Spróbuj użyć PostGIS jeśli dane są dostępne
-            return await GetNearbyRestaurantsWithPostGISAsync(userLatitude, userLongitude, radiusKm);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "PostGIS query failed, falling back to standard method");
-            // Fallback do starej metody jeśli PostGIS nie działa
-            return await GetNearbyRestaurantsStandardAsync(userLatitude, userLongitude, radiusKm);
-        }
+        //TODO try to figure out why postgis not work as intended
+        // try
+        // {
+        //     // Spróbuj użyć PostGIS jeśli dane są dostępne
+        //     return await GetNearbyRestaurantsWithPostGISAsync(userLatitude, userLongitude, radiusKm);
+        // }
+        // catch (Exception ex)
+        // {
+        //     _logger.LogWarning(ex, "PostGIS query failed, falling back to standard method");
+        //     // Fallback do starej metody jeśli PostGIS nie działa
+        //     return await GetNearbyRestaurantsStandardAsync(userLatitude, userLongitude, radiusKm);
+        // }
+        
+        return await GetNearbyRestaurantsStandardAsync(userLatitude, userLongitude, radiusKm);
     }
 
     private async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsWithPostGISAsync(
@@ -609,7 +612,6 @@ public class RestaurantService : IRestaurantService
         double userLongitude,
         double radiusKm = 10)
     {
-        // Get all restaurants with location data
         var restaurants = await _context.Restaurants
             .Where(r => r.Location != null)
             .Select(r => new
@@ -646,8 +648,7 @@ public class RestaurantService : IRestaurantService
                 });
             }
         }
-
-        // Sort by distance (closest first)
+        
         var sortedRestaurants = nearbyRestaurants
             .OrderBy(r => r.Distance)
             .ToList();

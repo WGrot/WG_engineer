@@ -75,8 +75,8 @@ public partial class RestaurantInfoTab : ComponentBase
             new RealTimeMap.PointSymbol()
             {
                 radius = 15,
-                fillColor = "#ffffff",  // Czerwony kolor
-                color = "#3f2ae3",      // Biała obwódka
+                fillColor = "#ffffff",  
+                color = "#3f2ae3",      
                 weight = 3,
                 opacity = 1,
                 fillOpacity = 1

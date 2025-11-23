@@ -5,12 +5,14 @@ using RestaurantApp.Blazor;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Blazor.Services.Interfaces;
 
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddAuthorizationCore();
 
+builder.Services.AddGeolocationServices();
 // Singletony
 builder.Services.AddSingleton<MemoryTokenStore>();
 
