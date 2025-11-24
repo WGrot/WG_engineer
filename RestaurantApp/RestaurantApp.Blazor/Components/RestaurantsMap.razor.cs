@@ -13,15 +13,21 @@ public partial class RestaurantsMap : ComponentBase
     [Inject] private HttpClient Http { get; set; }
     private RealTimeMap? realTimeMap;
     private RealTimeMap.LoadParameters mapParameters = new();
-    
+
     private List<NearbyRestaurantDto> nearbyRestaurants = new();
+    private List<NearbyRestaurantDto> loadedRestaurents = new();
     private GeolocationPosition? position;
-    private string status = "Nie pobrano";
+    private string status = "Not ready";
+
+    private Timer? _mapMoveTimer;
+    private RealTimeMap.MapEventArgs? _lastMapArgs;
+
+    private bool _isRefreshingPoints = false;
+    private CancellationTokenSource? _panDebounceCts;
 
     protected override async Task OnInitializedAsync()
     {
         await GetLocation();
-        
     }
 
     private async Task GetLocation()
@@ -36,22 +42,23 @@ public partial class RestaurantsMap : ComponentBase
         }
         catch (Exception ex)
         {
-            status = $"Błąd: {ex.Message}";
+            status = $"Error: {ex.Message}";
         }
     }
 
-    private async Task LoadNearbyRestaurants()
+    private async Task LoadNearbyRestaurants(double latitude, double longitude, double radius)
     {
-        var latitude = position.Coords.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var longitude = position.Coords.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        
-        var url = $"/api/Restaurant/nearby?latitude={latitude}&longitude={longitude}&radius=10";
-        
-        var result = await Http.GetFromJsonAsync<List<NearbyRestaurantDto>>(url);   
+        var latitudeString = latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var longitudeString = longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        var url = $"/api/Restaurant/nearby?latitude={latitudeString}&longitude={longitudeString}&radius={radius}";
+
+        var result = await Http.GetFromJsonAsync<List<NearbyRestaurantDto>>(url);
         nearbyRestaurants.Clear();
         nearbyRestaurants = result;
+        await RefreshMapMarkers();
     }
-    
+
     [JSInvokable]
     public void OnSuccess(GeolocationPosition pos)
     {
@@ -59,8 +66,7 @@ public partial class RestaurantsMap : ComponentBase
         status = "OK";
         InvokeAsync(async () =>
         {
-            await LoadNearbyRestaurants();
-            await Task.Delay(2000);
+            await LoadNearbyRestaurants(position.Coords.Latitude, position.Coords.Longitude, 10);
             InitializeMapParameters();
             StateHasChanged();
         });
@@ -70,14 +76,14 @@ public partial class RestaurantsMap : ComponentBase
     [JSInvokable]
     public void OnError(GeolocationPositionError error)
     {
-        status = $"Błąd geolokalizacji: {error.Message}";
+        status = $"Geolocation error: {error.Message}";
         StateHasChanged();
     }
 
     private void InitializeMapParameters()
     {
         if (position == null) return;
-    
+
         mapParameters = new RealTimeMap.LoadParameters()
         {
             location = new RealTimeMap.Location()
@@ -88,73 +94,183 @@ public partial class RestaurantsMap : ComponentBase
             zoomLevel = 15
         };
     }
-    
-private async Task OnMapLoaded(RealTimeMap.MapEventArgs args)
-{
-    if (position == null || realTimeMap == null) return;
 
-    var userMarker = new RealTimeMap.StreamPoint()
+    private async Task OnMapLoaded(RealTimeMap.MapEventArgs args)
     {
-        guid = Guid.NewGuid(),
-        latitude = position.Coords.Latitude,
-        longitude = position.Coords.Longitude,
-        type = "me",
-        value = "Your Location",
-        timestamp = DateTime.Now
-    };
-    var points = new List<RealTimeMap.StreamPoint> { userMarker };
-    
-    var restaurantMarkers = new List<(Guid guid, string name, string address)>();
-
-    foreach (var restaurant in nearbyRestaurants)
-    {
-        var guid = Guid.NewGuid();
-        var restaurantMarker = new RealTimeMap.StreamPoint()
+        if (position == null || realTimeMap == null) return;
+        try
         {
-            guid = guid,
-            latitude = restaurant.Latitude,
-            longitude = restaurant.Longitude,
-            type = "restaurant",
-            value = restaurant.Name,
-            timestamp = DateTime.Now
-        };
-        points.Add(restaurantMarker);
-        restaurantMarkers.Add((guid, restaurant.Name, restaurant.Address));
+            await RefreshMapMarkers();
+            await Task.Delay(2000);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in OnMapLoaded: {ex.Message}");
+        }
     }
-    
-    await realTimeMap.Geometric.Points.upload(points, true);
 
-    realTimeMap.Geometric.Points.Appearance(item => item.type == "me").pattern = 
-        new RealTimeMap.PointSymbol()
-        {
-            radius = 10,
-            fillColor = "#ffffff",  
-            color = "#ff0000",      
-            weight = 3,
-            opacity = 1,
-            fillOpacity = 1
-        };
-    
-    realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern = 
-        new RealTimeMap.PointSymbol()
-        {
-            radius = 10,
-            fillColor = "#ffffff",  
-            color = "#3f2ae3",      
-            weight = 3,
-            opacity = 1,
-            fillOpacity = 1
-        };
-    
-    foreach (var (guid, name, address) in restaurantMarkers)
+    private async Task RefreshMapMarkers()
     {
-        realTimeMap.Geometric.Points.Appearance(item => item.guid == guid).pattern = 
-            new RealTimeMap.PointTooltip()
+        bool newRestaurantsLoaded = false;
+        foreach (var restaurant in nearbyRestaurants)
+        {
+            if (!loadedRestaurents.Contains(restaurant))
             {
-                content = $"<strong>{name}</strong><br/>{address}",
-                permanent = false,
-                opacity = 0.9
+                newRestaurantsLoaded = true;
+            }
+        }
+
+        if (!newRestaurantsLoaded)
+        {
+            return;
+        }
+
+        if (position == null || realTimeMap == null || _isRefreshingPoints) return;
+        _isRefreshingPoints = true;
+        await realTimeMap.Geometric.Points.delete();
+        try
+        {
+            var userMarker = new RealTimeMap.StreamPoint()
+            {
+                guid = Guid.NewGuid(),
+                latitude = position.Coords.Latitude,
+                longitude = position.Coords.Longitude,
+                type = "me",
+                value = "Your Location",
+                timestamp = DateTime.Now
             };
+
+            realTimeMap.Geometric.Points.changeExtentWhenAddPoints = false;
+            realTimeMap.Geometric.Points.changeExtentWhenMovingPoints = false;
+
+            var points = new List<RealTimeMap.StreamPoint> { userMarker };
+            var restaurantMarkers = new List<(Guid guid, string name, string address)>();
+
+            foreach (var restaurant in nearbyRestaurants)
+            {
+                if (!loadedRestaurents.Contains(restaurant))
+                {
+                    var guid = Guid.NewGuid();
+                    var restaurantMarker = new RealTimeMap.StreamPoint()
+                    {
+                        guid = guid,
+                        latitude = restaurant.Latitude,
+                        longitude = restaurant.Longitude,
+                        type = "restaurant",
+                        value = restaurant.Name,
+                        timestamp = DateTime.Now
+                    };
+                    points.Add(restaurantMarker);
+                    restaurantMarkers.Add((guid, restaurant.Name, restaurant.Address));
+                    loadedRestaurents.Add(restaurant);
+                }
+            }
+
+            await realTimeMap.Geometric.Points.add(points.ToArray());
+
+            // User location appearance
+            realTimeMap.Geometric.Points.Appearance(item => item.type == "me").pattern =
+                new RealTimeMap.PointSymbol()
+                {
+                    radius = 10,
+                    fillColor = "#ffffff",
+                    color = "#ff0000",
+                    weight = 3,
+                    opacity = 1,
+                    fillOpacity = 1
+                };
+
+            // Restaurant appearance
+            realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern =
+                new RealTimeMap.PointSymbol()
+                {
+                    radius = 10,
+                    fillColor = "#ffffff",
+                    color = "#3f2ae3",
+                    weight = 3,
+                    opacity = 1,
+                    fillOpacity = 1
+                };
+
+
+            foreach (var (guid, name, address) in restaurantMarkers)
+            {
+                realTimeMap.Geometric.Points.Appearance(item => item.guid == guid).pattern =
+                    new RealTimeMap.PointTooltip()
+                    {
+                        content = $"<strong>{name}</strong><br/>{address}",
+                        permanent = false,
+                        opacity = 0.9
+                    };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in RefreshMapMarkers: {ex.Message}");
+        }
+
+        _isRefreshingPoints = false;
     }
-}
+
+    private void OnMapMoved(RealTimeMap.MapEventArgs args)
+    {
+        _lastMapArgs = args;
+
+        _panDebounceCts?.Cancel();
+        _panDebounceCts = new CancellationTokenSource();
+
+        var token = _panDebounceCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(800, token);
+
+                if (!token.IsCancellationRequested)
+                {
+                    await InvokeAsync(OnMapStoppedMoving);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        });
+    }
+
+    private async Task OnMapStoppedMoving()
+    {
+        if (_lastMapArgs == null)
+            return;
+        
+        var lat = _lastMapArgs.centerOfView.latitude;
+        var lon = _lastMapArgs.centerOfView.longitude;
+
+        double diagonalKm = CalculateDiagonal(_lastMapArgs);
+        double radiusKm = diagonalKm / 2;
+
+        Console.WriteLine(_lastMapArgs.centerOfView.latitude + "," + _lastMapArgs.centerOfView.longitude);
+
+        await LoadNearbyRestaurants(lat, lon, radiusKm);
+    }
+
+    private double CalculateDiagonal(RealTimeMap.MapEventArgs args)
+    {
+        double neLat = args.bounds.northEast.latitude;
+        double neLon = args.bounds.northEast.longitude;
+        double swLat = args.bounds.southWest.latitude;
+        double swLon = args.bounds.southWest.longitude;
+
+        double diagonalKm = args.sender.Geometric.Computations.distance(
+            neLat, neLon,
+            swLat, swLon,
+            RealTimeMap.UnitOfMeasure.kilometers
+        );
+        return diagonalKm;
+    }
+
+    public void Dispose()
+    {
+        _mapMoveTimer?.Dispose();
+    }
 }

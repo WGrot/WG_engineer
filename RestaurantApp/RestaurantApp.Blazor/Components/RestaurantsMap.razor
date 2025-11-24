@@ -1,16 +1,18 @@
 ﻿<h3>RestaurantsMap</h3>
-@if (position != null)
+@if (position != null && mapParameters.location != null)
 {
-    @position.Coords.Latitude 
+    @position.Coords.Latitude
+    <RealTimeMap @ref="realTimeMap"
+                 height="400px"
+                 width="100%"
+                 Parameters="@mapParameters"
+                 OnAfterMapLoaded="@OnMapLoaded"
+                 OnPanMap="@OnMapMoved"
+    >
+    </RealTimeMap>
 }
 
-<RealTimeMap @ref="realTimeMap"
-             height="400px"
-             width="100%"
-             Parameters="@mapParameters"
-             OnAfterMapLoaded="@OnMapLoaded"
-             >
-</RealTimeMap>
+
 
 
 @code {
