@@ -202,7 +202,7 @@ public class RestaurantController : ControllerBase
     
         if (radius <= 0 || radius > 100)
         {
-            return BadRequest("Invalid radius. Must be between 0 and 100 km.");
+            radius = 100;
         }
 
         var result = await _restaurantService.GetNearbyRestaurantsAsync(

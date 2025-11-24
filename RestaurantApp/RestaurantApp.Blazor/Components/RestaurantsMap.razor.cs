@@ -12,8 +12,11 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     [Inject] private IGeolocationService GeoLocationService { get; set; }
     [Inject] private HttpClient Http { get; set; }
     [Inject] private NavigationManager NavigationManager { get; set; }
+    
+    
+    
     private RealTimeMap? realTimeMap;
-    private RealTimeMap.LoadParameters mapParameters = new();
+    private RealTimeMap.LoadParameters? mapParameters = new();
 
     private List<NearbyRestaurantDto> nearbyRestaurants = new();
     private List<NearbyRestaurantDto> loadedRestaurents = new();
@@ -30,6 +33,9 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     private TaskCompletionSource<bool>? _locationTcs;
     private const double DefaultWarsaw_Latitude = 52.2297;
     private const double DefaultWarsaw_Longitude = 21.0122;
+    
+    private bool _isLoading = true;
+    private bool _isMapReady = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,6 +146,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
             },
             zoomLevel = 15
         };
+        _isLoading = false;
     }
 
     private async Task OnMapLoaded(RealTimeMap.MapEventArgs args)
@@ -147,8 +154,9 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
         if (position == null || realTimeMap == null) return;
         try
         {
+            _isMapReady = true;
+            await Task.Delay(500); // Give map time to fully initialize
             await RefreshMapMarkers();
-            await Task.Delay(2000);
         }
         catch (Exception ex)
         {
@@ -220,8 +228,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
             }
 
             await realTimeMap.Geometric.Points.add(points.ToArray());
-
-            // User location appearance
+            
             realTimeMap.Geometric.Points.Appearance(item => item.type == "me").pattern =
                 new RealTimeMap.PointSymbol()
                 {
@@ -232,8 +239,15 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
                     opacity = 1,
                     fillOpacity = 1
                 };
-
-            // Restaurant appearance
+            
+            realTimeMap.Geometric.Points.Appearance(item => item.type == "me").pattern =
+                new RealTimeMap.PointTooltip()
+                {
+                    content = $"Your localization",
+                    permanent = false,
+                    opacity = 0.9
+                };
+            
             realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern =
                 new RealTimeMap.PointSymbol()
                 {
@@ -244,8 +258,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
                     opacity = 1,
                     fillOpacity = 1
                 };
-
-
+            
             foreach (var (guid, name, address) in restaurantMarkers)
             {
                 realTimeMap.Geometric.Points.Appearance(item => item.guid == guid).pattern =

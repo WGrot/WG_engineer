@@ -1,4 +1,4 @@
-﻿@if (position != null && mapParameters.location != null)
+﻿@if (!_isLoading)
 {
     <RealTimeMap @ref="realTimeMap"
                  height="400px"
@@ -12,6 +12,6 @@
 }
 else
 {
-    <i class="bi bi-geo-alt"></i>
-    <h3>Allow </h3>
+    <LoadingSpinner 
+        Title="Loading Map"/>
 }
