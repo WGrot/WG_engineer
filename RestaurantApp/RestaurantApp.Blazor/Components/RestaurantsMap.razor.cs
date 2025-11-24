@@ -13,6 +13,8 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     [Inject] private HttpClient Http { get; set; }
     [Inject] private NavigationManager NavigationManager { get; set; }
     
+    [Parameter] public int Height { get; set; } = 500;
+    
     
     
     private RealTimeMap? realTimeMap;

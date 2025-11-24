@@ -100,7 +100,7 @@
                         <i class="bi bi-bell"></i>
 
                         @if (NotificationService.UnreadCount > 0)
-                        { 
+                        {
                             <span class="notification-badge">
                               @NotificationService.UnreadCount
                             </span>
@@ -132,13 +132,17 @@
                 <a href="/my-reservations" class="menu-item" @onclick="CloseMenu">
                     <span>My reservations</span>
                 </a>
-
                 <a href="/my-reviews" class="menu-item " @onclick="CloseMenu">
                     <span>My reviews</span>
+                </a>
+                <a href="/Restaurant_Map" class="menu-item" @onclick="CloseMenu">
+                    <span>Restaurant map</span>
                 </a>
                 <a href="/UserSettings" class="menu-item mb-4" @onclick="CloseMenu">
                     <span>Profile settings</span>
                 </a>
+
+
                 if (isEmployee)
                 {
                     <h3 class="menu-section-title">Employee options</h3>
@@ -225,7 +229,6 @@
     List<(int Id, string Name)> userRestaurantNames = new();
 
 
-    
     protected override async Task OnInitializedAsync()
     {
         await CheckAuthenticationStatus();
@@ -234,7 +237,7 @@
         string activeRestaurantIdString = await userDataService.GetActiveRestaurant();
         activeRestaurantName = userRestaurantNames.FirstOrDefault(r => r.Id.ToString() == activeRestaurantIdString).Name ?? "No restaurant selected";
 
-        
+
         NotificationService.OnChange += StateHasChanged;
         AuthService.OnLogout += HandleOnLogOutEvent;
         AuthService.OnLogin += CheckAuthenticationStatus;
@@ -363,14 +366,15 @@
         _refreshTimer?.Dispose();
         NotificationService.OnChange -= StateHasChanged;
         AuthService.OnLogout -= HandleOnLogOutEvent;
-        userDataService.OnActiveRestaurantChanged -=  ChangeActiveRestaurantDisplayName;
+        userDataService.OnActiveRestaurantChanged -= ChangeActiveRestaurantDisplayName;
         AuthService.OnLogin -= CheckAuthenticationStatus;
     }
+
     private void ToggleNotifications()
     {
         NotificationService.ToggleListVisibility();
     }
-    
+
 
     private async Task SwitchActiveRestaurant(int id)
     {
@@ -378,7 +382,7 @@
         activeRestaurantName = userRestaurantNames.FirstOrDefault(n => n.Id == id).Name ?? "No restaurant selected";
         StateHasChanged();
     }
-    
+
     private async Task ChangeActiveRestaurantDisplayName()
     {
         string activeRestaurantIdString = await userDataService.GetActiveRestaurant();

@@ -1,0 +1,33 @@
+﻿@page "/Restaurant_Map"
+@using RestaurantApp.Blazor.Components
+
+<div style="background-color: white; min-height: 100vh;">
+    <div class="restaurant-header bg-primary text-white">
+        <div class="container py-4">
+            <div class="row align-items-center text-center">
+                <div class="col">
+                    <h1 class="mb-0">Restaurant Map</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Find Restaurants Near You</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <RestaurantsMap></RestaurantsMap>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    
+}
