@@ -1,7 +1,5 @@
-﻿<h3>RestaurantsMap</h3>
-@if (position != null && mapParameters.location != null)
+﻿@if (position != null && mapParameters.location != null)
 {
-    @position.Coords.Latitude
     <RealTimeMap @ref="realTimeMap"
                  height="400px"
                  width="100%"
@@ -11,4 +9,9 @@
                  OnClickMap="OnClickMap"
     >
     </RealTimeMap>
+}
+else
+{
+    <i class="bi bi-geo-alt"></i>
+    <h3>Allow </h3>
 }

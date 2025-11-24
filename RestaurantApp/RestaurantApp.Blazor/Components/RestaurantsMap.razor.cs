@@ -27,25 +27,90 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     private CancellationTokenSource? _panDebounceCts;
     private Dictionary<Guid, string> _pointToRestaurantId = new();
 
+    private TaskCompletionSource<bool>? _locationTcs;
+    private const double DefaultWarsaw_Latitude = 52.2297;
+    private const double DefaultWarsaw_Longitude = 21.0122;
+
     protected override async Task OnInitializedAsync()
     {
-        await GetLocation();
+        await GetLocationWithTimeout();
     }
 
-    private async Task GetLocation()
+    private async Task GetLocationWithTimeout()
     {
         status = "Loading user location...";
+
+        _locationTcs = new TaskCompletionSource<bool>();
+
         try
         {
             await GeoLocationService.GetCurrentPositionAsync(
                 this,
                 nameof(OnSuccess),
                 nameof(OnError));
+
+            var timeoutTask = Task.Delay(5000);
+            var completedTask = await Task.WhenAny(_locationTcs.Task, timeoutTask);
+
+            if (completedTask == timeoutTask)
+            {
+                SetDefaultLocation();
+            }
         }
         catch (Exception ex)
         {
             status = $"Error: {ex.Message}";
+            SetDefaultLocation();
         }
+    }
+
+    private void SetDefaultLocation()
+    {
+        position = new GeolocationPosition
+        {
+            Coords = new GeolocationCoordinates
+            {
+                Latitude = DefaultWarsaw_Latitude,
+                Longitude = DefaultWarsaw_Longitude
+            }
+        };
+
+        status = "Using default location (Warsaw)";
+
+        InvokeAsync(async () =>
+        {
+            await LoadNearbyRestaurants(position.Coords.Latitude, position.Coords.Longitude, 10);
+            InitializeMapParameters();
+            StateHasChanged();
+        });
+    }
+
+    [JSInvokable]
+    public void OnSuccess(GeolocationPosition pos)
+    {
+        position = pos;
+        status = "OK";
+
+        _locationTcs?.TrySetResult(true); // Signal that location was obtained
+
+        InvokeAsync(async () =>
+        {
+            await LoadNearbyRestaurants(position.Coords.Latitude, position.Coords.Longitude, 10);
+            InitializeMapParameters();
+            StateHasChanged();
+        });
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnError(GeolocationPositionError error)
+    {
+        status = $"Geolocation error: {error.Message}";
+
+        _locationTcs?.TrySetResult(false); // Signal error
+        SetDefaultLocation(); // Use default location on error
+
+        StateHasChanged();
     }
 
     private async Task LoadNearbyRestaurants(double latitude, double longitude, double radius)
@@ -61,26 +126,6 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
         await RefreshMapMarkers();
     }
 
-    [JSInvokable]
-    public void OnSuccess(GeolocationPosition pos)
-    {
-        position = pos;
-        status = "OK";
-        InvokeAsync(async () =>
-        {
-            await LoadNearbyRestaurants(position.Coords.Latitude, position.Coords.Longitude, 10);
-            InitializeMapParameters();
-            StateHasChanged();
-        });
-        StateHasChanged();
-    }
-
-    [JSInvokable]
-    public void OnError(GeolocationPositionError error)
-    {
-        status = $"Geolocation error: {error.Message}";
-        StateHasChanged();
-    }
 
     private void InitializeMapParameters()
     {
@@ -159,8 +204,8 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
                         latitude = restaurant.Latitude,
                         longitude = restaurant.Longitude,
                         type = "restaurant",
-                        value = new RestaurantPointData 
-                        { 
+                        value = new RestaurantPointData
+                        {
                             Id = restaurant.Id.ToString(),
                             Name = restaurant.Name,
                             Address = restaurant.Address
@@ -250,7 +295,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     {
         if (_lastMapArgs == null)
             return;
-        
+
         var lat = _lastMapArgs.centerOfView.latitude;
         var lon = _lastMapArgs.centerOfView.longitude;
 
@@ -277,30 +322,32 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
         return diagonalKm;
     }
 
-    
+
     public void OnClickMap(RealTimeMap.ClicksMapArgs value)
     {
         var clickedPoints = (value.sender as RealTimeMap).Geometric.Points.getItems(
             point => (value.sender as RealTimeMap).Geometric.Computations.distance(
                 point,
-                new RealTimeMap.StreamPoint() { 
-                    latitude = value.location.latitude, 
-                    longitude = value.location.longitude 
+                new RealTimeMap.StreamPoint()
+                {
+                    latitude = value.location.latitude,
+                    longitude = value.location.longitude
                 },
                 RealTimeMap.UnitOfMeasure.meters
             ) <= 10
         );
-        
+
         if (clickedPoints.Any())
         {
             var clickedPoint = clickedPoints.First();
-    
+
             if (clickedPoint.type == "restaurant" && clickedPoint.value is RestaurantPointData data)
             {
                 NavigationManager.NavigateTo($"/restaurant/{data.Id}");
             }
         }
     }
+
     public void Dispose()
     {
         _mapMoveTimer?.Dispose();
