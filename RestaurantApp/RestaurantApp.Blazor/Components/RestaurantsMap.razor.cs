@@ -7,10 +7,11 @@ using RestaurantApp.Shared.DTOs.GeoCoding;
 
 namespace RestaurantApp.Blazor.Components;
 
-public partial class RestaurantsMap : ComponentBase
+public partial class RestaurantsMap : ComponentBase, IDisposable
 {
     [Inject] private IGeolocationService GeoLocationService { get; set; }
     [Inject] private HttpClient Http { get; set; }
+    [Inject] private NavigationManager NavigationManager { get; set; }
     private RealTimeMap? realTimeMap;
     private RealTimeMap.LoadParameters mapParameters = new();
 
@@ -24,6 +25,7 @@ public partial class RestaurantsMap : ComponentBase
 
     private bool _isRefreshingPoints = false;
     private CancellationTokenSource? _panDebounceCts;
+    private Dictionary<Guid, string> _pointToRestaurantId = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,7 +34,7 @@ public partial class RestaurantsMap : ComponentBase
 
     private async Task GetLocation()
     {
-        status = "Pobieranie...";
+        status = "Loading user location...";
         try
         {
             await GeoLocationService.GetCurrentPositionAsync(
@@ -157,12 +159,18 @@ public partial class RestaurantsMap : ComponentBase
                         latitude = restaurant.Latitude,
                         longitude = restaurant.Longitude,
                         type = "restaurant",
-                        value = restaurant.Name,
+                        value = new RestaurantPointData 
+                        { 
+                            Id = restaurant.Id.ToString(),
+                            Name = restaurant.Name,
+                            Address = restaurant.Address
+                        },
                         timestamp = DateTime.Now
                     };
                     points.Add(restaurantMarker);
                     restaurantMarkers.Add((guid, restaurant.Name, restaurant.Address));
                     loadedRestaurents.Add(restaurant);
+                    _pointToRestaurantId[guid] = restaurant.Id.ToString();
                 }
             }
 
@@ -269,8 +277,39 @@ public partial class RestaurantsMap : ComponentBase
         return diagonalKm;
     }
 
+    
+    public void OnClickMap(RealTimeMap.ClicksMapArgs value)
+    {
+        var clickedPoints = (value.sender as RealTimeMap).Geometric.Points.getItems(
+            point => (value.sender as RealTimeMap).Geometric.Computations.distance(
+                point,
+                new RealTimeMap.StreamPoint() { 
+                    latitude = value.location.latitude, 
+                    longitude = value.location.longitude 
+                },
+                RealTimeMap.UnitOfMeasure.meters
+            ) <= 10
+        );
+        
+        if (clickedPoints.Any())
+        {
+            var clickedPoint = clickedPoints.First();
+    
+            if (clickedPoint.type == "restaurant" && clickedPoint.value is RestaurantPointData data)
+            {
+                NavigationManager.NavigateTo($"/restaurant/{data.Id}");
+            }
+        }
+    }
     public void Dispose()
     {
         _mapMoveTimer?.Dispose();
     }
+}
+
+public class RestaurantPointData
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string Address { get; set; }
 }
