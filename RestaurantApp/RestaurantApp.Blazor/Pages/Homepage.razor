@@ -1,6 +1,7 @@
 ﻿@page "/homepage"
 @using RestaurantApp.Blazor.Components
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="homepage-container">
     <div class="hero-section">
@@ -41,41 +42,79 @@
             </div>
         </div>
     </div>
-    
-    <RestaurantsMap>
-        
-        
-    </RestaurantsMap>
+
+    <div class="nearby-banner">
+        <div class="nearby-content">
+            <div class="nearby-text">
+                <div class="nearby-icon-badge">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+                <h2 class="nearby-title">Discover restaurants near you</h2>
+                <p class="nearby-description">
+                    Find the best dining spots in your neighborhood.
+                    Let us use your location to show you what's close by.
+                </p>
+                <button class="button button--primary button--lg p-2" @onclick="GoToRestaurantMap" disabled="@_isLoadingLocation">
+                    @if (_isLoadingLocation)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Finding your location...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-crosshair me-2"></i>
+                        <span>Find nearby restaurants</span>
+                    }
+                </button>
+            </div>
+            <div class="nearby-illustration">
+                <div class="illustration-circle">
+                    <div class="illustration-inner">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                    <div class="floating-pin pin-1">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div class="floating-pin pin-2">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div class="floating-pin pin-3">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
 @code {
     private string _searchQuery = "";
     private string _locationQuery = "";
+    private bool _isLoadingLocation = false;
 
     private async Task SearchRestaurants()
     {
-        // Buduj query string z parametrami wyszukiwania
         var queryParams = new List<string>();
-        
+
         if (!string.IsNullOrWhiteSpace(_searchQuery))
         {
             queryParams.Add($"name={Uri.EscapeDataString(_searchQuery)}");
         }
-        
+
         if (!string.IsNullOrWhiteSpace(_locationQuery))
         {
             queryParams.Add($"location={Uri.EscapeDataString(_locationQuery)}");
         }
-        
+
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-        
-        // Nawiguj do strony z listą restauracji
+
         Navigation.NavigateTo($"/restaurants{queryString}");
     }
 
-    private void BrowseAllRestaurants()
+    private void GoToRestaurantMap()
     {
-        Navigation.NavigateTo("/restaurants");
+        Navigation.NavigateTo($"/Restaurant_Map");
     }
+
 }
