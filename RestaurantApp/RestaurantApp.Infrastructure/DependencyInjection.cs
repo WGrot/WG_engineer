@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Infrastructure.Persistence;
+using RestaurantApp.Infrastructure.Persistence.Repositories;
 
 namespace RestaurantApp.Infrastructure;
 
@@ -21,7 +23,9 @@ public static class DependencyInjection
                     npgsqlOptions.MigrationsAssembly(
                         typeof(ApplicationDbContext).Assembly.FullName);
                 }));
-
+        
+        services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<IRestaurantRepository, RestaurantRepository>();
         return services;
     }
 }

@@ -15,9 +15,9 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class MenuController : ControllerBase
 {
-    private readonly IMenuService _menuService;
+    private readonly RestaurantApp.Application.Interfaces.Services.IMenuService _menuService;
     private readonly IAuthorizationService _authorizationService;
-    public MenuController(IMenuService menuService, IAuthorizationService authorizationService)
+    public MenuController(RestaurantApp.Application.Interfaces.Services.IMenuService menuService, IAuthorizationService authorizationService)
     {
         _menuService = menuService;
         _authorizationService = authorizationService;
@@ -32,7 +32,7 @@ public class MenuController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMenuByRestaurant([FromQuery] int restaurantId, [FromQuery] bool isActive)
     {
-        return (await _menuService.GetMenus(restaurantId, isActive)).ToActionResult();
+        return (await _menuService.GetMenusAsync(restaurantId, isActive)).ToActionResult();
     }
 
     [HttpPost]

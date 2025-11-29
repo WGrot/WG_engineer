@@ -26,6 +26,7 @@ using RestaurantApp.Api.Helpers;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
@@ -66,7 +67,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
-
+builder.Services.AddApplication();
 builder.Services.Configure<StorageConfiguration>(
     builder.Configuration.GetSection("MinIO"));
 builder.Services.Configure<ImageSettings>(
@@ -103,7 +104,6 @@ builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IPasswordService, PasswordService > ();
 builder.Services.AddScoped<ITableService, TableService>();
-builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
