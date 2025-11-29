@@ -13,17 +13,7 @@ public interface IAuthService
     Task<Result> LogoutAsync(string? presentedRefreshToken);
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
-    //Task<Result> ChangePasswordAsync(string? userId, ChangePasswordRequest request);
     Task<Result> ConfirmEmailAsync(string userId, string token);
 
     Task<Result> ResendEmailConfirmationAsync(string email);
-    //Task<Result> ForgotPasswordAsync(string email);
-    //Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
-}
-
-
-public class ClaimDto
-{
-    public string Type { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
 }

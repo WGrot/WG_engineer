@@ -27,11 +27,13 @@ using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Application;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
 using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;
+using RestaurantApp.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,12 +94,6 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IEmailComposer, EmailComposer>();
-builder.Services.AddHttpClient<IGeocodingService, NominatimGeocodingService>(client =>
-{
-    client.BaseAddress = new Uri("https://nominatim.openstreetmap.org/");
-    client.DefaultRequestHeaders.Add("User-Agent", "RestaurantManagementApp/1.0");
-    client.Timeout = TimeSpan.FromSeconds(10);
-});
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();

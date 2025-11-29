@@ -1,9 +1,10 @@
 ﻿using System.Globalization;
 using System.Text.Json;
-using RestaurantApp.Api.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.GeoCoding;
 
-namespace RestaurantApp.Api.Services;
+namespace RestaurantApp.Infrastructure.Services;
 
 public class NominatimGeocodingService : IGeocodingService
 {
@@ -83,7 +84,7 @@ public class NominatimGeocodingService : IGeocodingService
         
         if (results?.Any() == true)
         {
-            var result = results.First();
+            var result = Enumerable.First<NominatimResponse>(results);
             if (double.TryParse(result.Lat, NumberStyles.Any, CultureInfo.InvariantCulture, out var lat) &&
                 double.TryParse(result.Lon, NumberStyles.Any, CultureInfo.InvariantCulture, out var lon))
             {
