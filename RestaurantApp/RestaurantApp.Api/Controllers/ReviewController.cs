@@ -17,10 +17,10 @@ namespace RestaurantApp.Api.Controllers;
 [Authorize]
 public class ReviewsController : ControllerBase
 {
-    private readonly IReviewService _reviewService;
+    private readonly RestaurantApp.Application.Interfaces.Services.IReviewService _reviewService;
     private readonly IAuthorizationService _authorizationService;
 
-    public ReviewsController(IReviewService reviewService, IAuthorizationService authorizationService)
+    public ReviewsController(RestaurantApp.Application.Interfaces.Services.IReviewService reviewService, IAuthorizationService authorizationService)
     {
         _reviewService = reviewService;
         _authorizationService = authorizationService;
@@ -88,8 +88,8 @@ public class ReviewsController : ControllerBase
             return Forbid();
         }
 
-        var review = await _reviewService.CreateAsync(createReviewDto);
-        return review.ToActionResult();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        return (await _reviewService.CreateAsync(userId, createReviewDto)).ToActionResult();
     }
 
     [HttpPut("{id}")]
@@ -105,16 +105,16 @@ public class ReviewsController : ControllerBase
             return Forbid();
         }
         
-        var review = await _reviewService.UpdateAsync(id, updateReviewDto);
-        return review.ToActionResult();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        return (await _reviewService.UpdateAsync(userId, id, updateReviewDto)).ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         
-        var result = await _reviewService.DeleteAsync(id);
-        return result.ToActionResult();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        return (await _reviewService.DeleteAsync(userId, id)).ToActionResult();
     }
 
     [HttpPatch("{id}/toggle-active")]

@@ -173,6 +173,7 @@ public partial class RestaurantReviewsTab : ComponentBase
         {
             newReview.RestaurantId = Id;
             newReview.PhotosUrls ??= new List<string>();
+            newReview.UserId = loggedUserId;
 
             var response = await Http.PostAsJsonAsync("/api/Reviews", newReview);
 
@@ -183,7 +184,8 @@ public partial class RestaurantReviewsTab : ComponentBase
                 {
                     RestaurantId = Id,
                     Rating = 5,
-                    Content = string.Empty
+                    Content = string.Empty,
+
                 };
 
                 // Przeładuj recenzje od początku
