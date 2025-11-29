@@ -9,6 +9,9 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["RestaurantApp.Api/RestaurantApp.Api.csproj", "RestaurantApp.Api/"]
 COPY ["RestaurantApp.Shared/RestaurantApp.Shared.csproj", "RestaurantApp.Shared/"]
+COPY ["RestaurantApp.Shared/RestaurantApp.Infrastructure.csproj", "RestaurantApp.Infrastructure/"]
+COPY ["RestaurantApp.Shared/RestaurantApp.Application.csproj", "RestaurantApp.Application/"]
+COPY ["RestaurantApp.Shared/RestaurantApp.Domain.csproj", "RestaurantApp.Domain/"]
 RUN dotnet restore "RestaurantApp.Api/RestaurantApp.Api.csproj"
 COPY . .
 WORKDIR "/src/RestaurantApp.Api"
