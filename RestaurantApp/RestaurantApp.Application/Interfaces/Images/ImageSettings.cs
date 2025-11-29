@@ -1,6 +1,4 @@
-﻿using RestaurantApp.Shared.Models;
-
-namespace RestaurantApp.Api.Common.Images;
+﻿namespace RestaurantApp.Application.Interfaces.Images;
 
 public class ImageSettings
 {

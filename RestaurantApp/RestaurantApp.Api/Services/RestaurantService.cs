@@ -2,10 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services.Email.Templates.Restaurant;
 using RestaurantApp.Domain.Models;

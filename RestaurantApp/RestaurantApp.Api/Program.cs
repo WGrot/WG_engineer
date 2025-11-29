@@ -10,8 +10,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.Common.Images;
-using RestaurantApp.Api.Configuration;
 using RestaurantApp.Api.CustomHandlers.Authorization;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
@@ -26,14 +24,13 @@ using RestaurantApp.Api.Helpers;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Application;
-using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Application.Services.Email;
+using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
 using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;
+using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 using RestaurantApp.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +39,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.WriteIndented = true; // opcjonalne - dla ładniejszego JSON
+    options.JsonSerializerOptions.WriteIndented = true; 
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddOpenApi();
@@ -71,30 +68,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.Configure<StorageConfiguration>(
-    builder.Configuration.GetSection("MinIO"));
-builder.Services.Configure<ImageSettings>(
-    builder.Configuration.GetSection("ImageSettings"));
 
-builder.Services.AddSingleton<IAmazonS3>(sp =>
-{
-    var config = sp.GetRequiredService<IOptions<StorageConfiguration>>().Value;
-    
-    var s3Config = new AmazonS3Config
-    {
-        ServiceURL = $"http://{config.Endpoint}",
-        ForcePathStyle = true, 
-        UseHttp = !config.UseSSL
-    };
 
-    return new AmazonS3Client(
-        config.AccessKey,
-        config.SecretKey,
-        s3Config
-    );
-});
-builder.Services.AddTransient<IEmailService, EmailService>();
-builder.Services.AddTransient<IEmailComposer, EmailComposer>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
@@ -129,10 +104,10 @@ builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationH
 builder.Services.AddScoped<IAesEncryptionService, AesEncryptionService>();
 
 
-builder.Services.AddScoped<IBucketService, BucketService>();
-builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
-builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
-builder.Services.AddScoped<IStorageService, StorageService>();
+// builder.Services.AddScoped<IBucketService, BucketService>();
+// builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
+// builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
+// builder.Services.AddScoped<IStorageService, StorageService>();
 
 
 // NAJPIERW Identity

@@ -10,4 +10,10 @@
       <ProjectReference Include="..\RestaurantApp.Domain\RestaurantApp.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="SkiaSharp">
+        <HintPath>..\RestaurantApp.Api\bin\Debug\net9.0\SkiaSharp.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

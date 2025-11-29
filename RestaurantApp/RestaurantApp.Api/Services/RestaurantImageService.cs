@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Common.Interfaces;
+using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Images;

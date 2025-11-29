@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Configuration;
+﻿namespace RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 
 public class StorageConfiguration
 {

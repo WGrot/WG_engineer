@@ -11,6 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.14" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />
       <PackageReference Include="MailKit" Version="4.14.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
@@ -33,6 +35,12 @@
 
     <ItemGroup>
       <Folder Include="Services\Email\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="SkiaSharp">
+        <HintPath>..\RestaurantApp.Api\bin\Debug\net9.0\SkiaSharp.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
