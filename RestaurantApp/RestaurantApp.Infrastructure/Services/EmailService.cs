@@ -1,8 +1,10 @@
 ﻿using MailKit.Net.Smtp;
-using MimeKit;
-using RestaurantApp.Api.Services.Interfaces;
 
-namespace RestaurantApp.Api.Services;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
+using RestaurantApp.Application.Interfaces;
+
+namespace RestaurantApp.Infrastructure.Services;
 
 public class EmailService: IEmailService
 {
@@ -28,7 +30,7 @@ public class EmailService: IEmailService
         using var client = new SmtpClient();
         await client.ConnectAsync(
             _config["EmailSettings:SmtpServer"],
-            int.Parse(_config["EmailSettings:Port"]),
+            int.Parse((string)_config["EmailSettings:Port"]),
             false
         );
         await client.AuthenticateAsync(

@@ -1,6 +1,6 @@
 ﻿using RestaurantApp.Shared.DTOs.Restaurant;
 
-namespace RestaurantApp.Api.Services.Email.Templates.Restaurant;
+namespace RestaurantApp.Application.Services.Email.Templates.Restaurant;
 
 public class RestaurantCreatedEmail: IEmailTemplate
 {

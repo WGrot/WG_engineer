@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Infrastructure.Persistence;
@@ -33,6 +34,7 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(10);
         });
         
+        services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();

@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Services.Email;
+﻿namespace RestaurantApp.Application.Services.Email;
 
 public interface IEmailTemplate
 {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Auth;

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using RestaurantApp.Api.Helpers;
-using RestaurantApp.Api.Services.Email;
-using RestaurantApp.Api.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Auth;

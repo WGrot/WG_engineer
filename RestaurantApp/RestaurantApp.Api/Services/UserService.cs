@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
-using RestaurantApp.Api.Services.Email;
-using RestaurantApp.Api.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;

@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Services.Email.Templates.AccountManagement;
+﻿namespace RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 
 public class ForgotPasswordEmail: IEmailTemplate
 {

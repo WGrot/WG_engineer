@@ -1,6 +1,6 @@
-﻿using RestaurantApp.Api.Services.Interfaces;
+﻿using RestaurantApp.Application.Interfaces;
 
-namespace RestaurantApp.Api.Services.Email;
+namespace RestaurantApp.Application.Services.Email;
 
 public class EmailComposer : IEmailComposer
 {

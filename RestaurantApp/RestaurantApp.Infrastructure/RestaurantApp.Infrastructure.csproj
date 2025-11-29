@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="MailKit" Version="4.14.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
@@ -28,6 +29,10 @@
     <ItemGroup>
       <ProjectReference Include="..\RestaurantApp.Application\RestaurantApp.Application.csproj" />
       <ProjectReference Include="..\RestaurantApp.Domain\RestaurantApp.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\Email\" />
     </ItemGroup>
 
 </Project>

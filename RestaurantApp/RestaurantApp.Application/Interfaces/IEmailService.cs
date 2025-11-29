@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Api.Services.Interfaces;
+﻿namespace RestaurantApp.Application.Interfaces;
 
 public interface IEmailService
 {

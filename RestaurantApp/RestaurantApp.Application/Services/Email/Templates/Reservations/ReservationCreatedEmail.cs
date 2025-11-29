@@ -1,6 +1,6 @@
 ﻿using RestaurantApp.Domain.Models;
 
-namespace RestaurantApp.Api.Services.Email.Templates.Reservations;
+namespace RestaurantApp.Application.Services.Email.Templates.Reservations;
 
 public class ReservationCreatedEmail: IEmailTemplate
 {
