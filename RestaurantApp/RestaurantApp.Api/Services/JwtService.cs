@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 
@@ -12,11 +13,11 @@ namespace RestaurantApp.Api.Services;
 
 public class JwtService : IJwtService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly JwtService _jwtService;
 
-    public JwtService(ApiDbContext context, IConfiguration configuration)
+    public JwtService(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;

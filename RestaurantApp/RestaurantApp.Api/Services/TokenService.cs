@@ -2,16 +2,17 @@
 using RestaurantApp.Api.Helpers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 
 namespace RestaurantApp.Api.Services;
 
 public class TokenService : ITokenService
     {
-        private readonly ApiDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IJwtService _jwtService;
 
-        public TokenService(ApiDbContext context, IConfiguration configuration, IJwtService jwtService)
+        public TokenService(ApplicationDbContext context, IConfiguration configuration, IJwtService jwtService)
         {
             _context = context;
             _configuration = configuration;

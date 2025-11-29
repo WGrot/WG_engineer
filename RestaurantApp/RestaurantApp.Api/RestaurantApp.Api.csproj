@@ -41,6 +41,7 @@
     <ItemGroup>
       <ProjectReference Include="..\RestaurantApp.Domain\RestaurantApp.Domain.csproj" />
       <ProjectReference Include="..\RestaurantApp.Shared\RestaurantApp.Shared.csproj" />
+      <ProjectReference Include="..\RestaurantApp.Infrastructure\RestaurantApp.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

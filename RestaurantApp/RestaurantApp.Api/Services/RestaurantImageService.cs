@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Images;
 
@@ -8,11 +9,11 @@ namespace RestaurantApp.Api.Services;
 
 public class RestaurantImageService : IRestaurantImageService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly IStorageService _storageService;
     private readonly ILogger<RestaurantImageService> _logger;
 
-    public RestaurantImageService(ApiDbContext context, IStorageService storageService, ILogger<RestaurantImageService> logger)
+    public RestaurantImageService(ApplicationDbContext context, IStorageService storageService, ILogger<RestaurantImageService> logger)
     {
         _context = context;
         _storageService = storageService;

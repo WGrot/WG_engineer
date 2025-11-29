@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common.Images;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Images;
@@ -13,11 +14,11 @@ namespace RestaurantApp.Api.Services;
 
 public class MenuItemService : IMenuItemService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<MenuItemTagService> _logger;
     private readonly IStorageService _storageService;
 
-    public MenuItemService(ApiDbContext context, ILogger<MenuItemTagService> logger, IStorageService storageService)
+    public MenuItemService(ApplicationDbContext context, ILogger<MenuItemTagService> logger, IStorageService storageService)
     {
         _context = context;
         _logger = logger;

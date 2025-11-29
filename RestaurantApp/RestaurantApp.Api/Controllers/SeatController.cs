@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;
 
@@ -15,9 +16,9 @@ namespace RestaurantApp.Api.Controllers;
     [ApiController]
     public class SeatController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public SeatController(ApiDbContext context)
+        public SeatController(ApplicationDbContext context)
         {
             _context = context;
         }

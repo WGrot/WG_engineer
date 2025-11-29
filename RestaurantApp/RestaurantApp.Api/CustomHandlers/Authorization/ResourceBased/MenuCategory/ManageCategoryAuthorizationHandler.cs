@@ -1,16 +1,17 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 
 public class ManageCategoryAuthorizationHandler : AuthorizationHandler<ManageCategoryRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageCategoryAuthorizationHandler> _logger;
 
-    public ManageCategoryAuthorizationHandler(ApiDbContext context, ILogger<ManageCategoryAuthorizationHandler> logger)
+    public ManageCategoryAuthorizationHandler(ApplicationDbContext context, ILogger<ManageCategoryAuthorizationHandler> logger)
     {
         _context = context;
         _logger = logger;

@@ -1,16 +1,17 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 
 public class ManageTagsAuthorizationHandler : AuthorizationHandler<ManageTagsRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageTagsAuthorizationHandler> _logger;
 
-    public ManageTagsAuthorizationHandler(ApiDbContext context, ILogger<ManageTagsAuthorizationHandler> logger)
+    public ManageTagsAuthorizationHandler(ApplicationDbContext context, ILogger<ManageTagsAuthorizationHandler> logger)
     {
         _context = context;
         _logger = logger;

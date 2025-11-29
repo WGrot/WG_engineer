@@ -6,6 +6,7 @@ using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -16,13 +17,13 @@ namespace RestaurantApp.Api.Services;
 
 public class UserService : IUserService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmployeeService _employeeService;
     private readonly IPasswordService _passwordService;
     private readonly IEmailComposer _emailComposer;
     
-    public UserService(ApiDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService, IPasswordService passwordService, IEmailComposer emailComposer)
+    public UserService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IEmployeeService employeeService, IPasswordService passwordService, IEmailComposer emailComposer)
     {
         _context = context;
         _userManager = userManager;

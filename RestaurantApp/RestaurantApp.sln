@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Blazor", "Res
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Domain", "RestaurantApp.Domain\RestaurantApp.Domain.csproj", "{6226E6BA-C316-4663-A8CB-D60CCBF55382}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Application", "RestaurantApp.Application\RestaurantApp.Application.csproj", "{680B0FFC-A879-49A5-B900-59669C4FDCBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Infrastructure", "RestaurantApp.Infrastructure\RestaurantApp.Infrastructure.csproj", "{F41DD948-AD11-428A-9423-8518DDF822B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,5 +39,13 @@ Global
 		{6226E6BA-C316-4663-A8CB-D60CCBF55382}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6226E6BA-C316-4663-A8CB-D60CCBF55382}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6226E6BA-C316-4663-A8CB-D60CCBF55382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680B0FFC-A879-49A5-B900-59669C4FDCBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680B0FFC-A879-49A5-B900-59669C4FDCBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680B0FFC-A879-49A5-B900-59669C4FDCBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680B0FFC-A879-49A5-B900-59669C4FDCBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F41DD948-AD11-428A-9423-8518DDF822B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F41DD948-AD11-428A-9423-8518DDF822B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F41DD948-AD11-428A-9423-8518DDF822B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F41DD948-AD11-428A-9423-8518DDF822B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

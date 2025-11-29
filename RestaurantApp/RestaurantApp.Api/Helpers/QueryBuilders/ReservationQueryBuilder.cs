@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
@@ -7,7 +8,7 @@ namespace RestaurantApp.Api.Helpers.QueryBuilders;
 
 public static class ReservationQueryBuilder
 {
-    public static Result<IQueryable<ReservationBase>> BuildQuery(ApiDbContext _context,
+    public static Result<IQueryable<ReservationBase>> BuildQuery(ApplicationDbContext _context,
         ReservationSearchParameters searchParams)
     {
         // --- Walidacja ---

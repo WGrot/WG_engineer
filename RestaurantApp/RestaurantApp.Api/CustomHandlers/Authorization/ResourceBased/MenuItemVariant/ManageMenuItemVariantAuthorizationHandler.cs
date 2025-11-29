@@ -1,16 +1,17 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
 
 public class ManageMenuItemVariantAuthorizationHandler : AuthorizationHandler<ManageMenuItemVariantRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageMenuItemVariantAuthorizationHandler> _logger;
 
-    public ManageMenuItemVariantAuthorizationHandler(ApiDbContext context, ILogger<ManageMenuItemVariantAuthorizationHandler> logger)
+    public ManageMenuItemVariantAuthorizationHandler(ApplicationDbContext context, ILogger<ManageMenuItemVariantAuthorizationHandler> logger)
     {
         _context = context;
         _logger = logger;

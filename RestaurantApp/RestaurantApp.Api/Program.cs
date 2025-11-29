@@ -29,6 +29,8 @@ using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
 using RestaurantApp.Shared.Models;
+using RestaurantApp.Infrastructure;
+using RestaurantApp.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,11 +65,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Default"),
-        o => o.UseNetTopologySuite()
-    ));
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.Configure<StorageConfiguration>(
     builder.Configuration.GetSection("MinIO"));
@@ -81,7 +79,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     var s3Config = new AmazonS3Config
     {
         ServiceURL = $"http://{config.Endpoint}",
-        ForcePathStyle = true, // Important for MinIO
+        ForcePathStyle = true, 
         UseHttp = !config.UseSSL
     };
 
@@ -158,7 +156,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 5;
 })
-.AddEntityFrameworkStores<ApiDbContext>()
+.AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
 // POTEM Authentication z konfiguracją JWT

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Review;
@@ -13,10 +14,10 @@ namespace RestaurantApp.Api.Services;
 
 public class ReviewService : IReviewService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ReviewService(ApiDbContext context, IHttpContextAccessor httpContextAccessor)
+    public ReviewService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;

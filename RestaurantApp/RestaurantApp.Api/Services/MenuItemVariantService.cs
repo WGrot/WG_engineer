@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.Variants;
@@ -11,10 +12,10 @@ namespace RestaurantApp.Api.Services;
 
 public class MenuItemVariantService : IMenuItemVariantService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
 
 
-    public MenuItemVariantService(ApiDbContext context)
+    public MenuItemVariantService(ApplicationDbContext context)
     {
         _context = context;
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 
 namespace RestaurantApp.Api.Controllers;
@@ -10,11 +11,11 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class TwoFactorController : ControllerBase
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ITwoFactorService _twoFactorService;
     private readonly IAesEncryptionService _encryptionService;
 
-    public TwoFactorController(ApiDbContext context, ITwoFactorService twoFactorService, IAesEncryptionService encryptionService)
+    public TwoFactorController(ApplicationDbContext context, ITwoFactorService twoFactorService, IAesEncryptionService encryptionService)
     {
         _context = context;
         _twoFactorService = twoFactorService;

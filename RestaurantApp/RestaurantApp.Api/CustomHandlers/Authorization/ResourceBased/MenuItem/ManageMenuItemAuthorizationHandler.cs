@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
@@ -8,10 +9,10 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
 
 public class ManageMenuItemAuthorizationHandler : AuthorizationHandler<ManageMenuItemRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageMenuItemAuthorizationHandler> _logger;
 
-    public ManageMenuItemAuthorizationHandler(ApiDbContext context, ILogger<ManageMenuItemAuthorizationHandler> logger)
+    public ManageMenuItemAuthorizationHandler(ApplicationDbContext context, ILogger<ManageMenuItemAuthorizationHandler> logger)
     {
         _context = context;
         _logger = logger;

@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 
@@ -9,10 +10,10 @@ namespace RestaurantApp.Api.Services;
 
 public class MenuCategoryService : IMenuCategoryService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
 
 
-    public MenuCategoryService(ApiDbContext context)
+    public MenuCategoryService(ApplicationDbContext context)
     {
         _context = context;
     }

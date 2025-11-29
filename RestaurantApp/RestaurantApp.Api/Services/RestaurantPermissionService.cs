@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Permissions;
@@ -12,9 +13,9 @@ namespace RestaurantApp.Api.Services;
 
 public class RestaurantPermissionService : IRestaurantPermissionService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public RestaurantPermissionService(ApiDbContext context)
+    public RestaurantPermissionService(ApplicationDbContext context)
     {
         _context = context;
     }

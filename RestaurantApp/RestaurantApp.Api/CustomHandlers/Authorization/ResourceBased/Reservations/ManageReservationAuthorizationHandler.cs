@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
@@ -8,10 +9,10 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservati
 public class ManageReservationAuthorizationHandler 
     : AuthorizationHandler<ManageReservationRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageReservationAuthorizationHandler> _logger;
 
-    public ManageReservationAuthorizationHandler(ApiDbContext context, ILogger<ManageReservationAuthorizationHandler> logger)
+    public ManageReservationAuthorizationHandler(ApplicationDbContext context, ILogger<ManageReservationAuthorizationHandler> logger)
     {
         _context = context;
         _logger = logger;

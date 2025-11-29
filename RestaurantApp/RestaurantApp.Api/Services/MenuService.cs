@@ -5,6 +5,7 @@ using RestaurantApp.Api.Controllers;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Shared.Models;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu;
@@ -14,10 +15,10 @@ namespace RestaurantApp.Api.Services;
 
 public class MenuService : IMenuService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<MenuService> _logger;
 
-    public MenuService(ApiDbContext context, ILogger<MenuService> logger, IStorageService storageService)
+    public MenuService(ApplicationDbContext context, ILogger<MenuService> logger, IStorageService storageService)
     {
         _context = context;
         _logger = logger;

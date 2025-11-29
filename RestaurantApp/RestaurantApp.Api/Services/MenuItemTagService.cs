@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
@@ -11,10 +12,10 @@ namespace RestaurantApp.Api.Services;
 
 public class MenuItemTagService : IMenuItemTagService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<MenuItemTagService> _logger;
 
-    public MenuItemTagService(ApiDbContext context, ILogger<MenuItemTagService> logger)
+    public MenuItemTagService(ApplicationDbContext context, ILogger<MenuItemTagService> logger)
     {
         _context = context;
         _logger = logger;

@@ -1,17 +1,18 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 
 public class ManageTableAuthorizationHandler : AuthorizationHandler<ManageTableRequirement>
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<ManageTableAuthorizationHandler> _logger;
 
     public ManageTableAuthorizationHandler(
-        ApiDbContext context,
+        ApplicationDbContext context,
         ILogger<ManageTableAuthorizationHandler> logger)
     {
         _context = context;

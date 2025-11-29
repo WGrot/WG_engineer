@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;
@@ -12,9 +13,9 @@ namespace RestaurantApp.Api.Services;
 
 public class TableService : ITableService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public TableService(ApiDbContext context)
+    public TableService(ApplicationDbContext context)
     {
         _context = context;
     }

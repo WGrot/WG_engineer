@@ -8,6 +8,7 @@ using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Email.Templates.Restaurant;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.GeoCoding;
@@ -21,13 +22,13 @@ namespace RestaurantApp.Api.Services;
 
 public class RestaurantService : IRestaurantService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<RestaurantService> _logger;
     private readonly IStorageService _storageService;
     private readonly IEmailComposer _emailComposer;
     private readonly IGeocodingService _geocodingService;
 
-    public RestaurantService(ApiDbContext context, ILogger<RestaurantService> logger, IStorageService storageService,
+    public RestaurantService(ApplicationDbContext context, ILogger<RestaurantService> logger, IStorageService storageService,
         IEmailComposer emailComposer, IGeocodingService geocodingService)
     {
         _context = context;

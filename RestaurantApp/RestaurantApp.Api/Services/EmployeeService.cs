@@ -3,6 +3,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -12,10 +13,10 @@ namespace RestaurantApp.Api.Services;
 
 public class EmployeeService : IEmployeeService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly IRestaurantService _restaurantService;
 
-    public EmployeeService(ApiDbContext context, IRestaurantService restaurantService)
+    public EmployeeService(ApplicationDbContext context, IRestaurantService restaurantService)
     {
         _context = context;
         _restaurantService = restaurantService;

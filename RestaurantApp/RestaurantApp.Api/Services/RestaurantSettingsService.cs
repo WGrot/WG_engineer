@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Settings;
@@ -11,10 +12,10 @@ namespace RestaurantApp.Api.Services;
 
 public class RestaurantSettingsService : IRestaurantSettingsService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<RestaurantSettingsService> _logger;
 
-    public RestaurantSettingsService(ApiDbContext context, ILogger<RestaurantSettingsService> logger)
+    public RestaurantSettingsService(ApplicationDbContext context, ILogger<RestaurantSettingsService> logger)
     {
         _context = context;
         _logger = logger;

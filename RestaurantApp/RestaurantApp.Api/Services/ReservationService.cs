@@ -11,6 +11,7 @@ using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Email;
 using RestaurantApp.Api.Services.Email.Templates.Reservations;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
@@ -20,14 +21,14 @@ namespace RestaurantApp.Api.Services;
 
 public class ReservationService : IReservationService
 {
-    private readonly ApiDbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly IRestaurantService _restaurantService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IEmailService _emailService;
     private readonly IEmailComposer _emailComposer;
 
 
-    public ReservationService(ApiDbContext context, IRestaurantService restaurantService,
+    public ReservationService(ApplicationDbContext context, IRestaurantService restaurantService,
         IHttpContextAccessor httpContextAccessor, IEmailComposer emailComposer, IEmailService emailService)
     {
         _context = context;
