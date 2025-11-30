@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
@@ -107,7 +108,7 @@ public class RestaurantPermissionService : IRestaurantPermissionService
             // Sprawdzenie, czy takie uprawnienie już istnieje
             var existingPermission = await _context.RestaurantPermissions
                 .AnyAsync(p => p.RestaurantEmployeeId == dto.RestaurantEmployeeId
-                               && p.Permission == dto.Permission);
+                               && p.Permission == dto.Permission.ToDomain());
 
             if (existingPermission)
                 return Result<RestaurantPermissionDto>.Conflict(
@@ -147,11 +148,11 @@ public class RestaurantPermissionService : IRestaurantPermissionService
                     $"Nie znaleziono pracownika o ID: {permission.RestaurantEmployeeId}");
 
             // Sprawdzenie duplikatu (jeśli zmieniono typ uprawnienia)
-            if (existingPermission.Permission != permission.Permission)
+            if (existingPermission.Permission != permission.Permission.ToDomain())
             {
                 var duplicateExists = await _context.RestaurantPermissions
                     .AnyAsync(p => p.RestaurantEmployeeId == permission.RestaurantEmployeeId
-                                   && p.Permission == permission.Permission
+                                   && p.Permission == permission.Permission.ToDomain()
                                    && p.Id != permission.Id);
 
                 if (duplicateExists)
@@ -198,12 +199,12 @@ public class RestaurantPermissionService : IRestaurantPermissionService
         }
     }
 
-    public async Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionType permission)
+    public async Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionTypeEnumDto permission)
     {
         try
         {
             var permissionId = await _context.RestaurantPermissions
-                .Where(p => p.RestaurantEmployeeId == employeeId && p.Permission == permission)
+                .Where(p => p.RestaurantEmployeeId == employeeId && p.Permission == permission.ToDomain())
                 .Select(p => (int?)p.Id)
                 .FirstOrDefaultAsync();
 
@@ -218,7 +219,7 @@ public class RestaurantPermissionService : IRestaurantPermissionService
     public async Task<Result> UpdateEmployeePermisions(UpdateEmployeePermisionsDto dto)
     {
         Result<RestaurantPermissionDto> result;
-        foreach (PermissionType permission in dto.Permissions)
+        foreach (PermissionTypeEnumDto permission in dto.Permissions)
         {
             Result<int?> PermissionExist = await HasPermissionAsync(dto.EmployeeId, permission);
 
@@ -228,7 +229,7 @@ public class RestaurantPermissionService : IRestaurantPermissionService
                 {
                     Id = PermissionExist.Value.Value,
                     RestaurantEmployeeId = dto.EmployeeId,
-                    Permission = permission,
+                    Permission = permission.ToDomain(),
                 };
                 result = await UpdateAsync(newPermission.ToDto());
 

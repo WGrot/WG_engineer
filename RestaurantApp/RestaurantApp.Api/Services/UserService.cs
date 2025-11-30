@@ -155,7 +155,7 @@ public class UserService : IUserService
                 {
                     UserId = user.Id,
                     RestaurantId = userDto.RestaurantId.Value,
-                    Role = userDto.Role ?? RestaurantRole.Employee,
+                    RoleEnumDto = userDto.Role ?? RestaurantRoleEnumDto.Employee,
                 };
         
                 await _employeeService.CreateAsync(employee);

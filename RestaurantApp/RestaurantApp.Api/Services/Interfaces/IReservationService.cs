@@ -29,7 +29,7 @@ public interface IReservationService
     Task<Result<IEnumerable<ReservationDto>>> GetReservationsByTableIdAsync(int tableId);
 
     // Metody pomocnicze
-    Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status);
+    Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatusEnumDto statusEnumDto);
     
     Task<Result> CancelUserReservation(int reservationId);
 

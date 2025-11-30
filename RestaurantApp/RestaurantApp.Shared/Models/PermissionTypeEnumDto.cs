@@ -1,6 +1,6 @@
 ﻿namespace RestaurantApp.Shared.Models;
 
-public enum PermissionType
+public enum PermissionTypeEnumDto
 {
     ViewReservations = 1,
     ManageReservations = 2,

@@ -1,4 +1,4 @@
-﻿using RestaurantApp.Shared.Models;
+﻿using RestaurantApp.Domain.Enums;
 
 namespace RestaurantApp.Domain.Models;
 

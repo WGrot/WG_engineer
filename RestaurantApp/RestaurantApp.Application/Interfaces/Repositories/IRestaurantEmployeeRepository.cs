@@ -13,6 +13,6 @@ public interface IRestaurantEmployeeRepository
     Task AddAsync(RestaurantEmployee employee);
     void Update(RestaurantEmployee employee);
     void Remove(RestaurantEmployee employee);
-    Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionType> permissions);
+    Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions);
     Task SaveChangesAsync();
 }

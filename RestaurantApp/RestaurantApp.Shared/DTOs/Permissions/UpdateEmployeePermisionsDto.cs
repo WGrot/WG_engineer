@@ -7,5 +7,5 @@ public class UpdateEmployeePermisionsDto
     public int EmployeeId { get; set; }
     
     public int RestaurantId { get; set; }
-    public List<PermissionType> Permissions { get; set; }
+    public List<PermissionTypeEnumDto> Permissions { get; set; }
 }

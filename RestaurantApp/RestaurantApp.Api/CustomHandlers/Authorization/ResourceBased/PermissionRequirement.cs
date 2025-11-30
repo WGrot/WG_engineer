@@ -5,8 +5,8 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 
 public class PermissionRequirement: IAuthorizationRequirement
 {
-    public PermissionType PermissionName { get; }
-    public PermissionRequirement(PermissionType permissionName)
+    public PermissionTypeEnumDto PermissionName { get; }
+    public PermissionRequirement(PermissionTypeEnumDto permissionName)
     {
         PermissionName = permissionName;
     }

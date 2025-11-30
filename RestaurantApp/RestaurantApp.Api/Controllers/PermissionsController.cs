@@ -59,7 +59,7 @@ public class PermissionsController : ControllerBase
     }
 
     [HttpGet("employee/{employeeId}/check/{permission}")]
-    public async Task<IActionResult> CheckPermission(int employeeId, PermissionType permission)
+    public async Task<IActionResult> CheckPermission(int employeeId, PermissionTypeEnumDto permission)
     {
         var result = await _permissionService.HasPermissionAsync(employeeId, permission);
         return result.ToActionResult();
@@ -69,7 +69,7 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManagePermissions));
+            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManagePermissions));
 
         if (!authorizationResult.Succeeded)
             return Forbid();

@@ -8,7 +8,7 @@ public class ReservationSearchParameters
     
     public string? RestaurantName { get; set; }
     public string? UserId { get; set; }
-    public ReservationStatus? Status { get; set; }
+    public ReservationStatusEnumDto? Status { get; set; }
     public string? CustomerName { get; set; }
     public string? CustomerEmail { get; set; }
     public string? CustomerPhone { get; set; }

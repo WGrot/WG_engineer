@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Domain.Models;
+﻿using RestaurantApp.Application.Mappers.EnumMappers;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Permissions;
 
 namespace RestaurantApp.Api.Mappers;
@@ -12,7 +13,7 @@ public static class PermissionMapper
         {
             Id = entity.Id,
             RestaurantEmployeeId = entity.RestaurantEmployeeId,
-            Permission = entity.Permission
+            Permission = entity.Permission.ToShared()
         };
     }
 
@@ -23,7 +24,7 @@ public static class PermissionMapper
         {
             Id = dto.Id,
             RestaurantEmployeeId = dto.RestaurantEmployeeId,
-            Permission = dto.Permission
+            Permission = dto.Permission.ToDomain()
             // RestaurantEmployee będzie uzupełniony przez EF
         };
     }
@@ -32,7 +33,7 @@ public static class PermissionMapper
     public static void UpdateFromDto(this RestaurantPermission entity, RestaurantPermissionDto dto)
     {
         entity.RestaurantEmployeeId = dto.RestaurantEmployeeId;
-        entity.Permission = dto.Permission;
+        entity.Permission = dto.Permission.ToDomain();
         // Nie aktualizujemy Id, bo to klucz główny
     }
 
@@ -53,7 +54,7 @@ public static class PermissionMapper
         return new RestaurantPermission
         {
             RestaurantEmployeeId = dto.RestaurantEmployeeId,
-            Permission = dto.Permission
+            Permission = dto.Permission.ToDomain()
         };
     }
 }

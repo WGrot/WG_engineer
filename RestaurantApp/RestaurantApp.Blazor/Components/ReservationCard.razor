@@ -13,11 +13,11 @@
                               title="@Reservation.RestaurantName">
                             @Reservation.RestaurantName
                         </span>
-                        <span class="badge ms-2 @Reservation.Status.GetStatusBadgeClass()">
-                            @Reservation.Status
+                        <span class="badge ms-2 @Reservation.StatusEnumDto.GetStatusBadgeClass()">
+                            @Reservation.StatusEnumDto
                         </span>
 
-                        @if (Reservation.Status == ReservationStatus.Pending)
+                        @if (Reservation.StatusEnumDto == ReservationStatusEnumDto.Pending)
                         {
                             <span class="badge ms-2 bg-success"
                                   @onclick:stopPropagation="true"

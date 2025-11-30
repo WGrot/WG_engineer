@@ -42,7 +42,7 @@ public class JwtService : IJwtService
             {
                 e.Id, // To jest RestaurantEmployeeId
                 e.RestaurantId,
-                e.Role,
+                Role = e.Role,
                 Permissions = e.Permissions
                     .Select(p => p.Permission)
                     .ToList()

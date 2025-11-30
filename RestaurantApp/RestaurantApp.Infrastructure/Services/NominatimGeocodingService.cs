@@ -74,7 +74,7 @@ public class NominatimGeocodingService : IGeocodingService
         
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning("Nominatim API returned status code: {StatusCode} for address: {Address}", 
+            _logger.LogWarning("Nominatim API returned statusEnumDto code: {StatusCode} for address: {Address}", 
                 response.StatusCode, addressForLog);
             return (null, null);
         }

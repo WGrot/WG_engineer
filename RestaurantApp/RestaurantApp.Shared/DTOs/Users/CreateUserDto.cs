@@ -12,5 +12,5 @@ public class CreateUserDto
     public int? RestaurantId { get; set; } 
     
     public string? Password { get; set; }
-    public RestaurantRole? Role { get; set; }
+    public RestaurantRoleEnumDto? Role { get; set; }
 }

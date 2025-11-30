@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Application.Interfaces.Repositories;
+using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Models;
 
@@ -68,12 +69,12 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
         _context.RestaurantEmployees.Remove(employee);
     }
 
-    public async Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionType> permissions)
+    public async Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions)
     {
         var permissionEntities = permissions.Select(p => new RestaurantPermission
         {
             RestaurantEmployeeId = employeeId,
-            Permission = p
+            Permission = p.ToDomain()
         });
 
         await _context.RestaurantPermissions.AddRangeAsync(permissionEntities);

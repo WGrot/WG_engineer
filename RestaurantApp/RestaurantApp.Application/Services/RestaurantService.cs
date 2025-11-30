@@ -5,6 +5,7 @@ using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Services.Email.Templates.Restaurant;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.GeoCoding;
@@ -122,7 +123,7 @@ public class RestaurantService : IRestaurantService
             await _employeeRepository.AddAsync(ownerEmployee);
             await _employeeRepository.SaveChangesAsync();
 
-            var allPermissions = Enum.GetValues(typeof(PermissionType)).Cast<PermissionType>();
+            var allPermissions = Enum.GetValues(typeof(PermissionTypeEnumDto)).Cast<PermissionTypeEnumDto>();
             await _employeeRepository.AddPermissionsAsync(ownerEmployee.Id, allPermissions);
             await _employeeRepository.SaveChangesAsync();
 

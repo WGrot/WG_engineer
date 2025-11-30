@@ -38,14 +38,14 @@ public class ReservationService : IReservationService
         }
     }
 
-    public async Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationDto reservation, ReservationStatus newStatus)
+    public async Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationDto reservation, ReservationStatusEnumDto newStatusEnumDto)
     {
         try
         {
             var response = await _http.RequestWithHeaderAsync(
                 HttpMethod.Put,
-                $"api/reservation/manage/{reservation.Id}/change-status",
-                newStatus,
+                $"api/reservation/manage/{reservation.Id}/change-statusEnumDto",
+                newStatusEnumDto,
                 "X-Restaurant-Id",
                 reservation.RestaurantId.ToString()
             );
@@ -54,11 +54,11 @@ public class ReservationService : IReservationService
                 return (true, null);
 
             var msg = await response.Content.ReadAsStringAsync();
-            return (false, $"Failed to update status: {msg}");
+            return (false, $"Failed to update statusEnumDto: {msg}");
         }
         catch (Exception ex)
         {
-            return (false, $"Error updating status: {ex.Message}");
+            return (false, $"Error updating statusEnumDto: {ex.Message}");
         }
     }
 }

@@ -13,8 +13,8 @@
                               title="@Reservation.RestaurantName">
                             @Reservation.RestaurantName
                         </span>
-                        <span class="badge ms-2 @Reservation.Status.GetStatusBadgeClass()">
-                            @Reservation.Status
+                        <span class="badge ms-2 @Reservation.StatusEnumDto.GetStatusBadgeClass()">
+                            @Reservation.StatusEnumDto
                         </span>
                     </div>
 
@@ -47,7 +47,7 @@
                 </div>
             </div>
             <div>
-                @if (Reservation.Status == ReservationStatus.Confirmed || Reservation.Status == ReservationStatus.Pending)
+                @if (Reservation.StatusEnumDto == ReservationStatusEnumDto.Confirmed || Reservation.StatusEnumDto == ReservationStatusEnumDto.Pending)
                 {
                     
                     <button class=" button button--red button--outline"

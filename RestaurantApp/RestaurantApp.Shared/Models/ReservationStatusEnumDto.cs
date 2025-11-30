@@ -1,6 +1,6 @@
 ﻿namespace RestaurantApp.Shared.Models;
 
-public enum ReservationStatus
+public enum ReservationStatusEnumDto
 {
     Pending,
     Confirmed,

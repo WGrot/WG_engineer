@@ -16,7 +16,7 @@ public interface IRestaurantPermissionService
     Task<Result<RestaurantPermissionDto>> CreateAsync(CreateRestaurantPermissionDto dto);
     Task<Result<RestaurantPermissionDto>> UpdateAsync(RestaurantPermissionDto permission);
     Task<Result> DeleteAsync(int id);
-    Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionType permission);
+    Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionTypeEnumDto permission);
 
     Task<Result> UpdateEmployeePermisions(UpdateEmployeePermisionsDto dto);
 }

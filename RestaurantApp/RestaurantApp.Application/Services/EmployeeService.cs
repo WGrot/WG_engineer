@@ -1,6 +1,7 @@
 ﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
+using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -68,7 +69,7 @@ public class EmployeeService: IEmployeeService
                 UserId = employee.UserId,
                 RestaurantId = employee.RestaurantId,
                 Restaurant = employee.Restaurant.ToDto(),
-                Role = employee.Role,
+                RoleEnumDto = employee.Role.ToShared(),
                 Permissions = employee.Permissions.ToDtoList(),
                 CreatedAt = employee.CreatedAt,
                 IsActive = employee.IsActive,
@@ -84,7 +85,7 @@ public class EmployeeService: IEmployeeService
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(dtoList);
     }
 
-    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRole newRole)
+    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRoleEnumDto newRoleEnumDto)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
         if (employee == null)
@@ -92,7 +93,7 @@ public class EmployeeService: IEmployeeService
             return Result.NotFound($"Employee with ID {employeeId} not found.");
         }
 
-        employee.Role = newRole;
+        employee.Role = newRoleEnumDto.ToDomain();
         await _employeeRepository.SaveChangesAsync();
         
         return Result.Success();
@@ -108,7 +109,7 @@ public class EmployeeService: IEmployeeService
         {
             UserId = dto.UserId,
             RestaurantId = dto.RestaurantId,
-            Role = dto.Role,
+            Role = dto.RoleEnumDto.ToDomain(),
             Permissions = new List<RestaurantPermission>(),
             CreatedAt = DateTime.UtcNow,
             IsActive = true
@@ -128,7 +129,7 @@ public class EmployeeService: IEmployeeService
         if (employee == null)
             return Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {dto.Id} not found.");
 
-        employee.Role = dto.Role;
+        employee.Role = dto.RoleEnumDto.ToDomain();
         employee.IsActive = dto.IsActive;
 
         await _employeeRepository.SaveChangesAsync();

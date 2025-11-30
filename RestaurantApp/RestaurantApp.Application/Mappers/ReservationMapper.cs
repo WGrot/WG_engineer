@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Domain.Models;
+﻿using RestaurantApp.Application.Mappers.EnumMappers;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 
@@ -25,7 +26,7 @@ public static class ReservationMapper
             RestaurantId = entity.RestaurantId,
             RestaurantName = entity.Restaurant?.Name ?? string.Empty,
             RestaurantAddress = entity.Restaurant?.Address ?? string.Empty,
-            Status = entity.Status,
+            StatusEnumDto = entity.Status.ToShared(),
         };
     }
 
@@ -46,7 +47,7 @@ public static class ReservationMapper
             UserId = dto.UserId,
             NeedsConfirmation = dto.requiresConfirmation,
             RestaurantId = dto.RestaurantId,
-            Status = dto.Status,
+            Status = dto.StatusEnumDto.ToDomain(),
             // Id, Status, CreatedAt i Restaurant są ustawiane automatycznie lub przez EF
         };
     }
@@ -65,7 +66,7 @@ public static class ReservationMapper
         entity.UserId = dto.UserId;
         entity.NeedsConfirmation = dto.requiresConfirmation;
         entity.RestaurantId = dto.RestaurantId;
-        entity.Status = dto.Status;
+        entity.Status = dto.StatusEnumDto.ToDomain();
         // Id, Status, CreatedAt nie aktualizujemy
     }
 
@@ -94,7 +95,7 @@ public static class ReservationMapper
             CustomerName = reservation.CustomerName,
             CustomerEmail = reservation.CustomerEmail,
             CustomerPhone = reservation.CustomerPhone,
-            Status = reservation.Status,
+            StatusEnumDto = reservation.Status.ToShared(),
             Notes = reservation.Notes,
             UserId = reservation.UserId,
             RestaurantId = reservation.RestaurantId,

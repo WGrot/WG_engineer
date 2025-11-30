@@ -28,7 +28,7 @@ public class EmployeesController : ControllerBase
         if (restaurantId.HasValue)
         {
             var authorizationResult = await _authorizationService.AuthorizeAsync(
-                User, restaurantId.Value, new PermissionRequirement(PermissionType.ManageEmployees));
+                User, restaurantId.Value, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
             if (!authorizationResult.Succeeded) return Forbid();
 
             return (await _employeeService.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId.Value)).ToActionResult();
@@ -51,7 +51,7 @@ public class EmployeesController : ControllerBase
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
 
         if (!authorizationResult.Succeeded)
             return Forbid();
@@ -64,7 +64,7 @@ public class EmployeesController : ControllerBase
     public async Task<IActionResult> Update([FromQuery] int restaurantId, UpdateEmployeeDto dto)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+            User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
 
         if (!authorizationResult.Succeeded)
             return Forbid();
@@ -78,7 +78,7 @@ public class EmployeesController : ControllerBase
     public async Task<IActionResult> Delete(int restaurantId, int id)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, restaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+            User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
 
         if (!authorizationResult.Succeeded)
             return Forbid();

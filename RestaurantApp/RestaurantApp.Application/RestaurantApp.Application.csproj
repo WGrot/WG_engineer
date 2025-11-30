@@ -8,7 +8,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RestaurantApp.Domain\RestaurantApp.Domain.csproj" />
+        <ProjectReference Include="..\RestaurantApp.Shared\RestaurantApp.Shared.csproj" />
     </ItemGroup>
+
+
 
     <ItemGroup>
       <Reference Include="SkiaSharp">

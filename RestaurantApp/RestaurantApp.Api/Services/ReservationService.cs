@@ -10,7 +10,9 @@ using RestaurantApp.Api.Helpers.QueryBuilders;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Services;
+using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Application.Services.Email.Templates.Reservations;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
@@ -100,7 +102,7 @@ public class ReservationService : IReservationService
         query = searchParams.SortBy?.ToLower() switch
         {
             "oldest" => query.OrderBy(r => r.ReservationDate).ThenBy(r => r.StartTime),
-            "status" => query.OrderBy(r => r.Status),
+            "statusEnumDto" => query.OrderBy(r => r.Status),
             "newest" => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime),
             _ => query.OrderByDescending(r => r.ReservationDate).ThenByDescending(r => r.StartTime) // Domyślne
         };
@@ -161,7 +163,7 @@ public class ReservationService : IReservationService
             StartTime = reservationDto.StartTime,
             EndTime = reservationDto.EndTime,
             Notes = reservationDto.Notes,
-            Status = ReservationStatus.Pending,
+            Status = ReservationStatusEnumDto.Pending.ToDomain(),
             CreatedAt = DateTime.UtcNow,
             NeedsConfirmation = restaurant.Value.Settings?.ReservationsNeedConfirmation == true
         };
@@ -332,12 +334,12 @@ public class ReservationService : IReservationService
             tableReservationDto.UserId = _context.Users.FirstOrDefault(u => u.Email == tableReservationDto.CustomerEmail).Id;
         }
         
-        ReservationStatus initialStatus = ReservationStatus.Confirmed;
+        ReservationStatusEnumDto initialStatusEnumDto = ReservationStatusEnumDto.Confirmed;
 
         var needsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true;
         if (needsConfirmation)
         {
-            initialStatus = ReservationStatus.Pending;
+            initialStatusEnumDto = ReservationStatusEnumDto.Pending;
         }
 
         var reservation = new TableReservation
@@ -354,7 +356,7 @@ public class ReservationService : IReservationService
             Notes = tableReservationDto.Notes,
             TableId = tableReservationDto.TableId,
             Table = table,
-            Status = initialStatus,
+            Status = initialStatusEnumDto.ToDomain(),
             CreatedAt = DateTime.UtcNow,
             NeedsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true
         };
@@ -431,7 +433,7 @@ public class ReservationService : IReservationService
     // ===== METODY POMOCNICZE =====
     
 
-    public async Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatus status)
+    public async Task<Result> UpdateReservationStatusAsync(int reservationId, ReservationStatusEnumDto statusEnumDto)
     {
         var reservation = await _context.Reservations.FindAsync(reservationId);
         if (reservation == null)
@@ -439,7 +441,7 @@ public class ReservationService : IReservationService
             return Result.NotFound($"Reservation with id {reservationId} not found");
         }
 
-        reservation.Status = status;
+        reservation.Status = statusEnumDto.ToDomain();
         _context.Reservations.Update(reservation);
         await _context.SaveChangesAsync();
         return Result.Success();

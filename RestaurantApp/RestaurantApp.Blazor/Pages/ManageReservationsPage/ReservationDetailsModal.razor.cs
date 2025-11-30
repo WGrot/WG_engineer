@@ -14,7 +14,7 @@ public partial class ReservationDetailsModal : ComponentBase
 
     [Parameter] public ReservationDto? Reservation { get; set; }
 
-    private ReservationStatus? SelectedStatus;
+    private ReservationStatusEnumDto? SelectedStatus;
     private bool IsProcessing;
     private string? Error;
     private string? Success;
@@ -24,7 +24,7 @@ public partial class ReservationDetailsModal : ComponentBase
     {
         if (Reservation is not null)
         {
-            SelectedStatus = Reservation.Status;
+            SelectedStatus = Reservation.StatusEnumDto;
         }
     }
 
@@ -41,8 +41,8 @@ public partial class ReservationDetailsModal : ComponentBase
 
         if (success)
         {
-            Success = "Status updated successfully!";
-            Reservation.Status = SelectedStatus.Value;
+            Success = "StatusEnumDto updated successfully!";
+            Reservation.StatusEnumDto = SelectedStatus.Value;
 
             await Task.Delay(1500);
             await Close();

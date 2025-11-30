@@ -28,7 +28,7 @@
                     @if (isLoadingPermissions)
                     {
                         <div class="text-center">
-                            <div class="spinner-border" role="status">
+                            <div class="spinner-border" role="statusEnumDto">
                                 <span class="visually-hidden">Loading permissions...</span>
                             </div>
                         </div>
@@ -43,7 +43,7 @@
                                     <p class="mb-1"><strong>Email:</strong> @Employee?.Email</p>
                                     <p class="mb-1"><strong>Phone:</strong> @Employee?.PhoneNumber</p>
                                     <p class="mb-0"><strong>Current role:</strong> 
-                                        <span class="badge bg-primary">@currentRole</span>
+                                        <span class="badge bg-primary">@_currentRoleEnumDto</span>
                                     </p>
                                 </div>
                             </div>
@@ -51,10 +51,10 @@
 
                         <div class="mb-4">
                             <h6>Change employee role</h6>
-                            <select class="form-control" @bind="selectedRole">
-                                @foreach (var role in Enum.GetValues<RestaurantRole>())
+                            <select class="form-control" @bind="_selectedRoleEnumDto">
+                                @foreach (var role in Enum.GetValues<RestaurantRoleEnumDto>())
                                 {
-                                    <option value="@role" selected="@(role == currentRole)">@role</option>
+                                    <option value="@role" selected="@(role == _currentRoleEnumDto)">@role</option>
                                 }
                             </select>
                         </div>
@@ -63,7 +63,7 @@
                             <h6>Employee permissions</h6>
                             <div class="card">
                                 <div class="card-body">
-                                    @foreach (var permission in Enum.GetValues<PermissionType>())
+                                    @foreach (var permission in Enum.GetValues<PermissionTypeEnumDto>())
                                     {
                                         <div class="form-check form-switch mb-2">
                                             <input class="form-check-input" 
@@ -129,10 +129,10 @@
     private string? errorMessage;
     private string? successMessage;
     
-    // Role and permissions
-    private RestaurantRole currentRole = RestaurantRole.Employee;
-    private RestaurantRole selectedRole = RestaurantRole.Employee;
-    private HashSet<PermissionType> selectedPermissions = new HashSet<PermissionType>();
+    // RoleEnumDto and permissions
+    private RestaurantRoleEnumDto _currentRoleEnumDto = RestaurantRoleEnumDto.Employee;
+    private RestaurantRoleEnumDto _selectedRoleEnumDto = RestaurantRoleEnumDto.Employee;
+    private HashSet<PermissionTypeEnumDto> selectedPermissions = new HashSet<PermissionTypeEnumDto>();
     private List<RestaurantPermissionDto> permissionsResponse = new List<RestaurantPermissionDto>();
     private bool isActive = true;
 
@@ -153,8 +153,8 @@
         {
             permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"api/Permissions/employee/{Employee.Id}/");
             // Przykładowe dane - zastąp danymi z API
-            currentRole = Employee.Role;
-            selectedRole = Employee.Role;
+            _currentRoleEnumDto = Employee.RoleEnumDto;
+            _selectedRoleEnumDto = Employee.RoleEnumDto;
             isActive = Employee.IsActive;
             selectedPermissions.Clear();
             
@@ -175,7 +175,7 @@
         }
     }
 
-    private void TogglePermission(PermissionType permission, ChangeEventArgs e)
+    private void TogglePermission(PermissionTypeEnumDto permission, ChangeEventArgs e)
     {
         if (e.Value is bool isChecked)
         {
@@ -190,18 +190,18 @@
         }
     }
 
-    private string GetPermissionDisplayName(PermissionType permission)
+    private string GetPermissionDisplayName(PermissionTypeEnumDto permission)
     {
         return permission switch
         {
-            PermissionType.ViewReservations => "View Reservations",
-            PermissionType.ManageReservations => "Manage Reservations",
-            PermissionType.ManageTables => "Manage Tables",
-            PermissionType.ManageMenu => "Manage Menu",
-            PermissionType.ManageEmployees => "Manage Employees",
-            PermissionType.ManagePermissions => "View Reports",
-            PermissionType.ManageRestaurantSettings => "Manage Restaurant Settings",
-            PermissionType.ManageFinances => "Manage Finances",
+            PermissionTypeEnumDto.ViewReservations => "View Reservations",
+            PermissionTypeEnumDto.ManageReservations => "Manage Reservations",
+            PermissionTypeEnumDto.ManageTables => "Manage Tables",
+            PermissionTypeEnumDto.ManageMenu => "Manage Menu",
+            PermissionTypeEnumDto.ManageEmployees => "Manage Employees",
+            PermissionTypeEnumDto.ManagePermissions => "View Reports",
+            PermissionTypeEnumDto.ManageRestaurantSettings => "Manage Restaurant Settings",
+            PermissionTypeEnumDto.ManageFinances => "Manage Finances",
             _ => permission.ToString()
         };
     }
@@ -248,7 +248,7 @@
     private async Task<bool> SaveRole()
     {
         if (Employee == null) return false;
-        if (selectedRole == currentRole) return true; // Brak zmian - sukces
+        if (_selectedRoleEnumDto == _currentRoleEnumDto) return true; // Brak zmian - sukces
     
         try
         {
@@ -256,7 +256,7 @@
             {
                 Id = Employee.Id,
                 IsActive = isActive,
-                Role = selectedRole
+                RoleEnumDto = _selectedRoleEnumDto
             };
             var response = await Http.PutAsJsonAsync(
                 $"api/Employees/{Employee.Id}?restaurantId={RestaurantId}", 
@@ -265,20 +265,20 @@
         
             if (response.IsSuccessStatusCode)
             {
-                // Aktualizuj currentRole TYLKO po udanym zapisie
-                currentRole = selectedRole;
+                // Aktualizuj _currentRoleEnumDto TYLKO po udanym zapisie
+                _currentRoleEnumDto = _selectedRoleEnumDto;
             
                 // Aktualizuj także właściwość Employee
-                Employee.Role = selectedRole;
+                Employee.RoleEnumDto = _selectedRoleEnumDto;
             
                 // Dodaj komunikat sukcesu
                 if (string.IsNullOrEmpty(successMessage))
                 {
-                    successMessage = "Role has been updated";
+                    successMessage = "RoleEnumDto has been updated";
                 }
                 else
                 {
-                    successMessage += " Role has been updated.";
+                    successMessage += " RoleEnumDto has been updated.";
                 }
             
                 return true;
@@ -291,8 +291,8 @@
                     ? $"Error in role update: {error}"
                     : errorMessage + $"\nError in role update: {error}";
             
-                // Przywróć selectedRole do currentRole
-                selectedRole = currentRole;
+                // Przywróć _selectedRoleEnumDto do _currentRoleEnumDto
+                _selectedRoleEnumDto = _currentRoleEnumDto;
                 return false;
             }
         }
@@ -302,8 +302,8 @@
                 ? $"Error in role update: {ex.Message}"
                 : errorMessage + $"\nError in role update: {ex.Message}";
         
-            // Przywróć selectedRole do currentRole
-            selectedRole = currentRole;
+            // Przywróć _selectedRoleEnumDto do _currentRoleEnumDto
+            _selectedRoleEnumDto = _currentRoleEnumDto;
             return false;
         }
     }
@@ -316,7 +316,7 @@
         {
             Id = Employee.Id,
             IsActive = isActive,
-            Role = Employee.Role
+            RoleEnumDto = Employee.RoleEnumDto
         };
         var response = await Http.PutAsJsonAsync(
             $"api/Employees/{Employee.Id}?restaurantId={RestaurantId}", 

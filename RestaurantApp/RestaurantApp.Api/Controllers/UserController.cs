@@ -55,7 +55,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionType.ManageEmployees));
+            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
 
         if (!authorizationResult.Succeeded)
             return Forbid();

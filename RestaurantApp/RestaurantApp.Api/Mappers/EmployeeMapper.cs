@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Domain.Models;
+﻿using RestaurantApp.Application.Mappers.EnumMappers;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Permissions;
 
@@ -14,7 +15,7 @@ public static class EmployeeMapper
             UserId = entity.UserId,
             RestaurantId = entity.RestaurantId,
             Restaurant = entity.Restaurant?.ToDto(),
-            Role = entity.Role,
+            RoleEnumDto = entity.Role.ToShared(),
             Permissions = entity.Permissions?.Select(p => p.ToDto()).ToList() ?? new List<RestaurantPermissionDto>(),
             CreatedAt = entity.CreatedAt,
             IsActive = entity.IsActive
@@ -31,7 +32,7 @@ public static class EmployeeMapper
             Id = dto.Id,
             UserId = dto.UserId,
             RestaurantId = dto.RestaurantId,
-            Role = dto.Role,
+            Role = dto.RoleEnumDto.ToDomain(),
             Permissions = dto.Permissions?.Select(p => p.ToEntity()).ToList() ?? new List<RestaurantPermission>(),
             CreatedAt = dto.CreatedAt,
             IsActive = dto.IsActive
@@ -45,7 +46,7 @@ public static class EmployeeMapper
     {
         entity.UserId = dto.UserId;
         entity.RestaurantId = dto.RestaurantId;
-        entity.Role = dto.Role;
+        entity.Role = dto.RoleEnumDto.ToDomain();
         entity.IsActive = dto.IsActive;
         
         // Aktualizacja uprawnień (jeśli przekazane)

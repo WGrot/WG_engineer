@@ -30,7 +30,7 @@ partial class ManageReservationsPage
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
     private ReservationDto? selectedReservation;
-    private ReservationStatus? selectedStatus;
+    private ReservationStatusEnumDto? selectedStatus;
     private bool isProcessing = false;
     private string? modalError;
     private string? modalSuccess;
@@ -146,7 +146,7 @@ partial class ManageReservationsPage
         try
         {
             var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
-                $"api/reservation/manage/{reservationId}/change-status", ReservationStatus.Confirmed, "X-Restaurant-Id",
+                $"api/reservation/manage/{reservationId}/change-statusEnumDto", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
                 restaurantId.ToString());
 
             if (!response.IsSuccessStatusCode)
@@ -171,7 +171,7 @@ partial class ManageReservationsPage
     private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
-        selectedStatus = reservation.Status;
+        selectedStatus = reservation.StatusEnumDto;
         modalError = null;
         modalSuccess = null;
         showReservationModal = true;

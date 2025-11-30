@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Models;
 

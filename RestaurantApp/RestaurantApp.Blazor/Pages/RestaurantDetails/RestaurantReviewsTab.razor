@@ -75,7 +75,7 @@
                                             disabled="@(isSubmitting || IsDeletting)">
                                         @if (isSubmitting)
                                         {
-                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
                                             <span>Updating...</span>
                                         }
                                         else
@@ -90,7 +90,7 @@
                                             disabled="@(isSubmitting || IsDeletting)">
                                         @if (IsDeletting)
                                         {
-                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
                                             <span>Deleting...</span>
                                         }
                                         else
@@ -156,7 +156,7 @@
                                         disabled="@(isSubmitting)">
                                     @if (isSubmitting)
                                     {
-                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
                                         <span>Posting...</span>
                                     }
                                     else
@@ -199,7 +199,7 @@
         @if (isInitialLoading)
         {
             <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
+                <div class="spinner-border text-primary" role="statusEnumDto">
                     <span class="visually-hidden">Loading reviews...</span>
                 </div>
             </div>
@@ -255,7 +255,7 @@
                             disabled="@isLoadingMore">
                         @if (isLoadingMore)
                         {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
                             <span>Loading...</span>
                         }
                         else

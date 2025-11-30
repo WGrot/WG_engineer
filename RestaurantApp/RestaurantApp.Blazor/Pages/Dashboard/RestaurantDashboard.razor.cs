@@ -63,7 +63,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
             pendingSearchParams.Page = 1;
             pendingSearchParams.PageSize = 4;
             pendingSearchParams.SortBy = "oldest";
-            pendingSearchParams.Status = ReservationStatus.Pending;
+            pendingSearchParams.Status = ReservationStatusEnumDto.Pending;
             pendingSearchParams.RestaurantId = restaurantId;
         }
         isLoading = false;
@@ -118,7 +118,7 @@ public partial class RestaurantDashboard : ComponentBase, IDisposable
             Page = 1,
             PageSize = 4,
             SortBy = "oldest",
-            Status = ReservationStatus.Pending,
+            Status = ReservationStatusEnumDto.Pending,
             RestaurantId = restaurantId
         };
         

@@ -5,9 +5,9 @@ namespace RestaurantApp.Api.CustomHandlers.Authorization;
 
 public class SpecificRestaurantEmployeeRequirement : IAuthorizationRequirement
 {
-    public PermissionType[] RequiredPermissions { get; set; }
+    public PermissionTypeEnumDto[] RequiredPermissions { get; set; }
     
-    public SpecificRestaurantEmployeeRequirement(params PermissionType[] permissions)
+    public SpecificRestaurantEmployeeRequirement(params PermissionTypeEnumDto[] permissions)
     {
         RequiredPermissions = permissions;
     }

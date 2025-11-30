@@ -186,19 +186,19 @@ builder.Services.AddAuthorization(options =>
 
     // Sprawdzanie konkretnych uprawnień
     options.AddPolicy("ManageReservations", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageReservations)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageReservations)));
     
     options.AddPolicy("ManageMenu", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageMenu)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageMenu)));
     
     options.AddPolicy("ManageTables", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageTables)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageTables)));
     
     options.AddPolicy("ManageEmployees", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManageEmployees)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageEmployees)));
     
     options.AddPolicy("ViewReports", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionType.ManagePermissions)));
+        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManagePermissions)));
     
 });
 

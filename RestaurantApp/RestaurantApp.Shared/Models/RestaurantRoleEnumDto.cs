@@ -1,6 +1,6 @@
 ﻿namespace RestaurantApp.Shared.Models;
 
-public enum RestaurantRole
+public enum RestaurantRoleEnumDto
 {
     Owner = 1,
     Manager = 2,

@@ -22,7 +22,7 @@ public partial class NextReservationsView : ComponentBase
     private List<ReservationDto>? reservations = new List<ReservationDto>();
     
     private ReservationDto? selectedReservation;
-    private ReservationStatus? selectedStatus;
+    private ReservationStatusEnumDto? selectedStatus;
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
     private bool isProcessing = false;
@@ -32,7 +32,7 @@ public partial class NextReservationsView : ComponentBase
     private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
-        selectedStatus = reservation.Status;
+        selectedStatus = reservation.StatusEnumDto;
         modalError = null;
         modalSuccess = null;
         showReservationModal = true;
@@ -55,7 +55,7 @@ public partial class NextReservationsView : ComponentBase
             {
                 Page = 1,
                 PageSize = 4,
-                Status = ReservationStatus.Pending,
+                Status = ReservationStatusEnumDto.Pending,
                 SortBy = "oldest",
                 RestaurantId = RestaurantId,
             };
@@ -110,7 +110,7 @@ public partial class NextReservationsView : ComponentBase
     private async Task ApproveReservation(int reservationId, int restaurantId)
     {
         var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
-            $"api/reservation/manage/{reservationId}/change-status", ReservationStatus.Confirmed, "X-Restaurant-Id",
+            $"api/reservation/manage/{reservationId}/change-statusEnumDto", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
             restaurantId.ToString());
         await LoadReservations();
     }

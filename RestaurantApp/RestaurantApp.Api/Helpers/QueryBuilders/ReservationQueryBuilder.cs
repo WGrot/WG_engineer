@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;
@@ -79,7 +80,7 @@ public static class ReservationQueryBuilder
 
         if (searchParams.Status.HasValue)
         {
-            query = query.Where(r => r.Status == searchParams.Status.Value);
+            query = query.Where(r => r.Status == searchParams.Status.Value.ToDomain());
         }
 
         if (!string.IsNullOrWhiteSpace(searchParams.CustomerName))

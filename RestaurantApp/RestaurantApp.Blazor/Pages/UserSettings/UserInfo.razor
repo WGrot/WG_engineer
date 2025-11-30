@@ -144,7 +144,7 @@ else
                 NotificationService.AddNotification(new Notification
                 {
                     Title = "Error",
-                    Content = $"Error updating user try again later or contact support, Status Code: {result.StatusCode}",
+                    Content = $"Error updating user try again later or contact support, StatusEnumDto Code: {result.StatusCode}",
                     Type = NotificationType.Error
                 });
             }

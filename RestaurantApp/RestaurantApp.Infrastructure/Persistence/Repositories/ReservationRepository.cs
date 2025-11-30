@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Application.Interfaces.Repositories;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Models;
 

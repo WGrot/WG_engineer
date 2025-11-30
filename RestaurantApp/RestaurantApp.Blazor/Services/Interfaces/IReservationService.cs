@@ -7,5 +7,5 @@ public interface IReservationService
 {
     public Task<(bool Success, string? Error)> DeleteReservationAsync(ReservationDto reservation);
 
-    public Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationDto reservation, ReservationStatus newStatus);
+    public Task<(bool Success, string? Error)> UpdateReservationStatusAsync(ReservationDto reservation, ReservationStatusEnumDto newStatusEnumDto);
 }

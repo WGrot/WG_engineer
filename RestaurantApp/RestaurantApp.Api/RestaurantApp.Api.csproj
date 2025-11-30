@@ -39,6 +39,7 @@
       <ProjectReference Include="..\RestaurantApp.Domain\RestaurantApp.Domain.csproj" />
       <ProjectReference Include="..\RestaurantApp.Shared\RestaurantApp.Shared.csproj" />
       <ProjectReference Include="..\RestaurantApp.Infrastructure\RestaurantApp.Infrastructure.csproj" />
+      <ProjectReference Include="..\RestaurantApp.Application\RestaurantApp.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>

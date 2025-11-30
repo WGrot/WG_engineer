@@ -5,13 +5,13 @@ namespace RestaurantApp.Blazor.Helpers;
 public static class ReservationStatusHelper
 {
     
-    public static string GetStatusBadgeClass(this ReservationStatus status) =>
-        status switch
+    public static string GetStatusBadgeClass(this ReservationStatusEnumDto statusEnumDto) =>
+        statusEnumDto switch
         {
-            ReservationStatus.Pending => "bg-warning text-dark",
-            ReservationStatus.Confirmed => "bg-primary",
-            ReservationStatus.Cancelled => "bg-danger",
-            ReservationStatus.Completed => "bg-success",
+            ReservationStatusEnumDto.Pending => "bg-warning text-dark",
+            ReservationStatusEnumDto.Confirmed => "bg-primary",
+            ReservationStatusEnumDto.Cancelled => "bg-danger",
+            ReservationStatusEnumDto.Completed => "bg-success",
             _ => "bg-secondary"
         };
 }

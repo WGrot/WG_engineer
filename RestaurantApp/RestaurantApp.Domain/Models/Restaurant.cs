@@ -1,6 +1,4 @@
 ﻿using NetTopologySuite.Geometries;
-using RestaurantApp.Shared.Models;
-
 namespace RestaurantApp.Domain.Models;
 
 public class Restaurant

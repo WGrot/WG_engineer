@@ -267,14 +267,14 @@
                     int activeRestaurantId = int.Parse(activeRestaurantIdString);
                     canManageReservations = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
                     {
-                        PermissionType.ManageReservations.ToString(),
+                        PermissionTypeEnumDto.ManageReservations.ToString(),
                     });
                     canEditRestaurant = await PermissionService.HasAnyPermissionAsync(activeRestaurantId, new[]
                     {
-                        PermissionType.ManageMenu.ToString(),
-                        PermissionType.ManageEmployees.ToString(),
-                        PermissionType.ManageTables.ToString(),
-                        PermissionType.ManageRestaurantSettings.ToString()
+                        PermissionTypeEnumDto.ManageMenu.ToString(),
+                        PermissionTypeEnumDto.ManageEmployees.ToString(),
+                        PermissionTypeEnumDto.ManageTables.ToString(),
+                        PermissionTypeEnumDto.ManageRestaurantSettings.ToString()
                     });
                 }
             }
@@ -285,7 +285,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error checking auth status: {ex.Message}");
+            Console.WriteLine($"Error checking auth statusEnumDto: {ex.Message}");
             _isAuthenticated = false;
             _currentUser = null;
         }
@@ -295,7 +295,7 @@
     {
         if (_isAuthenticated)
         {
-            // canManageReservations = await PermissionService.HasPermissionAsync(PermissionType.ManageReservations.ToString());
+            // canManageReservations = await PermissionService.HasPermissionAsync(PermissionTypeEnumDto.ManageReservations.ToString());
             // canEditRestaurant = await PermissionService.CanEditRestaurantAsync();
         }
         else

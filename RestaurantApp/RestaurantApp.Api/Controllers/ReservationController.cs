@@ -202,8 +202,8 @@ public class ReservationController : ControllerBase
         return reservations.ToActionResult();
     }
     
-    [HttpPut("manage/{id}/change-status")]
-    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatus status)
+    [HttpPut("manage/{id}/change-statusEnumDto")]
+    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto statusEnumDto)
     {
         if (!ModelState.IsValid)
         {
@@ -222,7 +222,7 @@ public class ReservationController : ControllerBase
         }
 
 
-        var result = await _reservationService.UpdateReservationStatusAsync(id, status);
+        var result = await _reservationService.UpdateReservationStatusAsync(id, statusEnumDto);
         return result.ToActionResult();
     }
     

@@ -16,7 +16,7 @@ public class RestaurantEmployeeDto
     public string UserId { get; set; }
     public int RestaurantId { get; set; }
     public RestaurantDto Restaurant { get; set; }
-    public RestaurantRole Role { get; set; }
+    public RestaurantRoleEnumDto RoleEnumDto { get; set; }
     public List<RestaurantPermissionDto> Permissions { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }

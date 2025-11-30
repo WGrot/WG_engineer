@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RestaurantApp.Domain.Models
+﻿namespace RestaurantApp.Domain.Models
 {
     public class RefreshToken
     {

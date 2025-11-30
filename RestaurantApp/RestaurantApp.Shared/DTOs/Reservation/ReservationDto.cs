@@ -15,7 +15,7 @@ public class ReservationDto
     public string CustomerEmail { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
 
-    public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
+    public ReservationStatusEnumDto StatusEnumDto { get; set; } = ReservationStatusEnumDto.Pending;
     
     public string? Notes { get; set; }
 
