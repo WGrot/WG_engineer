@@ -82,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantEmployeeRepository, RestaurantEmployeeRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMenuItemVariantRepository, MenuItemVariantRepository>();
+        services.AddSingleton<IEncryptionService, AesEncryptionService>();
         return services;
     }
 }

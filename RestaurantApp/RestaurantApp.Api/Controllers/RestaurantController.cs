@@ -153,14 +153,24 @@ public class RestaurantController : ControllerBase
     [HttpPost("{id}/upload-profile-photo")]
     public async Task<IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
     {
-        var result = await _imageService.UploadProfilePhotoAsync(id, image);
+        await using var stream = image.OpenReadStream();
+        
+        var result = await _imageService.UploadProfilePhotoAsync(
+            id,
+            stream,
+            image.FileName);
+
         return result.ToActionResult();
     }
 
     [HttpPost("{id}/upload-restaurant-photos")]
     public async Task<IActionResult> UploadRestaurantPhotos(List<IFormFile> imageList, int id)
     {
-        var result = await _imageService.UploadGalleryPhotosAsync(id, imageList);
+        var images = imageList.Select(f => new ImageFileDto(f.OpenReadStream(), f.FileName));
+
+        var result = await _imageService.UploadGalleryPhotosAsync(
+            id,
+            images);
         return result.ToActionResult();
     }
 

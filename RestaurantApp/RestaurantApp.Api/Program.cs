@@ -72,7 +72,6 @@ builder.Services.AddApplication();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
-builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
 builder.Services.AddScoped<IPasswordService, PasswordService > ();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
@@ -94,13 +93,6 @@ builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandle
 builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationHandler>();
 
-builder.Services.AddScoped<IAesEncryptionService, AesEncryptionService>();
-
-
-// builder.Services.AddScoped<IBucketService, BucketService>();
-// builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
-// builder.Services.AddScoped<IUrlBuilder, UrlBuilder>();
-// builder.Services.AddScoped<IStorageService, StorageService>();
 
 
 // NAJPIERW Identity

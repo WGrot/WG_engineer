@@ -1,14 +1,15 @@
 ﻿using OtpNet;
 using QRCoder;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 
 namespace RestaurantApp.Api.Services;
 
 public class TwoFactorService: ITwoFactorService
 {
-    private readonly IAesEncryptionService _encryptionService;
+    private readonly IEncryptionService _encryptionService;
     
-    public TwoFactorService(IAesEncryptionService aesEncryptionService)
+    public TwoFactorService(IEncryptionService aesEncryptionService)
     {
         _encryptionService = aesEncryptionService;
     }

@@ -38,5 +38,55 @@ public class Restaurant
     public int TotalRatings3Star { get; set; } = 0;
     public int TotalRatings4Star { get; set; } = 0;
     public int TotalRatings5Star { get; set; } = 0;
+    
+    
+    
+    
+    public void SetProfilePhoto(string url, string? thumbnailUrl)
+    {
+        profileUrl = url ?? throw new ArgumentNullException(nameof(url));
+        profileThumbnailUrl = thumbnailUrl;
+    }
+
+    public void RemoveProfilePhoto()
+    {
+        profileUrl = null;
+        profileThumbnailUrl = null;
+    }
+
+    public bool HasProfilePhoto() => !string.IsNullOrEmpty(profileUrl);
+
+    // Gallery methods
+    public void AddGalleryPhoto(string url, string? thumbnailUrl)
+    {
+        photosUrls.Add(url ?? throw new ArgumentNullException(nameof(url)));
+        if (thumbnailUrl != null)
+        {
+            photosThumbnailsUrls.Add(thumbnailUrl);
+        }
+    }
+
+    public void RemoveGalleryPhotoAt(int index)
+    {
+        if (!IsValidPhotoIndex(index))
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+        
+        photosUrls.RemoveAt(index);
+        
+        if (index < photosThumbnailsUrls.Count)
+        {
+            photosThumbnailsUrls.RemoveAt(index);
+        }
+    }
+
+    public bool IsValidPhotoIndex(int index) 
+        => index >= 0 && index < photosUrls.Count;
+
+    public string GetPhotoUrlAt(int index) => photosUrls[index];
+    
+    public string? GetThumbnailUrlAt(int index) 
+        => index < photosThumbnailsUrls.Count ? photosThumbnailsUrls[index] : null;
 
 }
