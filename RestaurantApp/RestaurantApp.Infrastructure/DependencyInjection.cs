@@ -87,6 +87,7 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantPermissionRepository, RestaurantPermissionRepository>();
         services.AddScoped<IRestaurantSettingsRepository, RestaurantSettingsRepository>();
         services.AddSingleton<IJwtSettings, JwtSettings>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         return services;
     }
 }

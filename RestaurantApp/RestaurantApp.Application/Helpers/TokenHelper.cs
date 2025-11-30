@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace RestaurantApp.Api.Helpers;
+namespace RestaurantApp.Application.Helpers;
 
 public static class TokenHelper
 {

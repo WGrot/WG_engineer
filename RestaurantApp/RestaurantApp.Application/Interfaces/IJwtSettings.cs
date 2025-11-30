@@ -6,4 +6,6 @@ public interface IJwtSettings
     string Issuer { get; }
     string Audience { get; }
     int TokenExpirationMinutes { get; }
+    
+    int RefreshTokenDays { get; }
 }
