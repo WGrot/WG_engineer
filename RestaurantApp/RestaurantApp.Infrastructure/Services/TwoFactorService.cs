@@ -1,18 +1,18 @@
 ﻿using OtpNet;
 using QRCoder;
-using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Application.Interfaces.Services;
 
-namespace RestaurantApp.Api.Services;
+namespace RestaurantApp.Infrastructure.Services;
 
 public class TwoFactorService: ITwoFactorService
 {
     private readonly IEncryptionService _encryptionService;
-    
-    public TwoFactorService(IEncryptionService aesEncryptionService)
+
+    public TwoFactorService(IEncryptionService encryptionService)
     {
-        _encryptionService = aesEncryptionService;
+        _encryptionService = encryptionService;
     }
+
     public string GenerateSecretKey()
     {
         var key = KeyGeneration.GenerateRandomKey(20);
@@ -34,9 +34,7 @@ public class TwoFactorService: ITwoFactorService
 
     public bool ValidateCode(string encryptedKey, string code)
     {
-        
         var decryptedSecretKey = Base32Encoding.ToBytes(_encryptionService.Decrypt(encryptedKey));
-        
         var totp = new Totp(decryptedSecretKey);
         return totp.VerifyTotp(code, out _, new VerificationWindow(2, 2));
     }

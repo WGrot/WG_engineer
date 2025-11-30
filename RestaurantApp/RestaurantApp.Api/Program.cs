@@ -75,7 +75,6 @@ builder.Services.AddApplication();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ILinkGenerator, LinkGenerator>();
-builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
