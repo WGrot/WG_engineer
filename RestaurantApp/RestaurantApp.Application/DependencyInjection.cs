@@ -10,6 +10,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddScoped<IMenuCategoryService, MenuCategoryService>();
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<IReviewService, ReviewService>();

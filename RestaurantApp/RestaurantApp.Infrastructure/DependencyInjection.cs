@@ -70,6 +70,7 @@ public static class DependencyInjection
 
         // Other services
         services.AddScoped<IMenuCategoryRepository, MenuCategoryRepository>();
+        services.AddScoped<IMenuItemRepository, MenuItemRepository>();
         services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantRepository>();

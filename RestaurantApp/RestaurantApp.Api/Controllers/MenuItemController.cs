@@ -16,12 +16,12 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class MenuItemController : ControllerBase
 {
-    public readonly IMenuItemService _menuItemService;
+    private readonly RestaurantApp.Application.Interfaces.Services.IMenuItemService _menuItemService;
     private readonly IAuthorizationService _authorizationService;
 
-    public MenuItemController(IMenuItemService tagService, IAuthorizationService authorizationService)
+    public MenuItemController(RestaurantApp.Application.Interfaces.Services.IMenuItemService menuService, IAuthorizationService authorizationService)
     {
-        _menuItemService = tagService;
+        _menuItemService = menuService;
         _authorizationService = authorizationService;
     }
 
@@ -171,8 +171,21 @@ public class MenuItemController : ControllerBase
             new ManageMenuItemRequirement(itemId));
 
         if (!authResult.Succeeded)
+        {
             return Forbid();
-        return (await _menuItemService.UploadMenuItemImageAsync(itemId, image)).ToActionResult();
+        }
+        
+        using var memoryStream = new MemoryStream();
+        await image.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;  // Reset position before passing to service
+    
+        var result = await _menuItemService.UploadMenuItemImageAsync(
+            itemId, 
+            memoryStream, 
+            image.FileName
+        );
+
+        return result.ToActionResult();
     }
 
 

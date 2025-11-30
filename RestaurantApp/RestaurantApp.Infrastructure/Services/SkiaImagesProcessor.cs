@@ -75,31 +75,42 @@ public class SkiaImageProcessor : IImageProcessor
         return outputStream;
     }
 
-    public Task<ImageInfo?> GetImageInfoAsync(Stream imageStream)
+public async Task<ImageInfo?> GetImageInfoAsync(Stream imageStream)
+{
+    try
     {
-        try
+        using var memoryStream = new MemoryStream();
+        await imageStream.CopyToAsync(memoryStream);
+        
+        
+        memoryStream.Position = 0;
+
+        using var codec = SKCodec.Create(memoryStream);
+        
+        
+        if (codec == null)
         {
-            // Create a copy because SKCodec may close the original stream
-            using var memoryStream = new MemoryStream();
-            imageStream.CopyTo(memoryStream);
             memoryStream.Position = 0;
-
-            using var codec = SKCodec.Create(memoryStream);
-            if (codec == null)
+            using var bitmap = SKBitmap.Decode(memoryStream);
+            
+            if (bitmap != null)
             {
-                return Task.FromResult<ImageInfo?>(null);
+                return new ImageInfo(bitmap.Width, bitmap.Height, true);
             }
+            
+            return null;
+        }
 
-            return Task.FromResult<ImageInfo?>(new ImageInfo(
-                codec.Info.Width,
-                codec.Info.Height,
-                true));
-        }
-        catch
-        {
-            return Task.FromResult<ImageInfo?>(null);
-        }
+        return new ImageInfo(
+            codec.Info.Width,
+            codec.Info.Height,
+            true);
     }
+    catch (Exception ex)
+    {
+        return null;
+    }
+}
 
     #region Private Methods
 

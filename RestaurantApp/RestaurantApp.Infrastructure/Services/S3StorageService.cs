@@ -36,30 +36,33 @@ public class S3StorageService : IStorageService
 
     #region Image Operations
 
-    public async Task<ImageUploadResult> UploadImageAsync(
-        Stream imageStream,
-        string fileName,
-        ImageType imageType,
-        int? entityId = null,
-        bool generateThumbnail = true)
+public async Task<ImageUploadResult> UploadImageAsync(
+    Stream imageStream,
+    string fileName,
+    ImageType imageType,
+    int? entityId = null,
+    bool generateThumbnail = true)
+{
+    try
     {
-        try
+        var bucketName = _config.BucketNames.Images;
+        
+        
+        
+        using var memoryStream = new MemoryStream();
+        await imageStream.CopyToAsync(memoryStream);
+        
+        memoryStream.Position = 0;
+        
+        var imageInfo = await _imageProcessor.GetImageInfoAsync(memoryStream);
+        
+        
+        if (imageInfo == null || !imageInfo.IsValid)
         {
-            var bucketName = _config.BucketNames.Images;
-
-            // Copy stream to memory for multiple reads
-            using var memoryStream = new MemoryStream();
-            await imageStream.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            // Validate image (uses its own copy internally)
-            var imageInfo = await _imageProcessor.GetImageInfoAsync(memoryStream);
-            if (imageInfo == null || !imageInfo.IsValid)
-            {
-                throw new InvalidOperationException("Invalid image format or corrupted file");
-            }
-            
-            memoryStream.Position = 0;
+            throw new InvalidOperationException("Invalid image format or corrupted file");
+        }
+        
+        memoryStream.Position = 0;
             
             var settings = _imageSettings.GetConfig(imageType);
             
