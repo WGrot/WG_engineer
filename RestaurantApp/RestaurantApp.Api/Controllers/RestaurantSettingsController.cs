@@ -68,14 +68,14 @@ public class RestaurantSettingsController : ControllerBase
     [HttpGet("{restaurantId}/needs-confirmation")]
     public async Task<IActionResult> GetNeedsConfirmation(int restaurantId)
     {
-        var result = await _restaurantSettingsService.NeedConfirmation(restaurantId);
+        var result = await _restaurantSettingsService.NeedConfirmationAsync(restaurantId);
         return result.ToActionResult();
     }
     
     [HttpGet("{restaurantId}/get-restaurant-settings")]
     public async Task<IActionResult> GetByRestaurantId(int restaurantId)
     {
-        var result = await _restaurantSettingsService.GetByRestaurantId(restaurantId);
+        var result = await _restaurantSettingsService.GetByRestaurantIdAsync(restaurantId);
         return result.ToActionResult();
     }
 

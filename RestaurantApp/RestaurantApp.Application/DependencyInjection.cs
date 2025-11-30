@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
         services.AddScoped<IRestaurantImageService, RestaurantImageService>();
         services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
+        services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
         return services;
     }
 }
