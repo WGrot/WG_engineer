@@ -2,6 +2,7 @@
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Shared.DTOs.Auth;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Infrastructure.Persistence.Repositories;
@@ -78,6 +79,23 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
         });
 
         await _context.RestaurantPermissions.AddRangeAsync(permissionEntities);
+    }
+    
+    public async Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId)
+    {
+        return await _context.RestaurantEmployees
+            .Where(e => e.UserId == userId)
+            .Include(e => e.Permissions)
+            .Select(e => new EmployeeClaimsDto
+            {
+                Id = e.Id,
+                RestaurantId = e.RestaurantId,
+                Role = e.Role.ToString(),
+                Permissions = e.Permissions
+                    .Select(p => p.Permission.ToString())
+                    .ToList()
+            })
+            .ToListAsync();
     }
 
     public async Task SaveChangesAsync()

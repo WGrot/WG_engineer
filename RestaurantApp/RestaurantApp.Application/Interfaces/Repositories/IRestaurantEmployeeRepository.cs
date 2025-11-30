@@ -1,4 +1,5 @@
 ﻿using RestaurantApp.Domain.Models;
+using RestaurantApp.Shared.DTOs.Auth;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Interfaces.Repositories;
@@ -14,5 +15,6 @@ public interface IRestaurantEmployeeRepository
     void Update(RestaurantEmployee employee);
     void Remove(RestaurantEmployee employee);
     Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions);
+    Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId);
     Task SaveChangesAsync();
 }

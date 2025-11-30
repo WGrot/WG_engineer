@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IJwtService, JwtService>();
         
         services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<ITableReservationService, TableReservationService>();

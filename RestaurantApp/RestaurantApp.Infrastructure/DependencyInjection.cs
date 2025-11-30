@@ -10,6 +10,7 @@ using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
+using RestaurantApp.Infrastructure.Persistence.Configurations.Settings;
 using RestaurantApp.Infrastructure.Persistence.Repositories;
 using RestaurantApp.Infrastructure.Services;
 
@@ -85,7 +86,7 @@ public static class DependencyInjection
         services.AddSingleton<IEncryptionService, AesEncryptionService>();
         services.AddScoped<IRestaurantPermissionRepository, RestaurantPermissionRepository>();
         services.AddScoped<IRestaurantSettingsRepository, RestaurantSettingsRepository>();
-        
+        services.AddSingleton<IJwtSettings, JwtSettings>();
         return services;
     }
 }

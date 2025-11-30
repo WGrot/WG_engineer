@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Helpers;
 using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;

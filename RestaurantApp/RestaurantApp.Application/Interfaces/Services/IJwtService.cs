@@ -1,9 +1,10 @@
 ﻿using System.Security.Claims;
 using RestaurantApp.Domain.Models;
 
-namespace RestaurantApp.Api.Services.Interfaces;
+namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IJwtService
-{ Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified);
+{
+    Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified = false);
     ClaimsPrincipal? ValidateToken(string token);
 }

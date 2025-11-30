@@ -74,7 +74,6 @@ builder.Services.AddApplication();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ILinkGenerator, LinkGenerator>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
