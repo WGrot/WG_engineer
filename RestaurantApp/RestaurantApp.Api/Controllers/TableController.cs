@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;
 
@@ -19,17 +20,19 @@ namespace RestaurantApp.Api.Controllers
     public class TableController : ControllerBase
     {
         private readonly ITableService _tableService;
+        private readonly ITableAvailabilityService _tableAvailabilityService;
         private readonly IAuthorizationService _authorizationService;
 
-        public TableController(ITableService tableService, IAuthorizationService authorizationService)
+        public TableController(ITableService tableService, IAuthorizationService authorizationService, ITableAvailabilityService tableAvailabilityService)
         {
             _tableService = tableService;
             _authorizationService = authorizationService;
+            _tableAvailabilityService = tableAvailabilityService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetTables()
-            => (await _tableService.GetTablesAsync()).ToActionResult();
+            => (await _tableService.GetAllTablesAsync()).ToActionResult();
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTable(int id)
@@ -91,7 +94,7 @@ namespace RestaurantApp.Api.Controllers
             [FromQuery] TimeOnly startTime,
             [FromQuery] TimeOnly endTime)
         {
-            return (await _tableService.CheckTableAvailabilityAsync(id, date, startTime, endTime))
+            return (await _tableAvailabilityService.CheckTableAvailabilityAsync(id, date, startTime, endTime))
                 .ToActionResult();
         }
         
@@ -111,7 +114,7 @@ namespace RestaurantApp.Api.Controllers
         [HttpGet("{id}/availability-map")]
         public async Task<IActionResult> GetAvaibilityMap(int id, [FromQuery] DateTime date)
         {
-            return (await _tableService.GetTableAvailabilityMapAsync(id, date)).ToActionResult();
+            return (await _tableAvailabilityService.GetTableAvailabilityMapAsync(id, date)).ToActionResult();
         }
     }
 }

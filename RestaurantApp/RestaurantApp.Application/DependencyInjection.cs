@@ -3,6 +3,7 @@ using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services;
 using RestaurantApp.Application.Services.Email;
+using RestaurantApp.Domain.Models;
 
 namespace RestaurantApp.Application;
 
@@ -22,6 +23,9 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
         services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
         services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
+        
+        services.AddScoped<ITableService, TableService>();
+        services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
         return services;
     }
 }

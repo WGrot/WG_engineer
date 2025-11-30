@@ -8,4 +8,6 @@ public interface IOpeningHoursRepository
     Task AddRangeAsync(IEnumerable<OpeningHours> openingHours);
     void RemoveRange(IEnumerable<OpeningHours> openingHours);
     Task SaveChangesAsync();
+    
+    Task<OpeningHours?> GetByRestaurantAndDayAsync(int restaurantId, DayOfWeek dayOfWeek);
 }

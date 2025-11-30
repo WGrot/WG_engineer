@@ -34,4 +34,11 @@ public class OpeningHoursRepository : IOpeningHoursRepository
     {
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<OpeningHours?> GetByRestaurantAndDayAsync(int restaurantId, DayOfWeek dayOfWeek)
+    {
+        return await _context.OpeningHours
+            .Where(o => o.RestaurantId == restaurantId && o.DayOfWeek == dayOfWeek)
+            .FirstOrDefaultAsync();
+    }
 }
