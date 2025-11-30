@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;

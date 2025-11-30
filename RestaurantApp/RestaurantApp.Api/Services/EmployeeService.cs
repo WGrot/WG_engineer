@@ -2,6 +2,7 @@
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.Common;

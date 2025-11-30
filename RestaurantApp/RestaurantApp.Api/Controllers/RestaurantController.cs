@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.OpeningHours;
@@ -15,15 +16,21 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class RestaurantController : ControllerBase
 {
-    private readonly IRestaurantService _restaurantService;
+    private readonly RestaurantApp.Application.Interfaces.Services.IRestaurantService _restaurantService;
+    private readonly IRestaurantSearchService _restaurantSearchService;
     private readonly ILogger<RestaurantController> _logger;
     private readonly IRestaurantImageService _imageService;
+    private readonly IRestaurantDashboardService _restaurantDashboardService;
+    private readonly IRestaurantOpeningHoursService _restaurantOpeningHoursService;
 
-    public RestaurantController(IRestaurantService restaurantService, ILogger<RestaurantController> logger, IRestaurantImageService imageService)
+    public RestaurantController(IRestaurantOpeningHoursService openingHoursService, IRestaurantSearchService restaurantSearchService, IRestaurantDashboardService restaurantDashboardService, RestaurantApp.Application.Interfaces.Services.IRestaurantService restaurantService, ILogger<RestaurantController> logger, IRestaurantImageService imageService)
     {
         _restaurantService = restaurantService;
+        _restaurantSearchService = restaurantSearchService;
+        _restaurantDashboardService = restaurantDashboardService;
         _logger = logger;
         _imageService = imageService;
+        _restaurantOpeningHoursService = openingHoursService;
     }
     
     [HttpGet]
@@ -49,7 +56,7 @@ public class RestaurantController : ControllerBase
         [FromQuery] int pageSize = 5,
         [FromQuery] string sortBy = "newest")
     {
-        var restaurants = await _restaurantService.SearchAsync(name, address, page, pageSize, sortBy);
+        var restaurants = await _restaurantSearchService.SearchAsync(name, address, page, pageSize, sortBy);
         return restaurants.ToActionResult();
     }
     
@@ -64,7 +71,7 @@ public class RestaurantController : ControllerBase
 
     public async Task<IActionResult> GetOpenNow()
     {
-        var openRestaurantsResult = await _restaurantService.GetOpenNowAsync();
+        var openRestaurantsResult = await _restaurantSearchService.GetOpenNowAsync();
         return openRestaurantsResult.ToActionResult();
     }
     
@@ -77,7 +84,7 @@ public class RestaurantController : ControllerBase
         TimeOnly? checkTime = time != null ? TimeOnly.Parse(time) : null;
         DayOfWeek? checkDay = dayOfWeek != null ? (DayOfWeek)dayOfWeek : null;
 
-        var statusResult = await _restaurantService.CheckIfOpenAsync(id, checkTime, checkDay);
+        var statusResult = await _restaurantOpeningHoursService.CheckIfOpenAsync(id, checkTime, checkDay);
         return statusResult.ToActionResult();
     }
     
@@ -125,7 +132,7 @@ public class RestaurantController : ControllerBase
     [HttpPatch("{id}/opening-hours")]
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
-        var result = await _restaurantService.UpdateOpeningHoursAsync(id, openingHours);
+        var result = await _restaurantOpeningHoursService.UpdateOpeningHoursAsync(id, openingHours);
         return result.ToActionResult();
     }
     
@@ -173,14 +180,14 @@ public class RestaurantController : ControllerBase
     
     [HttpGet("{id}/dashboard-data")]
     public async Task< IActionResult> GetDashboardData(int id){
-        var result = await _restaurantService.GetRestaurantDashboardData(id);
+        var result = await _restaurantDashboardService.GetDashboardDataAsync(id);
         return result.ToActionResult();
     }
     
     [HttpGet("names")]
     public async Task<IActionResult> GetNames([FromQuery] List<int> ids)
     {
-        var result = await _restaurantService.GetRestaurantNames(ids);
+        var result = await _restaurantService.GetRestaurantNamesAsync(ids);
         return result.ToActionResult();
     }
     
@@ -205,7 +212,7 @@ public class RestaurantController : ControllerBase
             radius = 100;
         }
 
-        var result = await _restaurantService.GetNearbyRestaurantsAsync(
+        var result = await _restaurantSearchService.GetNearbyRestaurantsAsync(
             latitude, 
             longitude, 
             radius);

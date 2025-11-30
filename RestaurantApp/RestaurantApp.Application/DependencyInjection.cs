@@ -17,6 +17,11 @@ public static class DependencyInjection
         services.AddScoped<IReviewService, ReviewService>();
         services.AddTransient<IEmailComposer, EmailComposer>();
 
+        
+        services.AddScoped<IRestaurantService, RestaurantService>();
+        services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
+        services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
+        services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
         return services;
     }
 }

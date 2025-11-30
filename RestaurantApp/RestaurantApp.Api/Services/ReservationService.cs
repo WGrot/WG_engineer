@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using RestaurantApp.Api.Helpers.QueryBuilders;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services.Email.Templates.Reservations;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;

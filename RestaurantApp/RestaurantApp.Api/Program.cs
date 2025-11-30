@@ -73,7 +73,6 @@ builder.Services.AddApplication();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
-builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IPasswordService, PasswordService > ();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
