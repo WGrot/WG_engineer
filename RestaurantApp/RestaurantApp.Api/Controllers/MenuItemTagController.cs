@@ -6,6 +6,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.Tags;

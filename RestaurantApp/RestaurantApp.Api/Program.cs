@@ -83,7 +83,6 @@ builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
 builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
