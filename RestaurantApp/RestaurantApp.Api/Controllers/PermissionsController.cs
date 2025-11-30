@@ -75,7 +75,7 @@ public class PermissionsController : ControllerBase
             return Forbid();
 
         
-        var result = await _permissionService.UpdateEmployeePermisions(dto);
+        var result = await _permissionService.UpdateEmployeePermissionsAsync(dto);
         return result.ToActionResult();
     }
 
