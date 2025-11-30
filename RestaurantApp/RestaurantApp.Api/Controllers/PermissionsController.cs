@@ -6,6 +6,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVaria
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Permissions;

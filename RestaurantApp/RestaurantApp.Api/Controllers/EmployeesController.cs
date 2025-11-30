@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.Services.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.Models;
 
@@ -30,7 +31,7 @@ public class EmployeesController : ControllerBase
                 User, restaurantId.Value, new PermissionRequirement(PermissionType.ManageEmployees));
             if (!authorizationResult.Succeeded) return Forbid();
 
-            return (await _employeeService.GetEmployeesByRestaurantDtoAsync(restaurantId.Value)).ToActionResult();
+            return (await _employeeService.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId.Value)).ToActionResult();
         }
 
         if (!string.IsNullOrEmpty(userId))

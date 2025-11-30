@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Models;
 
@@ -13,9 +14,58 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
         _context = context;
     }
 
+    public async Task<IEnumerable<RestaurantEmployee>> GetAllWithDetailsAsync()
+    {
+        return await _context.RestaurantEmployees
+            .Include(e => e.Restaurant)
+            .Include(e => e.Permissions)
+            .ToListAsync();
+    }
+
+    public async Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id)
+    {
+        return await _context.RestaurantEmployees
+            .Include(e => e.Restaurant)
+            .Include(e => e.Permissions)
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId)
+    {
+        return await _context.RestaurantEmployees
+            .Include(e => e.Restaurant)
+            .Include(e => e.Permissions)
+            .Where(e => e.RestaurantId == restaurantId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId)
+    {
+        return await _context.RestaurantEmployees
+            .Include(e => e.Restaurant)
+            .Include(e => e.Permissions)
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<RestaurantEmployee?> GetByIdAsync(int id)
+    {
+        return await _context.RestaurantEmployees.FindAsync(id);
+    }
+
     public async Task AddAsync(RestaurantEmployee employee)
     {
         await _context.RestaurantEmployees.AddAsync(employee);
+    }
+
+    public void Update(RestaurantEmployee employee)
+    {
+        _context.RestaurantEmployees.Update(employee);
+    }
+
+    public void Remove(RestaurantEmployee employee)
+    {
+        _context.RestaurantEmployees.Remove(employee);
     }
 
     public async Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionType> permissions)

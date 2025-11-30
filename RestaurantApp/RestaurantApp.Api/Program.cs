@@ -75,7 +75,6 @@ builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<IRestaurantImageService, RestaurantImageService>();
 builder.Services.AddScoped<IPasswordService, PasswordService > ();
 builder.Services.AddScoped<IReservationService, ReservationService>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IRestaurantPermissionService, RestaurantPermissionService>();
 builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();

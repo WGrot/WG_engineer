@@ -4,6 +4,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.Mappers;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence;
