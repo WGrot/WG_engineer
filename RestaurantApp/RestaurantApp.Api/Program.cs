@@ -86,7 +86,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IMenuItemTagService, MenuItemTagService>();
 builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
-builder.Services.AddScoped<IMenuCategoryService, MenuCategoryService>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();

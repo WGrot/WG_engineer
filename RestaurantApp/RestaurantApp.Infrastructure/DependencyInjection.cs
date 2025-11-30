@@ -69,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, S3StorageService>();
 
         // Other services
+        services.AddScoped<IMenuCategoryRepository, MenuCategoryRepository>();
         services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantRepository>();

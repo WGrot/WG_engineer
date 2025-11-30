@@ -48,9 +48,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Common\Images\" />
-      <Folder Include="Configuration\" />
-      <Folder Include="Helpers\Validators\" />
       <Folder Include="Services\Email\Templates\AccountManagement\" />
       <Folder Include="Services\Email\Templates\Reservations\" />
       <Folder Include="Services\Email\Templates\Restaurant\" />

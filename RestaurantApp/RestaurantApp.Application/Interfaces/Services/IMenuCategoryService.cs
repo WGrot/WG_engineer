@@ -1,7 +1,7 @@
 ﻿using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 
-namespace RestaurantApp.Api.Services.Interfaces;
+namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IMenuCategoryService
 {
