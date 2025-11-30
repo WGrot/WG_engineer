@@ -24,7 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
         services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
-        
+        services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
         services.AddScoped<ITableService, TableService>();
         services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
         return services;

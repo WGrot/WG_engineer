@@ -80,7 +80,6 @@ builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IMenuItemVariantService, MenuItemVariantService>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
@@ -235,8 +234,7 @@ app.UseHttpsRedirection();
 // Dodaj po app.UseHttpsRedirection() i przed app.UseAuthentication()
 app.UseCors("BlazorPolicy");
 
-// WAŻNA KOLEJNOŚĆ!
-app.UseAuthentication(); // Musi być przed UseAuthorization
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
