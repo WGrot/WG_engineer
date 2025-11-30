@@ -85,6 +85,7 @@ public static class DependencyInjection
         services.AddSingleton<IEncryptionService, AesEncryptionService>();
         services.AddScoped<IRestaurantPermissionRepository, RestaurantPermissionRepository>();
         services.AddScoped<IRestaurantSettingsRepository, RestaurantSettingsRepository>();
+        
         return services;
     }
 }

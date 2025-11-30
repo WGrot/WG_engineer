@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// RestaurantApp.Api/Controllers/ReservationController.cs
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
-using RestaurantApp.Api.Services.Interfaces;
-using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.Common;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.SearchParameters;
@@ -17,236 +17,201 @@ namespace RestaurantApp.Api.Controllers;
 public class ReservationController : ControllerBase
 {
     private readonly IReservationService _reservationService;
-    private readonly ILogger<ReservationController> _logger;
+    private readonly ITableReservationService _tableReservationService;
     private readonly IAuthorizationService _authorizationService;
+    private readonly ILogger<ReservationController> _logger;
 
-    public ReservationController(IReservationService reservationService, IAuthorizationService authorizationService, ILogger<ReservationController> logger)
+    public ReservationController(
+        IReservationService reservationService,
+        ITableReservationService tableReservationService,
+        IAuthorizationService authorizationService,
+        ILogger<ReservationController> logger)
     {
         _reservationService = reservationService;
+        _tableReservationService = tableReservationService;
         _authorizationService = authorizationService;
         _logger = logger;
     }
 
-    // GET: api/reservation/{id}
+    // ==================== BASE RESERVATION ENDPOINTS ====================
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetReservation(int id)
     {
-        var reservation = await _reservationService.GetReservationByIdAsync(id);
-        return reservation.ToActionResult();
+        var result = await _reservationService.GetByIdAsync(id);
+        return result.ToActionResult();
     }
 
-    // GET: api/reservation/restaurant/{restaurantId}
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<IActionResult> GetReservationsByRestaurant(int userId)
+    public async Task<IActionResult> GetReservationsByRestaurant(int restaurantId)
     {
-        var reservations = await _reservationService.GetReservationsByRestaurantIdAsync(userId);
-        return reservations.ToActionResult();
+        var result = await _reservationService.GetByRestaurantIdAsync(restaurantId);
+        return result.ToActionResult();
     }
 
-    // GET: api/reservation/client/{clientId}
     [Authorize]
-    [HttpGet("client/")]
-    public async Task<IActionResult> GetReservationsByUserId([FromQuery] ReservationSearchParameters searchParams)
+    [HttpGet("client")]
+    public async Task<IActionResult> GetUserReservations([FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.GetReservationsByUserIdAsync(searchParams);
-        return reservations.ToActionResult();
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized("User is not authenticated.");
+
+        var result = await _reservationService.GetUserReservationsAsync(userId, searchParams);
+        return result.ToActionResult();
     }
 
-    // POST: api/reservation
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateReservation([FromBody] ReservationDto reservationDto)
     {
         if (!ModelState.IsValid)
-        {
             return BadRequest(ModelState);
-        }
 
-        var reservation = await _reservationService.CreateReservationAsync(reservationDto);
-
-        return reservation.ToActionResult();
+        var result = await _reservationService.CreateAsync(reservationDto);
+        return result.ToActionResult();
     }
 
-    // PUT: api/reservation/{id}
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto)
     {
-        
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, true)
-        );
-
-        if (!authResult.Succeeded)
-        {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
             return Forbid();
-        }
-        
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
 
-        var result = await _reservationService.UpdateReservationAsync(id, reservationDto);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _reservationService.UpdateAsync(id, reservationDto);
         return result.ToActionResult();
     }
 
-    // DELETE: api/reservation/{id}
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteReservation(int id)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, true)
-        );
-
-        if (!authResult.Succeeded)
-        {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
             return Forbid();
-        }
-        
-        var result = await _reservationService.DeleteReservationAsync(id);
+
+        var result = await _reservationService.DeleteAsync(id);
         return result.ToActionResult();
     }
 
-    // Table Reservation Endpoints
+    // ==================== TABLE RESERVATION ENDPOINTS ====================
 
-    // GET: api/reservation/table/{id}
     [HttpGet("tableReservation/{id}")]
     public async Task<IActionResult> GetTableReservation(int id)
     {
-        var reservation = await _reservationService.GetTableReservationByIdAsync(id);
-        return reservation.ToActionResult();
+        var result = await _tableReservationService.GetByIdAsync(id);
+        return result.ToActionResult();
     }
 
-    // GET: api/reservation/table/{tableId}
     [HttpGet("reservation/table/{tableId}")]
     public async Task<IActionResult> GetTableReservationsByTableId(int tableId)
     {
-        var reservations = await _reservationService.GetReservationsByTableIdAsync(tableId);
-        return reservations.ToActionResult();
-    }
-    
-    [HttpPost("table")]
-    public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto tableReservationDto)
-    {
-        var reservation = await _reservationService.CreateTableReservationAsync(tableReservationDto);
-        
-        return reservation.ToActionResult();
+        var result = await _tableReservationService.GetByTableIdAsync(tableId);
+        return result.ToActionResult();
     }
 
-    // PUT: api/reservation/table/{id}
-    [HttpPut("table/{id}")]
-    [Authorize]
-    public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto tableReservationDto)
+    [HttpPost("table")]
+    public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto dto)
     {
         if (!ModelState.IsValid)
-        {
             return BadRequest(ModelState);
-        }
 
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, true)
-        );
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
-        
-        var result = await _reservationService.UpdateTableReservationAsync(id, tableReservationDto);
+        var result = await _tableReservationService.CreateAsync(dto);
         return result.ToActionResult();
     }
 
-    // DELETE: api/reservation/table/{id}
+    [HttpPut("table/{id}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto dto)
+    {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
+            return Forbid();
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _tableReservationService.UpdateAsync(id, dto);
+        return result.ToActionResult();
+    }
+
     [HttpDelete("table/{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteTableReservation(int id)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, true)
-        );
-
-        if (!authResult.Succeeded)
-        {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
             return Forbid();
-        }
-        
-        var result = await _reservationService.DeleteReservationAsync(id);
+
+        var result = await _tableReservationService.DeleteAsync(id);
         return result.ToActionResult();
     }
 
-    // GET: api/reservation/restaurant/{restaurantId}
-    [HttpGet("manage/")]
+    // ==================== MANAGEMENT ENDPOINTS ====================
+
+    [HttpGet("manage")]
     [Authorize]
     public async Task<IActionResult> GetReservationsToManage([FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.GetReservationsToManage(searchParams);
-        return reservations.ToActionResult();
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized("User is not authenticated.");
+
+        var result = await _reservationService.GetManagedReservationsAsync(userId, searchParams);
+        return result.ToActionResult();
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> SearchReservations(
-        [FromQuery] ReservationSearchParameters searchParams)
+    public async Task<IActionResult> SearchReservations([FromQuery] ReservationSearchParameters searchParams)
     {
-        var reservations = await _reservationService.SearchReservationsAsync(searchParams
-        );
-        
-        return reservations.ToActionResult();
-    }
-    
-    [HttpPut("manage/{id}/change-statusEnumDto")]
-    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto statusEnumDto)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, true)
-        );
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
-
-
-        var result = await _reservationService.UpdateReservationStatusAsync(id, statusEnumDto);
+        var result = await _reservationService.SearchAsync(searchParams);
         return result.ToActionResult();
     }
-    
+
+    [HttpPut("manage/{id}/change-status")]
+    [Authorize]
+    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status)
+    {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
+            return Forbid();
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _reservationService.UpdateStatusAsync(id, status);
+        return result.ToActionResult();
+    }
+
     [HttpPatch("manage/{id}/cancel-user-reservation")]
     [Authorize]
     public async Task<IActionResult> CancelUserReservation(int id)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManageReservationRequirement(id, false)
-        );
-
-        if (!authResult.Succeeded)
-        {
+        if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: false))
             return Forbid();
-        }
 
-        var result = await _reservationService.CancelUserReservation(id);
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized("User is not authenticated.");
+
+        var result = await _reservationService.CancelUserReservationAsync(userId, id);
         return result.ToActionResult();
+    }
+
+    // ==================== PRIVATE HELPERS ====================
+
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
+    private async Task<bool> AuthorizeManageReservationAsync(int reservationId, bool requireRestaurantAccess)
+    {
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User,
+            null,
+            new ManageReservationRequirement(reservationId, requireRestaurantAccess));
+
+        return authResult.Succeeded;
     }
 }

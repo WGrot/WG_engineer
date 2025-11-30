@@ -146,7 +146,7 @@ partial class ManageReservationsPage
         try
         {
             var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
-                $"api/reservation/manage/{reservationId}/change-statusEnumDto", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
+                $"api/reservation/manage/{reservationId}/change-status", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
                 restaurantId.ToString());
 
             if (!response.IsSuccessStatusCode)

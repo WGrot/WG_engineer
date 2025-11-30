@@ -44,7 +44,7 @@ public class ReservationService : IReservationService
         {
             var response = await _http.RequestWithHeaderAsync(
                 HttpMethod.Put,
-                $"api/reservation/manage/{reservation.Id}/change-statusEnumDto",
+                $"api/reservation/manage/{reservation.Id}/change-status",
                 newStatusEnumDto,
                 "X-Restaurant-Id",
                 reservation.RestaurantId.ToString()

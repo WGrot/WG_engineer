@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Application.Interfaces.Repositories;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Infrastructure.Persistence.Repositories;
@@ -32,5 +33,11 @@ public class UserRepository : IUserRepository
         };
 
         return responseUserDto;
+    }
+
+    public async Task<ApplicationUser?> GetByEmailAsync(string email)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
     }
 }

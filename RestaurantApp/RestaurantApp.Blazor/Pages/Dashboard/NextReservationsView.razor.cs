@@ -110,7 +110,7 @@ public partial class NextReservationsView : ComponentBase
     private async Task ApproveReservation(int reservationId, int restaurantId)
     {
         var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
-            $"api/reservation/manage/{reservationId}/change-statusEnumDto", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
+            $"api/reservation/manage/{reservationId}/change-status", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
             restaurantId.ToString());
         await LoadReservations();
     }

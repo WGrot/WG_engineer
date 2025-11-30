@@ -6,6 +6,7 @@ public class ReservationSearchParameters
 {
     public int? RestaurantId { get; set; }
     
+    public IEnumerable<int>? RestaurantIds { get; set; }
     public string? RestaurantName { get; set; }
     public string? UserId { get; set; }
     public ReservationStatusEnumDto? Status { get; set; }
