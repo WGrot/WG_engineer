@@ -5,8 +5,15 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IUserRepository
 {
+    Task<ApplicationUser?> GetByIdAsync(string userId, CancellationToken ct = default);
     Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct = default);
-    Task<ResponseUserDto?> GetByIdAsync(string userId);
-    
-    Task<ApplicationUser?> GetByEmailAsync(string email);
+    Task<ApplicationUser?> GetByEmailAsync(string email, CancellationToken ct = default);
+    Task<IEnumerable<ApplicationUser>> SearchAsync(
+        string? firstName, 
+        string? lastName, 
+        string? phoneNumber, 
+        string? email, 
+        int? amount, 
+        CancellationToken ct = default);
+    Task UpdateAsync(ApplicationUser user, CancellationToken ct = default);
 }

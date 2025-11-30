@@ -24,6 +24,7 @@ using RestaurantApp.Api.Helpers;
 using RestaurantApp.Api.Services;
 using RestaurantApp.Api.Services.Interfaces;
 using RestaurantApp.Application;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared;
@@ -32,6 +33,7 @@ using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 using RestaurantApp.Infrastructure.Services;
+using LinkGenerator = RestaurantApp.Api.Helpers.LinkGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,10 +74,9 @@ builder.Services.AddApplication();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
-builder.Services.AddScoped<IPasswordService, PasswordService > ();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ILinkGenerator, LinkGenerator>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 
 builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();

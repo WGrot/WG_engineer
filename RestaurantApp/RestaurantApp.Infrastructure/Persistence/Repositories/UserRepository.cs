@@ -14,30 +14,60 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
+    public async Task<ApplicationUser?> GetByIdAsync(string userId, CancellationToken ct = default)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+    }
+
     public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct = default)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
         return user?.FirstName;
     }
 
-    public async Task<ResponseUserDto?> GetByIdAsync(string userId)
+    public async Task<ApplicationUser?> GetByEmailAsync(string email, CancellationToken ct = default)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        var responseUserDto = new ResponseUserDto
-        {
-            Id = user.Id,
-            Email = user.Email ?? string.Empty,
-            FirstName = user.FirstName ?? string.Empty,
-            LastName = user.LastName ?? string.Empty,
-            PhoneNumber = user.PhoneNumber ?? string.Empty
-        };
-
-        return responseUserDto;
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
     }
 
-    public async Task<ApplicationUser?> GetByEmailAsync(string email)
+    public async Task<IEnumerable<ApplicationUser>> SearchAsync(
+        string? firstName,
+        string? lastName,
+        string? phoneNumber,
+        string? email,
+        int? amount,
+        CancellationToken ct = default)
     {
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+        var query = _context.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(firstName))
+        {
+            query = query.Where(u => u.FirstName.ToLower().Contains(firstName.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            query = query.Where(u => u.LastName.ToLower().Contains(lastName.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            query = query.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(phoneNumber));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            query = query.Where(u => u.Email != null && u.Email.ToLower().Contains(email.ToLower()));
+        }
+
+        var takeAmount = amount is > 0 ? amount.Value : 50;
+        
+        return await query.Take(takeAmount).ToListAsync(ct);
+    }
+
+    public async Task UpdateAsync(ApplicationUser user, CancellationToken ct = default)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync(ct);
     }
 }
