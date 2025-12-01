@@ -35,13 +35,13 @@ public class MenuItemController : ControllerBase
     [HttpPost("{menuItemId}/tags/{tagId}")]
     public async Task<IActionResult> AddTagToMenuItem(int menuItemId, int tagId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(menuItemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(menuItemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         var menuItem = await _menuItemService.AddTagToMenuItemAsync(menuItemId, tagId);
         return menuItem.ToActionResult();
     }
@@ -50,13 +50,13 @@ public class MenuItemController : ControllerBase
     [HttpDelete("{menuItemId}/tags/{tagId}")]
     public async Task<IActionResult> RemoveTagFromMenuItem(int menuItemId, int tagId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(menuItemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(menuItemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
 
         var menuItem = await _menuItemService.RemoveTagFromMenuItemAsync(menuItemId, tagId);
 
@@ -82,39 +82,39 @@ public class MenuItemController : ControllerBase
     [HttpPost("{menuId}/items")]
     public async Task<IActionResult> AddMenuItem(int menuId, [FromBody] MenuItemDto itemDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null,
-            new ManageMenuRequirement(menuId: menuId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null,
+        //     new ManageMenuRequirement(menuId: menuId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuItemService.AddMenuItemAsync(menuId, itemDto)).ToActionResult();
     }
 
     [HttpPost("category/{categoryId}/items")]
     public async Task<IActionResult> AddMenuItemToCategory(int categoryId, [FromBody] MenuItemDto itemDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            categoryId,
-            new ManageCategoryRequirement(categoryId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     categoryId,
+        //     new ManageCategoryRequirement(categoryId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuItemService.AddMenuItemToCategoryAsync(categoryId, itemDto)).ToActionResult();
     }
 
     [HttpPut("item/{itemId}")]
     public async Task<IActionResult> UpdateMenuItem(int itemId, [FromBody] MenuItemDto itemDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuItemService.UpdateMenuItemAsync(itemId, itemDto)).ToActionResult();
     }
@@ -122,13 +122,13 @@ public class MenuItemController : ControllerBase
     [HttpDelete("item/{itemId}")]
     public async Task<IActionResult> DeleteMenuItem(int itemId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuItemService.DeleteMenuItemAsync(itemId)).ToActionResult();
     }
@@ -136,13 +136,13 @@ public class MenuItemController : ControllerBase
     [HttpPatch("item/{itemId}/price")]
     public async Task<IActionResult> UpdateMenuItemPrice(int itemId, [FromBody] UpdatePriceDto priceDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuItemService.UpdateMenuItemPriceAsync(itemId, priceDto.Price, priceDto.CurrencyCode))
             .ToActionResult();
@@ -151,13 +151,13 @@ public class MenuItemController : ControllerBase
     [HttpPatch("item/{itemId}/move")]
     public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int categoryId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuItemService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult();
     }
@@ -165,15 +165,15 @@ public class MenuItemController : ControllerBase
     [HttpPost("item/{itemId}/upload-image")]
     public async Task<IActionResult> UploadMenuItemImage(int itemId, IFormFile image)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
         
         using var memoryStream = new MemoryStream();
         await image.CopyToAsync(memoryStream);
@@ -192,13 +192,13 @@ public class MenuItemController : ControllerBase
     [HttpDelete("item/{itemId}/delete-image")]
     public async Task<IActionResult> DeleteMenuItemImage(int itemId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User,
-            null,
-            new ManageMenuItemRequirement(itemId));
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User,
+        //     null,
+        //     new ManageMenuItemRequirement(itemId));
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuItemService.DeleteMenuItemImageAsync(itemId)).ToActionResult();
     }
 }
