@@ -73,6 +73,16 @@ public static class DependencyInjection
             return new AuthorizedRestaurantPermissionService(innerService, currentUser, permissionChecker);
         });
         
+        services.AddScoped<TableService>();
+        services.AddScoped<ITableService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<TableService>();
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedTableService(innerService, currentUser, permissionChecker);
+        });
+        
         services.AddScoped<IReviewService, ReviewService>();
         services.AddTransient<IEmailComposer, EmailComposer>();
         services.AddScoped<IRestaurantService, RestaurantService>();
@@ -80,7 +90,6 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
         services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
-        services.AddScoped<ITableService, TableService>();
         services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
         services.AddScoped<IRestaurantImageService, RestaurantImageService>();
         services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
