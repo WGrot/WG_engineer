@@ -177,7 +177,7 @@ public class MenuItemController : ControllerBase
         
         using var memoryStream = new MemoryStream();
         await image.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;  // Reset position before passing to service
+        memoryStream.Position = 0;  
     
         var result = await _menuItemService.UploadMenuItemImageAsync(
             itemId, 

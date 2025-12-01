@@ -32,7 +32,6 @@ public class ManageReservationAuthorizationHandler
 
         try
         {
-            // Pobieramy dane rezerwacji (tylko potrzebne pola)
             var reservation = await _context.Reservations
                 .AsNoTracking()
                 .Where(r => r.Id == requirement.ReservationId)
@@ -44,15 +43,13 @@ public class ManageReservationAuthorizationHandler
                 context.Fail();
                 return;
             }
-
-            // Ścieżka 1: właściciel rezerwacji (jeśli wymóg tego nie blokuje)
+            
             if (!requirement.NeedToBeEmployee && reservation.UserId == userId)
             {
                 context.Succeed(requirement);
                 return;
             }
-
-            // Ścieżka 2: aktywny pracownik z uprawnieniem ManageReservations
+            
             var hasPermission = await _context.RestaurantEmployees
                 .AsNoTracking()
                 .Where(e =>

@@ -34,8 +34,7 @@ public class TwoFactorController : ControllerBase
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
             return NotFound();
-
-        // Generuj nowy klucz
+        
         var secretKey = _twoFactorService.GenerateSecretKey();
         var qrCodeUri = _twoFactorService.GenerateQrCodeUri(user.Email!, secretKey);
         var qrCodeImage = _twoFactorService.GenerateQrCodeImage(qrCodeUri);
@@ -64,12 +63,10 @@ public class TwoFactorController : ControllerBase
         var user = await _context.Users.FindAsync(userId);
         if (user == null || string.IsNullOrEmpty(user.TwoFactorSecretKey))
             return BadRequest("2FA nie zostało zainicjalizowane");
-
-        // Weryfikuj kod
+        
         if (!_twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.Code))
             return BadRequest("Nieprawidłowy kod");
-
-        // Aktywuj 2FA
+        
         user.TwoFactorEnabled = true;
         await _context.SaveChangesAsync();
 

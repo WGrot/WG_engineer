@@ -31,18 +31,15 @@ public class ManageMenuItemVariantAuthorizationHandler : AuthorizationHandler<Ma
 
         try
         {
-            // bazowe zapytanie – aktywni pracownicy użytkownika
             var query = _context.RestaurantEmployees
                 .AsNoTracking()
                 .Where(e => e.UserId == userId && e.IsActive);
-
-            // filtr po wariancie
+            
             query = query.Where(e =>
                 e.Restaurant.Menu != null &&
                 e.Restaurant.Menu.Items
                     .Any(i => i.Variants.Any(v => v.Id == requirement.MenuItemVariantId)));
-
-            // sprawdzenie uprawnienia ManageMenu
+            
             var hasPermission = await query
                 .SelectMany(e => e.Permissions)
                 .AnyAsync(p => p.Permission == PermissionType.ManageMenu);

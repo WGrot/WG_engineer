@@ -19,8 +19,7 @@ public class PermissionAuthorizationHandler
             context.Fail();
             return Task.CompletedTask;
         }
-
-        // Sprawdź, czy użytkownik jest pracownikiem restauracji
+        
         var isEmployee = context.User.Claims.Any(c =>
             c.Type == "restaurant_employee" &&
             c.Value == restaurantId.ToString());
@@ -30,8 +29,7 @@ public class PermissionAuthorizationHandler
             context.Fail();
             return Task.CompletedTask;
         }
-
-        // Sprawdź uprawnienie
+        
         var permissionClaimType = $"restaurant:{restaurantId}:permission";
         var hasPermission = context.User.Claims.Any(c =>
             c.Type == permissionClaimType &&

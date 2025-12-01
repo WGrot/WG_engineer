@@ -32,8 +32,7 @@ public class ReservationController : ControllerBase
         _authorizationService = authorizationService;
         _logger = logger;
     }
-
-    // ==================== BASE RESERVATION ENDPOINTS ====================
+    
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetReservation(int id)
@@ -96,8 +95,7 @@ public class ReservationController : ControllerBase
         var result = await _reservationService.DeleteAsync(id);
         return result.ToActionResult();
     }
-
-    // ==================== TABLE RESERVATION ENDPOINTS ====================
+    
 
     [HttpGet("tableReservation/{id}")]
     public async Task<IActionResult> GetTableReservation(int id)

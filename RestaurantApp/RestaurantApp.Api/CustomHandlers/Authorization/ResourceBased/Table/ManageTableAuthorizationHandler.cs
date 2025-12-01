@@ -34,24 +34,20 @@ public class ManageTableAuthorizationHandler : AuthorizationHandler<ManageTableR
 
         try
         {
-            // ✅ JEDNO zapytanie zamiast dwóch!
             var query = _context.RestaurantEmployees
                 .AsNoTracking()
                 .Where(er => er.UserId == userId && er.IsActive);
-
-            // Dynamiczne dodanie warunku w zależności od requirement
+            
             if (requirement.RestaurantId.HasValue)
             {
                 query = query.Where(er => er.RestaurantId == requirement.RestaurantId.Value);
             }
             else
             {
-                // JOIN przez EF - wciąż jedno zapytanie SQL
                 query = query.Where(er => er.Restaurant.Tables
                     .Any(t => t.Id == requirement.TableId));
             }
-
-            // Sprawdzenie uprawnień w tym samym zapytaniu
+            
             var hasPermission = await query
                 .SelectMany(er => er.Permissions)
                 .AnyAsync(p => p.Permission == PermissionType.ManageTables);

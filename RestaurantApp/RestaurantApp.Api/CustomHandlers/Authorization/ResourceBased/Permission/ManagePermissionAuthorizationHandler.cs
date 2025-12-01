@@ -34,11 +34,10 @@ public class ManagePermissionAuthorizationHandler : AuthorizationHandler<ManageP
 
         try
         {
-            // ✅ JEDNO zapytanie zamiast trzech!
             var hasPermission = await _context.RestaurantPermissions
                 .AsNoTracking()
                 .Where(p => p.Id == requirement.PermissionId)
-                .Where(p => p.RestaurantEmployee.RestaurantId != null) // Walidacja
+                .Where(p => p.RestaurantEmployee.RestaurantId != null)
                 .Join(
                     _context.RestaurantEmployees.AsNoTracking()
                         .Where(er => er.UserId == userId && er.IsActive),

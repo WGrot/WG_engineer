@@ -31,18 +31,14 @@ public class ManageCategoryAuthorizationHandler : AuthorizationHandler<ManageCat
 
         try
         {
-            // składamy zapytanie bazowe po pracownikach użytkownika
             var query = _context.RestaurantEmployees
                 .AsNoTracking()
                 .Where(e => e.UserId == userId && e.IsActive);
-
-            // teraz zawężamy po kategorii — szukamy pracownika, który pracuje
-            // w restauracji posiadającej menu z daną kategorią
+            
             query = query.Where(e =>
                 e.Restaurant.Menu != null &&
                 e.Restaurant.Menu.Categories.Any(c => c.Id == requirement.CategoryId));
-
-            // sprawdzamy czy ma uprawnienie ManageMenu
+            
             var hasPermission = await query
                 .SelectMany(e => e.Permissions)
                 .AnyAsync(p => p.Permission == PermissionType.ManageMenu);

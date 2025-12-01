@@ -38,8 +38,7 @@ public class EmployeesController : ControllerBase
         
             return (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
         }
-
-        // Domyślnie, jeśli nie ma filtrów:
+        
         return (await _employeeService.GetAllAsync()).ToActionResult();
     }
 

@@ -24,9 +24,6 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ResponseUserDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _userService.GetByIdAsync(id);
@@ -34,9 +31,6 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("search")]
-    [ProducesResponseType(typeof(IEnumerable<ResponseUserDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Search(
         [FromQuery] string? firstName = null, 
         [FromQuery] string? lastName = null, 
@@ -49,10 +43,6 @@ public class UserController : ControllerBase
     }
     
     [HttpPost]
-    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
         var authorizationResult = await _authorizationService.AuthorizeAsync(
@@ -78,7 +68,6 @@ public class UserController : ControllerBase
                 password = result.Value.Password
             };
             
-            // Dla statusu 201 Created zwracamy z lokalizacją
             return CreatedAtAction(
                 nameof(GetById), 
                 new { id = result.Value.Email },

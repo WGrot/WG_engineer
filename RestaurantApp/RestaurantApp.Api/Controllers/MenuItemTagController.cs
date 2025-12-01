@@ -26,25 +26,21 @@ public class MenuItemTagController : ControllerBase
         _tagService = tagService;
         _authorizationService = authorizationService;
     }
-
-    // GET: api/MenuItemTag
+    
     [HttpGet]
     public async Task<IActionResult> GetTags([FromQuery] int? restaurantId)
     {
         var tags = await _tagService.GetTagsAsync(restaurantId);
         return tags.ToActionResult();
     }
-
-
-    // GET: api/MenuItemTag/5
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTag(int id)
     {
         var tag = await _tagService.GetTagByIdAsync(id);
         return tag.ToActionResult();
     }
-
-    // POST: api/MenuItemTag
+    
     [HttpPost]
     public async Task<IActionResult> CreateTag([FromBody] CreateMenuItemTagDto tag)
     {
@@ -59,8 +55,7 @@ public class MenuItemTagController : ControllerBase
         var createdTag = await _tagService.CreateTagAsync(tag);
         return createdTag.ToActionResult();
     }
-
-    // PUT: api/MenuItemTag/5
+    
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTag(int id, [FromBody] MenuItemTagDto tag)
     {
@@ -76,8 +71,7 @@ public class MenuItemTagController : ControllerBase
 
         return updatedTag.ToActionResult();
     }
-
-    // DELETE: api/MenuItemTag/5
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTag(int id)
     {
