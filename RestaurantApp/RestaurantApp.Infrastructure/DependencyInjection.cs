@@ -8,6 +8,7 @@ using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
+using RestaurantApp.Application.Services;
 using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Settings;
@@ -63,6 +64,7 @@ public static class DependencyInjection
                 s3Config);
         });
 
+        services.AddScoped<IAuthorizationChecker, AuthorizationChecker>();
         // Storage services
         services.AddScoped<IImageProcessor, SkiaImageProcessor>();
         services.AddScoped<IUrlBuilder, S3UrlBuilder>();

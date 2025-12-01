@@ -2,6 +2,7 @@
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services;
+using RestaurantApp.Application.Services.Decorators.Authorization;
 using RestaurantApp.Application.Services.Email;
 using RestaurantApp.Domain.Models;
 
@@ -13,8 +14,27 @@ public static class DependencyInjection
     {
         services.AddScoped<IMenuItemService, MenuItemService>();
         services.AddScoped<IMenuItemTagService, MenuItemTagService>();
-        services.AddScoped<IMenuCategoryService, MenuCategoryService>();
-        services.AddScoped<IMenuService, MenuService>();
+        
+        services.AddScoped<MenuCategoryService>();
+        services.AddScoped<IMenuCategoryService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<MenuCategoryService>();
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedMenuCategoryService(innerService, currentUser, permissionChecker);
+        });
+        
+        services.AddScoped<MenuService>();
+        services.AddScoped<IMenuService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<MenuService>();
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedMenuService(innerService, currentUser, permissionChecker);
+        });
+        
         services.AddScoped<IReviewService, ReviewService>();
         services.AddTransient<IEmailComposer, EmailComposer>();
 

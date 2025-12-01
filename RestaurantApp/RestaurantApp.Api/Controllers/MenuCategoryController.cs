@@ -40,27 +40,27 @@ public class MenuCategoryController: ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateCategory(int menuId, [FromBody] CreateMenuCategoryDto categoryDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            categoryDto.MenuId,
-            new ManageMenuRequirement(categoryDto.MenuId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
-        
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     categoryDto.MenuId,
+        //     new ManageMenuRequirement(categoryDto.MenuId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
+        //
         return (await _menuCategoryService.CreateCategoryAsync(categoryDto)).ToActionResult();
     }
 
     [HttpPut("{categoryId}")]
     public async Task<IActionResult> UpdateCategory( [FromBody] UpdateMenuCategoryDto categoryDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            categoryDto.MenuId,
-            new ManageMenuRequirement(categoryDto.MenuId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     categoryDto.MenuId,
+        //     new ManageMenuRequirement(categoryDto.MenuId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuCategoryService.UpdateCategoryAsync(categoryDto)).ToActionResult();
     }
@@ -68,13 +68,13 @@ public class MenuCategoryController: ControllerBase
     [HttpDelete("{categoryId}")]
     public async Task<IActionResult> DeleteCategory(int categoryId)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            categoryId,
-            new ManageCategoryRequirement(categoryId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     categoryId,
+        //     new ManageCategoryRequirement(categoryId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuCategoryService.DeleteCategoryAsync(categoryId)).ToActionResult();
     }
     

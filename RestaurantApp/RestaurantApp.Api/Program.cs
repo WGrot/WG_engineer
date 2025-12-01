@@ -65,6 +65,7 @@ builder.Services.AddSwaggerGen(options =>
         { jwtSecurityScheme, Array.Empty<string>() }
     });
 });
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();

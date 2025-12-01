@@ -38,26 +38,26 @@ public class MenuController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null,
-            new ManageMenuRequirement(restaurantId: menuDto.RestaurantId)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null,
+        //     new ManageMenuRequirement(restaurantId: menuDto.RestaurantId)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuService.CreateMenuAsync(menuDto)).ToActionResult();
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null,
-            new ManageMenuRequirement(menuId: id)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null,
+        //     new ManageMenuRequirement(menuId: id)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuService.UpdateMenuAsync(id, menuDto)).ToActionResult();
     }
@@ -65,26 +65,26 @@ public class MenuController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMenu(int id)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null,
-            new ManageMenuRequirement(menuId: id)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null,
+        //     new ManageMenuRequirement(menuId: id)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         return (await _menuService.DeleteMenuAsync(id)).ToActionResult();
     }
 
     [HttpPatch("{id}")]
     public async Task<IActionResult> PatchMenu(int id, [FromBody] UpdateMenuDto menuDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null,
-            new ManageMenuRequirement(menuId: id)); 
-
-        if (!authResult.Succeeded)
-            return Forbid();
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null,
+        //     new ManageMenuRequirement(menuId: id)); 
+        //
+        // if (!authResult.Succeeded)
+        //     return Forbid();
         
         return (await _menuService.UpdateMenuAsync(id, menuDto)).ToActionResult();
     }
