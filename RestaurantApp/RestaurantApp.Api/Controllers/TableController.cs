@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
-using RestaurantApp.Api.Services.Interfaces;
+
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;

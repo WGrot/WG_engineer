@@ -4,7 +4,7 @@ using RestaurantApp.Api.Common;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
-using RestaurantApp.Api.Services.Interfaces;
+
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Menu.Prices;

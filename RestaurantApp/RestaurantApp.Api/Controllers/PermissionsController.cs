@@ -5,7 +5,7 @@ using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
 using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
-using RestaurantApp.Api.Services.Interfaces;
+
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs;

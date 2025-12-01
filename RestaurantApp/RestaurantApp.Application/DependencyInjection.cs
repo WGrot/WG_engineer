@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthService, AuthService>();
         
         services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<ITableReservationService, TableReservationService>();

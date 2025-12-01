@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.Services.Interfaces;
+
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.GeoCoding;
