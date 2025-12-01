@@ -13,19 +13,18 @@ public class ApplicationUser : IdentityUser
 
     public bool TwoFactorEnabled { get; set; } = false;
     public string? TwoFactorSecretKey { get; set; }
-    // Dodatkowe przydatne właściwości:
+
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
     
-    //Relacja do rezerwacji
+
     public List<ReservationBase>? Reservations { get; set; } = new();
     
-    // Jeśli aplikacja ma role restauracyjne
-    public string? RestaurantId { get; set; } // Dla powiązania z konkretną restauracją
+
+    public string? RestaurantId { get; set; } 
     
-    // Metoda do aktualizacji czasu ostatniego logowania
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;

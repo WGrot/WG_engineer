@@ -52,14 +52,7 @@ public class S3UrlBuilder: IUrlBuilder
         }
 
         var uri = new Uri(fileUrl);
-
-        // Check if it's AWS S3 URL
-        if (uri.Host.Contains("amazonaws.com"))
-        {
-            var s3Uri = new AmazonS3Uri(fileUrl);
-            return (s3Uri.Bucket, s3Uri.Key);
-        }
-
+        
         // Handle MinIO and other S3-compatible storage
         // Format: http://localhost:9000/bucket-name/path/to/file.jpg
         var pathParts = uri.AbsolutePath.TrimStart('/').Split('/', 2);

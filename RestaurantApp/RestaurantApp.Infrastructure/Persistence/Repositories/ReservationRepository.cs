@@ -16,8 +16,7 @@ public class ReservationRepository : IReservationRepository
     {
         _context = context;
     }
-
-    // === Base Reservation CRUD ===
+    
 
     public async Task<ReservationBase?> GetByIdAsync(int id)
     {
@@ -57,8 +56,7 @@ public class ReservationRepository : IReservationRepository
         _context.Reservations.Remove(reservation);
         await _context.SaveChangesAsync();
     }
-
-    // === Table Reservation CRUD ===
+    
 
     public async Task<TableReservation?> GetTableReservationByIdAsync(int id)
     {
@@ -120,7 +118,7 @@ public class ReservationRepository : IReservationRepository
         return await query.AnyAsync();
     }
 
-    // === Query/Search Operations ===
+
 
     public async Task<(IEnumerable<ReservationBase> Items, int TotalCount)> SearchAsync(
         ReservationSearchParameters searchParams,
@@ -131,8 +129,6 @@ public class ReservationRepository : IReservationRepository
 
         if (query == null)
         {
-            // Return empty result if validation failed
-            // In production, you might want to throw or handle this differently
             return (Enumerable.Empty<ReservationBase>(), 0);
         }
 
@@ -158,8 +154,6 @@ public class ReservationRepository : IReservationRepository
         return await query.ToListAsync();
     }
 
-    // === User/Restaurant Access ===
-
     public async Task<IEnumerable<int>> GetManagedRestaurantIdsAsync(string userId)
     {
         return await _context.RestaurantEmployees
@@ -173,8 +167,7 @@ public class ReservationRepository : IReservationRepository
         return await _context.Reservations
             .FirstOrDefaultAsync(r => r.Id == reservationId && r.UserId == userId);
     }
-
-    // === Statistics ===
+    
 
     public async Task<int> CountByRestaurantAndDateRangeAsync(int restaurantId, DateTime from, DateTime to)
     {

@@ -36,46 +36,45 @@ public class S3StorageService : IStorageService
 
     #region Image Operations
 
-public async Task<ImageUploadResult> UploadImageAsync(
-    Stream imageStream,
-    string fileName,
-    ImageType imageType,
-    int? entityId = null,
-    bool generateThumbnail = true)
-{
-    try
+    public async Task<ImageUploadResult> UploadImageAsync(
+        Stream imageStream,
+        string fileName,
+        ImageType imageType,
+        int? entityId = null,
+        bool generateThumbnail = true)
     {
-        var bucketName = _config.BucketNames.Images;
-        
-        
-        
-        using var memoryStream = new MemoryStream();
-        await imageStream.CopyToAsync(memoryStream);
-        
-        memoryStream.Position = 0;
-        
-        var imageInfo = await _imageProcessor.GetImageInfoAsync(memoryStream);
-        
-        
-        if (imageInfo == null || !imageInfo.IsValid)
+        try
         {
-            throw new InvalidOperationException("Invalid image format or corrupted file");
-        }
-        
-        memoryStream.Position = 0;
-            
+            var bucketName = _config.BucketNames.Images;
+
+
+            using var memoryStream = new MemoryStream();
+            await imageStream.CopyToAsync(memoryStream);
+
+            memoryStream.Position = 0;
+
+            var imageInfo = await _imageProcessor.GetImageInfoAsync(memoryStream);
+
+
+            if (imageInfo == null || !imageInfo.IsValid)
+            {
+                throw new InvalidOperationException("Invalid image format or corrupted file");
+            }
+
+            memoryStream.Position = 0;
+
             var settings = _imageSettings.GetConfig(imageType);
-            
+
             using var processingResult = await _imageProcessor.ProcessImageAsync(
                 memoryStream,
                 settings.MaxWidth,
                 settings.MaxHeight,
                 settings.Quality);
-            
+
             var prefix = GetPrefixForImageType(imageType, entityId);
             var uniqueFileName = GenerateUniqueFileName(fileName);
             var fullPath = $"{prefix}{uniqueFileName}";
-            
+
             var metadata = new Dictionary<string, string>
             {
                 { "image-type", imageType.ToString() },
@@ -84,7 +83,7 @@ public async Task<ImageUploadResult> UploadImageAsync(
                 { "width", processingResult.Width.ToString() },
                 { "height", processingResult.Height.ToString() }
             };
-            
+
             processingResult.ProcessedStream.Position = 0;
             await UploadWithMetadataAsync(
                 processingResult.ProcessedStream,
@@ -100,11 +99,11 @@ public async Task<ImageUploadResult> UploadImageAsync(
                 FileSize = processingResult.FileSize,
                 Metadata = metadata
             };
-            
+
             if (generateThumbnail)
             {
                 memoryStream.Position = 0;
-                
+
                 using var thumbnailSourceStream = new MemoryStream();
                 await memoryStream.CopyToAsync(thumbnailSourceStream);
                 thumbnailSourceStream.Position = 0;
@@ -138,7 +137,7 @@ public async Task<ImageUploadResult> UploadImageAsync(
         try
         {
             await DeleteFileAsync(fileName, bucketName);
-            
+
             var thumbnailName = $"thumbnails/{Path.GetFileName(fileName)}";
             await DeleteFileAsync(thumbnailName, bucketName);
 
@@ -242,7 +241,7 @@ public async Task<ImageUploadResult> UploadImageAsync(
             };
 
             var response = await _s3Client.GetObjectAsync(request);
-            
+
             var memoryStream = new MemoryStream();
             await response.ResponseStream.CopyToAsync(memoryStream);
             memoryStream.Position = 0;

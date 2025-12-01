@@ -15,7 +15,6 @@ public class MenuItem
     public int? MenuId { get; set; }
     public Menu? Menu { get; set; }
     
-    // Relacja z kategorią (opcjonalna - item może być bez kategorii)
     public int? CategoryId { get; set; }
     public MenuCategory? Category { get; set; }
     

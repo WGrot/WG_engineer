@@ -12,10 +12,8 @@ public class RestaurantDto
     public string Address { get; set; } = string.Empty;
     public string? Description { get; set; }
     
-    // Godziny otwarcia
     public List<OpeningHoursDto>? OpeningHours { get; set; }
     
-    // Zdjęcia
     public string? ProfileUrl { get; set; }
     public string? ProfileThumbnailUrl { get; set; }
     public List<string>? PhotosUrls { get; set; }
@@ -27,7 +25,6 @@ public class RestaurantDto
     
     public MenuDto? Menu { get; set; }
     
-    // Oceny i recenzje
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalRatings1Star { get; set; }

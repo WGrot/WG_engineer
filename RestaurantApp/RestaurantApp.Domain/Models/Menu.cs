@@ -10,9 +10,7 @@ public class Menu
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; } = null!;
     
-    // Lista kategorii w menu
     public List<MenuCategory> Categories { get; set; } = new();
     
-    // Lista pozycji menu bez kategorii (opcjonalne)
     public List<MenuItem>? Items { get; set; } = new();
 }

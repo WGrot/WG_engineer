@@ -3,15 +3,14 @@
 public class MenuCategory
 {
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty; // np. "Napoje", "Dania główne", "Przystawki"
+    public string Name { get; set; } = string.Empty; 
     public string? Description { get; set; }
-    public int DisplayOrder { get; set; } // Kolejność wyświetlania kategorii
+    public int DisplayOrder { get; set; } 
     public bool IsActive { get; set; } = true;
     
-    // Relacja z Menu
+
     public int MenuId { get; set; }
     public Menu Menu { get; set; } = null!;
-    
-    // Lista pozycji w kategorii
+
     public List<MenuItem> Items { get; set; } = new();
 }

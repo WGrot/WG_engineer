@@ -2,9 +2,9 @@
 
 public class OpeningHoursDto
 {
-    public DayOfWeek DayOfWeek { get; set; } // Używamy enum zamiast int
-    public TimeOnly OpenTime { get; set; }    // Używamy TimeOnly zamiast string
-    public TimeOnly CloseTime { get; set; }   // Używamy TimeOnly zamiast string
+    public DayOfWeek DayOfWeek { get; set; } 
+    public TimeOnly OpenTime { get; set; }    
+    public TimeOnly CloseTime { get; set; } 
     public bool IsClosed { get; set; }
     
     public int RestaurantId { get; set; }

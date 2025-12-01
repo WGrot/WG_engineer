@@ -71,7 +71,6 @@ public class S3BucketService: IBucketService
     {
         try
         {
-            // First, delete all objects in the bucket
             var listRequest = new ListObjectsV2Request
             {
                 BucketName = bucketName
@@ -98,8 +97,7 @@ public class S3BucketService: IBucketService
                 listRequest.ContinuationToken = listResponse.NextContinuationToken;
 
             } while (listResponse.IsTruncated == true);
-
-            // Then delete the bucket
+            
             await _s3Client.DeleteBucketAsync(bucketName);
             _logger.LogInformation("Deleted bucket: {BucketName}", bucketName);
         }

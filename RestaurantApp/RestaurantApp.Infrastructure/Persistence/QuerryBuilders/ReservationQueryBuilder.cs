@@ -89,19 +89,16 @@ public static class ReservationQueryBuilder
             query = query.Where(r => r.Restaurant.Name.ToLower().Contains(lowerName));
         }
 
-        // User filter
         if (!string.IsNullOrWhiteSpace(searchParams.UserId))
         {
             query = query.Where(r => r.UserId == searchParams.UserId);
         }
-
-        // Status filter
+        
         if (searchParams.Status.HasValue)
         {
             query = query.Where(r => r.Status == searchParams.Status.Value.ToDomain());
         }
-
-        // Customer filters
+        
         if (!string.IsNullOrWhiteSpace(searchParams.CustomerName))
         {
             var lowerName = searchParams.CustomerName.ToLower();
@@ -119,8 +116,7 @@ public static class ReservationQueryBuilder
             var normalizedPhone = searchParams.CustomerPhone.Replace(" ", "").Replace("-", "");
             query = query.Where(r => r.CustomerPhone.Replace(" ", "").Replace("-", "").Contains(normalizedPhone));
         }
-
-        // Date filters
+        
         if (searchParams.ReservationDate.HasValue)
         {
             var dateOnly = searchParams.ReservationDate.Value.Date;
@@ -136,8 +132,7 @@ public static class ReservationQueryBuilder
         {
             query = query.Where(r => r.ReservationDate <= searchParams.ReservationDateTo.Value);
         }
-
-        // Notes filter
+        
         if (!string.IsNullOrWhiteSpace(searchParams.Notes))
         {
             var lowerNotes = searchParams.Notes.ToLower();

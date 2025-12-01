@@ -22,7 +22,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // DbContext
+
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("Default"),
@@ -40,7 +40,7 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(10);
         });
         
-        // Storage configuration
+
         services.Configure<StorageConfiguration>(
             configuration.GetSection("MinIO"));
         services.Configure<ImageSettings>(

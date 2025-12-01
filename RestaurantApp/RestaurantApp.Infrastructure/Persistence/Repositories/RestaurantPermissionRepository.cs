@@ -86,7 +86,6 @@ public class RestaurantPermissionRepository: IRestaurantPermissionRepository
         _context.RestaurantPermissions.Add(permission);
         await _context.SaveChangesAsync();
         
-        // Reload with includes
         return await GetByIdAsync(permission.Id) ?? permission;
     }
 
@@ -95,7 +94,6 @@ public class RestaurantPermissionRepository: IRestaurantPermissionRepository
         _context.RestaurantPermissions.Update(permission);
         await _context.SaveChangesAsync();
         
-        // Reload with includes
         return await GetByIdAsync(permission.Id) ?? permission;
     }
 

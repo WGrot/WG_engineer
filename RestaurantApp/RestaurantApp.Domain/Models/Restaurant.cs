@@ -39,9 +39,6 @@ public class Restaurant
     public int TotalRatings4Star { get; set; } = 0;
     public int TotalRatings5Star { get; set; } = 0;
     
-    
-    
-    
     public void SetProfilePhoto(string url, string? thumbnailUrl)
     {
         profileUrl = url ?? throw new ArgumentNullException(nameof(url));
@@ -55,8 +52,7 @@ public class Restaurant
     }
 
     public bool HasProfilePhoto() => !string.IsNullOrEmpty(profileUrl);
-
-    // Gallery methods
+    
     public void AddGalleryPhoto(string url, string? thumbnailUrl)
     {
         photosUrls.Add(url ?? throw new ArgumentNullException(nameof(url)));

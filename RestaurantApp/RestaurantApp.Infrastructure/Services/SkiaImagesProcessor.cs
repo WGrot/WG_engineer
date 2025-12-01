@@ -52,8 +52,8 @@ public class SkiaImageProcessor : IImageProcessor
     }
 
     public async Task<Stream> CreateThumbnailAsync(
-        Stream inputStream, 
-        int size, 
+        Stream inputStream,
+        int size,
         int quality = 75)
     {
         using var memoryStream = new MemoryStream();
@@ -67,7 +67,7 @@ public class SkiaImageProcessor : IImageProcessor
         }
 
         using var thumbnail = CreateSquareThumbnail(originalBitmap, size);
-        
+
         var outputStream = new MemoryStream();
         SaveAsJpeg(thumbnail, outputStream, quality);
         outputStream.Position = 0;
@@ -75,42 +75,42 @@ public class SkiaImageProcessor : IImageProcessor
         return outputStream;
     }
 
-public async Task<ImageInfo?> GetImageInfoAsync(Stream imageStream)
-{
-    try
+    public async Task<ImageInfo?> GetImageInfoAsync(Stream imageStream)
     {
-        using var memoryStream = new MemoryStream();
-        await imageStream.CopyToAsync(memoryStream);
-        
-        
-        memoryStream.Position = 0;
-
-        using var codec = SKCodec.Create(memoryStream);
-        
-        
-        if (codec == null)
+        try
         {
+            using var memoryStream = new MemoryStream();
+            await imageStream.CopyToAsync(memoryStream);
+
+
             memoryStream.Position = 0;
-            using var bitmap = SKBitmap.Decode(memoryStream);
-            
-            if (bitmap != null)
+
+            using var codec = SKCodec.Create(memoryStream);
+
+
+            if (codec == null)
             {
-                return new ImageInfo(bitmap.Width, bitmap.Height, true);
+                memoryStream.Position = 0;
+                using var bitmap = SKBitmap.Decode(memoryStream);
+
+                if (bitmap != null)
+                {
+                    return new ImageInfo(bitmap.Width, bitmap.Height, true);
+                }
+
+                return null;
             }
-            
+
+            return new ImageInfo(
+                codec.Info.Width,
+                codec.Info.Height,
+                true);
+        }
+        catch (Exception ex)
+        {
             return null;
         }
-
-        return new ImageInfo(
-            codec.Info.Width,
-            codec.Info.Height,
-            true);
     }
-    catch (Exception ex)
-    {
-        return null;
-    }
-}
 
     #region Private Methods
 
@@ -124,7 +124,7 @@ public async Task<ImageInfo?> GetImageInfoAsync(Stream imageStream)
         var newHeight = (int)(original.Height * ratio);
 
         var resized = original.Resize(new SKImageInfo(newWidth, newHeight), SKFilterQuality.High);
-        
+
         return resized ?? throw new InvalidOperationException("Failed to resize image");
     }
 
