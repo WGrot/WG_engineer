@@ -12,8 +12,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IMenuItemTagService, MenuItemTagService>();
-        
         services.AddScoped<MenuCategoryService>();
         services.AddScoped<IMenuCategoryService>(sp =>
         {
@@ -43,6 +41,16 @@ public static class DependencyInjection
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
             return new AuthorizedMenuItemService(innerService, currentUser, permissionChecker);
+        });
+        
+        services.AddScoped<MenuItemTagService>();
+        services.AddScoped<IMenuItemTagService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<MenuItemTagService>();
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedMenuItemTagService(innerService, currentUser, permissionChecker);
         });
         
         services.AddScoped<IReviewService, ReviewService>();

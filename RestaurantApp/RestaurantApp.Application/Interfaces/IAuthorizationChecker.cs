@@ -9,4 +9,6 @@ public interface IAuthorizationChecker
     
     Task<bool> CanManageMenuItemAsync(string userId, int menuItemId);
     
+    Task<bool> CanManageTagAsync(string userId, int tagId);
+    
 }
