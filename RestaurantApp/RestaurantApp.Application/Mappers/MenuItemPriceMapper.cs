@@ -28,8 +28,7 @@ public static class PriceMapper
             CurrencyCode = dto.CurrencyCode
         };
     }
-
-    // Opcjonalnie: metoda do aktualizacji istniejącej encji
+    
     public static void UpdateEntity(this PriceDto dto, MenuItemPrice entity)
     {
         if (dto == null || entity == null)

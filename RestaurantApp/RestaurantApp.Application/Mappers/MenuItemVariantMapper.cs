@@ -5,7 +5,7 @@ namespace RestaurantApp.Application.Mappers;
 
 public static class MenuItemVariantMapper
 {
-    // Z Entity na DTO
+
     public static MenuItemVariantDto ToDto(this MenuItemVariant entity)
     {
         return new MenuItemVariantDto
@@ -19,7 +19,7 @@ public static class MenuItemVariantMapper
         };
     }
 
-    // Z DTO na Entity
+
     public static MenuItemVariant ToEntity(this MenuItemVariantDto dto)
     {
         return new MenuItemVariant
@@ -33,7 +33,6 @@ public static class MenuItemVariantMapper
         };
     }
 
-    // Aktualizacja istniejącej encji z DTO
     public static void UpdateFromDto(this MenuItemVariant entity, MenuItemVariantDto dto)
     {
         entity.Name = dto.Name;
@@ -41,10 +40,8 @@ public static class MenuItemVariantMapper
         entity.IsAvailable = dto.IsAvailable;
         entity.MenuItemId = dto.MenuItemId;
         entity.Description = dto.Description;
-        // Id zazwyczaj nie aktualizujemy
     }
-
-    // Mapowanie kolekcji
+    
     public static List<MenuItemVariantDto> ToDtoList(this IEnumerable<MenuItemVariant> entities)
     {
         return entities.Select(e => e.ToDto()).ToList();

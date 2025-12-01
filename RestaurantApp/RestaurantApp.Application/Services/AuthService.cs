@@ -11,8 +11,8 @@ namespace RestaurantApp.Application.Services;
 
 public class AuthService: IAuthService
 {
-    private readonly IUserRepository _userRepository;        // CRUD operations
-    private readonly IIdentityService _identityService;      // Identity operations
+    private readonly IUserRepository _userRepository;      
+    private readonly IIdentityService _identityService;      
     private readonly ITokenService _tokenService;
     private readonly ITwoFactorService _twoFactorService;
     private readonly IEmailComposer _emailComposer;
@@ -44,15 +44,13 @@ public class AuthService: IAuthService
             LastName = request.LastName,
             EmailConfirmed = false
         };
-
-        // Use IdentityService for creation with password
+        
         var createResult = await _identityService.CreateUserAsync(user, request.Password);
         if (createResult.IsFailure)
             return Result.Failure(createResult.Error, createResult.StatusCode);
 
         var createdUser = createResult.Value!;
         
-        // Generate confirmation token via IdentityService
         var token = await _identityService.GenerateEmailConfirmationTokenAsync(createdUser);
         var confirmationLink = _emailLinkGenerator.GenerateEmailConfirmationLink(createdUser.Id, token);
         
@@ -64,17 +62,15 @@ public class AuthService: IAuthService
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress)
     {
-        // Use UserRepository for fetching user
+
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
             return Result<LoginResponse>.Unauthorized("Incorrect email or password");
 
-        // Use IdentityService for password check
         var passwordValid = await _identityService.CheckPasswordAsync(user, request.Password);
         if (!passwordValid)
             return Result<LoginResponse>.Failure("Incorrect email or password", 401);
-
-        // Handle 2FA
+        
         if (user.TwoFactorEnabled)
         {
             var twoFactorResult = await HandleTwoFactorAsync(user, request.TwoFactorCode);
@@ -113,8 +109,7 @@ public class AuthService: IAuthService
     {
         if (string.IsNullOrEmpty(userId))
             return Result<ResponseUserDto>.Failure("User ID is required", 400);
-
-        // Use UserRepository for fetching
+        
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             return Result<ResponseUserDto>.Failure("User not found", 404);
@@ -124,7 +119,6 @@ public class AuthService: IAuthService
 
     public async Task<Result<List<ResponseUserDto>>> GetAllUsersAsync()
     {
-        // Use UserRepository search with no filters
         var users = await _userRepository.SearchAsync(null, null, null, null, null);
         var userDtos = users.Select(MapToDto).ToList();
         return Result<List<ResponseUserDto>>.Success(userDtos);
@@ -141,8 +135,7 @@ public class AuthService: IAuthService
 
         if (user.EmailConfirmed)
             return Result.Success();
-
-        // Use IdentityService for confirmation
+        
         return await _identityService.ConfirmEmailAsync(user, token);
     }
 
@@ -153,7 +146,7 @@ public class AuthService: IAuthService
 
         var user = await _userRepository.GetByEmailAsync(email);
         if (user == null)
-            return Result.Success(); // Security: don't reveal if user exists
+            return Result.Success();
 
         if (user.EmailConfirmed)
             return Result.Failure("Email is already confirmed", 400);
@@ -179,8 +172,7 @@ public class AuthService: IAuthService
                 ResponseUser = MapToLoginDto(user)
             });
         }
-
-        // Use IdentityService for lockout check
+        
         if (await _identityService.IsLockedOutAsync(user))
             return Result<LoginResponse>.Unauthorized("Account is locked due to multiple failed attempts");
 

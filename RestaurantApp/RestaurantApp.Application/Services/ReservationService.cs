@@ -26,8 +26,7 @@ public class ReservationService: IReservationService
         _reservationRepository = reservationRepository;
         _restaurantRepository = restaurantRepository;
     }
-
-    // === Basic CRUD ===
+    
 
     public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
     {
@@ -96,17 +95,14 @@ public class ReservationService: IReservationService
         await _reservationRepository.DeleteAsync(existing);
         return Result.Success();
     }
-
-    // === User Operations ===
-
+    
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
         string userId,
         ReservationSearchParameters searchParams)
     {
         if (string.IsNullOrEmpty(userId))
             return Result<PaginatedReservationsDto>.Failure("User ID is required.");
-
-        // Force user ID filter
+        
         searchParams.UserId = userId;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
@@ -132,8 +128,7 @@ public class ReservationService: IReservationService
 
         return Result.Success();
     }
-
-    // === Management Operations ===
+    
 
     public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(
         string userId,
@@ -148,8 +143,7 @@ public class ReservationService: IReservationService
         {
             return Result<PaginatedReservationsDto>.Success(CreateEmptyPaginatedResult(searchParams));
         }
-
-        // Set restaurant IDs filter
+        
         searchParams.RestaurantIds = managedRestaurantIds;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
@@ -172,16 +166,13 @@ public class ReservationService: IReservationService
 
         return Result.Success();
     }
-
-    // === Search ===
+    
 
     public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams)
     {
         var items = await _reservationRepository.SearchAsync(searchParams);
         return Result<IEnumerable<ReservationDto>>.Success(items.ToDtoList());
     }
-
-    // === Private Helpers ===
 
     private static (int page, int pageSize) NormalizePagination(int requestedPage, int requestedPageSize)
     {

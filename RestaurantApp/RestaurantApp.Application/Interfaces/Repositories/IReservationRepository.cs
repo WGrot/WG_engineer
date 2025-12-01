@@ -3,7 +3,7 @@ using RestaurantApp.Shared.DTOs.SearchParameters;
 
 public interface IReservationRepository
 {
-    // === Base Reservation CRUD ===
+
     Task<ReservationBase?> GetByIdAsync(int id);
     Task<ReservationBase?> GetByIdWithRestaurantAsync(int id);
     Task<IEnumerable<ReservationBase>> GetByRestaurantIdAsync(int restaurantId);
@@ -11,7 +11,7 @@ public interface IReservationRepository
     Task UpdateAsync(ReservationBase reservation);
     Task DeleteAsync(ReservationBase reservation);
 
-    // === Table Reservation CRUD ===
+
     Task<TableReservation?> GetTableReservationByIdAsync(int id);
     Task<TableReservation?> GetTableReservationByIdWithDetailsAsync(int id);
     Task<TableReservation> AddTableReservationAsync(TableReservation reservation);

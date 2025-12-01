@@ -19,18 +19,17 @@ public static class MenuItemMapper
             ImageUrl = entity.ImageUrl,
             ThumbnailUrl = entity.ThumbnailUrl,
             CategoryId = entity.CategoryId,
-            // Mapuj tagi używając MenuItemTagMapper
+
             Tags = entity.Tags?.ToDto().ToList() ?? new List<MenuItemTagDto>()
         };
     }
 
-    // IEnumerable<MenuItem> -> IEnumerable<MenuItemDto>
+
     public static IEnumerable<MenuItemDto> ToDtoList(this IEnumerable<MenuItem> entities)
     {
         return entities.Select(e => e.ToDto());
     }
 
-    // MenuItemDto -> MenuItem
     public static MenuItem ToEntity(this MenuItemDto dto)
     {
         var menuItem = new MenuItem
@@ -43,8 +42,7 @@ public static class MenuItemMapper
             ThumbnailUrl = dto.ThumbnailUrl,
             CategoryId = dto.CategoryId
         };
-
-        // Mapuj tagi
+        
         if (dto.Tags?.Any() == true)
         {
             menuItem.Tags = dto.Tags.Select(t => t.ToEntity()).ToHashSet();
@@ -52,8 +50,7 @@ public static class MenuItemMapper
 
         return menuItem;
     }
-
-    // Aktualizacja istniejącej encji z DTO
+    
     public static void UpdateFromDto(this MenuItem entity, MenuItemDto dto)
     {
         entity.Name = dto.Name;
@@ -62,8 +59,7 @@ public static class MenuItemMapper
         entity.Price.CurrencyCode = dto.CurrencyCode;
         entity.ImageUrl = dto.ImageUrl;
         entity.ThumbnailUrl = dto.ThumbnailUrl;
-
-        // Aktualizuj tagi - zastąp całą kolekcję
+        
         entity.Tags.Clear();
         if (dto.Tags?.Any() == true)
         {

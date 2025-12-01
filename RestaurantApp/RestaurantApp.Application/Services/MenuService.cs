@@ -139,8 +139,7 @@ public class MenuService: IMenuService
             ? Result<MenuDto>.NotFound($"Active menu for restaurant ID {restaurantId} not found.")
             : Result.Success(menu.ToDto());
     }
-
-    // Private helper - logika biznesowa zostaje w serwisie
+    
     private async Task DeactivateAllMenusForRestaurantAsync(int restaurantId, CancellationToken ct = default)
     {
         var activeMenus = await _menuRepository.GetActiveMenusForRestaurantAsync(restaurantId, ct);

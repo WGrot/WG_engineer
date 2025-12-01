@@ -74,15 +74,13 @@ public class TableAvailabilityService: ITableAvailabilityService
         Domain.Models.OpeningHours? openingHours)
     {
         var timeSlots = new char[SlotsPerDay];
-        Array.Fill(timeSlots, '1'); // Available by default
-
-        // Mark reserved slots
+        Array.Fill(timeSlots, '1');
+        
         foreach (var reservation in reservations)
         {
             MarkReservedSlots(timeSlots, reservation.StartTime, reservation.EndTime);
         }
-
-        // Mark closed hours
+        
         MarkClosedHours(timeSlots, openingHours);
 
         return timeSlots;
@@ -98,7 +96,7 @@ public class TableAvailabilityService: ITableAvailabilityService
 
         for (int i = startIndex; i < endIndex; i++)
         {
-            timeSlots[i] = '0'; // Reserved
+            timeSlots[i] = '0';
         }
     }
 
@@ -106,7 +104,7 @@ public class TableAvailabilityService: ITableAvailabilityService
     {
         if (openingHours is null || openingHours.IsClosed)
         {
-            Array.Fill(timeSlots, '2'); // Closed
+            Array.Fill(timeSlots, '2');
             return;
         }
 
@@ -115,12 +113,12 @@ public class TableAvailabilityService: ITableAvailabilityService
 
         for (int i = 0; i < openIndex; i++)
         {
-            timeSlots[i] = '2'; // Before opening
+            timeSlots[i] = '2';
         }
 
         for (int i = closeIndex; i < SlotsPerDay; i++)
         {
-            timeSlots[i] = '2'; // After closing
+            timeSlots[i] = '2';
         }
     }
 

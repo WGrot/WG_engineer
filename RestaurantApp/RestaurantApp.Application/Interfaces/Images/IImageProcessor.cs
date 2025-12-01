@@ -1,11 +1,6 @@
 ﻿using RestaurantApp.Application.Interfaces.Images;
 
 namespace RestaurantApp.Application.Common.Interfaces;
-
-/// <summary>
-/// Image processing abstraction - works only with streams and clean DTOs
-/// No SkiaSharp, ImageSharp or any other library types exposed
-/// </summary>
 public interface IImageProcessor
 {
     Task<ImageProcessingResult> ProcessImageAsync(

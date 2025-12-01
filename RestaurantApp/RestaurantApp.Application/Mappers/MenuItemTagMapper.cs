@@ -6,7 +6,6 @@ namespace RestaurantApp.Application.Mappers;
 
 public static class MenuItemTagMapper
 {
-    // MenuItemTag -> MenuItemTagDto
     public static MenuItemTagDto ToDto(this MenuItemTag entity)
     {
         return new MenuItemTagDto
@@ -18,7 +17,6 @@ public static class MenuItemTagMapper
         };
     }
     
-    // MenuItemTagDto -> MenuItemTag
     public static MenuItemTag ToEntity(this MenuItemTagDto dto)
     {
         return new MenuItemTag
@@ -30,7 +28,6 @@ public static class MenuItemTagMapper
         };
     }
     
-    // Aktualizacja istniejącej encji z DTO
     public static void UpdateFromDto(this MenuItemTag entity, MenuItemTagDto dto)
     {
         entity.Id = dto.Id;

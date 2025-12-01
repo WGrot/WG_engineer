@@ -1,8 +1,5 @@
 ﻿namespace RestaurantApp.Application.Common.Interfaces;
 
-/// <summary>
-/// URL generation abstraction for storage service
-/// </summary>
 public interface IUrlBuilder
 {
     Task<string> GetPresignedUrlAsync(

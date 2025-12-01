@@ -6,7 +6,7 @@ namespace RestaurantApp.Application.Mappers;
 
 public static class RestaurantMapper
 {
-    // Z Entity na DTO
+
     public static RestaurantDto ToDto(this Restaurant entity)
     {
         return new RestaurantDto
@@ -32,7 +32,7 @@ public static class RestaurantMapper
         };
     }
 
-    // Z DTO na Entity
+
     public static Restaurant ToEntity(this RestaurantDto dto)
     {
         return new Restaurant
@@ -55,19 +55,17 @@ public static class RestaurantMapper
             TotalRatings3Star = dto.TotalRatings3Star,
             TotalRatings4Star = dto.TotalRatings4Star,
             TotalRatings5Star = dto.TotalRatings5Star
-            // Kolekcje nawigacyjne (Menu, Employees, Reviews, Tables, Reservations) 
-            // nie są mapowane - będą zarządzane przez EF
+
         };
     }
-
-    // Aktualizacja istniejącej encji z DTO
+    
     public static void UpdateFromDto(this Restaurant entity, RestaurantDto dto)
     {
         entity.Name = dto.Name;
         entity.Address = dto.Address;
         entity.Description = dto.Description;
         
-        // Aktualizacja godzin otwarcia (jeśli przekazane)
+
         if (dto.OpeningHours != null)
         {
             entity.OpeningHours = dto.OpeningHours.Select(oh => oh.ToEntity()).ToList();
@@ -78,7 +76,7 @@ public static class RestaurantMapper
         entity.photosUrls = dto.PhotosUrls;
         entity.photosThumbnailsUrls = dto.PhotosThumbnailsUrls;
         
-        // Statystyki ocen
+
         entity.AverageRating = dto.AverageRating;
         entity.TotalReviews = dto.TotalReviews;
         entity.TotalRatings1Star = dto.TotalRatings1Star;
@@ -86,17 +84,16 @@ public static class RestaurantMapper
         entity.TotalRatings3Star = dto.TotalRatings3Star;
         entity.TotalRatings4Star = dto.TotalRatings4Star;
         entity.TotalRatings5Star = dto.TotalRatings5Star;
-        
-        // Nie aktualizujemy Id ani kolekcji nawigacyjnych
+
     }
 
-    // Mapowanie kolekcji Entity na listę DTO
+
     public static List<RestaurantDto> ToDtoList(this IEnumerable<Restaurant> entities)
     {
         return entities.Select(e => e.ToDto()).ToList();
     }
 
-    // Mapowanie kolekcji DTO na listę Entity
+
     public static List<Restaurant> ToEntityList(this IEnumerable<RestaurantDto> dtos)
     {
         return dtos.Select(d => d.ToEntity()).ToList();

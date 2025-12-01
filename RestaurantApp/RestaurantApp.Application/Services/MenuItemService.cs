@@ -237,8 +237,7 @@ public class MenuItemService : IMenuItemService
             {
                 return Result<ImageUploadResult>.Failure("Empty file provided.");
             }
-        
-            // Ensure position is at start
+            
             if (imageStream.CanSeek)
             {
                 imageStream.Position = 0;
@@ -249,15 +248,13 @@ public class MenuItemService : IMenuItemService
             {
                 return Result<ImageUploadResult>.NotFound("Menu item not found.");
             }
-
-            // Delete old images if exist
+            
             if (!string.IsNullOrEmpty(item.ImageUrl))
             {
                 await _storageService.DeleteFileByUrlAsync(item.ImageUrl);
                 await _storageService.DeleteFileByUrlAsync(item.ThumbnailUrl);
             }
-
-            // Upload new image
+            
             var uploadResult = await _storageService.UploadImageAsync(
                 imageStream,
                 fileName,
@@ -266,7 +263,6 @@ public class MenuItemService : IMenuItemService
                 generateThumbnail: true
             );
 
-            // Update database
             item.ImageUrl = uploadResult.OriginalUrl;
             item.ThumbnailUrl = uploadResult.ThumbnailUrl;
 

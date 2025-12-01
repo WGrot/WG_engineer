@@ -7,7 +7,7 @@ namespace RestaurantApp.Application.Mappers;
 
 public static class ReservationMapper
 {
-    // Z Entity na DTO
+
     public static ReservationDto ToDto(this ReservationBase entity)
     {
         return new ReservationDto
@@ -29,8 +29,7 @@ public static class ReservationMapper
             StatusEnumDto = entity.Status.ToShared(),
         };
     }
-
-    // Z DTO na Entity
+    
     public static ReservationBase ToEntity(this ReservationDto dto)
     {
         return new ReservationBase
@@ -48,11 +47,10 @@ public static class ReservationMapper
             NeedsConfirmation = dto.requiresConfirmation,
             RestaurantId = dto.RestaurantId,
             Status = dto.StatusEnumDto.ToDomain(),
-            // Id, Status, CreatedAt i Restaurant są ustawiane automatycznie lub przez EF
+
         };
     }
-
-    // Aktualizacja istniejącej encji z DTO
+    
     public static void UpdateFromDto(this ReservationBase entity, ReservationDto dto)
     {
         entity.ReservationDate = dto.ReservationDate;
@@ -67,16 +65,13 @@ public static class ReservationMapper
         entity.NeedsConfirmation = dto.requiresConfirmation;
         entity.RestaurantId = dto.RestaurantId;
         entity.Status = dto.StatusEnumDto.ToDomain();
-        // Id, Status, CreatedAt nie aktualizujemy
     }
-
-    // Mapowanie kolekcji DTO na listę
+    
     public static List<ReservationDto> ToDtoList(this IEnumerable<ReservationBase> entities)
     {
         return entities.Select(e => e.ToDto()).ToList();
     }
-
-    // Mapowanie kolekcji Entity na listę (dodana metoda)
+    
     public static List<ReservationBase> ToEntityList(this IEnumerable<ReservationDto> dtos)
     {
         return dtos.Select(d => d.ToEntity()).ToList();
@@ -86,7 +81,6 @@ public static class ReservationMapper
     {
         return new TableReservationDto
         {
-            // Właściwości z ReservationDto
             Id = reservation.Id,
             ReservationDate = reservation.ReservationDate,
             StartTime = reservation.StartTime,
@@ -102,9 +96,8 @@ public static class ReservationMapper
             RestaurantName = reservation.Restaurant?.Name ?? string.Empty,
             RestaurantAddress = reservation.Restaurant?.Address ?? string.Empty,
             
-            // Właściwości specyficzne dla TableReservationDto
             TableId = reservation.TableId,
-            Table = reservation.Table?.ToDto() // zakładając, że masz metodę ToDto() dla Table
+            Table = reservation.Table?.ToDto() 
         };
     }
 }

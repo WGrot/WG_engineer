@@ -42,7 +42,6 @@ public class PasswordService: IPasswordService
 
         var password = new char[length];
         
-        // Ensure at least one character from each category
         password[0] = uppercase[bytes[0] % uppercase.Length];
         password[1] = lowercase[bytes[1] % lowercase.Length];
         password[2] = digits[bytes[2] % digits.Length];
@@ -52,8 +51,7 @@ public class PasswordService: IPasswordService
         {
             password[i] = allChars[bytes[i] % allChars.Length];
         }
-
-        // Shuffle the password
+        
         return new string(password.OrderBy(_ => Guid.NewGuid()).ToArray());
     }
 
@@ -65,8 +63,7 @@ public class PasswordService: IPasswordService
         }
 
         var user = await _userManager.FindByEmailAsync(email);
-
-        // Return success even if user not found (security best practice)
+        
         if (user == null)
         {
             return Result.Success();

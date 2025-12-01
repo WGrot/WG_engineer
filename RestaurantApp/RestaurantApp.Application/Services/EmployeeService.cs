@@ -118,7 +118,7 @@ public class EmployeeService: IEmployeeService
         await _employeeRepository.AddAsync(employee);
         await _employeeRepository.SaveChangesAsync();
 
-        // Reload with details for the DTO
+
         var createdEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id);
         return Result<RestaurantEmployeeDto>.Success(createdEmployee!.ToDto());
     }

@@ -246,8 +246,7 @@ public class RestaurantService : IRestaurantService
 
         return Result<List<RestaurantDto>>.Success(result);
     }
-
-    // Private helper methods
+    
     private static void InitializeOpeningHours(Restaurant restaurant)
     {
         restaurant.OpeningHours = new List<OpeningHours>();

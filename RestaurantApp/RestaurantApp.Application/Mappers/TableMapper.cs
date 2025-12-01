@@ -14,11 +14,10 @@ public static class TableMapper
             Capacity = entity.Capacity,
             Location = entity.Location,
             RestaurantId = entity.RestaurantId
-            // Seats i Restaurant nie są mapowane do DTO
+
         };
     }
-
-    // Z DTO na Entity
+    
     public static Table ToEntity(this TableDto dto)
     {
         return new Table
@@ -29,29 +28,24 @@ public static class TableMapper
             Location = dto.Location,
             RestaurantId = dto.RestaurantId,
             Seats = new List<Seat>()
-            // Restaurant będzie zarządzany przez EF
+
         };
     }
-
-    // Aktualizacja istniejącej encji z DTO
+    
     public static void UpdateFromDto(this Table entity, TableDto dto)
     {
         entity.TableNumber = dto.TableNumber;
         entity.Capacity = dto.Capacity;
         entity.Location = dto.Location;
         entity.RestaurantId = dto.RestaurantId;
-        
-        // Nie aktualizujemy Id, Seats ani relacji Restaurant
-        // Seats są zarządzane osobno
     }
 
-    // Mapowanie kolekcji Entity na listę DTO
+
     public static List<TableDto> ToDtoList(this IEnumerable<Table> entities)
     {
         return entities.Select(e => e.ToDto()).ToList();
     }
-
-    // Mapowanie kolekcji DTO na listę Entity
+    
     public static List<Table> ToEntityList(this IEnumerable<TableDto> dtos)
     {
         return dtos.Select(d => d.ToEntity()).ToList();

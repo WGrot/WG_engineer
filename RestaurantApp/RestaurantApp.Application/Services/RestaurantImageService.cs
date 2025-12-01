@@ -38,23 +38,20 @@ public class RestaurantImageService: IRestaurantImageService
             {
                 return Result<ImageUploadResult>.NotFound("Restaurant not found");
             }
-
-            // Delete old profile photo if exists
+            
             if (restaurant.HasProfilePhoto())
             {
                 await _storageService.DeleteFileByUrlAsync(restaurant.profileUrl);
                 await _storageService.DeleteFileByUrlAsync(restaurant.profileThumbnailUrl);
             }
-
-            // Upload new photo
+            
             var uploadResult = await _storageService.UploadImageAsync(
                 fileStream,
                 fileName,
                 ImageType.RestaurantProfile,
                 restaurantId,
                 generateThumbnail: true);
-
-            // Update entity
+            
             restaurant.SetProfilePhoto(uploadResult.OriginalUrl, uploadResult.ThumbnailUrl);
 
             await _restaurantRepository.SaveChangesAsync();

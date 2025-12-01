@@ -66,21 +66,18 @@ public class TokenService: ITokenService
         {
             return (false, null, null);
         }
-
-        // Get the actual entity for update
+        
         var tokenEntity = await _refreshTokenRepository.GetByTokenHashAsync(presentedHash);
         if (tokenEntity == null)
         {
             return (false, null, null);
         }
-
-        // Revoke current token (rotation)
+        
         tokenEntity.Revoked = true;
         tokenEntity.RevokedAt = DateTime.UtcNow;
         tokenEntity.RevokedByIp = ipAddress;
         tokenEntity.ReasonRevoked = "rotated";
-
-        // Create new refresh token
+        
         var newRefresh = TokenHelper.GenerateRefreshToken();
         var newHash = TokenHelper.HashToken(newRefresh);
         var newExpires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenDays);

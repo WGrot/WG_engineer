@@ -1,9 +1,7 @@
 ﻿using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Review;
-
 namespace RestaurantApp.Application.Interfaces.Services;
 
-// RestaurantApp.Application/Interfaces/Services/IReviewService.cs
 public interface IReviewService
 {
     Task<Result<ReviewDto>> GetByIdAsync(int id, CancellationToken ct = default);

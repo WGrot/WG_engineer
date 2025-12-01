@@ -167,8 +167,7 @@ public class ReviewService : IReviewService
 
         return Result.Success(result);
     }
-
-    // Logika biznesowa zostaje w serwisie
+    
     private async Task RecalculateScoresAsync(int restaurantId, CancellationToken ct = default)
     {
         var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId, ct);

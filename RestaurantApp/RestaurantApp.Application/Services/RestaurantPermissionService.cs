@@ -141,8 +141,7 @@ public class RestaurantPermissionService: IRestaurantPermissionService
                 return Result<RestaurantPermissionDto>.NotFound(
                     $"Employee with ID: {dto.RestaurantEmployeeId} not found");
             }
-
-            // Check for duplicate if permission type changed
+            
             if (existingPermission.Permission != dto.Permission.ToDomain())
             {
                 var duplicateExists = await _repository.ExistsExceptAsync(
@@ -156,8 +155,7 @@ public class RestaurantPermissionService: IRestaurantPermissionService
                         $"Employee already has permission: {dto.Permission}");
                 }
             }
-
-            // Update properties of the tracked entity instead of creating new one
+            
             existingPermission.Permission = dto.Permission.ToDomain();
             existingPermission.RestaurantEmployeeId = dto.RestaurantEmployeeId;
 
@@ -217,7 +215,6 @@ public class RestaurantPermissionService: IRestaurantPermissionService
     {
         try
         {
-            // Add or update permissions from dto
             foreach (var permission in dto.Permissions)
             {
                 var existingPermissionId = await _repository.GetPermissionIdAsync(
@@ -251,8 +248,7 @@ public class RestaurantPermissionService: IRestaurantPermissionService
                     return Result.Failure(result.Error);
                 }
             }
-
-            // Remove permissions not in dto
+            
             var currentPermissions = await _repository.GetByEmployeeIdAsync(dto.EmployeeId);
 
             foreach (var permission in currentPermissions)

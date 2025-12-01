@@ -51,20 +51,17 @@ public class TableReservationService: ITableReservationService
 
     public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
     {
-        // 1. Validate table exists in restaurant
         var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(dto.TableId);
         if (table == null)
         {
             return Result<TableReservationDto>.NotFound(
                 $"Table {dto.TableId} not found in restaurant {dto.RestaurantId}");
         }
-
-        // 2. Validate time range
+        
         var timeValidation = ValidateTimeRange(dto.StartTime, dto.EndTime);
         if (timeValidation.IsFailure)
             return Result<TableReservationDto>.Failure(timeValidation.Error, timeValidation.StatusCode);
-
-        // 3. Check for conflicts
+        
         var hasConflict = await _reservationRepository.HasConflictingTableReservationAsync(
             dto.TableId,
             dto.ReservationDate,
@@ -73,22 +70,18 @@ public class TableReservationService: ITableReservationService
 
         if (hasConflict)
             return Result<TableReservationDto>.Failure("Table is already reserved for this time period", 409);
-
-        // 4. Get restaurant with settings
+        
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(dto.RestaurantId);
         if (restaurant == null)
             return Result<TableReservationDto>.NotFound($"Restaurant {dto.RestaurantId} not found");
-
-        // 5. Resolve user ID if not provided
+        
         var userId = await ResolveUserIdAsync(dto.UserId, dto.CustomerEmail);
-
-        // 6. Determine initial status
+        
         var needsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true;
         var initialStatus = needsConfirmation
             ? ReservationStatusEnumDto.Pending
             : ReservationStatusEnumDto.Confirmed;
-
-        // 7. Create reservation
+        
         var reservation = new TableReservation
         {
             RestaurantId = dto.RestaurantId,
@@ -109,8 +102,7 @@ public class TableReservationService: ITableReservationService
         };
 
         var created = await _reservationRepository.AddTableReservationAsync(reservation);
-
-        // 8. Send notification email
+        
         await SendReservationNotificationAsync(created, needsConfirmation);
 
         return Result<TableReservationDto>.Success(created.ToTableReservationDto());
@@ -121,8 +113,7 @@ public class TableReservationService: ITableReservationService
         var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
         if (existing == null)
             return Result.NotFound($"Reservation with id {reservationId} not found");
-
-        // Check if table/time changed - validate conflicts
+        
         if (HasTimeOrTableChanged(existing, dto))
         {
             var hasConflict = await _reservationRepository.HasConflictingTableReservationAsync(
@@ -135,8 +126,7 @@ public class TableReservationService: ITableReservationService
             if (hasConflict)
                 return Result.Failure("Table is already reserved for this time period", 409);
         }
-
-        // Update properties
+        
         UpdateReservationFromDto(existing, dto);
 
         await _reservationRepository.UpdateTableReservationAsync(existing);
@@ -152,8 +142,6 @@ public class TableReservationService: ITableReservationService
         await _reservationRepository.DeleteAsync(existing);
         return Result.Success();
     }
-
-    // === Private Helper Methods ===
 
     private static Result ValidateTimeRange(TimeOnly startTime, TimeOnly endTime)
     {
