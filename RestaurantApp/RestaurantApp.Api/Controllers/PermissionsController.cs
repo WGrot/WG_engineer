@@ -85,16 +85,16 @@ public class PermissionsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManagePermissionRequirement(permissionDto.RestaurantEmployeeId)
-        );
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new ManagePermissionRequirement(permissionDto.RestaurantEmployeeId)
+        // );
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
 
         var employeeResult = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
 
@@ -122,16 +122,16 @@ public class PermissionsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManagePermissionRequirement(id)
-        );
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new ManagePermissionRequirement(id)
+        // );
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
 
         var result = await _permissionService.UpdateAsync(permission);
         return result.ToActionResult();
@@ -141,16 +141,16 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new ManagePermissionRequirement(id)
-        );
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new ManagePermissionRequirement(id)
+        // );
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
         
         var result = await _permissionService.DeleteAsync(id);
         

@@ -75,4 +75,46 @@ public class AuthorizationChecker: IAuthorizationChecker
             .SelectMany(e => e.Permissions)
             .AnyAsync(p => p.Permission == PermissionType.ManageMenu);
     }
+
+    public async Task<bool> CanManagePermissionAsync(string userId, int permissionId)
+    {
+        return await _context.RestaurantPermissions
+            .AsNoTracking()
+            .Where(p => p.Id == permissionId)
+            .Where(p => p.RestaurantEmployee.RestaurantId != null)
+            .Join(
+                _context.RestaurantEmployees.AsNoTracking()
+                    .Where(e => e.UserId == userId && e.IsActive),
+                targetPermission => targetPermission.RestaurantEmployee.RestaurantId,
+                currentEmployee => currentEmployee.RestaurantId,
+                (targetPermission, currentEmployee) => currentEmployee
+            )
+            .SelectMany(e => e.Permissions)
+            .AnyAsync(p => p.Permission == PermissionType.ManagePermissions);
+    }
+
+    public async Task<bool> HasPermissionInRestaurantAsync(string userId, int restaurantId, PermissionType permission)
+    {
+        return await _context.RestaurantEmployees
+            .AsNoTracking()
+            .Where(e => e.UserId == userId && e.IsActive && e.RestaurantId == restaurantId)
+            .SelectMany(e => e.Permissions)
+            .AnyAsync(p => p.Permission == permission);
+    }
+
+    public async Task<bool> CanManageEmployeePermissionsAsync(string userId, int restaurantEmployeeId)
+    {
+        return await _context.RestaurantEmployees
+            .AsNoTracking()
+            .Where(e => e.Id == restaurantEmployeeId)
+            .Join(
+                _context.RestaurantEmployees.AsNoTracking()
+                    .Where(e => e.UserId == userId && e.IsActive),
+                targetEmployee => targetEmployee.RestaurantId,
+                currentEmployee => currentEmployee.RestaurantId,
+                (targetEmployee, currentEmployee) => currentEmployee
+            )
+            .SelectMany(e => e.Permissions)
+            .AnyAsync(p => p.Permission == PermissionType.ManagePermissions);
+    }
 }

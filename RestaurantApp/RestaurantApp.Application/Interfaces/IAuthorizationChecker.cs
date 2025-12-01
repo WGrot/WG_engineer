@@ -1,4 +1,6 @@
-﻿namespace RestaurantApp.Application.Interfaces;
+﻿using RestaurantApp.Domain.Enums;
+
+namespace RestaurantApp.Application.Interfaces;
 
 public interface IAuthorizationChecker
 {
@@ -12,4 +14,10 @@ public interface IAuthorizationChecker
     Task<bool> CanManageTagAsync(string userId, int tagId);
     
     Task<bool> CanManageMenuItemVariantAsync(string userId, int menuItemVariantId);
+    
+    Task<bool> CanManagePermissionAsync(string userId, int permissionId);
+    
+    Task<bool> HasPermissionInRestaurantAsync(string userId, int restaurantId, PermissionType permission);
+    
+    Task<bool> CanManageEmployeePermissionsAsync(string userId, int restaurantEmployeeId);
 }
