@@ -93,13 +93,11 @@
 
             if (requiresTwoFactor)
             {
-                // Pokaż modal 2FA
                 _showTwoFactorModal = true;
                 _twoFactorError = null;
             }
             else if (success)
             {
-                // Przekieruj po udanym logowaniu
                 Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
             }
             else

@@ -13,19 +13,17 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddGeolocationServices();
-// Singletony
+
 builder.Services.AddSingleton<MemoryTokenStore>();
 
-// Scoped services
 builder.Services.AddScoped<JwtTokenParser>();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
     sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-// HttpClient - WAŻNE: credentials w handlerze
 builder.Services.AddTransient<AuthorizedHttpMessageHandler>();
 
-// HttpClient Scoped, ale handler przez DI
+
 builder.Services.AddScoped(sp =>
 {
     var tokenStore = sp.GetRequiredService<MemoryTokenStore>();
@@ -55,20 +53,11 @@ try
     {
         var auth = scope.ServiceProvider.GetRequiredService<AuthService>();
         var refreshed = await auth.TryRefreshTokenAsync();
-        
-        if (refreshed)
-        {
-            Console.WriteLine(" Token odświeżony przy starcie aplikacji");
-        }
-        else
-        {
-            Console.WriteLine("️ Brak refresh tokena lub wygasł");
-        }
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($" Błąd przy refresh tokena: {ex.Message}");
+    Console.WriteLine($" Error during token refresh: {ex.Message}");
 }
 
 await host.RunAsync();

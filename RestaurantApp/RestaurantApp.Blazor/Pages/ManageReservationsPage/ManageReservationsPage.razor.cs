@@ -25,8 +25,7 @@ partial class ManageReservationsPage
         PageSize = 10,
         SortBy = "newest"
     };
-
-    // Zmienne dla modala
+    
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
     private ReservationDto? selectedReservation;

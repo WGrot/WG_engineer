@@ -250,15 +250,15 @@
     .arrow-btn {
         background-color: transparent;
         border: none;
-        color: #6c757d; /* szary jak secondary */
+        color: #6c757d; 
         transition: color 0.2s, transform 0.1s;
         padding: 6px 10px;
         cursor: pointer;
     }
 
     .arrow-btn:active {
-        color: #ffffff; /* np. niebieski przy kliknięciu */
-        transform: scale(0.95); /* delikatny efekt wciśnięcia */
+        color: #ffffff; 
+        transform: scale(0.95); 
     }
 
     .arrow-btn:focus {
@@ -345,7 +345,6 @@
 
     private void OnDateTimeChanged()
     {
-        // Reset available tables when date/time changes
         availableTables = null;
         selectedTableId = 0;
         errorMessage = "";

@@ -59,8 +59,7 @@
         NotificationType.Info => "notification-info",
         _ => "notification-info"
     };
-
-    // Ta metoda jest wywoływana przez przycisk 'x' (dismiss-btn)
+    
     private void Remove(Notification notification)
     {
         NotificationService.RemoveNotification(notification);

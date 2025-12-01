@@ -15,7 +15,6 @@ public class AuthorizedHttpMessageHandler : DelegatingHandler
         HttpRequestMessage request, 
         CancellationToken ct)
     {
-        // ✅ DODAJ - wysyłaj credentials (cookies) z każdym requestem
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
         var token = _tokenStore.GetAccessToken();

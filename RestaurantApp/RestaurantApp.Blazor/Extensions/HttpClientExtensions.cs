@@ -4,7 +4,6 @@ namespace RestaurantApp.Blazor.Extensions;
 
 public static class HttpClientExtensions
 {
-    // 1. Wysyłanie z body (zwraca HttpResponseMessage)
     public static async Task<HttpResponseMessage> RequestWithHeaderAsync<T>(
         this HttpClient client,
         HttpMethod method,
@@ -21,8 +20,7 @@ public static class HttpClientExtensions
 
         return await client.SendAsync(request);
     }
-
-    // 2. Wysyłanie bez body (zwraca HttpResponseMessage)
+    
     public static async Task<HttpResponseMessage> RequestWithHeaderAsync<T>(
         this HttpClient client,
         HttpMethod method,
@@ -35,8 +33,7 @@ public static class HttpClientExtensions
 
         return await client.SendAsync(request);
     }
-
-    // 3. Wysyłanie z body — zwraca od razu zdeserializowany JSON (z obsługą błędów)
+    
     public static async Task<TResult?> RequestJsonWithHeaderAsync<TValue, TResult>(
         this HttpClient client,
         HttpMethod method,
@@ -71,8 +68,7 @@ public static class HttpClientExtensions
             return default;
         }
     }
-
-    // 4. Wysyłanie bez body — zwraca od razu zdeserializowany JSON (z obsługą błędów)
+    
     public static async Task<TResult?> RequestJsonWithHeaderAsync<TResult>(
         this HttpClient client,
         HttpMethod method,

@@ -29,7 +29,6 @@ public partial class RestaurantInfoTab : ComponentBase
     {
         base.OnParametersSet();
         
-        // Jeśli restauracja ma współrzędne geograficzne, skonfiguruj mapę
         if (restaurant?.Location != null)
         {
             InitializeMapParameters();
@@ -54,8 +53,7 @@ public partial class RestaurantInfoTab : ComponentBase
     private async Task OnMapLoaded(RealTimeMap.MapEventArgs args)
     {
         if (restaurant?.Location == null || realTimeMap == null) return;
-
-        // Utwórz StreamPoint dla markera restauracji
+        
         var restaurantMarker = new RealTimeMap.StreamPoint()
         {
             guid = Guid.NewGuid(),

@@ -12,7 +12,6 @@
     padding: 0.5em 0.75em;
 }
 
-/* Sticky sidebar on larger screens */
 @media (min-width: 992px) {
     .sticky-lg-top {
         position: sticky;
@@ -20,7 +19,6 @@
     }
 }
 
-/* Custom scrollbar for filter panel */
 .card-body::-webkit-scrollbar {
     width: 6px;
 }

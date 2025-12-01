@@ -63,7 +63,7 @@
 
         leading2s = input.TakeWhile(c => c == '2').Count();
 
-        if(leading2s > 95) // all '2's
+        if(leading2s > 95) 
             return input;
 
         return input.Trim('2');
@@ -71,15 +71,12 @@
 
     private bool IsTimeInSelectedRange(DateTime time)
     {
-        // Jeśli nic nie wybrano
         if (SelectedStartTime == DateTime.MinValue)
             return false;
-
-        // Jeśli wybrano tylko start (jeden klik)
+        
         if (SelectedEndTime == DateTime.MinValue)
             return time == SelectedStartTime;
-
-        // Jeśli wybrano oba (zaznacz zakres włącznie z końcem)
+        
         var min = SelectedStartTime < SelectedEndTime ? SelectedStartTime : SelectedEndTime;
         var max = SelectedStartTime > SelectedEndTime ? SelectedStartTime : SelectedEndTime;
 

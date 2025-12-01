@@ -8,8 +8,6 @@ using RestaurantApp.Shared.Common;
     {
         private readonly List<Notification> _notifications = new();
         
-        // --- NOWY ELEMENT ---
-        // Token do anulowania timera, jeśli użytkownik kliknie dzwonek
         private CancellationTokenSource _autoHideCts;
 
         public IEnumerable<Notification> Notifications => _notifications.AsReadOnly();
@@ -18,25 +16,22 @@ using RestaurantApp.Shared.Common;
 
         public event Action OnChange;
 
-        // --- ZMODYFIKOWANA METODA ---
         public void AddNotification(Notification notification)
         {
             if (notification == null) return;
 
             _notifications.Add(notification);
             
-            IsListVisible = true; // Automatycznie pokaż listę
-            NotifyStateChanged(); // Poinformuj UI (w tym odznakę i listę)
+            IsListVisible = true; 
+            NotifyStateChanged(); 
             
-            StartAutoHideTimer(); // Uruchom timer do ukrycia
+            StartAutoHideTimer(); 
         }
-
-        // ... Metody RemoveNotification i ClearAll pozostają bez zmian ...
-        // (Chociaż możesz chcieć, aby ClearAll też ukrywało listę)
+        
         public void ClearAll()
         {
             _notifications.Clear();
-            HideList(); // Ukryj listę po wyczyszczeniu
+            HideList(); 
         }
         public void RemoveNotification(Notification notification)
         {
@@ -45,13 +40,10 @@ using RestaurantApp.Shared.Common;
         }
 
 
-        // --- ZMODYFIKOWANA METODA ---
         public void ToggleListVisibility()
         {
             IsListVisible = !IsListVisible;
-
-            // Jeśli użytkownik RĘCZNIE otwiera listę,
-            // anulujemy timer auto-ukrywania.
+            
             if (IsListVisible)
             {
                 _autoHideCts?.Cancel();
@@ -59,35 +51,30 @@ using RestaurantApp.Shared.Common;
 
             NotifyStateChanged();
         }
-
-        // --- ZMODYFIKOWANA METODA ---
+        
         public void HideList()
         {
             if (IsListVisible)
             {
                 IsListVisible = false;
-                _autoHideCts?.Cancel(); // Zawsze anuluj timer przy ukrywaniu
+                _autoHideCts?.Cancel(); 
                 NotifyStateChanged();
             }
         }
-
-        // --- NOWA PRYWATNA METODA ---
+        
         private async void StartAutoHideTimer()
         {
-            // Anuluj poprzedni timer, jeśli jeszcze działał
+
             _autoHideCts?.Cancel();
             
-            // Stwórz nowy token anulowania
             _autoHideCts = new CancellationTokenSource();
             var token = _autoHideCts.Token;
 
             try
             {
-                // Ustaw opóźnienie (np. 4 sekundy)
-                await Task.Delay(6000, token);
 
-                // Jeśli przez 4 sekundy nikt nie anulował zadania
-                // (np. klikając dzwonek), ukryj listę.
+                await Task.Delay(6000, token);
+                
                 if (!token.IsCancellationRequested)
                 {
                     IsListVisible = false;
@@ -96,8 +83,6 @@ using RestaurantApp.Shared.Common;
             }
             catch (TaskCanceledException)
             {
-                // To jest oczekiwany wyjątek, gdy anulujemy timer.
-                // Po prostu go ignorujemy.
             }
         }
 

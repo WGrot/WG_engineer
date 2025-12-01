@@ -70,7 +70,6 @@
     height: 3rem;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .restaurant-header h1 {
         font-size: 1.5rem;
@@ -92,7 +91,7 @@
     }
 }
 
-/* Additional Bootstrap override for better tab appearance */
+
 .nav-tabs {
     border-bottom: none !important;
 }
@@ -101,7 +100,6 @@
     background-color: #f8f9fa !important;
 }
 
-/* Custom scrollbar for better UX */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;

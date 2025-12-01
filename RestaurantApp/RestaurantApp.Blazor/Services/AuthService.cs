@@ -35,10 +35,6 @@ public class AuthService
         _authStateProvider = authStateProvider;
         _currentUserDataService = currentUserDataService;
     }
-
-    // ---------------------------------------------
-    // LOGIN
-    // ---------------------------------------------
     public async Task<(bool Success, bool RequiresTwoFactor, string? Error)> LoginAsync(
         string email, 
         string password,
@@ -90,9 +86,7 @@ public class AuthService
             jwt.NotifyUserAuthentication(token);
     }
 
-    // ---------------------------------------------
-    // REFRESH TOKEN
-    // ---------------------------------------------
+
     public async Task<bool> TryRefreshTokenAsync()
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/refresh");
@@ -116,10 +110,7 @@ public class AuthService
         Console.WriteLine("token refresher");
         return true;
     }
-
-    // ---------------------------------------------
-    // LOGOUT
-    // ---------------------------------------------
+    
     public async Task LogoutAsync()
     {
         _tokens.Clear();
@@ -137,18 +128,15 @@ public class AuthService
     public async Task<bool> IsAuthenticatedAsync()
     {
         var token = _tokens.GetAccessToken();
-
-        // 1. Brak access tokena → spróbuj odświeżyć
+        
         if (string.IsNullOrEmpty(token))
         {
             var refreshed = await TryRefreshTokenAsync();
             return refreshed;
         }
-
-        // 2. Token jest → sprawdzamy czy wygasł
+        
         if (_tokenParser.IsTokenExpired(token))
         {
-            // Spróbuj odświeżyć przez cookie
             var refreshed = await TryRefreshTokenAsync();
 
             if (!refreshed)
@@ -156,11 +144,8 @@ public class AuthService
                 await LogoutAsync();
                 return false;
             }
-
-            return true; // odświeżenie udane
+            return true; 
         }
-
-        // 3. Token jest i nie wygasł → OK
         return true;
     }
 

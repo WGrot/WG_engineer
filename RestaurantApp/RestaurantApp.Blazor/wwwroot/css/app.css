@@ -181,13 +181,10 @@ code {
 
 
 .base-button.lg {
-    font-size: 1.4rem;       /* większy tekst */
-    padding: 0.9rem 1.8rem;  /* więcej przestrzeni */
-    border-radius: 10px;     /* opcjonalnie bardziej zaokrąglony */
+    font-size: 1.4rem;       
+    padding: 0.9rem 1.8rem; 
+    border-radius: 10px;   
 }
-
-
-/*  Nowe klasy button */
 
 .button {
     border: none;
@@ -211,7 +208,6 @@ code {
     transform: scale(0.98);
 }
 
-/* warianty kolorów */
 .button--primary {
     background: #667eea;
 }
@@ -240,7 +236,6 @@ code {
     background: #2f7821;
 }
 
-/* rozmiary */
 .button--lg {
     font-size: 1.4rem;
     padding: 0.9rem 1.8rem;
@@ -252,7 +247,6 @@ code {
     border: 2px solid currentColor;
 }
 
-/* Odwracanie kolorów dla outline */
 .button--outline.button--primary {
     color: #667eea;
     border-color: #667eea;
@@ -280,15 +274,10 @@ code {
     color: white;
 }
 
-/*KOniec nowych klas button*/
-
 
 
 .nav-tabs .nav-link.active {
     
-    /*border-bottom: 3px solid #667eea !important;
-    color: #fff !important;
-    border-radius: 8px 8px 0 0; */
 }
 
 .bg-primary {
@@ -308,7 +297,6 @@ code {
 }
 
 :root {
-    /* Kolory główne aplikacji */
     --primary-color: #4c63d2;
     --primary-color-strong: #3f2ae3;
     --secondary-color: #667eea;
@@ -339,9 +327,9 @@ code {
 }
 
 .alert-info {
-    --bs-alert-color: #ffffff; /* ciemny fiolet na tekst */
-    --bs-alert-bg: #667eea; /* jasny fiolet na tło */
-    --bs-alert-border-color: rgba(74, 58, 246, 0); /* fiolet na border */
+    --bs-alert-color: #ffffff; 
+    --bs-alert-bg: #667eea; 
+    --bs-alert-border-color: rgba(74, 58, 246, 0); 
 }
 
 .modal-custom {

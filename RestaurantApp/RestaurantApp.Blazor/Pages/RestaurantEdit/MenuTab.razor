@@ -152,8 +152,7 @@
                                                 @onclick="() => ShowAddItemForm(category.Id)">
                                             + Add Item
                                         </button>
-
-                                        <!-- Formularz dodawania pozycji -->
+                                        
                                         @if (showAddItem && addItemToCategoryId == category.Id)
                                         {
                                             <div class="card card-body mb-3 shadow-sm">
@@ -213,7 +212,6 @@
             </div>
         </div>
 
-        <!-- UNCATEGORIZED ITEMS -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-start align-items-center" @onclick="ToggleUncategorized">
                 <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none"
@@ -228,8 +226,7 @@
                 <div class="card-body">
                     <button class="button button--primary w-100" @onclick="() => ShowAddItemForm(null)">Add Item
                     </button>
-
-                    <!-- Formularz dodawania pozycji -->
+                    
                     @if (showAddItem && addItemToCategoryId == null)
                     {
                         <div class="card card-body mb-3 shadow-sm">

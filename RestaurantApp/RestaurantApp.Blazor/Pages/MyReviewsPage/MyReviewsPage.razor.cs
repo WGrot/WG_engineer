@@ -53,7 +53,6 @@ public partial class MyReviewsPage : ComponentBase
         }
         catch (Exception ex)
         {
-            // Handle error - you might want to show a toast notification here
             Console.WriteLine($"Error loading reviews: {ex.Message}");
         }
         finally
@@ -86,8 +85,7 @@ public partial class MyReviewsPage : ComponentBase
                 UserId = updatedReview.UserId,
             };
             var response = await Http.PutAsJsonAsync($"/api/Reviews/{updatedReview!.Id}", dto);
-
-            // Update the local list
+            
             var index = reviews.FindIndex(r => r.Id == updatedReview.Id);
             if (index != -1)
             {
@@ -116,10 +114,8 @@ public partial class MyReviewsPage : ComponentBase
     {
         try
         {
-            // Call your service to delete the review
             var response =await Http.DeleteAsync($"/api/Reviews/{reviewId}");
-
-            // Remove from local list
+            
             reviews.RemoveAll(r => r.Id == reviewId);
             
             StateHasChanged();

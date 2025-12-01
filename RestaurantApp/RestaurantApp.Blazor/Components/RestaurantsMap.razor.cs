@@ -99,7 +99,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
         position = pos;
         status = "OK";
 
-        _locationTcs?.TrySetResult(true); // Signal that location was obtained
+        _locationTcs?.TrySetResult(true); 
 
         InvokeAsync(async () =>
         {
@@ -115,8 +115,8 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
     {
         status = $"Geolocation error: {error.Message}";
 
-        _locationTcs?.TrySetResult(false); // Signal error
-        SetDefaultLocation(); // Use default location on error
+        _locationTcs?.TrySetResult(false); 
+        SetDefaultLocation(); 
 
         StateHasChanged();
     }
@@ -157,7 +157,7 @@ public partial class RestaurantsMap : ComponentBase, IDisposable
         try
         {
             _isMapReady = true;
-            await Task.Delay(500); // Give map time to fully initialize
+            await Task.Delay(500); 
             await RefreshMapMarkers();
         }
         catch (Exception ex)

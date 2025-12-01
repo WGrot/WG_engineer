@@ -129,7 +129,6 @@
     private string? errorMessage;
     private string? successMessage;
     
-    // RoleEnumDto and permissions
     private RestaurantRoleEnumDto _currentRoleEnumDto = RestaurantRoleEnumDto.Employee;
     private RestaurantRoleEnumDto _selectedRoleEnumDto = RestaurantRoleEnumDto.Employee;
     private HashSet<PermissionTypeEnumDto> selectedPermissions = new HashSet<PermissionTypeEnumDto>();
@@ -152,7 +151,6 @@
         try
         {
             permissionsResponse = await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"api/Permissions/employee/{Employee.Id}/");
-            // Przykładowe dane - zastąp danymi z API
             _currentRoleEnumDto = Employee.RoleEnumDto;
             _selectedRoleEnumDto = Employee.RoleEnumDto;
             isActive = Employee.IsActive;
@@ -213,22 +211,19 @@
         successMessage = null;
     
         bool allSuccess = true;
-    
-        // Zapisz uprawnienia
+        
         await SavePermissions();
         if (!string.IsNullOrEmpty(errorMessage))
         {
             allSuccess = false;
         }
-    
-        // Zapisz rolę
+        
         bool roleSuccess = await SaveRole();
         if (!roleSuccess)
         {
             allSuccess = false;
         }
-    
-        // Zapisz dodatkowe szczegóły
+        
         await SaveExtraDetails();
         if (!string.IsNullOrEmpty(errorMessage))
         {
@@ -236,8 +231,7 @@
         }
     
         isSaving = false;
-    
-        // Zamknij modal tylko jeśli wszystko się udało
+        
         if (allSuccess)
         {
             await OnPermissionsUpdated.InvokeAsync();
@@ -265,13 +259,10 @@
         
             if (response.IsSuccessStatusCode)
             {
-                // Aktualizuj _currentRoleEnumDto TYLKO po udanym zapisie
                 _currentRoleEnumDto = _selectedRoleEnumDto;
-            
-                // Aktualizuj także właściwość Employee
+                
                 Employee.RoleEnumDto = _selectedRoleEnumDto;
-            
-                // Dodaj komunikat sukcesu
+                
                 if (string.IsNullOrEmpty(successMessage))
                 {
                     successMessage = "RoleEnumDto has been updated";
@@ -285,13 +276,11 @@
             }
             else
             {
-                // W przypadku błędu przywróć poprzednią wartość
                 var error = await response.Content.ReadAsStringAsync();
                 errorMessage = string.IsNullOrEmpty(errorMessage) 
                     ? $"Error in role update: {error}"
                     : errorMessage + $"\nError in role update: {error}";
-            
-                // Przywróć _selectedRoleEnumDto do _currentRoleEnumDto
+                
                 _selectedRoleEnumDto = _currentRoleEnumDto;
                 return false;
             }
@@ -301,8 +290,7 @@
             errorMessage = string.IsNullOrEmpty(errorMessage)
                 ? $"Error in role update: {ex.Message}"
                 : errorMessage + $"\nError in role update: {ex.Message}";
-        
-            // Przywróć _selectedRoleEnumDto do _currentRoleEnumDto
+            
             _selectedRoleEnumDto = _currentRoleEnumDto;
             return false;
         }
@@ -373,19 +361,13 @@
             successMessage = null;
             
             // TODO: Zastąp rzeczywistym API call
-            // var response = await Http.PostAsync($"api/Employees/{Employee.Id}/reset-password", null);
+
             
-            // Symulacja resetowania hasła
+
             await Task.Delay(500);
             
-            // if (response.IsSuccessStatusCode)
-            // {
                 successMessage = $"Hasło zostało zresetowane. Nowe hasło zostało wysłane na adres {Employee.Email}";
-            // }
-            // else
-            // {
-            //     errorMessage = "Błąd podczas resetowania hasła";
-            // }
+
         }
         catch (Exception ex)
         {

@@ -50,7 +50,7 @@ public partial class AvailableTablesView : ComponentBase
         selectedTable = table;
     }
     
-    private readonly HashSet<int> availableTableIds = new(); // śledzimy dostępne stoliki
+    private readonly HashSet<int> availableTableIds = new();
 
 
     private void HandleAvailabilityChanged((TableDto table, bool isAvailable) update)

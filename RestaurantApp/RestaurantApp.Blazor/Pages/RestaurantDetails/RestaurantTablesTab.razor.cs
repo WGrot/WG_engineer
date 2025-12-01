@@ -25,7 +25,7 @@ public partial class RestaurantTablesTab : ComponentBase
     {
         try
         {
-            loadedTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}");//GetFromJsonAsync<List<Table>>($"api/Table/restaurant/{Id}");
+            loadedTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}");
             if (loadedTables == null)
             {
                 loadedTables = new List<TableDto>();

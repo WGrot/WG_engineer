@@ -47,7 +47,7 @@ public partial class MenuTab : ComponentBase
         newTag = new CreateMenuItemTagDto 
         { 
             ColorHex = "#FFFFFF",
-            RestaurantId = Id // ustaw odpowiednie ID restauracji
+            RestaurantId = Id
         };
     }
     protected override async Task OnInitializedAsync()
@@ -317,7 +317,7 @@ public partial class MenuTab : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                await LoadMenu(); // odśwież
+                await LoadMenu();
             }
             else
             {
@@ -357,11 +357,11 @@ public partial class MenuTab : ComponentBase
     
     private async Task AddTag()
     {
-        // Wywołanie API do utworzenia tagu
+
         var response = await Http.PostAsJsonAsync("api/MenuItemTag", newTag);
         if (response.IsSuccessStatusCode)
         {
-            await LoadTags(); // Odśwież listę tagów
+            await LoadTags();
             showAddTag = false;
             newTag = new();
         }
@@ -372,7 +372,7 @@ public partial class MenuTab : ComponentBase
         var response = await Http.DeleteAsync($"api/MenuItemTag/{tagId}");
         if (response.IsSuccessStatusCode)
         {
-            await LoadTags(); // Odśwież listę tagów
+            await LoadTags();
         }
     }
     

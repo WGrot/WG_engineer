@@ -14,21 +14,17 @@
     <button @onclick="OpenSearchEmployeeModal" class="button--primary button button--lg mb-3 w-50">Search for existing employee accounts</button>
 </div>
 
-
-<!-- Modal dodawania pracownika -->
 <AddEmployeeModal
     @bind-IsVisible="showAddEmployeeModal"
     RestaurantId="Id"
     OnEmployeeAdded="HandleEmployeeAdded"
     Title="Dodaj nowego pracownika" />
 
-<!-- Modal dodawania pracownika -->
 <SearchUserModal
     @bind-IsVisible="showSearch"
     RestaurantId="Id"
     Title="Search for existing employee accounts" />
 
-<!-- Modal zarządzania uprawnieniami -->
 <ManagePermissionsModal
     @bind-IsVisible="showPermissionsModal"
     Employee="selectedEmployee"
@@ -135,14 +131,12 @@ else
     private bool isLoading = true;
     private string? error;
     private List<RestaurantEmployeeDto> employees = new List<RestaurantEmployeeDto>();
-
-    // Modal visibility states
+    
     private bool showSearch = false;
     private bool showAddEmployeeModal = false;
     private bool showSuccessModal = false;
     private bool showPermissionsModal = false;
-
-    // Selected data
+    
     private CreateUserResponse? newEmployeeResponse;
     private RestaurantEmployeeDto? selectedEmployee;
 
@@ -191,7 +185,6 @@ else
 
     private async Task HandleEmployeeAdded(CreateUserResponse response)
     {
-        // Reload employees list after new employee is added
         await LoadEmployees();
         newEmployeeResponse = response;
         showSuccessModal = true;
@@ -199,7 +192,6 @@ else
 
     private async Task HandlePermissionsUpdated()
     {
-        // Reload employees list after permissions are updated
         await LoadEmployees();
     }
 

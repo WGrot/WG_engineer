@@ -32,7 +32,7 @@ public class CurrentUserDataService: ICurrentUserDataService
         }
         catch
         {
-            // Ignore deserialization errors
+
         }
         return null;
     }

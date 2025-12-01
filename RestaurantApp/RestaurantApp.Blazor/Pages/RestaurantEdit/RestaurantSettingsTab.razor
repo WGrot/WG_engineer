@@ -22,7 +22,6 @@
 
             @if (settings != null)
             {
-                <!-- Reservation Settings Card -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -48,8 +47,7 @@
                         </small>
                     </div>
                 </div>
-
-                <!-- Success/Error Messages -->
+                
                 @if (!string.IsNullOrEmpty(successMessage))
                 {
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -67,8 +65,7 @@
                         <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
                     </div>
                 }
-
-                <!-- Danger Zone -->
+                
                 <div class="card shadow-sm border-danger">
                     <div class="card-header bg-danger text-white">
                         <h5 class="mb-0">
@@ -101,7 +98,6 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 <ConfirmationModal @bind-IsVisible="showDeleteModal"
                     Title="Confirm Restaurant Deletion"
                     Message="Are you sure you want to permanently delete this restaurant? All reservations, menus, and settings will be lost."

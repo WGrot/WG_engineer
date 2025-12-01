@@ -102,7 +102,6 @@ public partial class RestaurantReviewsTab : ComponentBase
 
             if (response != null)
             {
-                // Dodaj nowe recenzje do wyświetlanych
                 displayedReviews.AddRange(response.Reviews);
                 hasMoreReviews = response.HasMore;
 
@@ -145,7 +144,7 @@ public partial class RestaurantReviewsTab : ComponentBase
         catch (Exception ex)
         {
             errorInfo = $"Failed to load more reviews: {ex.Message}";
-            currentPage--; // Cofnij stronę w przypadku błędu
+            currentPage--;
         }
         finally
         {
@@ -187,8 +186,7 @@ public partial class RestaurantReviewsTab : ComponentBase
                     Content = string.Empty,
 
                 };
-
-                // Przeładuj recenzje od początku
+                
                 await LoadInitialReviews();
             }
             else

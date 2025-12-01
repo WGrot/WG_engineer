@@ -18,15 +18,15 @@
 }
 
 .slot.available {
-    background-color: #ccc; /* zielony */
+    background-color: #ccc; 
 }
 
 .slot.closed {
-    background-color: #666; /* ciemnoszary */
+    background-color: #666; 
 }
 
 .slot.unavailable {
-    background-color: var(--secondary-color); /* jasnoszary */
+    background-color: var(--secondary-color); 
 }
 
 .slot.selected {
@@ -36,11 +36,11 @@
 }
 
 .slot.unavailable.selected {
-    background-color: #ff9900 !important; /* pomarańczowy lub dowolny inny kolor */
+    background-color: #ff9900 !important;
 }
 
 .slot.closed.selected {
-    background-color: #ff9900 !important; /* pomarańczowy lub dowolny inny kolor */
+    background-color: #ff9900 !important;
 }
 .slot:hover {
     filter: brightness(1.2);

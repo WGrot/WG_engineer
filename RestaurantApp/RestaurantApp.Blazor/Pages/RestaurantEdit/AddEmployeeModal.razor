@@ -150,14 +150,11 @@
             {
                 var result = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
                 successMessage = $"Employee added, email: {result?.Email}";
-                
-                // Notify parent component
+
                 await OnEmployeeAdded.InvokeAsync(result);
                 
-                // Clear form
                 ClearForm();
-                
-                // Auto-close modal after 2 seconds
+
                 await Task.Delay(2000);
                 await Close();
             }

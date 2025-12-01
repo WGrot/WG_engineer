@@ -64,7 +64,6 @@
     font-size: 1rem;
 }
 
-/* User button styles */
 .user-btn {
     gap: 8px;
     position: relative;
@@ -78,7 +77,6 @@
     white-space: nowrap;
 }
 
-/* User dropdown menu */
 .user-dropdown {
     position: absolute;
     top: 60px;
@@ -123,7 +121,6 @@
     margin: 4px 0;
 }
 
-/* Menu overlay */
 .menu-overlay {
     position: fixed;
     top: 0;
@@ -142,7 +139,6 @@
     visibility: visible;
 }
 
-/* Slide menu */
 .slide-menu {
     position: fixed;
     top: 0;
@@ -209,7 +205,6 @@
     color: white;
 }
 
-/* Menu footer */
 .menu-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding: 16px 24px;
@@ -287,16 +282,15 @@
     border-radius: 2px;
 }
 
-/* Aby pozycjonować odznakę, kontener musi mieć position: relative */
 .globe-icon {
     position: relative;
-    display: inline-block; /* Ważne dla poprawnego pozycjonowania */
+    display: inline-block; 
 }
 
 .notification-badge {
     position: absolute;
-    top: -8px;      /* Dopasuj pozycję */
-    right: -10px;   /* Dopasuj pozycję */
+    top: -8px;      
+    right: -10px;   
     background-color: var(--primary-color-strong);
     color: white;
     border-radius: 50%;
@@ -304,10 +298,9 @@
     font-size: 0.7rem;
     font-weight: bold;
     line-height: 1;
-    border: 1px solid white; /* Lepszy kontrast */
+    border: 1px solid white; 
 }
 
-/* Responsywność */
 @media (max-width: 1080px) {
     .brand h1 {
         font-size: 1.2rem;

@@ -139,7 +139,6 @@
     color: white;
 }
 
-/* Responsive design */
 @media (max-width: 480px) {
     .verification-page {
         padding: 15px;

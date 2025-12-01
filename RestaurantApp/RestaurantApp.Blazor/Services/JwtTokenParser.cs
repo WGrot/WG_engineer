@@ -20,7 +20,6 @@ public class JwtTokenParser
 
         if (keyValuePairs != null)
         {
-            // Obsługa ról - mogą być jako string lub array
             if (keyValuePairs.TryGetValue("role", out var roles) ||
                 keyValuePairs.TryGetValue("roles", out roles) ||
                 keyValuePairs.TryGetValue("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", out roles))
@@ -28,13 +27,11 @@ public class JwtTokenParser
                 AddRoleClaims(claims, roles);
             }
 
-            // Dodaj pozostałe claims
             foreach (var kvp in keyValuePairs)
             {
                 var key = kvp.Key;
                 var value = kvp.Value;
 
-                // Mapuj JWT claims na .NET claims
                 var claimType = key switch
                 {
                     "sub" => ClaimTypes.NameIdentifier,
@@ -43,11 +40,9 @@ public class JwtTokenParser
                     _ => key
                 };
 
-                // Pomiń role, bo już je obsłużyliśmy
                 if (key.Contains("role", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                // Jeśli value jest tablicą (JSON array), dodaj osobny claim dla każdego elementu
                 if (value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
                 {
                     foreach (var element in jsonElement.EnumerateArray())
@@ -78,12 +73,10 @@ public class JwtTokenParser
                 return datetime.UtcDateTime <= DateTime.UtcNow;
             }
 
-            // Jeśli brak exp claim, zakładamy że token jest ważny
             return false;
         }
         catch
         {
-            // W razie błędu parsowania, uznajemy token za niewažny
             return true;
         }
     }

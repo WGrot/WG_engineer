@@ -50,15 +50,6 @@
                                 </div>
                             </div>
                             
-                            @* <div class="card bg-light border-0 mb-3"> *@
-                            @*     <div class="card-body text-center"> *@
-                            @*         <h3 class="text mb-0" style="color: #667eea"> *@
-                            @*             <strong>@Item.Price.Price @Item.Price.CurrencyCode</strong> *@
-                            @*         </h3> *@
-                            @*     </div> *@
-                            @* </div> *@
-
-                            
                         </div>
                         
                         <div class="col mb-5">
@@ -122,16 +113,7 @@
                                             </div>
                                         </div>
                                     }
-
-                                    @* @if (!Item.Variants.Any(v => v.IsAvailable)) *@
-                                    @* { *@
-                                    @*     <div class="col-12"> *@
-                                    @*         <div class="alert alert-info d-flex align-items-center" role="alert"> *@
-                                    @*             <i class="bi bi-info-circle-fill me-2"></i> *@
-                                    @*             <div>No variants currently available</div> *@
-                                    @*         </div> *@
-                                    @*     </div> *@
-                                    @* } *@
+                                    
                                 </div>
                             </div>
                         </div>
@@ -143,15 +125,15 @@
 }
 
 <style>
-    /* Animacja pojawiania się modala */
+
     .modal.show {
         animation: fadeIn 0.3s ease-in-out;
     }
 
     .image-wrapper {
-        display: inline-block; /* Zapobiega rozciąganiu kontenera */
-        border: 5px solid #667eea; /* Kolor ramki */
-        border-radius: 8px; /* Dopasowane do .rounded */
+        display: inline-block;
+        border: 5px solid #667eea; 
+        border-radius: 8px; 
         padding: 4px;
     }
 
@@ -168,6 +150,6 @@
     }
 
     .col-auto {
-        max-width: 300px; /* np. ograniczenie szerokości */
+        max-width: 300px; 
     }
 </style>

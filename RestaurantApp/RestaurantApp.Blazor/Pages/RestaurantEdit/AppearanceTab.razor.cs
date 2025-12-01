@@ -41,7 +41,7 @@ public partial class AppearanceTab : ComponentBase
                 if (response.IsSuccessStatusCode)
                 {
                     successMessage = "Profile photo uploaded successfully";
-                    // Refresh restaurant data
+
                     var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
                     {
@@ -89,7 +89,6 @@ public partial class AppearanceTab : ComponentBase
                 if (response.IsSuccessStatusCode)
                 {
                     successMessage = "Restaurant photos uploaded successfully";
-                    // Refresh restaurant data
                     var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
                     {
@@ -125,7 +124,6 @@ public partial class AppearanceTab : ComponentBase
             if (response.IsSuccessStatusCode)
             {
                 successMessage = "Profile photo deleted successfully";
-                // Refresh restaurant data
                 var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {
@@ -160,7 +158,6 @@ public partial class AppearanceTab : ComponentBase
             if (response.IsSuccessStatusCode)
             {
                 successMessage = "Restaurant photo deleted successfully";
-                // Refresh restaurant data
                 var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {

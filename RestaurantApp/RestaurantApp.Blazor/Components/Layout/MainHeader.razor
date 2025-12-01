@@ -117,11 +117,8 @@
     </div>
 </header>
 
-
-<!-- Overlay -->
 <div class="menu-overlay @(isMenuOpen ? "active" : "")" @onclick="CloseMenu"></div>
 
-<!-- Slide Menu -->
 <div class="slide-menu @(isMenuOpen ? "active" : "")">
     <div class="menu-content">
         <nav class="menu-nav">
@@ -308,13 +305,13 @@
     private void ToggleMenu()
     {
         isMenuOpen = !isMenuOpen;
-        isUserMenuOpen = false; // Zamknij user menu
+        isUserMenuOpen = false; 
     }
 
     private void ToggleUserMenu()
     {
         isUserMenuOpen = !isUserMenuOpen;
-        isMenuOpen = false; // Zamknij główne menu
+        isMenuOpen = false; 
     }
 
     private void CloseMenu()

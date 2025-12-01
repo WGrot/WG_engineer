@@ -9,7 +9,6 @@
     <div class="card-body">
         
         @if(showCustomerFilters){
-            <!-- Customer Name -->
             <div class="mb-3">
                 <label class="form-label small fw-semibold text-muted">
                     <i class="bi bi-person me-1"></i>Customer Name
@@ -21,7 +20,6 @@
                        @bind:event="oninput"/>
             </div>
 
-            <!-- Email -->
             <div class="mb-3">
                 <label class="form-label small fw-semibold text-muted">
                     <i class="bi bi-envelope me-1"></i>Email Address
@@ -32,8 +30,7 @@
                        @bind="SearchParameters.CustomerEmail"
                        @bind:event="oninput"/>
             </div>
-
-            <!-- Phone -->
+            
             <div class="mb-3">
                 <label class="form-label small fw-semibold text-muted">
                     <i class="bi bi-telephone me-1"></i>Phone Number
@@ -51,7 +48,6 @@
 
         @if (showRestaurantFilters)
         {
-            <!-- Restaurant Name -->
             <div class="mb-3">
                 <label class="form-label small fw-semibold text-muted">
                     <i class="bi bi-house"></i>Restuarant Name
@@ -65,9 +61,7 @@
 
             <hr class="my-3"/>
         }
-
-
-        <!-- StatusEnumDto -->
+        
         <div class="mb-3">
             <label class="form-label small fw-semibold text-muted">
                 <i class="bi bi-bookmark me-1"></i>StatusEnumDto
@@ -83,7 +77,6 @@
             </select>
         </div>
 
-        <!-- Date -->
         <div class="mb-3">
             <label for="date" class="form-label small fw-semibold text-muted">
                 <i class="bi bi-calendar me-1"></i>Reservation Date
@@ -95,7 +88,6 @@
                    @bind:event="oninput"/>
         </div>
 
-        <!-- Time Range -->
         <div class="mb-3">
             <label class="form-label small fw-semibold text-muted">
                 <i class="bi bi-clock me-1"></i>Time Range
@@ -118,7 +110,6 @@
             </div>
         </div>
 
-        <!-- Buttons -->
         <div class="d-grid gap-2 mt-4">
             <button class="button button--outline button--primary" @onclick="() => OnApplyFilters.InvokeAsync()">
                 <i class="bi bi-search me-2"></i>Apply Filters

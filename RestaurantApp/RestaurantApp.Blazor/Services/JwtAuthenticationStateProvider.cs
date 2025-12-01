@@ -26,11 +26,9 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
             return CreateAnonymousState();
         }
 
-        // Sprawdź czy token nie wygasł
+
         if (_tokenParser.IsTokenExpired(token))
         {
-            // Token wygasł - zwróć stan niezalogowany
-            // Uwaga: nie wywołujemy tutaj Logout, bo to odpowiedzialność AuthService
             return CreateAnonymousState();
         }
 
@@ -44,7 +42,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         }
         catch
         {
-            // Błąd parsowania tokenu
             return CreateAnonymousState();
         }
     }

@@ -105,14 +105,12 @@
             var json = JsonSerializer.Serialize(registerRequest);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
-            // Zamień "https://localhost:7001" na adres swojego API
             var response = await Http.PostAsync("api/auth/register", content);
             
             if (response.IsSuccessStatusCode)
             {
                 _successMessage = "Account created successfully! You can now log in.";
                 
-                // Opcjonalnie: przekieruj na stronę logowania po kilku sekundach
                 await Task.Delay(2000);
                 Navigation.NavigateTo($"/email-verification?email={Uri.EscapeDataString(_registerModel.Email)}");
             }
@@ -120,7 +118,6 @@
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 
-                // Spróbuj sparsować błędy walidacji z ModelState
                 try
                 {
                     var errorResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(errorContent);
