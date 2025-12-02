@@ -78,15 +78,15 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto createReviewDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new SameUserRequirement(createReviewDto.UserId));
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new SameUserRequirement(createReviewDto.UserId));
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return (await _reviewService.CreateAsync(userId, createReviewDto)).ToActionResult();
@@ -95,15 +95,15 @@ public class ReviewsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReviewDto updateReviewDto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new SameUserRequirement(updateReviewDto.UserId));
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new SameUserRequirement(updateReviewDto.UserId));
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
         
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return (await _reviewService.UpdateAsync(userId, id, updateReviewDto)).ToActionResult();

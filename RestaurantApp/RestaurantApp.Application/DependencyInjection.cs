@@ -103,7 +103,16 @@ public static class DependencyInjection
             return new AuthorizedEmployeeService(innerService, currentUser, permissionChecker);
         });
         
-        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<ReviewService>();
+        services.AddScoped<IReviewService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<ReviewService>();
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedReviewService(innerService, currentUser, permissionChecker);
+        });
+        
         services.AddTransient<IEmailComposer, EmailComposer>();
         services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
