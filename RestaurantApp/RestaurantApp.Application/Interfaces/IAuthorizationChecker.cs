@@ -28,4 +28,6 @@ public interface IAuthorizationChecker
     
     Task<bool> HasPermissionInAnyRestaurantAsync(string userId, PermissionType permission);
 
+    public Task<bool> CanManageRestaurantSettingsAsync(string userId, int restaurantSettingsId);
+
 }

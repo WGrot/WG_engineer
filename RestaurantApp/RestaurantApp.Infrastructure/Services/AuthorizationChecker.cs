@@ -173,4 +173,20 @@ public class AuthorizationChecker: IAuthorizationChecker
             .SelectMany(e => e.Permissions)
             .AnyAsync(p => p.Permission == permission);
     }
+    
+    public async Task<bool> CanManageRestaurantSettingsAsync(string userId, int restaurantSettingsId)
+    {
+        return await _context.RestaurantSettings
+            .AsNoTracking()
+            .Where(s => s.Id == restaurantSettingsId)
+            .Join(
+                _context.RestaurantEmployees.AsNoTracking()
+                    .Where(e => e.UserId == userId && e.IsActive),
+                settings => settings.RestaurantId,
+                employee => employee.RestaurantId,
+                (settings, employee) => employee
+            )
+            .SelectMany(e => e.Permissions)
+            .AnyAsync(p => p.Permission == PermissionType.ManageRestaurantSettings);
+    }
 }
