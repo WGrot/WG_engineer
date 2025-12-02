@@ -48,11 +48,11 @@ public class EmployeesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
     {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-
-        if (!authorizationResult.Succeeded)
-            return Forbid();
+        // var authorizationResult = await _authorizationService.AuthorizeAsync(
+        //     User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
+        //
+        // if (!authorizationResult.Succeeded)
+        //     return Forbid();
 
         var result = await _employeeService.CreateAsync(dto);
         return result.ToActionResult();
@@ -61,11 +61,11 @@ public class EmployeesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromQuery] int restaurantId, UpdateEmployeeDto dto)
     {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-
-        if (!authorizationResult.Succeeded)
-            return Forbid();
+        // var authorizationResult = await _authorizationService.AuthorizeAsync(
+        //     User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
+        //
+        // if (!authorizationResult.Succeeded)
+        //     return Forbid();
         
         return (await _employeeService.UpdateAsync(dto)).ToActionResult();
 
@@ -75,11 +75,11 @@ public class EmployeesController : ControllerBase
     [HttpDelete("{id}/restaurant/{restaurantId}")]
     public async Task<IActionResult> Delete(int restaurantId, int id)
     {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-
-        if (!authorizationResult.Succeeded)
-            return Forbid();
+        // var authorizationResult = await _authorizationService.AuthorizeAsync(
+        //     User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
+        //
+        // if (!authorizationResult.Succeeded)
+        //     return Forbid();
         return (await _employeeService.DeleteAsync(id)).ToActionResult();
     }
 }
