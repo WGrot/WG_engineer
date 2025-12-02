@@ -1,16 +1,7 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RestaurantApp.Shared.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
-
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;
 
 namespace RestaurantApp.Api.Controllers
@@ -49,13 +40,6 @@ namespace RestaurantApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTable([FromBody] CreateTableDto dto)
         {
-            // var authResult = await _authorizationService.AuthorizeAsync(
-            //     User, 
-            //     null,
-            //     new ManageTableRequirement(restaurantId: dto.RestaurantId)); 
-            //
-            // if (!authResult.Succeeded)
-            //     return Forbid();
             return (await _tableService.CreateTableAsync(dto)).ToActionResult();
         }
 
@@ -63,13 +47,6 @@ namespace RestaurantApp.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTable(int id, [FromBody] UpdateTableDto dto)
         {
-            // var authResult = await _authorizationService.AuthorizeAsync(
-            //     User, 
-            //     null,
-            //     new ManageTableRequirement(id)); 
-            //
-            // if (!authResult.Succeeded)
-            //     return Forbid();
             return (await _tableService.UpdateTableAsync(id, dto)).ToActionResult();
 
         }
@@ -77,13 +54,6 @@ namespace RestaurantApp.Api.Controllers
         [HttpPatch("{id}/capacity")]
         public async Task<IActionResult> UpdateTableCapacity(int id, [FromBody] int capacity)
         {
-            // var authResult = await _authorizationService.AuthorizeAsync(
-            //     User, 
-            //     null,
-            //     new ManageTableRequirement(id)); 
-            //
-            // if (!authResult.Succeeded)
-            //     return Forbid();
             return (await _tableService.UpdateTableCapacityAsync(id, capacity)).ToActionResult();
         }
 
@@ -101,13 +71,6 @@ namespace RestaurantApp.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTable(int id)
         {
-            // var authResult = await _authorizationService.AuthorizeAsync(
-            //     User, 
-            //     null,
-            //     new ManageTableRequirement(id)); 
-            //
-            // if (!authResult.Succeeded)
-            //     return Forbid();
             return (await _tableService.DeleteTableAsync(id)).ToActionResult();
         }
         

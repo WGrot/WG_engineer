@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization;
-using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
-
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Users;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -45,13 +40,6 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
-        // var authorizationResult = await _authorizationService.AuthorizeAsync(
-        //     User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-        //
-        // if (!authorizationResult.Succeeded)
-        //     return Forbid();
-
-        
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -81,15 +69,6 @@ public class UserController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateUserAsync(UpdateUserDto dto)
     {
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new SameUserRequirement(dto.Id));
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
         var result = await _userService.UpdateUserAsync(dto);
         return result.ToActionResult();
     }

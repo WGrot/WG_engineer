@@ -1,41 +1,20 @@
 using System.Text;
 using System.Text.Json.Serialization;
-using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using RestaurantApp.Api;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Menu;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuCategory;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItem;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemTags;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Table;
 using RestaurantApp.Api.Helpers;
 using RestaurantApp.Application;
 using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared;
-using RestaurantApp.Shared.Models;
 using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;
-using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
-using RestaurantApp.Infrastructure.Services;
 using LinkGenerator = RestaurantApp.Api.Helpers.LinkGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -74,44 +53,29 @@ builder.Services.AddApplication();
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<ILinkGenerator, LinkGenerator>();
 
-builder.Services.AddScoped<IAuthorizationHandler, SpecificRestaurantEmployeeHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, SameUserAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageMenuAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageCategoryAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageTagsAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageMenuItemVariantAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageTableAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManageReservationAuthorizationHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManagePermissionAuthorizationHandler>();
 
-
-
-// NAJPIERW Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Konfiguracja hasła
+
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
-
-    // Konfiguracja użytkownika
+    
     options.User.RequireUniqueEmail = true;
 
-    // Konfiguracja lockout
+
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 5;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// POTEM Authentication z konfiguracją JWT
+
 builder.Services.AddAuthentication(options =>
 {
-    // Ustaw JWT jako domyślny schemat
+
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -119,21 +83,21 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.RequireHttpsMetadata = false; // Ustaw na true w produkcji
+    options.RequireHttpsMetadata = false; 
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero, // Domyślnie jest 5 minut
+        ClockSkew = TimeSpan.Zero,
         ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
         ValidAudience = builder.Configuration["JwtConfig:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]))
     };
     
-    // Opcjonalnie: dodaj logowanie dla debugowania
+
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
@@ -153,7 +117,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorPolicy", builder =>
     {
-        builder.WithOrigins("http://localhost:5198", "https://localhost:7174") // Adresy Twojego Blazor WASM
+        builder.WithOrigins("http://localhost:5198", "https://localhost:7174")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -162,40 +126,17 @@ builder.Services.AddCors(options =>
 
 
 
-builder.Services.AddAuthorization(options =>
-{
-    
-    options.AddPolicy("RestaurantEmployee", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement()));
-
-    // Sprawdzanie konkretnych uprawnień
-    options.AddPolicy("ManageReservations", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageReservations)));
-    
-    options.AddPolicy("ManageMenu", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageMenu)));
-    
-    options.AddPolicy("ManageTables", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageTables)));
-    
-    options.AddPolicy("ManageEmployees", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManageEmployees)));
-    
-    options.AddPolicy("ViewReports", policy =>
-        policy.Requirements.Add(new SpecificRestaurantEmployeeRequirement(PermissionTypeEnumDto.ManagePermissions)));
-    
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Initialize MinIO buckets on startup
+
 using (var scope = app.Services.CreateScope())
 {
     var bucketService = scope.ServiceProvider.GetRequiredService<IBucketService>();
     await bucketService.InitializeDefaultBucketsAsync();
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -208,7 +149,7 @@ if (app.Environment.IsDevelopment())
     
     app.MapGet("/debug/jwt-config", (IConfiguration config) => new
     {
-        Key = config["JwtConfig:Key"]?.Substring(0, 5) + "...", // Pokaż tylko początek klucza
+        Key = config["JwtConfig:Key"]?.Substring(0, 5) + "...",
         Issuer = config["JwtConfig:Issuer"],
         Audience = config["JwtConfig:Audience"]
     });
@@ -216,7 +157,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Dodaj po app.UseHttpsRedirection() i przed app.UseAuthentication()
+
 app.UseCors("BlazorPolicy");
 
 app.UseAuthentication(); 

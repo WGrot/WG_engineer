@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Employees;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -26,10 +24,7 @@ public class EmployeesController : ControllerBase
     {
         if (restaurantId.HasValue)
         {
-            var authorizationResult = await _authorizationService.AuthorizeAsync(
-                User, restaurantId.Value, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-            if (!authorizationResult.Succeeded) return Forbid();
-
+            
             return (await _employeeService.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId.Value)).ToActionResult();
         }
 
@@ -48,11 +43,6 @@ public class EmployeesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
     {
-        // var authorizationResult = await _authorizationService.AuthorizeAsync(
-        //     User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-        //
-        // if (!authorizationResult.Succeeded)
-        //     return Forbid();
 
         var result = await _employeeService.CreateAsync(dto);
         return result.ToActionResult();
@@ -61,12 +51,6 @@ public class EmployeesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromQuery] int restaurantId, UpdateEmployeeDto dto)
     {
-        // var authorizationResult = await _authorizationService.AuthorizeAsync(
-        //     User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-        //
-        // if (!authorizationResult.Succeeded)
-        //     return Forbid();
-        
         return (await _employeeService.UpdateAsync(dto)).ToActionResult();
 
     }
@@ -75,11 +59,6 @@ public class EmployeesController : ControllerBase
     [HttpDelete("{id}/restaurant/{restaurantId}")]
     public async Task<IActionResult> Delete(int restaurantId, int id)
     {
-        // var authorizationResult = await _authorizationService.AuthorizeAsync(
-        //     User, restaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-        //
-        // if (!authorizationResult.Succeeded)
-        //     return Forbid();
         return (await _employeeService.DeleteAsync(id)).ToActionResult();
     }
 }

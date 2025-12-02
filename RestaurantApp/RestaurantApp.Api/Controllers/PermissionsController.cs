@@ -1,14 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization.NewDirectory1;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.MenuItemVariant;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Permission;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
-
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.Models;
 
@@ -68,13 +61,6 @@ public class PermissionsController : ControllerBase
     [HttpPut("employee/update-permissions")]
     public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto)
     {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManagePermissions));
-
-        if (!authorizationResult.Succeeded)
-            return Forbid();
-
-        
         var result = await _permissionService.UpdateEmployeePermissionsAsync(dto);
         return result.ToActionResult();
     }
@@ -85,17 +71,6 @@ public class PermissionsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new ManagePermissionRequirement(permissionDto.RestaurantEmployeeId)
-        // );
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
-
         var employeeResult = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
 
         if (employeeResult.IsFailure)
@@ -122,17 +97,6 @@ public class PermissionsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new ManagePermissionRequirement(id)
-        // );
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
-
         var result = await _permissionService.UpdateAsync(permission);
         return result.ToActionResult();
     }
@@ -140,18 +104,6 @@ public class PermissionsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new ManagePermissionRequirement(id)
-        // );
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
-        
         var result = await _permissionService.DeleteAsync(id);
         
         if (result.IsSuccess)

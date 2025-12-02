@@ -1,11 +1,8 @@
-﻿// RestaurantApp.Api/Controllers/ReservationController.cs
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization.ResourceBased.Reservations;
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -75,8 +72,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
-        //     return Forbid();
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -89,8 +84,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteReservation(int id)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
-        //     return Forbid();
 
         var result = await _reservationService.DeleteAsync(id);
         return result.ToActionResult();
@@ -125,9 +118,7 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto dto)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
-        //     return Forbid();
-
+        
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
@@ -139,14 +130,11 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteTableReservation(int id)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
-        //     return Forbid();
 
         var result = await _tableReservationService.DeleteAsync(id);
         return result.ToActionResult();
     }
-
-    // ==================== MANAGEMENT ENDPOINTS ====================
+    
 
     [HttpGet("manage")]
     [Authorize]
@@ -171,8 +159,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: true))
-        //     return Forbid();
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -185,8 +171,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CancelUserReservation(int id)
     {
-        // if (!await AuthorizeManageReservationAsync(id, requireRestaurantAccess: false))
-        //     return Forbid();
 
         var userId = GetCurrentUserId();
         if (userId == null)
@@ -195,21 +179,10 @@ public class ReservationController : ControllerBase
         var result = await _reservationService.CancelUserReservationAsync(userId, id);
         return result.ToActionResult();
     }
-
-    // ==================== PRIVATE HELPERS ====================
+    
 
     private string? GetCurrentUserId()
     {
         return User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
-
-    // private async Task<bool> AuthorizeManageReservationAsync(int reservationId, bool requireRestaurantAccess)
-    // {
-    //     var authResult = await _authorizationService.AuthorizeAsync(
-    //         User,
-    //         null,
-    //         new ManageReservationRequirement(reservationId, requireRestaurantAccess));
-    //
-    //     return authResult.Succeeded;
-    // }
 }

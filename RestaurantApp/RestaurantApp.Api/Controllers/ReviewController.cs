@@ -1,14 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
-using RestaurantApp.Api.CustomHandlers.Authorization;
-
-using RestaurantApp.Shared.Common;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Review;
-using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Api.Controllers;
 
@@ -78,16 +72,6 @@ public class ReviewsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto createReviewDto)
     {
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new SameUserRequirement(createReviewDto.UserId));
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return (await _reviewService.CreateAsync(userId, createReviewDto)).ToActionResult();
     }
@@ -95,16 +79,6 @@ public class ReviewsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReviewDto updateReviewDto)
     {
-        // var authResult = await _authorizationService.AuthorizeAsync(
-        //     User, 
-        //     null, 
-        //     new SameUserRequirement(updateReviewDto.UserId));
-        //
-        // if (!authResult.Succeeded)
-        // {
-        //     return Forbid();
-        // }
-        
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return (await _reviewService.UpdateAsync(userId, id, updateReviewDto)).ToActionResult();
     }
