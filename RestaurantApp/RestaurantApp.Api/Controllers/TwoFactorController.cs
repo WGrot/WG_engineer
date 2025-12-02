@@ -1,8 +1,6 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Infrastructure.Persistence;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 
 namespace RestaurantApp.Api.Controllers;
@@ -11,85 +9,53 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class TwoFactorController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
     private readonly ITwoFactorService _twoFactorService;
-    private readonly IEncryptionService _encryptionService;
-
-    public TwoFactorController(ApplicationDbContext context, ITwoFactorService twoFactorService, IEncryptionService encryptionService)
+    public TwoFactorController(ITwoFactorService twoFactorService)
     {
-        _context = context;
         _twoFactorService = twoFactorService;
-        _encryptionService = encryptionService;
     }
 
+    private string? GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
     [HttpPost("enable")]
-    [Authorize]
     public async Task<ActionResult<Enable2FAResponse>> EnableTwoFactor()
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-            return NotFound();
+        var result = await _twoFactorService.EnableTwoFactorAsync(userId);
         
-        var secretKey = _twoFactorService.GenerateSecretKey();
-        var qrCodeUri = _twoFactorService.GenerateQrCodeUri(user.Email!, secretKey);
-        var qrCodeImage = _twoFactorService.GenerateQrCodeImage(qrCodeUri);
-        var encryptedSecretKey = _encryptionService.Encrypt(secretKey);
-        
-        user.TwoFactorSecretKey = encryptedSecretKey;
-        await _context.SaveChangesAsync();
-
-        return Ok(new Enable2FAResponse
-        {
-            SecretKey = secretKey,
-            QrCodeUri = qrCodeUri,
-            QrCodeImage = qrCodeImage
-        });
+        return result.IsSuccess 
+            ? Ok(result.Value) 
+            : BadRequest(result.Error);
     }
 
     [HttpPost("verify-and-enable")]
-    [Authorize]
     public async Task<ActionResult> VerifyAndEnable([FromBody] Verify2FARequest request)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null || string.IsNullOrEmpty(user.TwoFactorSecretKey))
-            return BadRequest("2FA nie zostało zainicjalizowane");
+        var result = await _twoFactorService.VerifyAndEnableAsync(userId, request.Code);
         
-        if (!_twoFactorService.ValidateCode(user.TwoFactorSecretKey, request.Code))
-            return BadRequest("Nieprawidłowy kod");
-        
-        user.TwoFactorEnabled = true;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "2FA zostało pomyślnie włączone" });
+        return result.IsSuccess 
+            ? Ok(new { message = "2FA has been successfully enabled" }) 
+            : BadRequest(result.Error);
     }
 
     [HttpPost("disable")]
-    [Authorize]
     public async Task<ActionResult> DisableTwoFactor([FromBody] Verify2FARequest request)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null || !user.TwoFactorEnabled)
-            return BadRequest("2FA nie jest włączone");
+        var result = await _twoFactorService.DisableTwoFactorAsync(userId, request.Code);
         
-        if (!_twoFactorService.ValidateCode(user.TwoFactorSecretKey!, request.Code))
-            return BadRequest("Nieprawidłowy kod");
-
-        user.TwoFactorEnabled = false;
-        user.TwoFactorSecretKey = null;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "2FA zostało wyłączone" });
+        return result.IsSuccess 
+            ? Ok(new { message = "2FA has been disabled" }) 
+            : BadRequest(result.Error);
     }
 }
