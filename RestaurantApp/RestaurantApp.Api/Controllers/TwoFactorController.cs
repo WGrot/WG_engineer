@@ -39,8 +39,7 @@ public class TwoFactorController : ControllerBase
         var qrCodeUri = _twoFactorService.GenerateQrCodeUri(user.Email!, secretKey);
         var qrCodeImage = _twoFactorService.GenerateQrCodeImage(qrCodeUri);
         var encryptedSecretKey = _encryptionService.Encrypt(secretKey);
-
-        // Zapisz klucz (2FA nie jest jeszcze aktywne, dopóki nie zostanie zweryfikowane)
+        
         user.TwoFactorSecretKey = encryptedSecretKey;
         await _context.SaveChangesAsync();
 

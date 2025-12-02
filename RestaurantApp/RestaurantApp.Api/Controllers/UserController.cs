@@ -45,11 +45,11 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
-
-        if (!authorizationResult.Succeeded)
-            return Forbid();
+        // var authorizationResult = await _authorizationService.AuthorizeAsync(
+        //     User, dto.RestaurantId, new PermissionRequirement(PermissionTypeEnumDto.ManageEmployees));
+        //
+        // if (!authorizationResult.Succeeded)
+        //     return Forbid();
 
         
         if (!ModelState.IsValid)
@@ -81,15 +81,15 @@ public class UserController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateUserAsync(UpdateUserDto dto)
     {
-        var authResult = await _authorizationService.AuthorizeAsync(
-            User, 
-            null, 
-            new SameUserRequirement(dto.Id));
-
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
+        // var authResult = await _authorizationService.AuthorizeAsync(
+        //     User, 
+        //     null, 
+        //     new SameUserRequirement(dto.Id));
+        //
+        // if (!authResult.Succeeded)
+        // {
+        //     return Forbid();
+        // }
         var result = await _userService.UpdateUserAsync(dto);
         return result.ToActionResult();
     }

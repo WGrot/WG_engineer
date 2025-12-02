@@ -89,11 +89,4 @@ public class AuthorizedReviewService : IReviewService
         return _inner.GetByRestaurantIdPaginatedAsync(restaurantId, page, pageSize, sortBy, ct);
     }
     
-    private async Task<bool> AuthorizeSameUser(string userId)
-    {
-        if (!_currentUser.IsAuthenticated)
-            return false;
-
-        return _currentUser.UserId == userId;
-    }
 }
