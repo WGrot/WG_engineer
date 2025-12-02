@@ -136,4 +136,25 @@ public class AuthorizationChecker: IAuthorizationChecker
             .SelectMany(e => e.Permissions)
             .AnyAsync(p => p.Permission == PermissionType.ManageTables);
     }
+
+    public async Task<bool> CanManageReservationAsync(string userId, int reservationId, bool needToBeEmployee = true)
+    {
+        var reservation = await _context.Reservations
+            .AsNoTracking()
+            .Where(r => r.Id == reservationId)
+            .Select(r => new { r.UserId, r.RestaurantId })
+            .FirstOrDefaultAsync();
+
+        if (reservation == null)
+            return false;
+
+        if (!needToBeEmployee && reservation.UserId == userId)
+            return true;
+
+        return await _context.RestaurantEmployees
+            .AsNoTracking()
+            .Where(e => e.UserId == userId && e.IsActive && e.RestaurantId == reservation.RestaurantId)
+            .SelectMany(e => e.Permissions)
+            .AnyAsync(p => p.Permission == PermissionType.ManageReservations);
+    }
 }
