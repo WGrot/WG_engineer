@@ -102,16 +102,16 @@
             }
             else
             {
-                _errorMessage = errorMessage ?? "Nieprawidłowy email lub hasło";
+                _errorMessage = errorMessage ?? "Incorrect email or password. Please try again.";
             }
         }
         catch (HttpRequestException)
         {
-            _errorMessage = "Nie można połączyć się z serwerem. Spróbuj ponownie później.";
+            _errorMessage = "Cannot connect to the server. Please check your internet connection.";
         }
         catch (Exception ex)
         {
-            _errorMessage = "Wystąpił błąd podczas logowania. Spróbuj ponownie.";
+            _errorMessage = "Error occurred during login. Please try again.";
             Console.WriteLine($"Login error: {ex.Message}");
         }
         finally

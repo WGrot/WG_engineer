@@ -51,20 +51,23 @@ public class AuthService
 
         if (!response.IsSuccessStatusCode)
         {
-            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, false, error?.Error);
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            return (false, false, string.IsNullOrWhiteSpace(errorMessage) 
+                ? "Login failed" 
+                : errorMessage);
+            
         }
 
         var login = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
         if (login == null)
-            return (false, false, "Błąd loginu");
+            return (false, false, "Login error");
 
         if (login.RequiresTwoFactor)
             return (false, true, null);
 
         if (string.IsNullOrEmpty(login.Token))
-            return (false, false, "Brak tokenu");
+            return (false, false, "Missing token in response");
         
         SetTokenState(login.Token, login.ResponseUser);
 
@@ -113,6 +116,17 @@ public class AuthService
     
     public async Task LogoutAsync()
     {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/logout");
+            request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+            await _http.SendAsync(request);
+        }
+        catch
+        {
+            // Ignore errors during logout
+        }
+        
         _tokens.Clear();
         await _currentUserDataService.Clear();
         _http.DefaultRequestHeaders.Authorization = null;

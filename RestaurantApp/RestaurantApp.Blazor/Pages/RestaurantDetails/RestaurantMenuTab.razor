@@ -54,7 +54,8 @@
                     <div class="card-body bg-white">
                         @foreach (var item in uncategorizedItems)
                         {
-                            <MenuItemComponent Item="item"/>
+                            <MenuItemComponent Item="item"
+                                               OnItemClick="HandleMenuItemClick"/>
                         }
                     </div>
                 </div>
