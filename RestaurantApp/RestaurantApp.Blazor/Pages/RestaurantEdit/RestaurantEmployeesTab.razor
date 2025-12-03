@@ -122,6 +122,15 @@ else
             </div>
         }
     </div>
+    
+    <ConfirmationModal
+        @bind-IsVisible="showDeleteConfirmModal"
+        Title="Delete Employee"
+        Message="@GetDeleteMessage()"
+        IsProcessing="isDeleting"
+        ConfirmButtonText="Delete"
+        OnConfirm="ConfirmRemoveEmployee"
+        OnCancel="CancelRemoveEmployee" />
 }
 
 @code {
@@ -136,6 +145,10 @@ else
     private bool showAddEmployeeModal = false;
     private bool showSuccessModal = false;
     private bool showPermissionsModal = false;
+    
+    private bool showDeleteConfirmModal = false;
+    private bool isDeleting = false;
+    private RestaurantEmployeeDto? employeeToDelete;
     
     private CreateUserResponse? newEmployeeResponse;
     private RestaurantEmployeeDto? selectedEmployee;
@@ -194,45 +207,57 @@ else
     {
         await LoadEmployees();
     }
-
-    private async Task RemoveEmployee(RestaurantEmployeeDto employee)
+    
+    private string GetDeleteMessage()
     {
-        // TODO: Dodaj potwierdzenie przed usunięciem
-        if (!await ConfirmRemoval(employee))
+        if (employeeToDelete == null)
+            return "Are you sure you want to delete this employee?";
+    
+        return $"Are you sure you want to delete employee {employeeToDelete.FirstName} {employeeToDelete.LastName}?";
+    }
+
+    private void RemoveEmployee(RestaurantEmployeeDto employee)
+    {
+        employeeToDelete = employee;
+        showDeleteConfirmModal = true;
+    }
+
+    private async Task ConfirmRemoveEmployee()
+    {
+        if (employeeToDelete == null)
             return;
+
+        isDeleting = true;
 
         try
         {
-            // TODO: Zastąp rzeczywistym API call
-            // var response = await Http.DeleteAsync($"api/Employees/{employee.Id}");
+            var response = await Http.DeleteAsync($"api/Employees/{employeeToDelete.Id}");
 
-            // Symulacja usuwania
-            await Task.Delay(500);
-
-            // if (response.IsSuccessStatusCode)
-            // {
-            await LoadEmployees();
-            // }
-            // else
-            // {
-            //     error = "Nie udało się usunąć pracownika";
-            // }
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadEmployees();
+            }
+            else
+            {
+                error = "Failed to delete employee";
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error removing employee: {ex.Message}");
-            error = "Wystąpił błąd podczas usuwania pracownika";
+            error = "An error occurred while deleting the employee";
+        }
+        finally
+        {
+            isDeleting = false;
+            showDeleteConfirmModal = false;
+            employeeToDelete = null;
         }
     }
 
-    private async Task<bool> ConfirmRemoval(RestaurantEmployeeDto employee)
+    private void CancelRemoveEmployee()
     {
-        // TODO: Implementacja rzeczywistego dialogu potwierdzenia
-        // Na razie zwracamy false aby zapobiec przypadkowemu usunięciu
-        return false;
-
-        // Przykład implementacji z użyciem JavaScript interop:
-        // return await JSRuntime.InvokeAsync<bool>("confirm", 
-        //     $"Czy na pewno chcesz usunąć pracownika {employee.FirstName} {employee.LastName}?");
+        employeeToDelete = null;
+        showDeleteConfirmModal = false;
     }
 }

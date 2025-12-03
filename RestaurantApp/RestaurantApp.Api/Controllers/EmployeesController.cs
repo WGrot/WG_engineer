@@ -56,8 +56,8 @@ public class EmployeesController : ControllerBase
     }
 
 
-    [HttpDelete("{id}/restaurant/{restaurantId}")]
-    public async Task<IActionResult> Delete(int restaurantId, int id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
     {
         return (await _employeeService.DeleteAsync(id)).ToActionResult();
     }
