@@ -139,13 +139,13 @@
             }
             else
             {
-                _twoFactorError = errorMessage ?? "Nieprawidłowy kod 2FA. Spróbuj ponownie.";
+                _twoFactorError = errorMessage ?? "Invalid 2FA code. Please try again.";
                 _twoFactorModalRef?.ClearCode();
             }
         }
         catch (Exception ex)
         {
-            _twoFactorError = "Wystąpił błąd podczas weryfikacji. Spróbuj ponownie.";
+            _twoFactorError = "Error during authorization try again";
             Console.WriteLine($"2FA verification error: {ex.Message}");
         }
         finally

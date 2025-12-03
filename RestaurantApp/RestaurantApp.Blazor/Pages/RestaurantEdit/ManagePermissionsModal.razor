@@ -161,7 +161,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"Błąd podczas ładowania uprawnień: {ex.Message}";
+            errorMessage = $"Error while loading permissions {ex.Message}";
             Console.WriteLine($"Error loading permissions: {ex}");
         }
         finally
@@ -332,18 +332,18 @@
              
              if (response.IsSuccessStatusCode)
             {
-                successMessage = "Uprawnienia zostały zaktualizowane pomyślnie!";
+                successMessage = "Permissions have been updated!";
                 
             }
             else
             {
                 var errorResponse = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Błąd podczas aktualizacji uprawnień: {errorResponse}";
+                errorMessage = $"Error updating permissions: {errorResponse}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Wystąpił błąd: {ex.Message}";
+            errorMessage = $"error: {ex.Message}";
             Console.WriteLine($"Error saving permissions: {ex}");
         }
     }

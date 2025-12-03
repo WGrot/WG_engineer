@@ -55,8 +55,8 @@ public static class HttpClientExtensions
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Błąd HTTP: {(int)response.StatusCode} {response.ReasonPhrase}");
-                Console.WriteLine($"Treść błędu: {error}");
+                Console.WriteLine($"error HTTP: {(int)response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine($"error: {error}");
                 return default;
             }
 
@@ -64,7 +64,7 @@ public static class HttpClientExtensions
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Wyjątek podczas zapytania: {ex.Message}");
+            Console.WriteLine($"Exception: {ex.Message}");
             return default;
         }
     }
@@ -86,8 +86,8 @@ public static class HttpClientExtensions
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Błąd HTTP: {(int)response.StatusCode} {response.ReasonPhrase}");
-                Console.WriteLine($"Treść błędu: {error}");
+                Console.WriteLine($"error HTTP: {(int)response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine($"error: {error}");
                 return default;
             }
 
@@ -95,7 +95,7 @@ public static class HttpClientExtensions
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Wyjątek podczas zapytania: {ex.Message}");
+            Console.WriteLine($"exception: {ex.Message}");
             return default;
         }
     }

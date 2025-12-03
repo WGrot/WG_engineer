@@ -241,7 +241,6 @@
             {
                 is2FAEnabled = false;
                 showDisable2FAModal = false;
-                Console.WriteLine("2FA został wyłączony!");
             }
             else
             {
@@ -284,7 +283,6 @@
     private async Task Handle2FAEnabled()
     {
         is2FAEnabled = true;
-        Console.WriteLine("2FA został włączony!");
     }
     
     private async Task SendVerifyEmail()

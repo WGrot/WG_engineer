@@ -92,9 +92,9 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> Update(int id, RestaurantPermissionDto permission)
     {
         if (id != permission.Id)
-            return BadRequest(new { error = "ID w URL nie zgadza się z ID w body" });
+            return BadRequest(new { error = "not found" });
 
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) 
             return BadRequest(ModelState);
         
         var result = await _permissionService.UpdateAsync(permission);
