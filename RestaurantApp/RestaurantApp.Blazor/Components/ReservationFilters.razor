@@ -69,7 +69,7 @@
             <select class="form-select form-select-sm"
                     @bind="SearchParameters.Status"
                     @bind:event="oninput">
-                <option value="">All StatusEnumDtoes</option>
+                <option value="">All Statuses</option>
                 @foreach (var status in Enum.GetValues<ReservationStatusEnumDto>())
                 {
                     <option value="@status">@status</option>

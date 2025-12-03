@@ -32,7 +32,7 @@ public partial class NextReservationsView : ComponentBase
     private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
-        selectedStatus = reservation.StatusEnumDto;
+        selectedStatus = reservation.Status;
         modalError = null;
         modalSuccess = null;
         showReservationModal = true;

@@ -24,7 +24,7 @@ public partial class ReservationDetailsModal : ComponentBase
     {
         if (Reservation is not null)
         {
-            SelectedStatus = Reservation.StatusEnumDto;
+            SelectedStatus = Reservation.Status;
         }
     }
 
@@ -42,7 +42,7 @@ public partial class ReservationDetailsModal : ComponentBase
         if (success)
         {
             Success = "StatusEnumDto updated successfully!";
-            Reservation.StatusEnumDto = SelectedStatus.Value;
+            Reservation.Status = SelectedStatus.Value;
 
             await Task.Delay(1500);
             await Close();

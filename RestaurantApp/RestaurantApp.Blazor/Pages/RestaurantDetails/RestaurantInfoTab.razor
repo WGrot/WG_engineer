@@ -129,13 +129,13 @@
         </ChildContent>
         <FooterContent>
             <div class="d-flex justify-content-between w-100">
-                <button class="btn btn-primary"
+                <button class="button button--primary"
                         disabled="@(selectedPhotoIndex < 1)"
                         @onclick="() => OpenPhotoModal(selectedPhotoIndex - 1)">
                     Previous
                 </button>
 
-                <button class="btn btn-primary"
+                <button class="button button--primary"
                         disabled="@(selectedPhotoIndex >= restaurant.PhotosUrls.Count - 1)"
                         @onclick="() => OpenPhotoModal(selectedPhotoIndex + 1)">
                     Next

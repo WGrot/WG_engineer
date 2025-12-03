@@ -26,7 +26,7 @@ public static class ReservationMapper
             RestaurantId = entity.RestaurantId,
             RestaurantName = entity.Restaurant?.Name ?? string.Empty,
             RestaurantAddress = entity.Restaurant?.Address ?? string.Empty,
-            StatusEnumDto = entity.Status.ToShared(),
+            Status = entity.Status.ToShared(),
         };
     }
     
@@ -46,7 +46,7 @@ public static class ReservationMapper
             UserId = dto.UserId,
             NeedsConfirmation = dto.requiresConfirmation,
             RestaurantId = dto.RestaurantId,
-            Status = dto.StatusEnumDto.ToDomain(),
+            Status = dto.Status.ToDomain(),
 
         };
     }
@@ -64,7 +64,7 @@ public static class ReservationMapper
         entity.UserId = dto.UserId;
         entity.NeedsConfirmation = dto.requiresConfirmation;
         entity.RestaurantId = dto.RestaurantId;
-        entity.Status = dto.StatusEnumDto.ToDomain();
+        entity.Status = dto.Status.ToDomain();
     }
     
     public static List<ReservationDto> ToDtoList(this IEnumerable<ReservationBase> entities)
@@ -89,7 +89,7 @@ public static class ReservationMapper
             CustomerName = reservation.CustomerName,
             CustomerEmail = reservation.CustomerEmail,
             CustomerPhone = reservation.CustomerPhone,
-            StatusEnumDto = reservation.Status.ToShared(),
+            Status = reservation.Status.ToShared(),
             Notes = reservation.Notes,
             UserId = reservation.UserId,
             RestaurantId = reservation.RestaurantId,

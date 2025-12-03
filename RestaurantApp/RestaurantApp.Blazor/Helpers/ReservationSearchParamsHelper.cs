@@ -22,7 +22,7 @@ public static class ReservationSearchParamsHelper
             queryParams.Add($"userId={Uri.EscapeDataString(parameters.UserId)}");
 
         if (parameters.Status.HasValue)
-            queryParams.Add($"statusEnumDto={parameters.Status}");
+            queryParams.Add($"status={parameters.Status}");
 
         if (!string.IsNullOrWhiteSpace(parameters.CustomerName))
             queryParams.Add($"customerName={Uri.EscapeDataString(parameters.CustomerName)}");

@@ -14,6 +14,7 @@ public static class ReviewMapper
             Id = review.Id,
             RestaurantId = review.RestaurantId,
             RestaurantName = review.Restaurant?.Name ?? "Unknown",
+            RestaurantAddress = review.Restaurant?.Address ?? "",
             UserId = review.UserId,
             UserName = review.UserName,
             Rating = review.Rating,
