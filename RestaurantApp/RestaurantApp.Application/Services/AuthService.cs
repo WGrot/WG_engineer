@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces;
+﻿using System.IdentityModel.Tokens.Jwt;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
@@ -17,6 +18,7 @@ public class AuthService: IAuthService
     private readonly ITwoFactorService _twoFactorService;
     private readonly IEmailComposer _emailComposer;
     private readonly ILinkGenerator _emailLinkGenerator;
+    private readonly ITokenBlacklistService _tokenBlacklistService;
 
     public AuthService(
         IUserRepository userRepository,
@@ -24,7 +26,8 @@ public class AuthService: IAuthService
         ITokenService tokenService,
         ITwoFactorService twoFactorService,
         IEmailComposer emailComposer,
-        ILinkGenerator emailLinkGenerator)
+        ILinkGenerator emailLinkGenerator,
+        ITokenBlacklistService tokenBlacklistService)
     {
         _userRepository = userRepository;
         _identityService = identityService;
@@ -32,6 +35,7 @@ public class AuthService: IAuthService
         _twoFactorService = twoFactorService;
         _emailComposer = emailComposer;
         _emailLinkGenerator = emailLinkGenerator;
+        _tokenBlacklistService = tokenBlacklistService;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -96,13 +100,49 @@ public class AuthService: IAuthService
         return Result<LoginResponse>.Success(response);
     }
 
-    public async Task<Result> LogoutAsync(string? refreshToken, string ipAddress)
+    public async Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress)
     {
+        // Blacklist access token
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            await BlacklistAccessTokenAsync(accessToken);
+        }
+
+        // Revoke refresh token
         if (!string.IsNullOrEmpty(refreshToken))
         {
             await _tokenService.RevokeRefreshTokenAsync(refreshToken, ipAddress, "logout");
         }
+
         return Result.Success();
+    }
+    
+    
+    private async Task BlacklistAccessTokenAsync(string accessToken)
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(accessToken);
+
+            var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            var exp = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+
+            if (jti == null || exp == null)
+                return;
+
+            var expiryDate = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp)).UtcDateTime;
+            var ttl = expiryDate - DateTime.UtcNow;
+
+            if (ttl > TimeSpan.Zero)
+            {
+                await _tokenBlacklistService.BlacklistTokenAsync(jti, ttl);
+            }
+        }
+        catch
+        {
+
+        }
     }
 
     public async Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId)

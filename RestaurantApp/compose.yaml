@@ -6,9 +6,14 @@
       dockerfile: RestaurantApp.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Redis=redis:6379
     ports:
       - "8080:8080"
       - "8081:8081"
+    depends_on:
+      - db
+      - redis
+
   db:
     image: postgis/postgis:16-3.4
     container_name: restaurant-db
@@ -22,12 +27,27 @@
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:alpine
+    container_name: restaurant-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   minio:
     image: minio/minio:latest
     container_name: minio-storage
     ports:
-      - "9000:9000"     # API port
-      - "9001:9001"     # Console port (Web UI)
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
@@ -40,10 +60,11 @@
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
-      retries: 3 
-        
+      retries: 3
+
 volumes:
   pgdata:
+  redis-data:
   minio-data:
     driver: local
   minio-config:

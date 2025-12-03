@@ -5,11 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Api.Helpers;
+using RestaurantApp.Api.Middleware;
 using RestaurantApp.Application;
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;
+using RestaurantApp.Infrastructure.Services;
+using StackExchange.Redis;
 using LinkGenerator = RestaurantApp.Api.Helpers.LinkGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +52,10 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(builder.Configuration["ConnectionStrings:Redis"]!));
+
+builder.Services.AddScoped<ITokenBlacklistService, RedisTokenBlacklistService>();
 
 builder.Services.AddTransient<IUrlHelper, UrlHelper>();
 builder.Services.AddScoped<ILinkGenerator, LinkGenerator>();
@@ -160,6 +167,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("BlazorPolicy");
 
+app.UseMiddleware<TokenBlacklistMiddleware>();
 app.UseAuthentication(); 
 app.UseAuthorization();
 

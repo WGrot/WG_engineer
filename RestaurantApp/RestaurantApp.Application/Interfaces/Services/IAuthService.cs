@@ -8,7 +8,7 @@ public interface IAuthService
 {
     Task<Result> RegisterAsync(RegisterRequest request);
     Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress);
-    Task<Result> LogoutAsync(string? refreshToken, string ipAddress);
+    Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress);
     Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
     Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
     Task<Result> ConfirmEmailAsync(string userId, string token);

@@ -38,12 +38,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var result = await _authService.LoginAsync(request, GetIpAddress());
-        
+
         if (result.IsFailure)
             return StatusCode(result.StatusCode, result.Error);
 
         var data = result.Value!;
-        
+
         if (!data.RequiresTwoFactor)
             SetRefreshTokenCookie(data.RefreshToken, data.RefreshExpiresAt);
 
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
         if (!TryGetRefreshToken(out var refreshToken))
             return Unauthorized("Refresh token not found");
 
-        var (success, newAccess, newRefresh) = 
+        var (success, newAccess, newRefresh) =
             await _tokenService.ValidateAndRotateRefreshTokenAsync(refreshToken!, GetIpAddress());
 
         if (!success)
@@ -75,9 +75,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         TryGetRefreshToken(out var refreshToken);
-        
-        await _authService.LogoutAsync(refreshToken, GetIpAddress());
-        
+
+        var accessToken = Request.Headers["Authorization"]
+            .FirstOrDefault()?.Replace("Bearer ", "");
+
+        await _authService.LogoutAsync(refreshToken, accessToken, GetIpAddress());
+
         DeleteRefreshTokenCookie();
 
         return Ok();
@@ -89,9 +92,9 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.ConfirmEmailAsync(userId, token);
         var frontendUrl = _configuration["AppURL:FrontendUrl"];
-        
-        return result.IsSuccess 
-            ? Redirect($"{frontendUrl}/email-verified") 
+
+        return result.IsSuccess
+            ? Redirect($"{frontendUrl}/email-verified")
             : BadRequest(result);
     }
 
@@ -121,13 +124,13 @@ public class AuthController : ControllerBase
 
     #region Cookie Helpers
 
-    private string GetIpAddress() 
+    private string GetIpAddress()
         => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-    private string CookieName 
+    private string CookieName
         => _configuration["JwtConfig:RefreshCookieName"] ?? "refreshToken";
 
-    private bool TryGetRefreshToken(out string? token) 
+    private bool TryGetRefreshToken(out string? token)
         => Request.Cookies.TryGetValue(CookieName, out token) && !string.IsNullOrEmpty(token);
 
     private void SetRefreshTokenCookie(string token, DateTime expires)
