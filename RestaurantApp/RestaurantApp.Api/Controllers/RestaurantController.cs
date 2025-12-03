@@ -119,7 +119,6 @@ public class RestaurantController : ControllerBase
     }
     
     [HttpPatch("{id}/basic-info")]
-    [Authorize(Policy = "RestaurantEmployee")]
     public async Task<IActionResult> UpdateName(int id, [FromBody] RestaurantBasicInfoDto dto)
     {
         var result = await _restaurantService.UpdateBasicInfoAsync(id, dto);

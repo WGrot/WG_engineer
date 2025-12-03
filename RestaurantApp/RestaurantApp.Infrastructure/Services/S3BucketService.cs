@@ -4,6 +4,7 @@ using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
+using System.Text.Json;
 
 namespace RestaurantApp.Infrastructure.Services;
 
@@ -39,6 +40,18 @@ public class S3BucketService: IBucketService
 
                 await _s3Client.PutBucketAsync(request);
                 _logger.LogInformation("Created bucket: {BucketName}", bucketName);
+                
+                
+                // Set public read policy for images bucket
+                if (bucketName == _config.BucketNames.Images)
+                {
+                    await SetBucketPolicyAsync(bucketName, allowPublicRead: true);
+                }
+                else
+                {
+                    // Keep other buckets private
+                    await SetBucketPolicyAsync(bucketName, allowPublicRead: false);
+                }
             }
 
             return true;
@@ -47,6 +60,70 @@ public class S3BucketService: IBucketService
         {
             _logger.LogError(ex, "Error ensuring bucket exists: {BucketName}", bucketName);
             return false;
+        }
+    }
+
+    public async Task SetBucketPolicyAsync(string bucketName, bool allowPublicRead = true)
+    {
+        try
+        {
+            string policy;
+            
+            if (allowPublicRead)
+            {
+                // Policy allowing public read access
+                policy = $$"""
+                {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {"AWS": ["*"]},
+                            "Action": ["s3:GetObject"],
+                            "Resource": ["arn:aws:s3:::{{bucketName}}/*"]
+                        }
+                    ]
+                }
+                """;
+            }
+            else
+            {
+                // Policy denying public access (private bucket)
+                policy = $$"""
+                {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Deny",
+                            "Principal": {"AWS": ["*"]},
+                            "Action": ["s3:GetObject"],
+                            "Resource": ["arn:aws:s3:::{{bucketName}}/*"]
+                        }
+                    ]
+                }
+                """;
+            }
+
+            var request = new PutBucketPolicyRequest
+            {
+                BucketName = bucketName,
+                Policy = policy
+            };
+
+            await _s3Client.PutBucketPolicyAsync(request);
+            
+            _logger.LogInformation(
+                "Set bucket policy for {BucketName} (PublicRead: {AllowPublicRead})", 
+                bucketName, 
+                allowPublicRead);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex, 
+                "Error setting bucket policy for {BucketName}", 
+                bucketName);
+            throw;
         }
     }
 
@@ -62,9 +139,35 @@ public class S3BucketService: IBucketService
         foreach (var bucket in buckets)
         {
             await EnsureBucketExistsAsync(bucket);
+            
+            
         }
 
-        _logger.LogInformation("Default buckets initialized");
+        _logger.LogInformation("Default buckets initialized with policies");
+    }
+
+    public async Task<string> GetBucketPolicyAsync(string bucketName)
+    {
+        try
+        {
+            var request = new GetBucketPolicyRequest
+            {
+                BucketName = bucketName
+            };
+
+            var response = await _s3Client.GetBucketPolicyAsync(request);
+            return response.Policy;
+        }
+        catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchBucketPolicy")
+        {
+            _logger.LogWarning("No policy found for bucket: {BucketName}", bucketName);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting bucket policy: {BucketName}", bucketName);
+            throw;
+        }
     }
 
     public async Task DeleteBucketAsync(string bucketName)
