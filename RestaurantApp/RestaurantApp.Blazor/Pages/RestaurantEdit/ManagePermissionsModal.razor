@@ -90,9 +90,6 @@
                                             Account active
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-warning btn-sm mt-2" @onclick="ResetPassword">
-                                        <i class="bi bi-key"></i> Reset employee password
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -348,31 +345,6 @@
         {
             errorMessage = $"Wystąpił błąd: {ex.Message}";
             Console.WriteLine($"Error saving permissions: {ex}");
-        }
-    }
-
-    private async Task ResetPassword()
-    {
-        if (Employee == null) return;
-        
-        try
-        {
-            errorMessage = null;
-            successMessage = null;
-            
-            // TODO: Zastąp rzeczywistym API call
-
-            
-
-            await Task.Delay(500);
-            
-                successMessage = $"Hasło zostało zresetowane. Nowe hasło zostało wysłane na adres {Employee.Email}";
-
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Błąd podczas resetowania hasła: {ex.Message}";
-            Console.WriteLine($"Error resetting password: {ex}");
         }
     }
 

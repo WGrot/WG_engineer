@@ -167,11 +167,13 @@ public class AuthorizationChecker: IAuthorizationChecker
 
     public async Task<bool> HasPermissionInAnyRestaurantAsync(string userId, PermissionType permission)
     {
-        return await _context.RestaurantEmployees
+        var result = await _context.RestaurantEmployees
             .AsNoTracking()
             .Where(e => e.UserId == userId && e.IsActive)
             .SelectMany(e => e.Permissions)
             .AnyAsync(p => p.Permission == permission);
+
+        return result;
     }
     
     public async Task<bool> CanManageRestaurantSettingsAsync(string userId, int restaurantSettingsId)

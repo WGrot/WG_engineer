@@ -109,7 +109,6 @@
 
     private async Task Save()
     {
-        // Validation
         if (string.IsNullOrWhiteSpace(firstName) || 
             string.IsNullOrWhiteSpace(lastName) || 
             string.IsNullOrWhiteSpace(email))
@@ -141,10 +140,7 @@
                 Role = selectedRole.Value
             };
     
-            var response = await Http.RequestWithHeaderAsync<CreateUserDto>(HttpMethod.Post,
-                $"api/User", createUserDto,"X-Restaurant-Id",
-                RestaurantId.ToString());
-
+            var response = await Http.PostAsJsonAsync("api/User", createUserDto);
             
             if (response.IsSuccessStatusCode)
             {

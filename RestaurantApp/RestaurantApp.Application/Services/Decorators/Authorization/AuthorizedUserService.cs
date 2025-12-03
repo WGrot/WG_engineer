@@ -70,11 +70,11 @@ public class AuthorizedUserService : IUserService
 
     private async Task<bool> AuthorizeRestaurantPermission()
     {
-        if (_currentUser.IsAuthenticated)
+        if (!_currentUser.IsAuthenticated)
         {
             return false;
         }
-        return await _authorizationChecker.HasPermissionInAnyRestaurantAsync(_currentUser.UserId, PermissionType.ManageEmployees);
+        return await _authorizationChecker.HasPermissionInAnyRestaurantAsync(_currentUser.UserId!, PermissionType.ManageEmployees);
     }
     
 

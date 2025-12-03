@@ -32,7 +32,7 @@
     OnPermissionsUpdated="HandlePermissionsUpdated" />
 
 <GenericModal @bind-IsVisible="showSuccessModal"
-              Title="Pracownik dodany pomyślnie!"
+              Title="Employee added successfully"
               Size="GenericModal.ModalSize.Small">
     <ChildContent>
         @if (newEmployeeResponse != null)
@@ -42,14 +42,7 @@
                 <div class="mt-3">
                     <p class="mb-2"><strong>Employee account created</strong></p>
                     <p class="mb-1">Email: <strong>@newEmployeeResponse.Email</strong></p>
-                    @if (!string.IsNullOrEmpty(newEmployeeResponse.Password))
-                    {
-                        <div class="alert alert-warning mt-3">
-                            <small>Temporary password:</small><br/>
-                            <code>@newEmployeeResponse.Password</code><br/>
-                            <small class="text-muted">The e-mail with additional info was sent to employee inbox</small>
-                        </div>
-                    }
+                    <p >Email with additional info was sent to employee inbox</p>
                 </div>
             </div>
         }
