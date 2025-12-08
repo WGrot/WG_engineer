@@ -24,6 +24,7 @@ public class RestaurantService : IRestaurantService
     private readonly IGeocodingService _geocodingService;
     private readonly IEmailComposer _emailComposer;
     private readonly ILogger<RestaurantService> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public RestaurantService(
         IRestaurantRepository restaurantRepository,
@@ -32,7 +33,8 @@ public class RestaurantService : IRestaurantService
         IUserRepository userRepository,
         IGeocodingService geocodingService,
         IEmailComposer emailComposer,
-        ILogger<RestaurantService> logger)
+        ILogger<RestaurantService> logger,
+        ICurrentUserService currentUserService)
     {
         _restaurantRepository = restaurantRepository;
         _tableRepository = tableRepository;
@@ -41,6 +43,7 @@ public class RestaurantService : IRestaurantService
         _geocodingService = geocodingService;
         _emailComposer = emailComposer;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
@@ -113,7 +116,7 @@ public class RestaurantService : IRestaurantService
 
             var ownerEmployee = new RestaurantEmployee
             {
-                UserId = dto.OwnerId,
+                UserId = _currentUserService.UserId!,
                 RestaurantId = restaurant.Id,
                 Role = RestaurantRole.Owner,
                 CreatedAt = DateTime.UtcNow,
@@ -303,7 +306,7 @@ public class RestaurantService : IRestaurantService
 
     private async Task SendRestaurantCreatedEmailAsync(CreateRestaurantDto dto)
     {
-        var user = await _userRepository.GetByIdAsync(dto.OwnerId);
+        var user = await _userRepository.GetByIdAsync(_currentUserService.UserId!);
         if (user != null)
         {
             var emailBody = new RestaurantCreatedEmail(user.FirstName, dto);

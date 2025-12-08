@@ -117,13 +117,11 @@
             errorMessage = "Country is required";
             return;
         }
-
-        var currentUser = await AuthService.GetCurrentUserAsync();
+        
         var restaurantDto = new CreateRestaurantDto
         {
             Name = restaurantName,
             Address = "",
-            OwnerId = currentUser.Id,
             StructuresAddress = addressDto
         };
 
