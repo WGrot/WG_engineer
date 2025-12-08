@@ -75,7 +75,6 @@ public class TableReservationService: ITableReservationService
         if (restaurant == null)
             return Result<TableReservationDto>.NotFound($"Restaurant {dto.RestaurantId} not found");
         
-        var userId = await ResolveUserIdAsync(dto.UserId, dto.CustomerEmail);
         
         var needsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true;
         var initialStatus = needsConfirmation
@@ -85,7 +84,7 @@ public class TableReservationService: ITableReservationService
         var reservation = new TableReservation
         {
             RestaurantId = dto.RestaurantId,
-            UserId = userId,
+            UserId = dto.UserId,
             NumberOfGuests = dto.NumberOfGuests,
             CustomerName = dto.CustomerName,
             CustomerEmail = dto.CustomerEmail,
@@ -153,16 +152,6 @@ public class TableReservationService: ITableReservationService
 
         return Result.Success();
     }
-
-    private async Task<string?> ResolveUserIdAsync(string? providedUserId, string customerEmail)
-    {
-        if (!string.IsNullOrEmpty(providedUserId))
-            return providedUserId;
-
-        var user = await _userRepository.GetByEmailAsync(customerEmail);
-        return user?.Id;
-    }
-
     private static bool HasTimeOrTableChanged(TableReservation existing, TableReservationDto dto)
     {
         return existing.TableId != dto.TableId ||

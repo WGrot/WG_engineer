@@ -44,7 +44,8 @@ public class AuthorizedReservationService : IReservationService
     {
         if (!await AuthorizeInRestaurant(reservationDto.RestaurantId))
             return Result<ReservationDto>.Forbidden("You dont have permission to create categories for this restaurant.");
-
+        
+        
         return await _inner.CreateAsync(reservationDto);
     }
 

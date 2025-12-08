@@ -23,5 +23,5 @@ public class ReservationBase
     public int RestaurantId { get; set; }
     public Restaurant Restaurant { get; set; } = null!;
     
-    public string UserId { get; set; } = null!;
+    public string? UserId { get; set; }
 }

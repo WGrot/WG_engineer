@@ -18,7 +18,7 @@ public class ReservationDto
     
     public string? Notes { get; set; }
     
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
     
     public bool requiresConfirmation { get; set; } = false;
     public int RestaurantId { get; set; }
