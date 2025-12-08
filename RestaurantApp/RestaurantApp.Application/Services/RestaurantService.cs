@@ -189,6 +189,7 @@ public class RestaurantService : IRestaurantService
         restaurant.Name = dto.Name;
         restaurant.Address = dto.Address;
         
+        
         if (dto.Description != null)
             restaurant.Description = dto.Description;
 

@@ -6,7 +6,5 @@ public class RestaurantBasicInfoDto
 {
     public string Name { get; set; }
     public string Address { get; set; }
-    
-    public StructuresAddressDto? StructuredAddress { get; set; }
     public string Description { get; set; }
 }
