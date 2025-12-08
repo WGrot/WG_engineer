@@ -463,6 +463,7 @@
             successMessage = "";
             
 
+            
             var reservation = new CreateTableReservationDto
             {
                 TableId = selectedTableId,
@@ -475,7 +476,7 @@
                 EndTime = TimeOnly.FromDateTime(endTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                UserId = userId 
+                UseUserId = AutoFillData 
             };
 
             var response = await Http.PostAsJsonAsync("api/Reservation/table", reservation);

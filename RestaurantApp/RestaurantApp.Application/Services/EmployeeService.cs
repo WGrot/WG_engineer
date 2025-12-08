@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Mappers.EnumMappers;
@@ -14,15 +15,18 @@ public class EmployeeService: IEmployeeService
     private readonly IRestaurantEmployeeRepository _employeeRepository;
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUser;
 
     public EmployeeService(
         IRestaurantEmployeeRepository employeeRepository,
         IRestaurantRepository restaurantRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        ICurrentUserService currentUser)
     {
         _employeeRepository = employeeRepository;
         _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()

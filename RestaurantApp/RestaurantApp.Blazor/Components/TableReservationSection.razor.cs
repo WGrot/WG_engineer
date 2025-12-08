@@ -81,7 +81,7 @@ public partial class TableReservationSection : ComponentBase
                 EndTime = TimeOnly.FromDateTime(EndTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                UserId = userId
+                UseUserId = autoFilldata
             };
 
             var response = await Http.PostAsJsonAsync("api/Reservation/table", reservation);

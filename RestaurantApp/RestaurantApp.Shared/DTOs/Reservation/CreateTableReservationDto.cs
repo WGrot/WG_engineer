@@ -4,7 +4,7 @@ public class CreateTableReservationDto
 {
     public int TableId { get; set; }
     public int RestaurantId { get; set; }
-    public string? UserId { get; set; } = string.Empty;
+    public bool UseUserId { get; set; } = true;
     public int NumberOfGuests { get; set; }
     
     public string CustomerName { get; set; } = string.Empty;

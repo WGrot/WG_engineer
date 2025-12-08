@@ -18,19 +18,22 @@ public class TableReservationService: ITableReservationService
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
     private readonly IEmailComposer _emailComposer;
+    private readonly ICurrentUserService _currentUserService;
 
     public TableReservationService(
         IReservationRepository reservationRepository,
         ITableRepository tableRepository,
         IRestaurantRepository restaurantRepository,
         IUserRepository userRepository,
-        IEmailComposer emailComposer)
+        IEmailComposer emailComposer,
+        ICurrentUserService currentUserService)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
         _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
         _emailComposer = emailComposer;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
@@ -80,11 +83,18 @@ public class TableReservationService: ITableReservationService
         var initialStatus = needsConfirmation
             ? ReservationStatusEnumDto.Pending
             : ReservationStatusEnumDto.Confirmed;
+
+        string? userId = null;
+        if (dto.UseUserId)
+        {
+            userId = _currentUserService.UserId;
+        }
+        
         
         var reservation = new TableReservation
         {
             RestaurantId = dto.RestaurantId,
-            UserId = dto.UserId,
+            UserId = userId,
             NumberOfGuests = dto.NumberOfGuests,
             CustomerName = dto.CustomerName,
             CustomerEmail = dto.CustomerEmail,
