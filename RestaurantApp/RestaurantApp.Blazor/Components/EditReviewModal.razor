@@ -71,7 +71,7 @@
                         disabled="@(isSubmitting || isDeleting || tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))">
                         @if (isSubmitting)
                         {
-                            <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                             <span>Updating...</span>
                         }
                         else
@@ -88,7 +88,7 @@
                             disabled="@(isSubmitting || isDeleting)">
                             @if (isDeleting)
                             {
-                                <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                 <span>Deleting...</span>
                             }
                             else
