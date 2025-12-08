@@ -271,6 +271,7 @@
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
+    [Parameter] public bool AutoFillData { get; set; } = true;
     
     [Parameter] public EventCallback<TableReservationDto> OnReservationCreated { get; set; }
     [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
@@ -309,11 +310,11 @@
         if (user.Identity?.IsAuthenticated == true)
         {
             currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
-            if (currentUser != null)
+            if (currentUser != null && AutoFillData)
             {
-                customerName = currentUser.FirstName + " " + currentUser.LastName;
-                customerEmail = currentUser.Email;
-                customerPhone = currentUser.PhoneNumber;
+                customerName = $"{currentUser.FirstName} {currentUser.LastName}";
+                customerEmail = currentUser.Email ?? "";
+                customerPhone = currentUser.PhoneNumber ?? "";
                 userId = currentUser.Id;
             }
         }
@@ -460,14 +461,7 @@
             isSubmitting = true;
             errorMessage = "";
             successMessage = "";
-
-            if (currentUser != null)
-            {
-                customerName = $"{currentUser.FirstName} {currentUser.LastName}";
-                customerEmail = currentUser.Email;
-                customerPhone = currentUser.PhoneNumber ?? "";
-                userId = currentUser.Id;
-            }
+            
 
             var reservation = new CreateTableReservationDto
             {

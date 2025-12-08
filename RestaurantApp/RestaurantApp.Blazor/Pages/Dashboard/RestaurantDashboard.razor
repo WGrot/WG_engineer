@@ -163,7 +163,7 @@ else
                   Size="@GenericModal.ModalSize.Large"
     >
         <ChildContent>
-            <TableBookingForm Id="@loadedRestaurant.Id" restaurant="@loadedRestaurant" OnReservationCreated="() => showReservationModal = false"/>
+            <TableBookingForm AutoFillData="false" Id="@loadedRestaurant.Id" restaurant="@loadedRestaurant" OnReservationCreated="() => showReservationModal = false"/>
         </ChildContent>
         
     </GenericModal>

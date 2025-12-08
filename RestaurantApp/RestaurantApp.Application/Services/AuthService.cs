@@ -19,6 +19,7 @@ public class AuthService: IAuthService
     private readonly IEmailComposer _emailComposer;
     private readonly ILinkGenerator _emailLinkGenerator;
     private readonly ITokenBlacklistService _tokenBlacklistService;
+    
 
     public AuthService(
         IUserRepository userRepository,
