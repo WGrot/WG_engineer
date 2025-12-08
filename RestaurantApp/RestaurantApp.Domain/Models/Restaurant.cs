@@ -23,8 +23,8 @@ public class Restaurant
     public string? profileUrl { get; set; }
     public string? profileThumbnailUrl { get; set; }
     
-    public List<string>? photosUrls { get; set; }
-    public List<string>? photosThumbnailsUrls { get; set; }
+    public List<string> photosUrls { get; set; } = new List<string>();
+    public List<string> photosThumbnailsUrls { get; set; } = new List<string>();
     
     public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
@@ -81,7 +81,7 @@ public class Restaurant
         => index >= 0 && index < photosUrls.Count;
 
     public string GetPhotoUrlAt(int index) => photosUrls[index];
-    
+
     public string? GetThumbnailUrlAt(int index) 
         => index < photosThumbnailsUrls.Count ? photosThumbnailsUrls[index] : null;
 

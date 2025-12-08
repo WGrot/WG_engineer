@@ -38,7 +38,8 @@ public class S3UrlBuilder: IUrlBuilder
     public string GetPublicUrl(string fileName, string bucketName)
     {
         var protocol = _config.UseSSL ? "https" : "http";
-        var endpoint = _config.Endpoint.TrimEnd('/');
+
+        var endpoint = (_config.PublicEndpoint ?? _config.Endpoint).TrimEnd('/');
         var encodedFileName = Uri.EscapeDataString(fileName);
 
         return $"{protocol}://{endpoint}/{bucketName}/{encodedFileName}";

@@ -23,6 +23,10 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
 
 builder.Services.AddTransient<AuthorizedHttpMessageHandler>();
 
+var apiBaseUrl = builder.Configuration.GetValue<string>("ApiBaseUrl");
+var baseAddress = string.IsNullOrEmpty(apiBaseUrl) 
+    ? builder.HostEnvironment.BaseAddress  // In Docker: http://localhost:3000/
+    : apiBaseUrl;                           // In dev: http://localhost:5031
 
 builder.Services.AddScoped(sp =>
 {
@@ -34,7 +38,7 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-        BaseAddress = new Uri("http://localhost:5031/")
+        BaseAddress = new Uri(baseAddress)
     };
 });
 

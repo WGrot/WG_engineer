@@ -6,13 +6,26 @@
       dockerfile: RestaurantApp.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=db;Port=5432;Username=postgres;Password=postgres;Database=RestaurantDB
       - ConnectionStrings__Redis=redis:6379
+      - MinIO__Endpoint=minio:9000
     ports:
       - "8080:8080"
       - "8081:8081"
     depends_on:
       - db
       - redis
+      - minio
+
+  restaurantapp.blazor:
+    image: restaurantapp.blazor
+    build:
+      context: .
+      dockerfile: RestaurantApp.Blazor/Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - restaurantapp.api
 
   db:
     image: postgis/postgis:16-3.4
@@ -51,7 +64,6 @@
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
-      MINIO_DEFAULT_BUCKETS: images,documents,temp-files
     volumes:
       - minio-data:/data
       - minio-config:/root/.minio
