@@ -8,8 +8,6 @@ public class MenuItem
     public MenuItemPrice Price { get; set; } = new MenuItemPrice();
     
     public bool IsAvailable { get; set; } = true;
-    public DateTime? AvailableFrom { get; set; }
-    public DateTime? AvailableTo { get; set; }
     public string? ImageUrl { get; set; }
     public string? ThumbnailUrl { get; set; }
     public int? MenuId { get; set; }
