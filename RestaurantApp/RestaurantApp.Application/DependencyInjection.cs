@@ -13,6 +13,7 @@ using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
+using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
 
@@ -211,8 +212,44 @@ public static class DependencyInjection
             return new AuthorizedRestaurantImageService(validatedService, currentUser, permissionChecker);
         });
         
+        
+        
+        
+        
+        
+        
+        
+        services.AddValidatorsFromAssemblyContaining<RestaurantBasicInfoDto>();
+        services.AddValidatorsFromAssemblyContaining<CreateRestaurantDto>();
+        
+        services.AddScoped<IRestaurantValidator, RestaurantValidator>();
+        
+        services.AddScoped<RestaurantService>();
+        services.AddScoped<IRestaurantService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<RestaurantService>();
+
+
+            var createRestaurantValidator = sp.GetRequiredService<IValidator<CreateRestaurantDto>>();
+            var basicInfoValidator = sp.GetRequiredService<IValidator<RestaurantBasicInfoDto>>();
+            var businessValidator = sp.GetRequiredService<IRestaurantValidator>();
+
+            var validatedService = new ValidatedRestaurantService(
+                innerService,
+                createRestaurantValidator,
+                basicInfoValidator,
+                businessValidator);
+            
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedRestaurantService(validatedService, currentUser, permissionChecker);
+        });
+        
+        
+        
+        
         services.AddTransient<IEmailComposer, EmailComposer>();
-        services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
         services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
         services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();

@@ -57,13 +57,6 @@ public class RestaurantController : ControllerBase
         return restaurants.ToActionResult();
     }
     
-    [HttpGet("{id}/tables")]
-    public async Task<IActionResult> GetRestaurantTables(int id)
-    {
-        var tablesResult = await _restaurantService.GetTablesAsync(id);
-        return tablesResult.ToActionResult();
-    }
-    
     [HttpGet("open-now")]
 
     public async Task<IActionResult> GetOpenNow()

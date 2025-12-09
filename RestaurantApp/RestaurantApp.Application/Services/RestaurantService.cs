@@ -25,6 +25,7 @@ public class RestaurantService : IRestaurantService
     private readonly IEmailComposer _emailComposer;
     private readonly ILogger<RestaurantService> _logger;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
 
     public RestaurantService(
         IRestaurantRepository restaurantRepository,
@@ -34,7 +35,8 @@ public class RestaurantService : IRestaurantService
         IGeocodingService geocodingService,
         IEmailComposer emailComposer,
         ILogger<RestaurantService> logger,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IRestaurantSettingsRepository restaurantSettingsRepository)
     {
         _restaurantRepository = restaurantRepository;
         _tableRepository = tableRepository;
@@ -44,6 +46,7 @@ public class RestaurantService : IRestaurantService
         _emailComposer = emailComposer;
         _logger = logger;
         _currentUserService = currentUserService;
+        _restaurantSettingsRepository = restaurantSettingsRepository;
     }
 
     public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
@@ -55,20 +58,12 @@ public class RestaurantService : IRestaurantService
     public async Task<Result<RestaurantDto>> GetByIdAsync(int id)
     {
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(id);
-
-        return restaurant == null
-            ? Result<RestaurantDto>.NotFound("Restaurant not found")
-            : Result<RestaurantDto>.Success(restaurant.ToDto());
+        return Result<RestaurantDto>.Success(restaurant!.ToDto());
     }
 
     public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto)
     {
         _logger.LogInformation("Creating new restaurant: {RestaurantName}", restaurantDto.Name);
-
-        if (await _restaurantRepository.ExistsWithNameAndAddressAsync(restaurantDto.Name, restaurantDto.Address))
-        {
-            return Result<RestaurantDto>.Failure("A restaurant with the same name and address already exists.");
-        }
 
         var restaurant = new Restaurant
         {
@@ -93,17 +88,12 @@ public class RestaurantService : IRestaurantService
     {
         _logger.LogInformation("Creating new restaurant with owner: {RestaurantName}", dto.Name);
 
-        if (await _restaurantRepository.ExistsWithNameAndAddressAsync(dto.Name, dto.Address))
-        {
-            return Result<RestaurantDto>.Failure("A restaurant with the same name and address already exists.");
-        }
-
         await _restaurantRepository.BeginTransactionAsync();
 
         try
         {
             var restaurant = new Restaurant { Name = dto.Name, Address = dto.Address };
-            
+
             if (dto.StructuresAddress != null && IsStructuredAddressComplete(dto.StructuresAddress))
             {
                 restaurant.StructuredAddress = dto.StructuresAddress.ToEntity();
@@ -130,6 +120,11 @@ public class RestaurantService : IRestaurantService
             await _employeeRepository.AddPermissionsAsync(ownerEmployee.Id, allPermissions);
             await _employeeRepository.SaveChangesAsync();
 
+            await _restaurantSettingsRepository.AddAsync(new RestaurantSettings
+            {
+                RestaurantId = restaurant.Id,
+                ReservationsNeedConfirmation = true
+            });
             await GeocodeRestaurantAsync(restaurant);
             await _restaurantRepository.SaveChangesAsync();
 
@@ -151,21 +146,7 @@ public class RestaurantService : IRestaurantService
     {
         var existingRestaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id);
 
-        if (existingRestaurant == null)
-        {
-            return Result.NotFound($"Restaurant with ID {id} not found.");
-        }
-
-        if (existingRestaurant.Name != restaurantDto.Name || existingRestaurant.Address != restaurantDto.Address)
-        {
-            if (await _restaurantRepository.ExistsWithNameAndAddressAsync(
-                restaurantDto.Name, restaurantDto.Address, excludeId: id))
-            {
-                return Result.Failure("A restaurant with the same name and address already exists.");
-            }
-        }
-
-        existingRestaurant.Name = restaurantDto.Name;
+        existingRestaurant!.Name = restaurantDto.Name;
         existingRestaurant.Address = restaurantDto.Address;
 
         _restaurantRepository.Update(existingRestaurant);
@@ -176,20 +157,11 @@ public class RestaurantService : IRestaurantService
 
     public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Name))
-            return Result.Failure("Name cannot be empty");
-
-        if (string.IsNullOrWhiteSpace(dto.Address))
-            return Result.Failure("Address cannot be empty");
-
         var restaurant = await _restaurantRepository.GetByIdAsync(id);
-        if (restaurant == null)
-            return Result.NotFound($"Restaurant with ID {id} not found.");
 
-        restaurant.Name = dto.Name;
+        restaurant!.Name = dto.Name;
         restaurant.Address = dto.Address;
-        
-        
+
         if (dto.Description != null)
             restaurant.Description = dto.Description;
 
@@ -202,14 +174,12 @@ public class RestaurantService : IRestaurantService
     public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto)
     {
         var restaurant = await _restaurantRepository.GetByIdAsync(id);
-        if (restaurant == null)
-            return Result.NotFound($"Restaurant with ID {id} not found.");
 
-        restaurant.StructuredAddress = dto.ToEntity();
+        restaurant!.StructuredAddress = dto.ToEntity();
         restaurant.Address = restaurant.StructuredAddress.ToCombinedString();
 
         await GeocodeRestaurantAsync(restaurant);
-        
+
         _restaurantRepository.Update(restaurant);
         await _restaurantRepository.SaveChangesAsync();
 
@@ -220,10 +190,7 @@ public class RestaurantService : IRestaurantService
     {
         var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id);
 
-        if (restaurant == null)
-            return Result.NotFound($"Restaurant with ID {id} not found.");
-
-        _restaurantRepository.Delete(restaurant);
+        _restaurantRepository.Delete(restaurant!);
         await _restaurantRepository.SaveChangesAsync();
 
         return Result.Success();
@@ -231,9 +198,6 @@ public class RestaurantService : IRestaurantService
 
     public async Task<Result<IEnumerable<TableDto>>> GetTablesAsync(int restaurantId)
     {
-        if (!await _restaurantRepository.ExistsAsync(restaurantId))
-            return Result<IEnumerable<TableDto>>.NotFound($"Cannot find restaurant with ID {restaurantId}");
-
         var tables = await _tableRepository.GetByRestaurantIdWithSeatsAsync(restaurantId);
         return Result<IEnumerable<TableDto>>.Success(tables.ToDtoList());
     }
@@ -241,7 +205,7 @@ public class RestaurantService : IRestaurantService
     public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids)
     {
         var restaurants = await _restaurantRepository.GetByIdsAsync(ids);
-        
+
         var result = restaurants.Select(r => new RestaurantDto
         {
             Id = r.Id,
@@ -250,7 +214,7 @@ public class RestaurantService : IRestaurantService
 
         return Result<List<RestaurantDto>>.Success(result);
     }
-    
+
     private static void InitializeOpeningHours(Restaurant restaurant)
     {
         restaurant.OpeningHours = new List<OpeningHours>();

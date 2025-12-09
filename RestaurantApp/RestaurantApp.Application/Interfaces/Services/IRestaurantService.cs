@@ -15,6 +15,5 @@ public interface IRestaurantService
     Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
     Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto);
     Task<Result> DeleteAsync(int id);
-    Task<Result<IEnumerable<TableDto>>> GetTablesAsync(int restaurantId);
     Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids);
 }
