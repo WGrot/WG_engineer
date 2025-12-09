@@ -194,14 +194,21 @@ public static class DependencyInjection
             return new AuthorizedRestaurantSettingsService(innerService, currentUser, permissionChecker);
         });
         
+        
+        services.AddScoped<IRestaurantImageValidator, RestaurantImageValidator>();
         services.AddScoped<RestaurantImageService>();
         services.AddScoped<IRestaurantImageService>(sp =>
         {
+
             var innerService = sp.GetRequiredService<RestaurantImageService>();
+            
+            var businessValidator = sp.GetRequiredService<IRestaurantImageValidator>();
+            var validatedService = new ValidatedRestaurantImageService(innerService, businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedRestaurantImageService(innerService, currentUser, permissionChecker);
+            return new AuthorizedRestaurantImageService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddTransient<IEmailComposer, EmailComposer>();

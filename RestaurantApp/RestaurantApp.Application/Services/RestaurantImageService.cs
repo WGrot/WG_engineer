@@ -35,17 +35,11 @@ public class RestaurantImageService: IRestaurantImageService
     {
         try
         {
-            var restaurant = await _restaurantRepository
-                .GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
 
-            if (restaurant is null)
-            {
-                return Result<ImageUploadResult>.NotFound("Restaurant not found");
-            }
-
-            var existingProfile = restaurant.ImageLinks
+            var existingProfile = restaurant!.ImageLinks
                 .FirstOrDefault(il => il.Type == ImageType.RestaurantProfile);
-            
+
             if (existingProfile != null)
             {
                 await _storageService.DeleteByImageLink(existingProfile);
@@ -80,14 +74,6 @@ public class RestaurantImageService: IRestaurantImageService
     {
         try
         {
-            var restaurant = await _restaurantRepository
-                .GetByIdWithSettingsAsync(restaurantId);
-
-            if (restaurant is null)
-            {
-                return Result<List<ImageUploadResult>>.NotFound("Restaurant not found");
-            }
-
             var uploadResults = new List<ImageUploadResult>();
 
             foreach (var image in images)
@@ -98,7 +84,7 @@ public class RestaurantImageService: IRestaurantImageService
                     ImageType.RestaurantPhotos,
                     restaurantId,
                     generateThumbnail: true);
-                
+
                 uploadResults.Add(uploadResult);
             }
 
@@ -126,26 +112,12 @@ public class RestaurantImageService: IRestaurantImageService
     {
         try
         {
-            var restaurant = await _restaurantRepository
-                .GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
 
-            if (restaurant is null)
-            {
-                return Result.Failure("Restaurant not found.");
-            }
+            var profileImage = restaurant!.ImageLinks
+                .First(il => il.Type == ImageType.RestaurantProfile);
 
-            var profileImage = restaurant.ImageLinks
-                .FirstOrDefault(il => il.Type == ImageType.RestaurantProfile);
-
-            if (profileImage == null)
-            {
-                return Result.Failure("Restaurant has no profile photo.");
-            }
-
-            // Delete from S3
             await _storageService.DeleteByImageLink(profileImage);
-            
-            // Delete from database
             await _imageLinkRepository.Remove(profileImage);
             await _imageLinkRepository.SaveChangesAsync();
 
@@ -165,24 +137,12 @@ public class RestaurantImageService: IRestaurantImageService
     {
         try
         {
-            var restaurant = await _restaurantRepository
-                .GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
 
-            if (restaurant is null)
-            {
-                return Result.Failure("Restaurant not found.");
-            }
-            
-            var galleryImage = restaurant.ImageLinks
-                .FirstOrDefault(il => il.Id == imageId && il.Type == ImageType.RestaurantPhotos);
+            var galleryImage = restaurant!.ImageLinks
+                .First(il => il.Id == imageId && il.Type == ImageType.RestaurantPhotos);
 
-            if (galleryImage == null)
-            {
-                return Result.Failure("Image not found.");
-            }
-            
             await _storageService.DeleteByImageLink(galleryImage);
-            
             await _imageLinkRepository.Remove(galleryImage);
             await _imageLinkRepository.SaveChangesAsync();
 
