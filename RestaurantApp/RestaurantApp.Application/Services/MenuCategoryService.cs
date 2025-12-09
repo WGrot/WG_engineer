@@ -39,12 +39,6 @@ public class MenuCategoryService : IMenuCategoryService
 
     public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto)
     {
-        var menu = await _categoryRepository.GetMenuByIdAsync(categoryDto.MenuId);
-        if (menu == null)
-        {
-            return Result<MenuCategoryDto>.NotFound($"Menu with ID {categoryDto.MenuId} not found.");
-        }
-
         if (categoryDto.DisplayOrder == 0)
         {
             var maxOrder = await _categoryRepository.GetMaxDisplayOrderAsync(categoryDto.MenuId);
@@ -63,12 +57,8 @@ public class MenuCategoryService : IMenuCategoryService
     public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto)
     {
         var existingCategory = await _categoryRepository.GetByIdAsync(categoryDto.Id);
-        if (existingCategory == null)
-        {
-            return Result.NotFound($"Category with ID {categoryDto.Id} not found.");
-        }
-
-        existingCategory.UpdateFromDto(categoryDto);
+        
+        existingCategory!.UpdateFromDto(categoryDto);
         await _categoryRepository.SaveChangesAsync();
 
         return Result.Success();
@@ -78,12 +68,7 @@ public class MenuCategoryService : IMenuCategoryService
     {
         var category = await _categoryRepository.GetByIdAsync(categoryId, includeItems: true);
 
-        if (category == null)
-        {
-            return Result.NotFound($"Category with ID {categoryId} not found.");
-        }
-
-        if (category.Items.Any())
+        if (category!.Items.Any())
         {
             foreach (var item in category.Items)
             {
@@ -101,12 +86,8 @@ public class MenuCategoryService : IMenuCategoryService
     public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder)
     {
         var category = await _categoryRepository.GetByIdAsync(categoryId);
-        if (category == null)
-        {
-            return Result.NotFound($"Category with ID {categoryId} not found.");
-        }
-
-        category.DisplayOrder = displayOrder;
+        
+        category!.DisplayOrder = displayOrder;
         await _categoryRepository.SaveChangesAsync();
 
         return Result.Success();

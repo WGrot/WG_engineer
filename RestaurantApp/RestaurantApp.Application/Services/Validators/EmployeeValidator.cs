@@ -31,11 +31,6 @@ public class EmployeeValidator : IEmployeeValidator
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
 
-        // var existingEmployee = await _employeeRepository
-        //     .GetByUserAndRestaurantAsync(dto.UserId, dto.RestaurantId, ct);
-        // if (existingEmployee != null)
-        //     return Result.Failure("Employee already exists for this restaurant.");
-
         return Result.Success();
     }
 

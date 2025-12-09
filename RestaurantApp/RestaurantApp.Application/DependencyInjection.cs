@@ -10,7 +10,9 @@ using RestaurantApp.Application.Services.Email;
 using RestaurantApp.Application.Services.Validators;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
+using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.Validators.Employee;
+using RestaurantApp.Shared.Validators.Menu;
 
 namespace RestaurantApp.Application;
 
@@ -18,14 +20,24 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddValidatorsFromAssemblyContaining<CreateMenuCategoryDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateMenuCategoryDtoValidator>();
+        services.AddScoped<IMenuCategoryValidator, MenuCategoryValidator>();
+        
         services.AddScoped<MenuCategoryService>();
         services.AddScoped<IMenuCategoryService>(sp =>
         {
             var innerService = sp.GetRequiredService<MenuCategoryService>();
+            
+            var createValidator = sp.GetRequiredService<IValidator<CreateMenuCategoryDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<UpdateMenuCategoryDto>>();
+            var businessValidator = sp.GetRequiredService<IMenuCategoryValidator>();
+            var validatedService = new ValidatedMenuCategoryService(innerService, createValidator, updateValidator, businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
-
-            return new AuthorizedMenuCategoryService(innerService, currentUser, permissionChecker);
+    
+            return new AuthorizedMenuCategoryService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddScoped<MenuService>();
