@@ -10,6 +10,7 @@ using RestaurantApp.Application.Services.Email;
 using RestaurantApp.Application.Services.Validators;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
+using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.Validators.Employee;
@@ -41,14 +42,26 @@ public static class DependencyInjection
             return new AuthorizedMenuCategoryService(validatedService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateMenuDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateMenuDtoValidator>();
+        services.AddScoped<IMenuValidator, MenuValidator>();
+
+
         services.AddScoped<MenuService>();
         services.AddScoped<IMenuService>(sp =>
         {
+
             var innerService = sp.GetRequiredService<MenuService>();
+            
+            var createValidator = sp.GetRequiredService<IValidator<CreateMenuDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<UpdateMenuDto>>();
+            var businessValidator = sp.GetRequiredService<IMenuValidator>();
+            var validatedService = new ValidatedMenuService(innerService, createValidator, updateValidator, businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedMenuService(innerService, currentUser, permissionChecker);
+            return new AuthorizedMenuService(validatedService, currentUser, permissionChecker);
         });
         
         
