@@ -70,4 +70,16 @@ public class UserRepository : IUserRepository
         _context.Users.Update(user);
         await _context.SaveChangesAsync(ct);
     }
+    
+    public async Task<IEnumerable<ApplicationUser>> GetByIdsAsync(IEnumerable<string> userIds, CancellationToken ct = default)
+    {
+        var idsList = userIds.ToList();
+    
+        if (idsList.Count == 0)
+            return [];
+
+        return await _context.Users
+            .Where(u => idsList.Contains(u.Id))
+            .ToListAsync(ct);
+    }
 }

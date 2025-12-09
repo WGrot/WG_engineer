@@ -1,10 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Services;
+using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Application.Services;
 using RestaurantApp.Application.Services.Decorators.Authorization;
+using RestaurantApp.Application.Services.Decorators.Validation;
 using RestaurantApp.Application.Services.Email;
+using RestaurantApp.Application.Services.Validators;
 using RestaurantApp.Domain.Models;
+using RestaurantApp.Shared.DTOs.Employees;
+using RestaurantApp.Shared.Validators.Employee;
 
 namespace RestaurantApp.Application;
 
@@ -93,14 +99,27 @@ public static class DependencyInjection
             return new AuthorizedReservationService(innerService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateEmployeeDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateEmployeeDtoValidator>();
+        services.AddScoped<IEmployeeValidator, EmployeeValidator>();
+        
         services.AddScoped<EmployeeService>();
         services.AddScoped<IEmployeeService>(sp =>
         {
-            var innerService = sp.GetRequiredService<EmployeeService>();
-            var currentUser = sp.GetRequiredService<ICurrentUserService>();
-            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+            var employeeService = sp.GetRequiredService<EmployeeService>();
 
-            return new AuthorizedEmployeeService(innerService, currentUser, permissionChecker);
+            var validatedService = new ValidatedEmployeeService(
+                employeeService,
+                sp.GetRequiredService<IValidator<CreateEmployeeDto>>(),
+                sp.GetRequiredService<IValidator<UpdateEmployeeDto>>(),
+                sp.GetRequiredService<IEmployeeValidator>()
+            );
+
+            return new AuthorizedEmployeeService(
+                validatedService,
+                sp.GetRequiredService<ICurrentUserService>(),
+                sp.GetRequiredService<IAuthorizationChecker>()
+            );
         });
         
         services.AddScoped<ReviewService>();

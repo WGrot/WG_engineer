@@ -10,23 +10,17 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
 
-public class EmployeeService: IEmployeeService
+public class EmployeeService : IEmployeeService
 {
     private readonly IRestaurantEmployeeRepository _employeeRepository;
-    private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
-    private readonly ICurrentUserService _currentUser;
 
     public EmployeeService(
         IRestaurantEmployeeRepository employeeRepository,
-        IRestaurantRepository restaurantRepository,
-        IUserRepository userRepository,
-        ICurrentUserService currentUser)
+        IUserRepository userRepository)
     {
         _employeeRepository = employeeRepository;
-        _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
-        _currentUser = currentUser;
     }
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
@@ -59,32 +53,15 @@ public class EmployeeService: IEmployeeService
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId)
     {
         var employees = await _employeeRepository.GetByRestaurantIdWithDetailsAsync(restaurantId);
-        var dtoList = new List<RestaurantEmployeeDto>();
 
-        foreach (var employee in employees)
-        {
-            var user = await _userRepository.GetByIdAsync(employee.UserId);
-            if (user == null)
-                continue;
+        var userIds = employees.Select(e => e.UserId).Distinct();
+        var users = await _userRepository.GetByIdsAsync(userIds);
+        var usersDict = users.ToDictionary(u => u.Id);
 
-            var dto = new RestaurantEmployeeDto
-            {
-                Id = employee.Id,
-                UserId = employee.UserId,
-                RestaurantId = employee.RestaurantId,
-                Restaurant = employee.Restaurant.ToDto(),
-                RoleEnumDto = employee.Role.ToShared(),
-                Permissions = employee.Permissions.ToDtoList(),
-                CreatedAt = employee.CreatedAt,
-                IsActive = employee.IsActive,
-                Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty
-            };
-
-            dtoList.Add(dto);
-        }
+        var dtoList = employees
+            .Where(e => usersDict.ContainsKey(e.UserId))
+            .Select(e => MapToEmployeeDto(e, usersDict[e.UserId]))
+            .ToList();
 
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(dtoList);
     }
@@ -93,22 +70,16 @@ public class EmployeeService: IEmployeeService
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
         if (employee == null)
-        {
             return Result.NotFound($"Employee with ID {employeeId} not found.");
-        }
 
         employee.Role = newRoleEnumDto.ToDomain();
         await _employeeRepository.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
     public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
-        if (restaurant == null)
-            return Result<RestaurantEmployeeDto>.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
-
         var employee = new RestaurantEmployee
         {
             UserId = dto.UserId,
@@ -122,7 +93,6 @@ public class EmployeeService: IEmployeeService
         await _employeeRepository.AddAsync(employee);
         await _employeeRepository.SaveChangesAsync();
 
-
         var createdEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id);
         return Result<RestaurantEmployeeDto>.Success(createdEmployee!.ToDto());
     }
@@ -130,10 +100,8 @@ public class EmployeeService: IEmployeeService
     public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto)
     {
         var employee = await _employeeRepository.GetByIdAsync(dto.Id);
-        if (employee == null)
-            return Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {dto.Id} not found.");
-
-        employee.Role = dto.RoleEnumDto.ToDomain();
+        
+        employee!.Role = dto.RoleEnumDto.ToDomain();
         employee.IsActive = dto.IsActive;
 
         await _employeeRepository.SaveChangesAsync();
@@ -150,7 +118,7 @@ public class EmployeeService: IEmployeeService
 
         _employeeRepository.Remove(employee);
         await _employeeRepository.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 
@@ -164,5 +132,15 @@ public class EmployeeService: IEmployeeService
         await _employeeRepository.SaveChangesAsync();
 
         return Result.Success();
+    }
+
+    private static RestaurantEmployeeDto MapToEmployeeDto(RestaurantEmployee employee, ApplicationUser user)
+    {
+        var dto = employee.ToDto();
+        dto.Email = user.Email ?? string.Empty;
+        dto.FirstName = user.FirstName ?? string.Empty;
+        dto.LastName = user.LastName ?? string.Empty;
+        dto.PhoneNumber = user.PhoneNumber ?? string.Empty;
+        return dto;
     }
 }

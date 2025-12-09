@@ -9,15 +9,15 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
         {
-            return new ObjectResult(result.Value) 
-            { 
-                StatusCode = result.StatusCode 
+            return new ObjectResult(result.Value)
+            {
+                StatusCode = result.StatusCode
             };
         }
-    
-        return new ObjectResult(new { error = result.Error }) 
-        { 
-            StatusCode = result.StatusCode 
+
+        return new ObjectResult(new { errors = result.Errors })
+        {
+            StatusCode = result.StatusCode
         };
     }
 
@@ -27,10 +27,10 @@ public static class ResultExtensions
         {
             return new StatusCodeResult(result.StatusCode);
         }
-    
-        return new ObjectResult(new { error = result.Error }) 
-        { 
-            StatusCode = result.StatusCode 
+
+        return new ObjectResult(new { errors = result.Errors })
+        {
+            StatusCode = result.StatusCode
         };
     }
 }

@@ -1,0 +1,55 @@
+﻿using RestaurantApp.Application.Interfaces.Repositories;
+using RestaurantApp.Application.Interfaces.Validators;
+using RestaurantApp.Shared.Common;
+using RestaurantApp.Shared.DTOs.Employees;
+
+namespace RestaurantApp.Application.Services.Validators;
+
+public class EmployeeValidator : IEmployeeValidator
+{
+    private readonly IRestaurantRepository _restaurantRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IRestaurantEmployeeRepository _employeeRepository;
+
+    public EmployeeValidator(
+        IRestaurantRepository restaurantRepository,
+        IUserRepository userRepository,
+        IRestaurantEmployeeRepository employeeRepository)
+    {
+        _restaurantRepository = restaurantRepository;
+        _userRepository = userRepository;
+        _employeeRepository = employeeRepository;
+    }
+
+    public async Task<Result> ValidateForCreateAsync(CreateEmployeeDto dto, CancellationToken ct = default)
+    {
+        var user = await _userRepository.GetByIdAsync(dto.UserId, ct);
+        if (user == null)
+            return Result.NotFound($"User with ID {dto.UserId} not found.");
+
+        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
+        if (restaurant == null)
+            return Result.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
+
+        // var existingEmployee = await _employeeRepository
+        //     .GetByUserAndRestaurantAsync(dto.UserId, dto.RestaurantId, ct);
+        // if (existingEmployee != null)
+        //     return Result.Failure("Employee already exists for this restaurant.");
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ValidateForUpdateAsync(UpdateEmployeeDto dto, CancellationToken ct = default)
+    {
+        return await ValidateEmployeeExistsAsync(dto.Id, ct);
+    }
+
+    public async Task<Result> ValidateEmployeeExistsAsync(int employeeId, CancellationToken ct = default)
+    {
+        var employee = await _employeeRepository.GetByIdAsync(employeeId);
+        if (employee == null)
+            return Result.NotFound($"Employee with ID {employeeId} not found.");
+
+        return Result.Success();
+    }
+}
