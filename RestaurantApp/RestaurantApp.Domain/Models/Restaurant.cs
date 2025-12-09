@@ -1,4 +1,5 @@
-﻿using NetTopologySuite.Geometries;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using NetTopologySuite.Geometries;
 using RestaurantApp.Domain.Enums;
 
 namespace RestaurantApp.Domain.Models;
@@ -41,11 +42,17 @@ public class Restaurant
     public int TotalRatings5Star { get; set; } = 0;
     
 
+    [NotMapped]
     public List<string> photosUrls => ImageLinks.Where(il => il.Type == ImageType.RestaurantPhotos ).Select(il => il.Url).ToList();
+    [NotMapped]
     public List<string> photosThumbnailsUrls => ImageLinks.Where(il => il.Type == ImageType.RestaurantPhotos ).Select(il => il.ThumbnailUrl).ToList();
-    
+    [NotMapped]
     public string? profileUrl => ImageLinks.FirstOrDefault(l => l.Type == ImageType.RestaurantProfile)?.Url;
+    [NotMapped]
     public string? profileThumbnailUrl => ImageLinks.FirstOrDefault(l => l.Type == ImageType.RestaurantProfile)?.ThumbnailUrl;
+    
+    [NotMapped]
+    public List<ImageLink> Gallery => ImageLinks.Where(il => il.Type == ImageType.RestaurantPhotos ).ToList();
     
     public bool HasProfilePhoto()
     {

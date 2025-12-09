@@ -85,7 +85,7 @@
                 </div>
             }
 
-            @if (restaurant.PhotosThumbnailsUrls != null && restaurant.PhotosThumbnailsUrls.Any())
+            @if (restaurant.GalleryImages != null && restaurant.GalleryImages.Any())
             {
                 <div class="col-12">
                     <div class="card shadow-sm">
@@ -94,15 +94,15 @@
                                 <i class="bi bi-images"></i> Photos
                             </h5>
                             <div class="d-flex flex-wrap gap-2">
-                                @for (int i = 0; i < restaurant.PhotosThumbnailsUrls.Count; i++)
+                                @foreach (var imageLink in restaurant.GalleryImages)
                                 {
-                                    var index = i;
-                                    <img src="@restaurant.PhotosThumbnailsUrls[index]"
+                                    <img src="@imageLink.ThumbnailUrl"
                                          class="rounded shadow-sm"
                                          alt="Restaurant photo"
                                          style="cursor: pointer; object-fit: cover; height: 120px; width: 120px;"
-                                         @onclick="() => OpenPhotoModal(index)">
+                                         @onclick="() => OpenPhotoModal(imageLink.Id)">
                                 }
+                                
                             </div>
                         </div>
                     </div>
@@ -131,13 +131,13 @@
             <div class="d-flex justify-content-between w-100">
                 <button class="button button--primary"
                         disabled="@(selectedPhotoIndex < 1)"
-                        @onclick="() => OpenPhotoModal(selectedPhotoIndex - 1)">
+                        @onclick="() => ShowNextPhotoModal(selectedPhotoIndex - 1)">
                     Previous
                 </button>
 
                 <button class="button button--primary"
-                        disabled="@(selectedPhotoIndex >= restaurant.PhotosUrls.Count - 1)"
-                        @onclick="() => OpenPhotoModal(selectedPhotoIndex + 1)">
+                        disabled="@(selectedPhotoIndex >= restaurant.GalleryImages.Count - 1)"
+                        @onclick="() => ShowNextPhotoModal(selectedPhotoIndex + 1)">
                     Next
                 </button>
             </div>

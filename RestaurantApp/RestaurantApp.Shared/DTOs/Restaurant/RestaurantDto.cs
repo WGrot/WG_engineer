@@ -1,4 +1,5 @@
 ﻿using RestaurantApp.Shared.DTOs.GeoCoding;
+using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 using RestaurantApp.Shared.DTOs.Settings;
@@ -14,11 +15,9 @@ public class RestaurantDto
     
     public List<OpeningHoursDto>? OpeningHours { get; set; }
     
+    public List<ImageLinkDto>? GalleryImages { get; set; }
     public string? ProfileUrl { get; set; }
     public string? ProfileThumbnailUrl { get; set; }
-    public List<string>? PhotosUrls { get; set; }
-    public List<string>? PhotosThumbnailsUrls { get; set; }
-    
     public StructuresAddressDto ? StructuredAddress { get; set; }
     
     public GeoLocationDto? Location { get; set; }

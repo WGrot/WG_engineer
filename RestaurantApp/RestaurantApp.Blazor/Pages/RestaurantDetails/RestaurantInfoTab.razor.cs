@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Models;
 using LeafletForBlazor;
+using RestaurantApp.Shared.DTOs.Images;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 
@@ -90,10 +91,18 @@ public partial class RestaurantInfoTab : ComponentBase
             };
     }
 
-    private void OpenPhotoModal(int index)
+    private void OpenPhotoModal(int id)
+    {
+        showPhotoModal = true;
+        ImageLinkDto? chosenImage = restaurant.GalleryImages.FirstOrDefault(i => i.Id == id);
+        selectedPhotoUrl = chosenImage?.Url;
+        selectedPhotoIndex = restaurant.GalleryImages.IndexOf(chosenImage);
+    }
+    
+    private void ShowNextPhotoModal(int index)
     {
         showPhotoModal = true;
         selectedPhotoIndex = index;
-        selectedPhotoUrl = restaurant?.PhotosUrls?[selectedPhotoIndex];
+        selectedPhotoUrl = restaurant.GalleryImages[selectedPhotoIndex].Url;
     }
 }
