@@ -26,6 +26,7 @@ public class Restaurant
     public List<string> photosUrls { get; set; } = new List<string>();
     public List<string> photosThumbnailsUrls { get; set; } = new List<string>();
     
+    public virtual ICollection<ImageLink> Images { get; set; } = new List<ImageLink>();
     public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     public virtual ICollection<Table> Tables { get; set; } = new List<Table>();

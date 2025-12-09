@@ -11,7 +11,7 @@ public class ImageSizeConfig
     public void Validate()
     {
         if (MaxWidth <= 0 || MaxHeight <= 0 || ThumbnailSize <= 0)
-            throw new InvalidOperationException("Image dimensions must be positive");
+            throw new InvalidOperationException("ImageLink dimensions must be positive");
         
         if (Quality < 1 || Quality > 100)
             throw new InvalidOperationException("Quality must be between 1 and 100");

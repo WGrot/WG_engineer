@@ -2,6 +2,7 @@
 
 public class ImageUploadResult
 {
+    public int ImageLinkId { get; set; }
     public string OriginalUrl { get; set; }
     public string ThumbnailUrl { get; set; }
     public string FileName { get; set; }

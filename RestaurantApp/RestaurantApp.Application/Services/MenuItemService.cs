@@ -17,15 +17,18 @@ public class MenuItemService : IMenuItemService
     private readonly IMenuItemRepository _repository;
     private readonly IStorageService _storageService;
     private readonly ILogger<MenuItemService> _logger;
+    private readonly IImageLinkRepository _imageLinkRepository;
 
     public MenuItemService(
         IMenuItemRepository repository,
         IStorageService storageService,
-        ILogger<MenuItemService> logger)
+        ILogger<MenuItemService> logger,
+        IImageLinkRepository imageLinkRepository)
     {
         _repository = repository;
         _storageService = storageService;
         _logger = logger;
+        _imageLinkRepository = imageLinkRepository;
     }
     
 
@@ -244,16 +247,16 @@ public class MenuItemService : IMenuItemService
                 imageStream.Position = 0;
             }
             
-            var item = await _repository.GetByIdAsync(itemId);
+            var item = await _repository.GetByIdAsync(itemId, true);
             if (item == null)
             {
                 return Result<ImageUploadResult>.NotFound("Menu item not found.");
             }
             
-            if (!string.IsNullOrEmpty(item.ImageUrl))
+            if (item.ImageLink != null)
             {
-                await _storageService.DeleteFileByUrlAsync(item.ImageUrl);
-                await _storageService.DeleteFileByUrlAsync(item.ThumbnailUrl);
+                await _storageService.DeleteByImageLink(item.ImageLink);
+                await _imageLinkRepository.Remove(item.ImageLink);
             }
             
             var uploadResult = await _storageService.UploadImageAsync(
@@ -264,8 +267,7 @@ public class MenuItemService : IMenuItemService
                 generateThumbnail: true
             );
 
-            item.ImageUrl = uploadResult.OriginalUrl;
-            item.ThumbnailUrl = uploadResult.ThumbnailUrl;
+            item.ImageLinkId = uploadResult.ImageLinkId;
 
             await _repository.SaveChangesAsync();
 
@@ -282,22 +284,22 @@ public class MenuItemService : IMenuItemService
     {
         try
         {
-            var item = await _repository.GetByIdAsync(itemId);
+            var item = await _repository.GetByIdAsync(itemId, true);
             if (item == null)
             {
                 return Result.NotFound("Menu item not found.");
             }
 
-            var deletedImage = await _storageService.DeleteFileByUrlAsync(item.ImageUrl);
-            var deletedThumbnail = await _storageService.DeleteFileByUrlAsync(item.ThumbnailUrl);
+            var deletedImage = await _storageService.DeleteByImageLink(item.ImageLink);
 
-            if (!deletedImage && !deletedThumbnail)
+            if (!deletedImage)
             {
                 return Result.Failure("Failed to delete image from storage.");
             }
+            
+            await _imageLinkRepository.Remove(item.ImageLink);
 
-            item.ImageUrl = null;
-            item.ThumbnailUrl = null;
+            item.ImageLinkId = null;
 
             await _repository.SaveChangesAsync();
 

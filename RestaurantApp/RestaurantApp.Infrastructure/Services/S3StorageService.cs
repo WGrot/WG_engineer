@@ -4,8 +4,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Enums;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
+using RestaurantApp.Infrastructure.Persistence.Repositories;
 using RestaurantApp.Shared.DTOs.Images;
 
 namespace RestaurantApp.Infrastructure.Services;
@@ -15,6 +18,7 @@ public class S3StorageService : IStorageService
     private readonly IAmazonS3 _s3Client;
     private readonly IUrlBuilder _urlBuilder;
     private readonly IImageProcessor _imageProcessor;
+    private readonly IImageLinkRepository _imageLinkRepository;
     private readonly StorageConfiguration _config;
     private readonly ImageSettings _imageSettings;
     private readonly ILogger<S3StorageService> _logger;
@@ -25,7 +29,8 @@ public class S3StorageService : IStorageService
         IOptions<ImageSettings> imageSettings,
         IUrlBuilder urlBuilder,
         IImageProcessor imageProcessor,
-        ILogger<S3StorageService> logger)
+        ILogger<S3StorageService> logger,
+        IImageLinkRepository imageLinkRepository)
     {
         _s3Client = s3Client;
         _config = config.Value;
@@ -33,9 +38,10 @@ public class S3StorageService : IStorageService
         _urlBuilder = urlBuilder;
         _imageProcessor = imageProcessor;
         _logger = logger;
+        _imageLinkRepository = imageLinkRepository;
     }
 
-    #region Image Operations
+    #region ImageLink Operations
 
     public async Task<ImageUploadResult> UploadImageAsync(
         Stream imageStream,
@@ -93,8 +99,21 @@ public class S3StorageService : IStorageService
                 "image/jpeg",
                 metadata);
 
+            ImageLink imageLink = new ImageLink
+            {
+                Url = _urlBuilder.GetPublicUrl(fullPath, bucketName),
+                Type = imageType,
+                FileSize = processingResult.FileSize,
+                OriginalFileName = fileName,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _imageLinkRepository.AddAsync(imageLink);
+            await _imageLinkRepository.SaveChangesAsync();
+
             var result = new ImageUploadResult
             {
+                ImageLinkId = imageLink.Id,
                 FileName = fullPath,
                 OriginalUrl = _urlBuilder.GetPublicUrl(fullPath, bucketName),
                 FileSize = processingResult.FileSize,
@@ -115,11 +134,14 @@ public class S3StorageService : IStorageService
                     settings.ThumbnailSize,
                     settings.Quality);
 
+
                 result.ThumbnailUrl = _urlBuilder.GetPublicUrl(thumbnailPath, bucketName);
+                imageLink.ThumbnailUrl = result.ThumbnailUrl;
+                await _imageLinkRepository.SaveChangesAsync();
             }
 
             _logger.LogInformation(
-                "Image uploaded successfully: {Path} (Type: {ImageType})",
+                "ImageLink uploaded successfully: {Path} (Type: {ImageType})",
                 fullPath, imageType);
 
             return result;
@@ -315,6 +337,14 @@ public class S3StorageService : IStorageService
             _logger.LogError(ex, "Error deleting file from URL: {FileUrl}", fileUrl);
             return false;
         }
+    }
+
+    public async Task<bool> DeleteByImageLink(ImageLink imageLink)
+    {
+        var urlResult = await DeleteFileByUrlAsync(imageLink.Url);
+        var thumbnailResult = await DeleteFileByUrlAsync(imageLink.ThumbnailUrl);
+    
+        return urlResult && thumbnailResult;
     }
 
     public async Task<IEnumerable<StorageFileInfo>> ListFilesAsync(

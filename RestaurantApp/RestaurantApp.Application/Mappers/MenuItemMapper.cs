@@ -38,9 +38,8 @@ public static class MenuItemMapper
             Name = dto.Name,
             Description = dto.Description,
             Price = dto.Price.ToEntity(),
-            ImageUrl = dto.ImageUrl,
-            ThumbnailUrl = dto.ThumbnailUrl,
             CategoryId = dto.CategoryId
+            
         };
         
         if (dto.Tags?.Any() == true)
@@ -57,8 +56,6 @@ public static class MenuItemMapper
         entity.Description = dto.Description;
         entity.Price = dto.Price.ToEntity();
         entity.Price.CurrencyCode = dto.CurrencyCode;
-        entity.ImageUrl = dto.ImageUrl;
-        entity.ThumbnailUrl = dto.ThumbnailUrl;
         
         entity.Tags.Clear();
         if (dto.Tags?.Any() == true)

@@ -22,7 +22,8 @@ public class MenuItemRepository : IMenuItemRepository
             query = query
                 .Include(mi => mi.Menu)
                 .Include(mi => mi.Tags)
-                .Include(mi => mi.Category);
+                .Include(mi => mi.Category)
+                .Include(mi => mi.ImageLink);
         }
 
         return await query.FirstOrDefaultAsync(mi => mi.Id == itemId);
@@ -33,6 +34,7 @@ public class MenuItemRepository : IMenuItemRepository
         return await _context.MenuItems
             .Include(mi => mi.Category)
             .Include(mi => mi.Tags)
+            .Include(mi => mi.ImageLink)
             .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
             .ToListAsync();
     }
@@ -41,6 +43,7 @@ public class MenuItemRepository : IMenuItemRepository
     {
         return await _context.MenuItems
             .Include(mi => mi.Tags)
+            .Include(mi => mi.ImageLink)
             .Where(mi => mi.CategoryId == categoryId)
             .ToListAsync();
     }
@@ -49,6 +52,7 @@ public class MenuItemRepository : IMenuItemRepository
     {
         return await _context.MenuItems
             .Include(mi => mi.Tags)
+            .Include(mi => mi.ImageLink)
             .Where(mi => mi.MenuId == menuId && mi.CategoryId == null)
             .ToListAsync();
     }

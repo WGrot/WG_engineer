@@ -8,8 +8,10 @@ public class MenuItem
     public MenuItemPrice Price { get; set; } = new MenuItemPrice();
     
     public bool IsAvailable { get; set; } = true;
-    public string? ImageUrl { get; set; }
-    public string? ThumbnailUrl { get; set; }
+    
+    public int? ImageLinkId { get; set; }
+    public ImageLink? ImageLink { get; set; }
+
     public int? MenuId { get; set; }
     public Menu? Menu { get; set; }
     
@@ -18,5 +20,9 @@ public class MenuItem
     
     public virtual ICollection<MenuItemTag> Tags { get; set; } = new HashSet<MenuItemTag>();
     public virtual ICollection<MenuItemVariant> Variants { get; set; } = new HashSet<MenuItemVariant>();
+    
+    
+    public string? ImageUrl => ImageLink?.Url;
+    public string? ThumbnailUrl => ImageLink?.ThumbnailUrl;
 
 }

@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Domain.Enums;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Images;
 
 namespace RestaurantApp.Application.Common.Interfaces;
@@ -25,6 +26,8 @@ public interface IStorageService
     Task<Stream> DownloadFileAsync(string fileName, string bucketName);
     Task<bool> DeleteFileAsync(string fileName, string bucketName);
     Task<bool> DeleteFileByUrlAsync(string fileUrl);
+    
+    Task<bool> DeleteByImageLink(ImageLink imageLink);
     Task<IEnumerable<StorageFileInfo>> ListFilesAsync(
         string bucketName, 
         string? prefix = null);

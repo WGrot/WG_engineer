@@ -92,6 +92,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<ITwoFactorService, TwoFactorService>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IImageLinkRepository, ImageLinkRepository>();
         return services;
     }
 }
