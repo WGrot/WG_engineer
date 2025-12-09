@@ -18,6 +18,7 @@ public class RestaurantRepository : IRestaurantRepository
     public async Task<IEnumerable<Restaurant>> GetAllWithDetailsAsync()
     {
         return await _context.Restaurants
+            .Include(r => r.ImageLinks)
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
@@ -31,6 +32,7 @@ public class RestaurantRepository : IRestaurantRepository
     public async Task<Restaurant?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.Restaurants
+            .Include(r => r.ImageLinks)
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
@@ -40,6 +42,7 @@ public class RestaurantRepository : IRestaurantRepository
     public async Task<Restaurant?> GetByIdWithSettingsAsync(int id)
     {
         return await _context.Restaurants
+            .Include(r => r.ImageLinks)
             .Include(r => r.Menu)
             .ThenInclude(m => m.Items)
             .Include(r => r.OpeningHours)
@@ -76,6 +79,7 @@ public class RestaurantRepository : IRestaurantRepository
         string sortBy)
     {
         var query = _context.Restaurants
+            .Include(r => r.ImageLinks)
             .Include(r => r.Menu)
             .Include(r => r.OpeningHours)
             .AsQueryable();
@@ -112,6 +116,7 @@ public class RestaurantRepository : IRestaurantRepository
     public async Task<IEnumerable<Restaurant>> GetOpenNowAsync(DayOfWeek day, TimeOnly time)
     {
         return await _context.Restaurants
+            .Include(r => r.ImageLinks)
             .Include(r => r.OpeningHours)
             .Include(r => r.Menu)
             .Where(r => r.OpeningHours.Any(oh =>

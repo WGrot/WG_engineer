@@ -1,4 +1,6 @@
 ﻿using NetTopologySuite.Geometries;
+using RestaurantApp.Domain.Enums;
+
 namespace RestaurantApp.Domain.Models;
 
 public class Restaurant
@@ -20,13 +22,11 @@ public class Restaurant
     
     public RestaurantSettings? Settings { get; set; }
     
-    public string? profileUrl { get; set; }
-    public string? profileThumbnailUrl { get; set; }
+
     
-    public List<string> photosUrls { get; set; } = new List<string>();
-    public List<string> photosThumbnailsUrls { get; set; } = new List<string>();
+
     
-    public virtual ICollection<ImageLink> Images { get; set; } = new List<ImageLink>();
+    public virtual ICollection<ImageLink> ImageLinks { get; set; } = new List<ImageLink>();
     public virtual ICollection<MenuItemTag> MenuItemTags { get; set; } = new HashSet<MenuItemTag>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
@@ -40,50 +40,16 @@ public class Restaurant
     public int TotalRatings4Star { get; set; } = 0;
     public int TotalRatings5Star { get; set; } = 0;
     
-    public void SetProfilePhoto(string url, string? thumbnailUrl)
-    {
-        profileUrl = url ?? throw new ArgumentNullException(nameof(url));
-        profileThumbnailUrl = thumbnailUrl;
-    }
 
-    public void RemoveProfilePhoto()
-    {
-        profileUrl = null;
-        profileThumbnailUrl = null;
-    }
-
-    public bool HasProfilePhoto() => !string.IsNullOrEmpty(profileUrl);
+    public List<string> photosUrls => ImageLinks.Where(il => il.Type == ImageType.RestaurantPhotos ).Select(il => il.Url).ToList();
+    public List<string> photosThumbnailsUrls => ImageLinks.Where(il => il.Type == ImageType.RestaurantPhotos ).Select(il => il.ThumbnailUrl).ToList();
     
-    public void AddGalleryPhoto(string url, string? thumbnailUrl)
+    public string? profileUrl => ImageLinks.FirstOrDefault(l => l.Type == ImageType.RestaurantProfile)?.Url;
+    public string? profileThumbnailUrl => ImageLinks.FirstOrDefault(l => l.Type == ImageType.RestaurantProfile)?.ThumbnailUrl;
+    
+    public bool HasProfilePhoto()
     {
-        photosUrls.Add(url ?? throw new ArgumentNullException(nameof(url)));
-        if (thumbnailUrl != null)
-        {
-            photosThumbnailsUrls.Add(thumbnailUrl);
-        }
+        return ImageLinks.Any(l => l.Type == ImageType.RestaurantProfile);
     }
-
-    public void RemoveGalleryPhotoAt(int index)
-    {
-        if (!IsValidPhotoIndex(index))
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
-        
-        photosUrls.RemoveAt(index);
-        
-        if (index < photosThumbnailsUrls.Count)
-        {
-            photosThumbnailsUrls.RemoveAt(index);
-        }
-    }
-
-    public bool IsValidPhotoIndex(int index) 
-        => index >= 0 && index < photosUrls.Count;
-
-    public string GetPhotoUrlAt(int index) => photosUrls[index];
-
-    public string? GetThumbnailUrlAt(int index) 
-        => index < photosThumbnailsUrls.Count ? photosThumbnailsUrls[index] : null;
-
+    
 }

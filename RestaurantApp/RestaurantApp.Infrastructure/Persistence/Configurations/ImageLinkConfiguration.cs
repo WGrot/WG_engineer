@@ -33,5 +33,10 @@ public class ImageLinkConfiguration : IEntityTypeConfiguration<ImageLink>
             .WithOne(m => m.ImageLink)
             .HasForeignKey<ImageLink>(i => i.MenuItemId)  
             .OnDelete(DeleteBehavior.Cascade);            
+        
+        builder.HasOne(i => i.Restaurant)
+            .WithMany(r => r.ImageLinks)
+            .HasForeignKey(i => i.RestaurantId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

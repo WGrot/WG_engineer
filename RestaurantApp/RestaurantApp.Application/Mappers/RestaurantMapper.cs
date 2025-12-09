@@ -44,10 +44,6 @@ public static class RestaurantMapper
             Location = dto.Location?.ToEntity(),
             Description = dto.Description,
             OpeningHours = dto.OpeningHours?.Select(oh => oh.ToEntity()).ToList(),
-            profileUrl = dto.ProfileUrl,
-            profileThumbnailUrl = dto.ProfileThumbnailUrl,
-            photosUrls = dto.PhotosUrls,
-            photosThumbnailsUrls = dto.PhotosThumbnailsUrls,
             AverageRating = dto.AverageRating,
             TotalReviews = dto.TotalReviews,
             TotalRatings1Star = dto.TotalRatings1Star,
@@ -71,12 +67,6 @@ public static class RestaurantMapper
             entity.OpeningHours = dto.OpeningHours.Select(oh => oh.ToEntity()).ToList();
         }
         
-        entity.profileUrl = dto.ProfileUrl;
-        entity.profileThumbnailUrl = dto.ProfileThumbnailUrl;
-        entity.photosUrls = dto.PhotosUrls;
-        entity.photosThumbnailsUrls = dto.PhotosThumbnailsUrls;
-        
-
         entity.AverageRating = dto.AverageRating;
         entity.TotalReviews = dto.TotalReviews;
         entity.TotalRatings1Star = dto.TotalRatings1Star;
