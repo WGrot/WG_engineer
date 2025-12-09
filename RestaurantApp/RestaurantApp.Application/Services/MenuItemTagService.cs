@@ -7,20 +7,14 @@ using RestaurantApp.Shared.DTOs.Menu.Tags;
 
 namespace RestaurantApp.Application.Services;
 
+
 public class MenuItemTagService : IMenuItemTagService
 {
     private readonly IMenuItemTagRepository _tagRepository;
-    private readonly IRestaurantRepository _restaurantRepository;
-    private readonly ILogger<MenuItemTagService> _logger;
 
-    public MenuItemTagService(
-        IMenuItemTagRepository tagRepository,
-        IRestaurantRepository restaurantRepository,
-        ILogger<MenuItemTagService> logger)
+    public MenuItemTagService(IMenuItemTagRepository tagRepository)
     {
         _tagRepository = tagRepository;
-        _restaurantRepository = restaurantRepository;
-        _logger = logger;
     }
 
     public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(int? restaurantId = null)
@@ -32,24 +26,11 @@ public class MenuItemTagService : IMenuItemTagService
     public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id)
     {
         var tag = await _tagRepository.GetByIdAsync(id);
-        
-        if (tag == null)
-        {
-            return Result<MenuItemTagDto?>.NotFound("MenuItem tag not found");
-        }
-
-        return Result<MenuItemTagDto?>.Success(tag.ToDto());
+        return Result<MenuItemTagDto?>.Success(tag!.ToDto());
     }
 
     public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto dto)
     {
-        var restaurantExists = await _restaurantRepository.ExistsAsync(dto.RestaurantId);
-        
-        if (!restaurantExists)
-        {
-            return Result<MenuItemTagDto>.Failure($"Restaurant with id {dto.RestaurantId} does not exist");
-        }
-
         var newTag = dto.ToEntity();
 
         await _tagRepository.AddAsync(newTag);
@@ -61,24 +42,9 @@ public class MenuItemTagService : IMenuItemTagService
     public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto dto)
     {
         var existingTag = await _tagRepository.GetByIdAsync(id);
-        
-        if (existingTag == null)
-        {
-            return Result<MenuItemTagDto>.NotFound("MenuItem tag not found");
-        }
 
-        if (existingTag.RestaurantId != dto.RestaurantId)
-        {
-            var restaurantExists = await _restaurantRepository.ExistsAsync(dto.RestaurantId);
-            
-            if (!restaurantExists)
-            {
-                return Result<MenuItemTagDto>.Failure($"Restaurant with id {dto.RestaurantId} does not exist");
-            }
-        }
+        existingTag!.UpdateFromDto(dto);
 
-        existingTag.UpdateFromDto(dto);
-        
         _tagRepository.Update(existingTag);
         await _tagRepository.SaveChangesAsync();
 
@@ -88,15 +54,10 @@ public class MenuItemTagService : IMenuItemTagService
     public async Task<Result> DeleteTagAsync(int id)
     {
         var tag = await _tagRepository.GetByIdAsync(id);
-        
-        if (tag == null)
-        {
-            return Result.Failure("MenuItem tag not found");
-        }
 
-        _tagRepository.Delete(tag);
+        _tagRepository.Delete(tag!);
         await _tagRepository.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 

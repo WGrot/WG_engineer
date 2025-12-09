@@ -11,6 +11,7 @@ using RestaurantApp.Application.Services.Validators;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
+using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
 
@@ -67,15 +68,25 @@ public static class DependencyInjection
             return new AuthorizedMenuItemService(validatedService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateMenuItemTagDtoValidator>();
+        services.AddScoped<IMenuItemTagValidator, MenuItemTagValidator>();
+        
         services.AddScoped<MenuItemTagService>();
         services.AddScoped<IMenuItemTagService>(sp =>
         {
             var innerService = sp.GetRequiredService<MenuItemTagService>();
+            
+            var createValidator = sp.GetRequiredService<IValidator<CreateMenuItemTagDto>>();
+            var businessValidator = sp.GetRequiredService<IMenuItemTagValidator>();
+            var validatedService = new ValidatedMenuItemTagService(innerService, createValidator, businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedMenuItemTagService(innerService, currentUser, permissionChecker);
+            return new AuthorizedMenuItemTagService(validatedService, currentUser, permissionChecker);
         });
+
+
         
         services.AddScoped<MenuItemVariantService>();
         services.AddScoped<IMenuItemVariantService>(sp =>
