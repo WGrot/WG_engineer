@@ -107,6 +107,17 @@ public class S3StorageService : IStorageService
                 OriginalFileName = fileName,
                 CreatedAt = DateTime.UtcNow
             };
+            
+            switch (imageType)
+            {
+                case ImageType.MenuItem:
+                    imageLink.MenuItemId = entityId;
+                    break;
+                case ImageType.RestaurantPhotos:
+                case ImageType.RestaurantProfile:
+                    imageLink.RestaurantId = entityId;
+                    break;
+            }
 
             await _imageLinkRepository.AddAsync(imageLink);
             await _imageLinkRepository.SaveChangesAsync();

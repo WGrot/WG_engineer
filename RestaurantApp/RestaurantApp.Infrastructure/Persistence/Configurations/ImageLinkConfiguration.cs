@@ -4,7 +4,7 @@ using RestaurantApp.Domain.Models;
 
 namespace RestaurantApp.Infrastructure.Persistence.Configurations;
 
-public class ImageLinkConfiguration: IEntityTypeConfiguration<ImageLink>
+public class ImageLinkConfiguration : IEntityTypeConfiguration<ImageLink>
 {
     public void Configure(EntityTypeBuilder<ImageLink> builder)
     {
@@ -29,10 +29,9 @@ public class ImageLinkConfiguration: IEntityTypeConfiguration<ImageLink>
         builder.HasIndex(i => i.RestaurantId);
         builder.HasIndex(i => i.MenuItemId);
         
-
         builder.HasOne(i => i.MenuItem)
             .WithOne(m => m.ImageLink)
-            .HasForeignKey<MenuItem>(m => m.ImageLinkId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey<ImageLink>(i => i.MenuItemId)  
+            .OnDelete(DeleteBehavior.Cascade);            
     }
 }

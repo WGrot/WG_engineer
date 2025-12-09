@@ -20,12 +20,6 @@ public class MenuItemConfiguration : IEntityTypeConfiguration<MenuItem>
             .WithOne(v => v.MenuItem)
             .HasForeignKey(v => v.MenuItemId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        builder
-            .HasOne(mi => mi.ImageLink)
-            .WithMany()  
-            .HasForeignKey(mi => mi.ImageLinkId)
-            .OnDelete(DeleteBehavior.Cascade);
 
     }
 }
