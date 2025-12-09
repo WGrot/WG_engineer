@@ -1,4 +1,5 @@
 ﻿using RestaurantApp.Application.Interfaces.Images;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Shared.DTOs.Images;
 
 namespace RestaurantApp.Application.Common.Interfaces;

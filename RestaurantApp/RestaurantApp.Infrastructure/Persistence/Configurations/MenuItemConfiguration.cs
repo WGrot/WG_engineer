@@ -20,5 +20,6 @@ public class MenuItemConfiguration : IEntityTypeConfiguration<MenuItem>
             .WithOne(v => v.MenuItem)
             .HasForeignKey(v => v.MenuItemId)
             .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

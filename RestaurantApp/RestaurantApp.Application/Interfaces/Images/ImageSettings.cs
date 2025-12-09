@@ -1,4 +1,6 @@
-﻿namespace RestaurantApp.Application.Interfaces.Images;
+﻿using RestaurantApp.Domain.Enums;
+
+namespace RestaurantApp.Application.Interfaces.Images;
 
 public class ImageSettings
 {

@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Application.Interfaces.Images;
+﻿namespace RestaurantApp.Domain.Enums;
 
 public enum ImageType
 {

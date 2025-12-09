@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 using RestaurantApp.Shared.DTOs.Images;
 

@@ -4,6 +4,7 @@ using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
