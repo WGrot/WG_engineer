@@ -13,9 +13,11 @@ using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
+using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
+using RestaurantApp.Shared.Validators.Permission;
 
 namespace RestaurantApp.Application;
 
@@ -112,14 +114,34 @@ public static class DependencyInjection
             return new AuthorizedMenuItemVariantService(innerService, currentUser, permissionChecker);
         });
         
+
+        services.AddValidatorsFromAssemblyContaining<CreateRestaurantPermissionDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<RestaurantPermissionDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateEmployeePermissionsDtoValidator>();
+        
+        services.AddScoped<IRestaurantPermissionValidator, RestaurantPermissionValidator>();
+        
         services.AddScoped<RestaurantPermissionService>();
         services.AddScoped<IRestaurantPermissionService>(sp =>
         {
             var innerService = sp.GetRequiredService<RestaurantPermissionService>();
+            
+            var createValidator = sp.GetRequiredService<IValidator<CreateRestaurantPermissionDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<RestaurantPermissionDto>>();
+            var updateEmployeePermissionsValidator = sp.GetRequiredService<IValidator<UpdateEmployeePermisionsDto>>();
+            var businessValidator = sp.GetRequiredService<IRestaurantPermissionValidator>();
+
+            var validatedService = new ValidatedRestaurantPermissionService(
+                innerService,
+                createValidator,
+                updateValidator,
+                updateEmployeePermissionsValidator,
+                businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedRestaurantPermissionService(innerService, currentUser, permissionChecker);
+            return new AuthorizedRestaurantPermissionService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddScoped<TableService>();
