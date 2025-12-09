@@ -30,7 +30,6 @@ public class MenuItemService : IMenuItemService
         _logger = logger;
         _imageLinkRepository = imageLinkRepository;
     }
-    
 
     public async Task<Result<MenuItemDto>> GetMenuItemByIdAsync(int itemId)
     {
@@ -61,12 +60,6 @@ public class MenuItemService : IMenuItemService
 
     public async Task<Result<MenuItemDto>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
     {
-        var menu = await _repository.GetMenuByIdAsync(menuId);
-        if (menu == null)
-        {
-            return Result<MenuItemDto>.NotFound($"Menu with ID {menuId} not found.");
-        }
-
         var item = itemDto.ToEntity();
         item.MenuId = menuId;
         item.CategoryId = null;
@@ -80,14 +73,10 @@ public class MenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
     {
         var category = await _repository.GetCategoryByIdAsync(categoryId, includeMenu: true);
-        if (category == null)
-        {
-            return Result<MenuItemDto>.NotFound($"Category with ID {categoryId} not found.");
-        }
 
         var item = itemDto.ToEntity();
         item.CategoryId = categoryId;
-        item.MenuId = category.MenuId;
+        item.MenuId = category!.MenuId;
 
         await _repository.AddAsync(item);
         await _repository.SaveChangesAsync();
@@ -98,12 +87,8 @@ public class MenuItemService : IMenuItemService
     public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto)
     {
         var existingItem = await _repository.GetByIdAsync(itemId);
-        if (existingItem == null)
-        {
-            return Result.NotFound($"Menu item with ID {itemId} not found.");
-        }
 
-        existingItem.UpdateFromDto(itemDto);
+        existingItem!.UpdateFromDto(itemDto);
         await _repository.SaveChangesAsync();
 
         return Result.Success();
@@ -112,27 +97,18 @@ public class MenuItemService : IMenuItemService
     public async Task<Result> DeleteMenuItemAsync(int itemId)
     {
         var item = await _repository.GetByIdAsync(itemId);
-        if (item == null)
-        {
-            return Result.NotFound($"Menu item with ID {itemId} not found.");
-        }
 
-        _repository.Remove(item);
+        _repository.Remove(item!);
         await _repository.SaveChangesAsync();
 
         return Result.Success();
     }
-    
 
     public async Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null)
     {
         var item = await _repository.GetByIdAsync(itemId);
-        if (item == null)
-        {
-            return Result.NotFound($"Menu item with ID {itemId} not found.");
-        }
 
-        item.Price.Price = price;
+        item!.Price.Price = price;
         if (!string.IsNullOrEmpty(currencyCode))
         {
             item.Price.CurrencyCode = currencyCode;
@@ -145,24 +121,14 @@ public class MenuItemService : IMenuItemService
     public async Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId)
     {
         var item = await _repository.GetByIdAsync(itemId, includeRelations: true);
-        if (item == null)
-        {
-            return Result.NotFound($"Item with ID {itemId} not found.");
-        }
 
         if (categoryId.HasValue)
         {
-            var category = await _repository.GetCategoryByIdAsync(categoryId.Value);
-            if (category == null)
-            {
-                return Result.NotFound($"Category with ID {categoryId} not found.");
-            }
-
-            item.CategoryId = categoryId;
+            item!.CategoryId = categoryId;
         }
         else
         {
-            var menuId = item.Category?.MenuId ?? item.MenuId;
+            var menuId = item!.Category?.MenuId ?? item.MenuId;
             if (!menuId.HasValue)
             {
                 return Result.Failure("Cannot determine menu ID for uncategorized item.");
@@ -175,24 +141,15 @@ public class MenuItemService : IMenuItemService
         await _repository.SaveChangesAsync();
         return Result.Success();
     }
-    
+
     public async Task<Result<MenuItemDto>> AddTagToMenuItemAsync(int menuItemId, int tagId)
     {
         var menuItem = await _repository.GetByIdAsync(menuItemId, includeRelations: true);
-        if (menuItem == null)
-        {
-            return Result<MenuItemDto>.NotFound("MenuItem not found.");
-        }
-
         var tag = await _repository.GetTagByIdAsync(tagId);
-        if (tag == null)
-        {
-            return Result<MenuItemDto>.NotFound("Tag not found.");
-        }
 
-        if (menuItem.Tags.All(t => t.Id != tagId))
+        if (menuItem!.Tags.All(t => t.Id != tagId))
         {
-            menuItem.Tags.Add(tag);
+            menuItem.Tags.Add(tag!);
             await _repository.SaveChangesAsync();
         }
 
@@ -202,12 +159,8 @@ public class MenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> RemoveTagFromMenuItemAsync(int menuItemId, int tagId)
     {
         var menuItem = await _repository.GetByIdAsync(menuItemId, includeRelations: true);
-        if (menuItem == null)
-        {
-            return Result<MenuItemDto>.NotFound("MenuItem not found.");
-        }
 
-        var tag = menuItem.Tags.FirstOrDefault(t => t.Id == tagId);
+        var tag = menuItem!.Tags.FirstOrDefault(t => t.Id == tagId);
         if (tag != null)
         {
             menuItem.Tags.Remove(tag);
@@ -220,19 +173,14 @@ public class MenuItemService : IMenuItemService
     public async Task<Result<IEnumerable<MenuItemTagDto>>> GetMenuItemTagsAsync(int menuItemId)
     {
         var menuItem = await _repository.GetByIdAsync(menuItemId, includeRelations: true);
-        if (menuItem == null)
-        {
-            return Result<IEnumerable<MenuItemTagDto>>.NotFound("MenuItem not found.");
-        }
 
-        var tagDtos = menuItem.Tags.Select(tag => tag.ToDto());
+        var tagDtos = menuItem!.Tags.Select(tag => tag.ToDto());
         return Result<IEnumerable<MenuItemTagDto>>.Success(tagDtos);
     }
-    
 
     public async Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(
-        int itemId, 
-        Stream imageStream, 
+        int itemId,
+        Stream imageStream,
         string fileName)
     {
         try
@@ -241,24 +189,20 @@ public class MenuItemService : IMenuItemService
             {
                 return Result<ImageUploadResult>.Failure("Empty file provided.");
             }
-            
+
             if (imageStream.CanSeek)
             {
                 imageStream.Position = 0;
             }
-            
+
             var item = await _repository.GetByIdAsync(itemId, true);
-            if (item == null)
-            {
-                return Result<ImageUploadResult>.NotFound("Menu item not found.");
-            }
-            
-            if (item.ImageLink != null)
+
+            if (item!.ImageLink != null)
             {
                 await _storageService.DeleteByImageLink(item.ImageLink);
                 await _imageLinkRepository.Remove(item.ImageLink);
             }
-            
+
             var uploadResult = await _storageService.UploadImageAsync(
                 imageStream,
                 fileName,
@@ -285,18 +229,14 @@ public class MenuItemService : IMenuItemService
         try
         {
             var item = await _repository.GetByIdAsync(itemId, true);
-            if (item == null)
-            {
-                return Result.NotFound("Menu item not found.");
-            }
 
-            var deletedImage = await _storageService.DeleteByImageLink(item.ImageLink);
+            var deletedImage = await _storageService.DeleteByImageLink(item!.ImageLink);
 
             if (!deletedImage)
             {
                 return Result.Failure("Failed to delete image from storage.");
             }
-            
+
             await _imageLinkRepository.Remove(item.ImageLink);
 
             item.ImageLinkId = null;
@@ -311,5 +251,4 @@ public class MenuItemService : IMenuItemService
             return Result.Failure("An error occurred while deleting the image.");
         }
     }
-    
 }

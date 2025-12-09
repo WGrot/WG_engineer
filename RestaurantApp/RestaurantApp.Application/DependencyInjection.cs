@@ -51,14 +51,20 @@ public static class DependencyInjection
         });
         
         
+        services.AddScoped<IMenuItemValidator, MenuItemValidator>();
+
         services.AddScoped<MenuItemService>();
         services.AddScoped<IMenuItemService>(sp =>
         {
             var innerService = sp.GetRequiredService<MenuItemService>();
+            
+            var businessValidator = sp.GetRequiredService<IMenuItemValidator>();
+            var validatedService = new ValidatedMenuItemService(innerService, businessValidator);
+            
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedMenuItemService(innerService, currentUser, permissionChecker);
+            return new AuthorizedMenuItemService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddScoped<MenuItemTagService>();
