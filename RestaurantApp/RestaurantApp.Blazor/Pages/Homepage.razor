@@ -86,7 +86,56 @@
         </div>
     </div>
 
+    <footer class="bg-white justify-content-center text-dark pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="row g-4 justify-content-evenly">
+
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-semibold text-dark mb-3">Navigation</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a href="/homepage" class="text-secondary text-decoration-none small">Home</a></li>
+                        <li class="mb-2"><a href="/restaurants" class="text-secondary text-decoration-none small">Restaurants</a></li>
+                        <li class="mb-2"><a href="/Restaurant_Map" class="text-secondary text-decoration-none small">Map</a></li>
+                        <li class="mb-2"><a href="/about" class="text-secondary text-decoration-none small">About Us</a></li>
+                    </ul>
+                </div>
+                
+
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-semibold text-dark mb-3">Are you a restaurant owner?</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a href="/CreateRestaurant" class="text-secondary text-decoration-none small">Create Restaurant Page!</a></li>
+                        <li class="mb-2"><a href="/faq" class="text-secondary text-decoration-none small">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-semibold text-dark mb-3">Contact</h6>
+                    <ul class="list-unstyled mb-0 small text-secondary">
+                        <li class="mb-2">
+                            <i class="bi bi-envelope me-2"></i>noreply.dineops@gmail.com
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-telephone me-2"></i>+48 123 456 789
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>Warsaw, Poland
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <hr class="my-4 border-secondary">
+
+            <div class="text-center">
+                <p class="text-secondary small mb-0">&copy; @DateTime.Now.Year DineOps. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
 </div>
+
 
 @code {
     private string _searchQuery = "";

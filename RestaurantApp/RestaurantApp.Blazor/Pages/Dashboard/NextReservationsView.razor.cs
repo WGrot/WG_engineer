@@ -67,6 +67,7 @@ public partial class NextReservationsView : ComponentBase
                 Page = 1,
                 PageSize = 4,
                 ReservationDate = DateTime.Today,
+                Status = ReservationStatusEnumDto.Confirmed,
                 SortBy = "next",
                 RestaurantId = RestaurantId,
             };
@@ -74,8 +75,6 @@ public partial class NextReservationsView : ComponentBase
         
         await LoadReservations();
     }
-
-
 
     private async Task LoadReservations()
     {
