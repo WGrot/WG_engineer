@@ -17,12 +17,14 @@ using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.Tables;
+using RestaurantApp.Shared.DTOs.Users;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
 using RestaurantApp.Shared.Validators.Permission;
 using RestaurantApp.Shared.Validators.Reservation;
 using RestaurantApp.Shared.Validators.Reservations;
 using RestaurantApp.Shared.Validators.Table;
+using RestaurantApp.Shared.Validators.User;
 
 namespace RestaurantApp.Application;
 
@@ -218,14 +220,29 @@ public static class DependencyInjection
             return new AuthorizedReviewService(innerService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
+        services.AddScoped<IUserValidator, UserValidator>();
+        
         services.AddScoped<UserService>();
         services.AddScoped<IUserService>(sp =>
         {
             var innerService = sp.GetRequiredService<UserService>();
+
+            var createValidator = sp.GetRequiredService<IValidator<CreateUserDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<UpdateUserDto>>();
+            var businessValidator = sp.GetRequiredService<IUserValidator>();
+
+            var validatedService = new ValidatedUserService(
+                innerService,
+                createValidator,
+                updateValidator,
+                businessValidator);
+
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedUserService(innerService, currentUser, permissionChecker);
+            return new AuthorizedUserService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddScoped<RestaurantSettingsService>();
@@ -254,12 +271,6 @@ public static class DependencyInjection
 
             return new AuthorizedRestaurantImageService(validatedService, currentUser, permissionChecker);
         });
-        
-        
-        
-        
-        
-        
         
         
         services.AddValidatorsFromAssemblyContaining<RestaurantBasicInfoDto>();

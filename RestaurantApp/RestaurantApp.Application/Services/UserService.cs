@@ -11,7 +11,7 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
 
-public class UserService: IUserService
+public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -35,19 +35,8 @@ public class UserService: IUserService
 
     public async Task<Result<ResponseUserDto>> GetByIdAsync(string id, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-        {
-            return Result<ResponseUserDto>.ValidationError("User ID cannot be null or empty");
-        }
-
         var user = await _userRepository.GetByIdAsync(id, ct);
-
-        if (user == null)
-        {
-            return Result<ResponseUserDto>.NotFound($"User with ID '{id}' was not found");
-        }
-
-        return Result<ResponseUserDto>.Success(MapToResponseDto(user));
+        return Result<ResponseUserDto>.Success(MapToResponseDto(user!));
     }
 
     public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(
@@ -62,7 +51,6 @@ public class UserService: IUserService
         {
             var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount, ct);
             var responseUserDtos = users.Select(MapToResponseDto).ToList();
-
             return Result<IEnumerable<ResponseUserDto>>.Success(responseUserDtos);
         }
         catch (Exception ex)
@@ -74,17 +62,6 @@ public class UserService: IUserService
 
     public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(userDto.Email))
-        {
-            return Result<CreateUserDto>.ValidationError("Email is required");
-        }
-
-        var existingUser = await _userManager.FindByEmailAsync(userDto.Email);
-        if (existingUser != null)
-        {
-            return Result<CreateUserDto>.Conflict("User with this email already exists");
-        }
-
         var generatedPassword = _passwordService.GenerateSecurePassword();
 
         var user = new ApplicationUser
@@ -134,14 +111,9 @@ public class UserService: IUserService
     {
         var user = await _userManager.FindByIdAsync(dto.Id);
 
-        if (user == null)
-        {
-            return Result.Failure("User not found", 404);
-        }
+        UpdateUserFromDto(user!, dto);
 
-        UpdateUserFromDto(user, dto);
-
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(user!);
 
         if (!result.Succeeded)
         {
@@ -154,30 +126,19 @@ public class UserService: IUserService
 
     public async Task<Result> DeleteUserAsync(string userId, CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Result.Failure("User ID is required", 400);
-        }
-
         var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            return Result.Failure("User not found", 404);
-        }
 
-        var result = await _userManager.DeleteAsync(user);
+        var result = await _userManager.DeleteAsync(user!);
 
         if (!result.Succeeded)
         {
-            var errors = string.Join(Environment.NewLine, 
+            var errors = string.Join(Environment.NewLine,
                 result.Errors.Select(e => $"{e.Code}: {e.Description}"));
             return Result.Failure($"Failed to delete user: {errors}", 400);
         }
 
         return Result.Success();
     }
-
-    #region Private Methods
 
     private static ResponseUserDto MapToResponseDto(ApplicationUser user)
     {
@@ -195,13 +156,13 @@ public class UserService: IUserService
     {
         if (!string.IsNullOrWhiteSpace(dto.FirstName))
             user.FirstName = dto.FirstName;
-        
+
         if (!string.IsNullOrWhiteSpace(dto.LastName))
             user.LastName = dto.LastName;
-        
+
         if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
             user.PhoneNumber = dto.PhoneNumber;
-        
+
         if (!string.IsNullOrWhiteSpace(dto.Email))
         {
             user.Email = dto.Email;
@@ -234,6 +195,4 @@ public class UserService: IUserService
         var emailBody = new EmployeeAccontCreated(user.FirstName, password);
         await _emailComposer.SendAsync(user.Email!, emailBody);
     }
-
-    #endregion
 }

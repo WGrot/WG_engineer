@@ -58,7 +58,15 @@ public class TableService : ITableService
         table.Capacity = dto.Capacity;
         table.Location = dto.Location;
 
-        await _tableRepository.UpdateAsync(table);
+        try
+        {
+            await _tableRepository.UpdateAsync(table);
+        }
+        catch (Exception ex)
+        {
+            return Result.InternalError("Concurrency error while updating table.");
+        }
+
         return Result.Success();
     }
 

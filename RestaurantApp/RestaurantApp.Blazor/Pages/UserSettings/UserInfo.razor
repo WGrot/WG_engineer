@@ -124,7 +124,8 @@ else
             {
                 FirstName = modifiedUser.FirstName,
                 LastName = modifiedUser.LastName,
-                PhoneNumber = modifiedUser.PhoneNumber
+                PhoneNumber = modifiedUser.PhoneNumber,
+                Id = modifiedUser.Id,
             };
 
             var result = await Http.PatchAsJsonAsync($"api/User/{modifiedUser.Id}", dto);
