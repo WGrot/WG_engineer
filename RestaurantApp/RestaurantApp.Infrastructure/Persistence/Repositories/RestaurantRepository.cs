@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using NetTopologySuite.Geometries;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Models;
 
@@ -185,5 +186,29 @@ public class RestaurantRepository : IRestaurantRepository
             await _currentTransaction.DisposeAsync();
             _currentTransaction = null;
         }
+    }
+
+    public async Task<IEnumerable<(Restaurant Restaurant, double DistanceKm)>> GetNearbyAsync(
+        double latitude, 
+        double longitude, 
+        double radiusKm)
+    {
+        var userLocation = new Point(longitude, latitude) { SRID = 4326 };
+        var radiusMeters = radiusKm * 1000;
+
+        var results = await _context.Restaurants
+            .Include(r => r.ImageLinks)
+            .Include(r => r.OpeningHours)
+            .Where(r => r.LocationPoint != null)
+            .Where(r => r.LocationPoint!.IsWithinDistance(userLocation, radiusMeters))
+            .Select(r => new 
+            {
+                Restaurant = r,
+                DistanceMeters = r.LocationPoint!.Distance(userLocation)
+            })
+            .OrderBy(x => x.DistanceMeters)
+            .ToListAsync();
+
+        return results.Select(x => (x.Restaurant, x.DistanceMeters / 1000.0));
     }
 }

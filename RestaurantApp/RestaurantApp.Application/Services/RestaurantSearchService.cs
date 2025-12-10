@@ -55,58 +55,28 @@ public class RestaurantSearchService : IRestaurantSearchService
         var openRestaurants = await _restaurantRepository.GetOpenNowAsync(currentDay, now);
         return Result<IEnumerable<RestaurantDto>>.Success(openRestaurants.ToDtoList());
     }
-
+    
     public async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsAsync(
         double userLatitude,
         double userLongitude,
         double radiusKm = 10)
     {
-        var restaurants = await _restaurantRepository.GetWithLocationAsync();
-        var nearbyRestaurants = new List<NearbyRestaurantDto>();
+        var nearbyRestaurants = await _restaurantRepository.GetNearbyAsync(
+            userLatitude, 
+            userLongitude, 
+            radiusKm);
 
-        foreach (var restaurant in restaurants)
+        var result = nearbyRestaurants.Select(x => new NearbyRestaurantDto
         {
-            if (restaurant.Location == null) continue;
+            Id = x.Restaurant.Id,
+            Name = x.Restaurant.Name,
+            Address = x.Restaurant.Address,
+            Distance = Math.Round(x.DistanceKm, 2),
+            Latitude = x.Restaurant.Location?.Latitude ?? 0,
+            Longitude = x.Restaurant.Location?.Longitude ?? 0
+        });
 
-            var distance = CalculateHaversineDistance(
-                userLatitude,
-                userLongitude,
-                restaurant.Location.Latitude,
-                restaurant.Location.Longitude);
-
-            if (distance <= radiusKm)
-            {
-                nearbyRestaurants.Add(new NearbyRestaurantDto
-                {
-                    Id = restaurant.Id,
-                    Name = restaurant.Name,
-                    Address = restaurant.Address,
-                    Distance = Math.Round(distance, 2),
-                    Latitude = restaurant.Location.Latitude,
-                    Longitude = restaurant.Location.Longitude
-                });
-            }
-        }
-
-        var sortedRestaurants = nearbyRestaurants.OrderBy(r => r.Distance).ToList();
-        return Result<IEnumerable<NearbyRestaurantDto>>.Success(sortedRestaurants);
+        return Result<IEnumerable<NearbyRestaurantDto>>.Success(result);
     }
-
-    private static double CalculateHaversineDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        const double earthRadiusKm = 6371;
-
-        var dLat = ToRadians(lat2 - lat1);
-        var dLon = ToRadians(lon2 - lon1);
-
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-        return earthRadiusKm * c;
-    }
-
-    private static double ToRadians(double degrees) => degrees * (Math.PI / 180);
+    
 }

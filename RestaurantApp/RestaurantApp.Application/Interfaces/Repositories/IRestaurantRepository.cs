@@ -31,4 +31,9 @@ public interface IRestaurantRepository
     Task<IDisposable> BeginTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackTransactionAsync();
+    
+    Task<IEnumerable<(Restaurant Restaurant, double DistanceKm)>> GetNearbyAsync(
+        double latitude, 
+        double longitude, 
+        double radiusKm);
 }
