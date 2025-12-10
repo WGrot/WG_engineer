@@ -18,27 +18,27 @@ public class ReviewValidator : IReviewValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateReviewExistsAsync(int reviewId, CancellationToken ct = default)
+    public async Task<Result> ValidateReviewExistsAsync(int reviewId)
     {
-        var review = await _reviewRepository.GetByIdAsync(reviewId, ct);
+        var review = await _reviewRepository.GetByIdAsync(reviewId);
         if (review == null)
             return Result.NotFound($"Review with ID {reviewId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId, ct);
+        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateUserOwnsReviewAsync(int reviewId, string userId, CancellationToken ct = default)
+    public async Task<Result> ValidateUserOwnsReviewAsync(int reviewId, string userId)
     {
-        var review = await _reviewRepository.GetByIdAsync(reviewId, ct);
+        var review = await _reviewRepository.GetByIdAsync(reviewId);
         if (review == null)
             return Result.NotFound($"Review with ID {reviewId} not found.");
 
@@ -48,35 +48,35 @@ public class ReviewValidator : IReviewValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateUserHasNoReviewForRestaurantAsync(string userId, int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateUserHasNoReviewForRestaurantAsync(string userId, int restaurantId)
     {
-        var existingReview = await _reviewRepository.GetUserReviewForRestaurantAsync(userId, restaurantId, ct);
+        var existingReview = await _reviewRepository.GetUserReviewForRestaurantAsync(userId, restaurantId);
         if (existingReview != null)
             return Result.Conflict("User already submitted review for this restaurant.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(string userId, CreateReviewDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(string userId, CreateReviewDto dto)
     {
-        var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+        var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId);
         if (!restaurantResult.IsSuccess)
             return restaurantResult;
 
-        var duplicateResult = await ValidateUserHasNoReviewForRestaurantAsync(userId, dto.RestaurantId, ct);
+        var duplicateResult = await ValidateUserHasNoReviewForRestaurantAsync(userId, dto.RestaurantId);
         if (!duplicateResult.IsSuccess)
             return duplicateResult;
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(string userId, int reviewId, UpdateReviewDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(string userId, int reviewId, UpdateReviewDto dto)
     {
-        return await ValidateUserOwnsReviewAsync(reviewId, userId, ct);
+        return await ValidateUserOwnsReviewAsync(reviewId, userId);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(string userId, int reviewId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(string userId, int reviewId)
     {
-        return await ValidateUserOwnsReviewAsync(reviewId, userId, ct);
+        return await ValidateUserOwnsReviewAsync(reviewId, userId);
     }
 }

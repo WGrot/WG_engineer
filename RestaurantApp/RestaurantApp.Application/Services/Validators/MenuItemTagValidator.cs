@@ -18,7 +18,7 @@ public class MenuItemTagValidator: IMenuItemTagValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateTagExistsAsync(int tagId, CancellationToken ct = default)
+    public async Task<Result> ValidateTagExistsAsync(int tagId)
     {
         var exists = await _tagRepository.ExistsAsync(tagId);
         if (!exists)
@@ -27,7 +27,7 @@ public class MenuItemTagValidator: IMenuItemTagValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
         var exists = await _restaurantRepository.ExistsAsync(restaurantId);
         if (!exists)
@@ -36,21 +36,21 @@ public class MenuItemTagValidator: IMenuItemTagValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuItemTagDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuItemTagDto dto)
     {
-        return await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+        return await ValidateRestaurantExistsAsync(dto.RestaurantId);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int tagId, MenuItemTagDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int tagId, MenuItemTagDto dto)
     {
-        var tagResult = await ValidateTagExistsAsync(tagId, ct);
+        var tagResult = await ValidateTagExistsAsync(tagId);
         if (!tagResult.IsSuccess)
             return tagResult;
 
         var tag = await _tagRepository.GetByIdAsync(tagId);
         if (tag!.RestaurantId != dto.RestaurantId)
         {
-            var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+            var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId);
             if (!restaurantResult.IsSuccess)
                 return restaurantResult;
         }

@@ -18,37 +18,37 @@ public class MenuValidator : IMenuValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateMenuExistsAsync(int menuId, CancellationToken ct = default)
+    public async Task<Result> ValidateMenuExistsAsync(int menuId)
     {
-        var menu = await _menuRepository.GetByIdAsync(menuId, ct);
+        var menu = await _menuRepository.GetByIdAsync(menuId);
         if (menu == null)
             return Result.NotFound($"Menu with ID {menuId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuDto dto)
     {
-        return await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+        return await ValidateRestaurantExistsAsync(dto.RestaurantId);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int menuId, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int menuId)
     {
-        return await ValidateMenuExistsAsync(menuId, ct);
+        return await ValidateMenuExistsAsync(menuId);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int menuId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(int menuId)
     {
-        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId, ct);
+        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId);
         if (menu == null)
             return Result.NotFound($"Menu with ID {menuId} not found.");
 

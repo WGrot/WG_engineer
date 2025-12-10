@@ -14,7 +14,7 @@ public class MenuCategoryValidator: IMenuCategoryValidator
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto)
     {
         var menu = await _categoryRepository.GetMenuByIdAsync(dto.MenuId);
         if (menu == null)
@@ -23,12 +23,12 @@ public class MenuCategoryValidator: IMenuCategoryValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto)
     {
-        return await ValidateCategoryExistsAsync(dto.Id, ct);
+        return await ValidateCategoryExistsAsync(dto.Id);
     }
 
-    public async Task<Result> ValidateCategoryExistsAsync(int categoryId, CancellationToken ct = default)
+    public async Task<Result> ValidateCategoryExistsAsync(int categoryId)
     {
         var category = await _categoryRepository.GetByIdAsync(categoryId);
         if (category == null)

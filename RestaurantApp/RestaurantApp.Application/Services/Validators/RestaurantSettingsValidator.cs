@@ -13,7 +13,7 @@ public class RestaurantSettingsValidator : IRestaurantSettingsValidator
         _repository = repository;
     }
 
-    public async Task<Result> ValidateSettingsExistsAsync(int settingsId, CancellationToken ct = default)
+    public async Task<Result> ValidateSettingsExistsAsync(int settingsId)
     {
         var exists = await _repository.ExistsAsync(settingsId);
         if (!exists)
@@ -22,7 +22,7 @@ public class RestaurantSettingsValidator : IRestaurantSettingsValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateSettingsExistsByRestaurantIdAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateSettingsExistsByRestaurantIdAsync(int restaurantId)
     {
         var settings = await _repository.GetByRestaurantIdAsync(restaurantId);
         if (settings == null)
@@ -31,13 +31,13 @@ public class RestaurantSettingsValidator : IRestaurantSettingsValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int settingsId, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int settingsId)
     {
-        return await ValidateSettingsExistsAsync(settingsId, ct);
+        return await ValidateSettingsExistsAsync(settingsId);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int settingsId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(int settingsId)
     {
-        return await ValidateSettingsExistsAsync(settingsId, ct);
+        return await ValidateSettingsExistsAsync(settingsId);
     }
 }

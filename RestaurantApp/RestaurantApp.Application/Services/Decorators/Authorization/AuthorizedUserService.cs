@@ -23,49 +23,49 @@ public class AuthorizedUserService : IUserService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id, CancellationToken ct = default)
+    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
     {
         if (_currentUser.UserId != id)
         {
             return Result<ResponseUserDto>.Forbidden("You don't have permission to view other users' details.");
         }
         
-        return await _inner.GetByIdAsync(id, ct);
+        return await _inner.GetByIdAsync(id);
     }
 
-    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName, string? phoneNumber, string? email, int? amount,
-        CancellationToken ct = default)
+    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName, string? lastName,
+        string? phoneNumber, string? email, int? amount)
     {
         if (!await AuthorizeRestaurantPermission())
             return Result<IEnumerable<ResponseUserDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.SearchAsync(firstName, lastName, phoneNumber, email, amount, ct);
+        return await _inner.SearchAsync(firstName, lastName, phoneNumber, email, amount);
     }
 
-    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto, CancellationToken ct = default)
+    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
     {
         if (!await AuthorizeRestaurantPermission())
             return Result<CreateUserDto>.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.CreateAsync(userDto, ct);
+        return await _inner.CreateAsync(userDto);
     }
 
-    public async Task<Result> UpdateUserAsync(UpdateUserDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateUserAsync(UpdateUserDto dto)
     {
         if (_currentUser.UserId != dto.Id)
         {
             return Result.Forbidden("You don't have permission to view other users' details.");
         }
-        return await _inner.UpdateUserAsync(dto, ct);
+        return await _inner.UpdateUserAsync(dto);
     }
 
-    public async Task<Result> DeleteUserAsync(string userId, CancellationToken ct = default)
+    public async Task<Result> DeleteUserAsync(string userId)
     {
         if (_currentUser.UserId != userId)
         {
             return Result.Forbidden("You don't have permission to view other users' details.");
         }
-        return await _inner.DeleteUserAsync(userId, ct);
+        return await _inner.DeleteUserAsync(userId);
     }
 
     private async Task<bool> AuthorizeRestaurantPermission()

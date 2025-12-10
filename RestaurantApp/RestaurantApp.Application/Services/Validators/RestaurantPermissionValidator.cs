@@ -15,7 +15,7 @@ public class RestaurantPermissionValidator: IRestaurantPermissionValidator
         _repository = repository;
     }
 
-    public async Task<Result> ValidatePermissionExistsAsync(int permissionId, CancellationToken ct = default)
+    public async Task<Result> ValidatePermissionExistsAsync(int permissionId)
     {
         var permission = await _repository.GetByIdAsync(permissionId);
         if (permission == null)
@@ -24,7 +24,7 @@ public class RestaurantPermissionValidator: IRestaurantPermissionValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateEmployeeExistsAsync(int employeeId, CancellationToken ct = default)
+    public async Task<Result> ValidateEmployeeExistsAsync(int employeeId)
     {
         var exists = await _repository.EmployeeExistsAsync(employeeId);
         if (!exists)
@@ -33,9 +33,9 @@ public class RestaurantPermissionValidator: IRestaurantPermissionValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateRestaurantPermissionDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateRestaurantPermissionDto dto)
     {
-        var employeeResult = await ValidateEmployeeExistsAsync(dto.RestaurantEmployeeId, ct);
+        var employeeResult = await ValidateEmployeeExistsAsync(dto.RestaurantEmployeeId);
         if (!employeeResult.IsSuccess)
             return employeeResult;
 
@@ -49,13 +49,13 @@ public class RestaurantPermissionValidator: IRestaurantPermissionValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(RestaurantPermissionDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(RestaurantPermissionDto dto)
     {
-        var permissionResult = await ValidatePermissionExistsAsync(dto.Id, ct);
+        var permissionResult = await ValidatePermissionExistsAsync(dto.Id);
         if (!permissionResult.IsSuccess)
             return permissionResult;
 
-        var employeeResult = await ValidateEmployeeExistsAsync(dto.RestaurantEmployeeId, ct);
+        var employeeResult = await ValidateEmployeeExistsAsync(dto.RestaurantEmployeeId);
         if (!employeeResult.IsSuccess)
             return employeeResult;
 
@@ -74,8 +74,8 @@ public class RestaurantPermissionValidator: IRestaurantPermissionValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto)
     {
-        return await ValidateEmployeeExistsAsync(dto.EmployeeId, ct);
+        return await ValidateEmployeeExistsAsync(dto.EmployeeId);
     }
 }

@@ -21,25 +21,25 @@ public class EmployeeValidator : IEmployeeValidator
         _employeeRepository = employeeRepository;
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateEmployeeDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateEmployeeDto dto)
     {
-        var user = await _userRepository.GetByIdAsync(dto.UserId, ct);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
         if (user == null)
             return Result.NotFound($"User with ID {dto.UserId} not found.");
 
-        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
+        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(UpdateEmployeeDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(UpdateEmployeeDto dto)
     {
-        return await ValidateEmployeeExistsAsync(dto.Id, ct);
+        return await ValidateEmployeeExistsAsync(dto.Id);
     }
 
-    public async Task<Result> ValidateEmployeeExistsAsync(int employeeId, CancellationToken ct = default)
+    public async Task<Result> ValidateEmployeeExistsAsync(int employeeId)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
         if (employee == null)

@@ -15,67 +15,65 @@ public class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<Review?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Review?> GetByIdAsync(int id)
     {
-        return await _context.Reviews.FindAsync([id], ct);
+        return await _context.Reviews.FindAsync([id]);
     }
 
-    public async Task<Review?> GetByIdWithResponseAsync(int id, CancellationToken ct = default)
+    public async Task<Review?> GetByIdWithResponseAsync(int id)
     {
         return await _context.Reviews
             .Include(r => r.RestaurantResponse)
-            .FirstOrDefaultAsync(r => r.Id == id && r.IsActive, ct);
+            .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
     }
 
-    public async Task<Review?> GetByIdWithRestaurantAsync(int id, CancellationToken ct = default)
+    public async Task<Review?> GetByIdWithRestaurantAsync(int id)
     {
         return await _context.Reviews
             .Include(r => r.Restaurant)
             .Include(r => r.RestaurantResponse)
-            .FirstOrDefaultAsync(r => r.Id == id, ct);
+            .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    public async Task<List<Review>> GetAllActiveAsync(CancellationToken ct = default)
+    public async Task<List<Review>> GetAllActiveAsync()
     {
         return await _context.Reviews
             .Include(r => r.RestaurantResponse)
             .Where(r => r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(ct);
+            .ToListAsync();
     }
 
-    public async Task<List<Review>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<List<Review>> GetByRestaurantIdAsync(int restaurantId)
     {
         return await _context.Reviews
             .Include(r => r.RestaurantResponse)
             .Where(r => r.RestaurantId == restaurantId && r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(ct);
+            .ToListAsync();
     }
 
-    public async Task<List<Review>> GetByUserIdAsync(string userId, CancellationToken ct = default)
+    public async Task<List<Review>> GetByUserIdAsync(string userId)
     {
         return await _context.Reviews
             .Include(r => r.Restaurant)
             .Where(r => r.UserId == userId && r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(ct);
+            .ToListAsync();
     }
 
-    public async Task<Review?> GetUserReviewForRestaurantAsync(string userId, int restaurantId, CancellationToken ct = default)
+    public async Task<Review?> GetUserReviewForRestaurantAsync(string userId, int restaurantId)
     {
         return await _context.Reviews
             .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId 
                                       && r.UserId == userId 
-                                      && r.IsActive, ct);
+                                      && r.IsActive);
     }
 
-    public async Task<(List<Review> Reviews, int TotalCount)> GetByRestaurantIdPaginatedAsync(
-        int restaurantId,
+    public async Task<(List<Review> Reviews, int TotalCount)> GetByRestaurantIdPaginatedAsync(int restaurantId,
         int page,
         int pageSize,
-        string? sortBy,
-        CancellationToken ct = default)
+        string? sortBy)
     {
         var query = _context.Reviews
             .Include(r => r.RestaurantResponse)
@@ -89,12 +87,12 @@ public class ReviewRepository : IReviewRepository
             _ => query.OrderByDescending(r => r.CreatedAt)
         };
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync();
 
         var reviews = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(ct);
+            .ToListAsync();
 
         return (reviews, totalCount);
     }
@@ -109,8 +107,8 @@ public class ReviewRepository : IReviewRepository
         _context.Reviews.Remove(review);
     }
 
-    public async Task SaveChangesAsync(CancellationToken ct = default)
+    public async Task SaveChangesAsync()
     {
-        await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync();
     }
 }

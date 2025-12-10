@@ -18,7 +18,7 @@ public class TableValidator : ITableValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateTableExistsAsync(int tableId, CancellationToken ct = default)
+    public async Task<Result> ValidateTableExistsAsync(int tableId)
     {
         var table = await _tableRepository.GetByIdAsync(tableId);
         if (table == null)
@@ -27,7 +27,7 @@ public class TableValidator : ITableValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
         var exists = await _restaurantRepository.ExistsAsync(restaurantId);
         if (!exists)
@@ -36,11 +36,9 @@ public class TableValidator : ITableValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateTableNumberUniqueAsync(
-        string tableNumber,
+    public async Task<Result> ValidateTableNumberUniqueAsync(string tableNumber,
         int restaurantId,
-        int? excludeTableId = null,
-        CancellationToken ct = default)
+        int? excludeTableId = null)
     {
         var exists = await _tableRepository.TableNumberExistsInRestaurantAsync(
             tableNumber, restaurantId, excludeTableId);
@@ -51,20 +49,20 @@ public class TableValidator : ITableValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateTableDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(CreateTableDto dto)
     {
-        var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+        var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId);
         if (!restaurantResult.IsSuccess)
             return restaurantResult;
 
-        var uniqueResult = await ValidateTableNumberUniqueAsync(dto.TableNumber, dto.RestaurantId, ct: ct);
+        var uniqueResult = await ValidateTableNumberUniqueAsync(dto.TableNumber, dto.RestaurantId);
         if (!uniqueResult.IsSuccess)
             return uniqueResult;
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int tableId, UpdateTableDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int tableId, UpdateTableDto dto)
     {
         var table = await _tableRepository.GetByIdAsync(tableId);
         if (table == null)
@@ -73,7 +71,7 @@ public class TableValidator : ITableValidator
         if (table.TableNumber != dto.TableNumber)
         {
             var uniqueResult = await ValidateTableNumberUniqueAsync(
-                dto.TableNumber, table.RestaurantId, excludeTableId: tableId, ct: ct);
+                dto.TableNumber, table.RestaurantId, excludeTableId: tableId);
             if (!uniqueResult.IsSuccess)
                 return uniqueResult;
         }
@@ -81,7 +79,7 @@ public class TableValidator : ITableValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int tableId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(int tableId)
     {
         var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(tableId);
         if (table == null)
@@ -90,8 +88,8 @@ public class TableValidator : ITableValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateCapacityAsync(int tableId, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateCapacityAsync(int tableId)
     {
-        return await ValidateTableExistsAsync(tableId, ct);
+        return await ValidateTableExistsAsync(tableId);
     }
 }

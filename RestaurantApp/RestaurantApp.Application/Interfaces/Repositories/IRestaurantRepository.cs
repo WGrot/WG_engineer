@@ -5,10 +5,10 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 public interface IRestaurantRepository
 {
     Task<IEnumerable<Restaurant>> GetAllWithDetailsAsync();
-    Task<Restaurant?> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<Restaurant?> GetByIdAsync(int id);
     Task<Restaurant?> GetByIdWithDetailsAsync(int id);
     Task<Restaurant?> GetByIdWithSettingsAsync(int id);
-    Task<bool> ExistsAsync(int id, CancellationToken ct = default);
+    Task<bool> ExistsAsync(int id);
     Task AddAsync(Restaurant restaurant);
     void Update(Restaurant restaurant);
     void Delete(Restaurant restaurant);
@@ -27,7 +27,7 @@ public interface IRestaurantRepository
     
     Task<IEnumerable<Restaurant>> GetWithLocationAsync();
     
-    Task SaveChangesAsync(CancellationToken ct = default);
+    Task SaveChangesAsync();
     Task<IDisposable> BeginTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackTransactionAsync();

@@ -5,7 +5,7 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IRestaurantImageValidator
 {
-    Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default);
-    Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId, CancellationToken ct = default);
-    Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId, CancellationToken ct = default);
+    Task<Result> ValidateRestaurantExistsAsync(int restaurantId);
+    Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId);
+    Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId);
 }

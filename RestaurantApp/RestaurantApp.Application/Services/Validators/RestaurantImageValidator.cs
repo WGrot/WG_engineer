@@ -14,16 +14,16 @@ public class RestaurantImageValidator : IRestaurantImageValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId)
     {
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
         if (restaurant == null)
@@ -38,7 +38,7 @@ public class RestaurantImageValidator : IRestaurantImageValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId, CancellationToken ct = default)
+    public async Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId)
     {
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
         if (restaurant == null)

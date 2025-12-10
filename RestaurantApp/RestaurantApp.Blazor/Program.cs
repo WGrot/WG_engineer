@@ -25,8 +25,8 @@ builder.Services.AddTransient<AuthorizedHttpMessageHandler>();
 
 var apiBaseUrl = builder.Configuration.GetValue<string>("ApiBaseUrl");
 var baseAddress = string.IsNullOrEmpty(apiBaseUrl) 
-    ? builder.HostEnvironment.BaseAddress  // In Docker: http://localhost:3000/
-    : apiBaseUrl;                           // In dev: http://localhost:5031
+    ? builder.HostEnvironment.BaseAddress 
+    : apiBaseUrl;                           
 
 builder.Services.AddScoped(sp =>
 {

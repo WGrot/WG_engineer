@@ -18,7 +18,7 @@ public class ReservationValidator : IReservationValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateReservationExistsAsync(int reservationId, CancellationToken ct = default)
+    public async Task<Result> ValidateReservationExistsAsync(int reservationId)
     {
         var reservation = await _reservationRepository.GetByIdAsync(reservationId);
         if (reservation == null)
@@ -27,7 +27,7 @@ public class ReservationValidator : IReservationValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
     {
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
         if (restaurant == null)
@@ -36,7 +36,7 @@ public class ReservationValidator : IReservationValidator
         return Result.Success();
     }
 
-    public Task<Result> ValidateUserIdNotEmptyAsync(string userId, CancellationToken ct = default)
+    public Task<Result> ValidateUserIdNotEmptyAsync(string userId)
     {
         if (string.IsNullOrEmpty(userId))
             return Task.FromResult(Result.Failure("User ID is required.", 400));
@@ -44,9 +44,9 @@ public class ReservationValidator : IReservationValidator
         return Task.FromResult(Result.Success());
     }
 
-    public async Task<Result> ValidateUserOwnsReservationAsync(int reservationId, string userId, CancellationToken ct = default)
+    public async Task<Result> ValidateUserOwnsReservationAsync(int reservationId, string userId)
     {
-        var userIdResult = await ValidateUserIdNotEmptyAsync(userId, ct);
+        var userIdResult = await ValidateUserIdNotEmptyAsync(userId);
         if (!userIdResult.IsSuccess)
             return userIdResult;
 
@@ -57,23 +57,23 @@ public class ReservationValidator : IReservationValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(ReservationDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(ReservationDto dto)
     {
-        return await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
+        return await ValidateRestaurantExistsAsync(dto.RestaurantId);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int reservationId, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int reservationId)
     {
-        return await ValidateReservationExistsAsync(reservationId, ct);
+        return await ValidateReservationExistsAsync(reservationId);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int reservationId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(int reservationId)
     {
-        return await ValidateReservationExistsAsync(reservationId, ct);
+        return await ValidateReservationExistsAsync(reservationId);
     }
 
-    public async Task<Result> ValidateForCancelAsync(string userId, int reservationId, CancellationToken ct = default)
+    public async Task<Result> ValidateForCancelAsync(string userId, int reservationId)
     {
-        return await ValidateUserOwnsReservationAsync(reservationId, userId, ct);
+        return await ValidateUserOwnsReservationAsync(reservationId, userId);
     }
 }

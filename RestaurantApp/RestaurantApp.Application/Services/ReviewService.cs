@@ -23,107 +23,105 @@ public class ReviewService : IReviewService
         _userRepository = userRepository;
     }
 
-    public async Task<Result<ReviewDto>> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Result<ReviewDto>> GetByIdAsync(int id)
     {
-        var review = await _reviewRepository.GetByIdWithResponseAsync(id, ct);
+        var review = await _reviewRepository.GetByIdWithResponseAsync(id);
 
         return review == null
             ? Result<ReviewDto>.NotFound($"Review with ID {id} not found.")
             : Result.Success(review.ToDto());
     }
 
-    public async Task<Result<List<ReviewDto>>> GetAllAsync(CancellationToken ct = default)
+    public async Task<Result<List<ReviewDto>>> GetAllAsync()
     {
-        var reviews = await _reviewRepository.GetAllActiveAsync(ct);
+        var reviews = await _reviewRepository.GetAllActiveAsync();
         return Result.Success(reviews.ToDtoList());
     }
 
-    public async Task<Result<List<ReviewDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<Result<List<ReviewDto>>> GetByRestaurantIdAsync(int restaurantId)
     {
-        var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId, ct);
+        var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId);
         return Result.Success(reviews.ToDtoList());
     }
 
-    public async Task<Result<List<ReviewDto>>> GetByUserIdAsync(string userId, CancellationToken ct = default)
+    public async Task<Result<List<ReviewDto>>> GetByUserIdAsync(string userId)
     {
-        var reviews = await _reviewRepository.GetByUserIdAsync(userId, ct);
+        var reviews = await _reviewRepository.GetByUserIdAsync(userId);
         return Result.Success(reviews.ToDtoList());
     }
 
-    public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto, CancellationToken ct = default)
+    public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
-        var userName = await _userRepository.GetUserNameByIdAsync(userId, ct);
+        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
+        var userName = await _userRepository.GetUserNameByIdAsync(userId);
 
         var review = dto.ToEntity(userId, userName, restaurant!);
 
         _reviewRepository.Add(review);
-        await _reviewRepository.SaveChangesAsync(ct);
+        await _reviewRepository.SaveChangesAsync();
 
-        await RecalculateScoresAsync(restaurant!.Id, ct);
+        await RecalculateScoresAsync(restaurant!.Id);
 
         return Result.Success(review.ToDto());
     }
 
-    public async Task<Result<ReviewDto>> UpdateAsync(string userId, int id, UpdateReviewDto dto, CancellationToken ct = default)
+    public async Task<Result<ReviewDto>> UpdateAsync(string userId, int id, UpdateReviewDto dto)
     {
-        var review = await _reviewRepository.GetByIdWithRestaurantAsync(id, ct);
+        var review = await _reviewRepository.GetByIdWithRestaurantAsync(id);
 
         review!.UpdateEntity(dto);
-        await _reviewRepository.SaveChangesAsync(ct);
+        await _reviewRepository.SaveChangesAsync();
 
-        await RecalculateScoresAsync(review.RestaurantId, ct);
+        await RecalculateScoresAsync(review.RestaurantId);
 
         return Result.Success(review.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(string userId, int id, CancellationToken ct = default)
+    public async Task<Result> DeleteAsync(string userId, int id)
     {
-        var review = await _reviewRepository.GetByIdAsync(id, ct);
+        var review = await _reviewRepository.GetByIdAsync(id);
 
         _reviewRepository.Remove(review!);
-        await _reviewRepository.SaveChangesAsync(ct);
+        await _reviewRepository.SaveChangesAsync();
 
         return Result.Success();
     }
 
-    public async Task<Result> ToggleActiveStatusAsync(int id, CancellationToken ct = default)
+    public async Task<Result> ToggleActiveStatusAsync(int id)
     {
-        var review = await _reviewRepository.GetByIdAsync(id, ct);
+        var review = await _reviewRepository.GetByIdAsync(id);
 
         review!.IsActive = !review.IsActive;
         review.UpdatedAt = DateTime.UtcNow;
 
-        await _reviewRepository.SaveChangesAsync(ct);
+        await _reviewRepository.SaveChangesAsync();
 
         return Result.Success();
     }
 
-    public async Task<Result> VerifyReviewAsync(int id, CancellationToken ct = default)
+    public async Task<Result> VerifyReviewAsync(int id)
     {
-        var review = await _reviewRepository.GetByIdAsync(id, ct);
+        var review = await _reviewRepository.GetByIdAsync(id);
 
         review!.IsVerified = true;
         review.UpdatedAt = DateTime.UtcNow;
 
-        await _reviewRepository.SaveChangesAsync(ct);
+        await _reviewRepository.SaveChangesAsync();
 
         return Result.Success();
     }
 
-    public async Task<Result<PaginatedReviewsDto>> GetByRestaurantIdPaginatedAsync(
-        int restaurantId,
+    public async Task<Result<PaginatedReviewsDto>> GetByRestaurantIdPaginatedAsync(int restaurantId,
         int page,
         int pageSize,
-        string? sortBy,
-        CancellationToken ct = default)
+        string? sortBy)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 5;
         if (pageSize > 50) pageSize = 50;
 
         var (reviews, totalCount) = await _reviewRepository
-            .GetByRestaurantIdPaginatedAsync(restaurantId, page, pageSize, sortBy, ct);
+            .GetByRestaurantIdPaginatedAsync(restaurantId, page, pageSize, sortBy);
 
         var result = new PaginatedReviewsDto
         {
@@ -138,10 +136,10 @@ public class ReviewService : IReviewService
         return Result.Success(result);
     }
 
-    private async Task RecalculateScoresAsync(int restaurantId, CancellationToken ct = default)
+    private async Task RecalculateScoresAsync(int restaurantId)
     {
-        var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId, ct);
-        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId, ct);
+        var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId);
+        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
 
         if (restaurant == null) return;
 
@@ -162,6 +160,6 @@ public class ReviewService : IReviewService
         restaurant.TotalRatings5Star = ratingCounts[4];
         restaurant.TotalReviews = reviews.Count;
 
-        await _restaurantRepository.SaveChangesAsync(ct);
+        await _restaurantRepository.SaveChangesAsync();
     }
 }

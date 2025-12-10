@@ -25,9 +25,9 @@ public class RestaurantRepository : IRestaurantRepository
             .Include(r => r.OpeningHours)
             .ToListAsync();
     }
-    public async Task<Restaurant?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Restaurant?> GetByIdAsync(int id)
     {
-        return await _context.Restaurants.FindAsync([id], ct);
+        return await _context.Restaurants.FindAsync([id]);
     }
 
     public async Task<Restaurant?> GetByIdWithDetailsAsync(int id)
@@ -52,9 +52,9 @@ public class RestaurantRepository : IRestaurantRepository
     }
 
 
-    public async Task<bool> ExistsAsync(int restaurantId, CancellationToken ct = default)
+    public async Task<bool> ExistsAsync(int restaurantId)
     {
-        return await _context.Restaurants.AnyAsync(r => r.Id == restaurantId, ct);
+        return await _context.Restaurants.AnyAsync(r => r.Id == restaurantId);
     }
 
     public async Task AddAsync(Restaurant restaurant)
@@ -156,7 +156,7 @@ public class RestaurantRepository : IRestaurantRepository
             .ToListAsync();
     }
 
-    public async Task SaveChangesAsync(CancellationToken ct = default)
+    public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
     }

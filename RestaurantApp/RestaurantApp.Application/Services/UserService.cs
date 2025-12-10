@@ -33,23 +33,21 @@ public class UserService : IUserService
         _emailComposer = emailComposer;
     }
 
-    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id, CancellationToken ct = default)
+    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
     {
-        var user = await _userRepository.GetByIdAsync(id, ct);
+        var user = await _userRepository.GetByIdAsync(id);
         return Result<ResponseUserDto>.Success(MapToResponseDto(user!));
     }
 
-    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(
-        string? firstName,
+    public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName,
         string? lastName,
         string? phoneNumber,
         string? email,
-        int? amount,
-        CancellationToken ct = default)
+        int? amount)
     {
         try
         {
-            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount, ct);
+            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount);
             var responseUserDtos = users.Select(MapToResponseDto).ToList();
             return Result<IEnumerable<ResponseUserDto>>.Success(responseUserDtos);
         }
@@ -60,7 +58,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto, CancellationToken ct = default)
+    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
     {
         var generatedPassword = _passwordService.GenerateSecurePassword();
 
@@ -107,7 +105,7 @@ public class UserService : IUserService
         return Result<CreateUserDto>.Created(resultDto);
     }
 
-    public async Task<Result> UpdateUserAsync(UpdateUserDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateUserAsync(UpdateUserDto dto)
     {
         var user = await _userManager.FindByIdAsync(dto.Id);
 
@@ -124,7 +122,7 @@ public class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteUserAsync(string userId, CancellationToken ct = default)
+    public async Task<Result> DeleteUserAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
 

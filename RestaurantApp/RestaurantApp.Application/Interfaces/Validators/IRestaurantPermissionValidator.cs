@@ -6,9 +6,9 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IRestaurantPermissionValidator
 {
-    Task<Result> ValidatePermissionExistsAsync(int permissionId, CancellationToken ct = default);
-    Task<Result> ValidateEmployeeExistsAsync(int employeeId, CancellationToken ct = default);
-    Task<Result> ValidateForCreateAsync(CreateRestaurantPermissionDto dto, CancellationToken ct = default);
-    Task<Result> ValidateForUpdateAsync(RestaurantPermissionDto dto, CancellationToken ct = default);
-    Task<Result> ValidateForUpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto, CancellationToken ct = default);
+    Task<Result> ValidatePermissionExistsAsync(int permissionId);
+    Task<Result> ValidateEmployeeExistsAsync(int employeeId);
+    Task<Result> ValidateForCreateAsync(CreateRestaurantPermissionDto dto);
+    Task<Result> ValidateForUpdateAsync(RestaurantPermissionDto dto);
+    Task<Result> ValidateForUpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto);
 }

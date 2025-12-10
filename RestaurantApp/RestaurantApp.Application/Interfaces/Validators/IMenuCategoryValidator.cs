@@ -5,7 +5,7 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IMenuCategoryValidator
 {
-    Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto, CancellationToken ct = default);
-    Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto, CancellationToken ct = default);
-    Task<Result> ValidateCategoryExistsAsync(int categoryId, CancellationToken ct = default);
+    Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto);
+    Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto);
+    Task<Result> ValidateCategoryExistsAsync(int categoryId);
 }

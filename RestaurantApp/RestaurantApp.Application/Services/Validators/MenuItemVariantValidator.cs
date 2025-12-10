@@ -14,7 +14,7 @@ public class MenuItemVariantValidator : IMenuItemVariantValidator
         _repository = repository;
     }
 
-    public async Task<Result> ValidateVariantExistsAsync(int variantId, CancellationToken ct = default)
+    public async Task<Result> ValidateVariantExistsAsync(int variantId)
     {
         var variant = await _repository.GetByIdAsync(variantId);
         if (variant == null)
@@ -23,7 +23,7 @@ public class MenuItemVariantValidator : IMenuItemVariantValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateMenuItemExistsAsync(int menuItemId, CancellationToken ct = default)
+    public async Task<Result> ValidateMenuItemExistsAsync(int menuItemId)
     {
         var exists = await _repository.MenuItemExistsAsync(menuItemId);
         if (!exists)
@@ -32,18 +32,18 @@ public class MenuItemVariantValidator : IMenuItemVariantValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(MenuItemVariantDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForCreateAsync(MenuItemVariantDto dto)
     {
-        return await ValidateMenuItemExistsAsync(dto.MenuItemId, ct);
+        return await ValidateMenuItemExistsAsync(dto.MenuItemId);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int variantId, MenuItemVariantDto dto, CancellationToken ct = default)
+    public async Task<Result> ValidateForUpdateAsync(int variantId, MenuItemVariantDto dto)
     {
-        return await ValidateVariantExistsAsync(variantId, ct);
+        return await ValidateVariantExistsAsync(variantId);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int variantId, CancellationToken ct = default)
+    public async Task<Result> ValidateForDeleteAsync(int variantId)
     {
-        return await ValidateVariantExistsAsync(variantId, ct);
+        return await ValidateVariantExistsAsync(variantId);
     }
 }

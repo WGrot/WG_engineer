@@ -13,7 +13,7 @@ public class MenuItemValidator : IMenuItemValidator
         _repository = repository;
     }
 
-    public async Task<Result> ValidateMenuItemExistsAsync(int itemId, CancellationToken ct = default)
+    public async Task<Result> ValidateMenuItemExistsAsync(int itemId)
     {
         var item = await _repository.GetByIdAsync(itemId);
         if (item == null)
@@ -22,7 +22,7 @@ public class MenuItemValidator : IMenuItemValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateMenuExistsAsync(int menuId, CancellationToken ct = default)
+    public async Task<Result> ValidateMenuExistsAsync(int menuId)
     {
         var menu = await _repository.GetMenuByIdAsync(menuId);
         if (menu == null)
@@ -31,7 +31,7 @@ public class MenuItemValidator : IMenuItemValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateCategoryExistsAsync(int categoryId, CancellationToken ct = default)
+    public async Task<Result> ValidateCategoryExistsAsync(int categoryId)
     {
         var category = await _repository.GetCategoryByIdAsync(categoryId);
         if (category == null)
@@ -40,7 +40,7 @@ public class MenuItemValidator : IMenuItemValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateTagExistsAsync(int tagId, CancellationToken ct = default)
+    public async Task<Result> ValidateTagExistsAsync(int tagId)
     {
         var tag = await _repository.GetTagByIdAsync(tagId);
         if (tag == null)
@@ -49,15 +49,15 @@ public class MenuItemValidator : IMenuItemValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateMoveToCategory(int itemId, int? categoryId, CancellationToken ct = default)
+    public async Task<Result> ValidateMoveToCategory(int itemId, int? categoryId)
     {
-        var itemResult = await ValidateMenuItemExistsAsync(itemId, ct);
+        var itemResult = await ValidateMenuItemExistsAsync(itemId);
         if (!itemResult.IsSuccess)
             return itemResult;
 
         if (categoryId.HasValue)
         {
-            var categoryResult = await ValidateCategoryExistsAsync(categoryId.Value, ct);
+            var categoryResult = await ValidateCategoryExistsAsync(categoryId.Value);
             if (!categoryResult.IsSuccess)
                 return categoryResult;
         }
