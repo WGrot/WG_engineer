@@ -16,11 +16,13 @@ using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Restaurant;
+using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
 using RestaurantApp.Shared.Validators.Permission;
 using RestaurantApp.Shared.Validators.Reservation;
 using RestaurantApp.Shared.Validators.Reservations;
+using RestaurantApp.Shared.Validators.Table;
 
 namespace RestaurantApp.Application;
 
@@ -147,14 +149,30 @@ public static class DependencyInjection
             return new AuthorizedRestaurantPermissionService(validatedService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateTableDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateTableDtoValidator>();
+        services.AddScoped<ITableValidator, TableValidator>();
+
+
         services.AddScoped<TableService>();
         services.AddScoped<ITableService>(sp =>
         {
             var innerService = sp.GetRequiredService<TableService>();
+
+            var createValidator = sp.GetRequiredService<IValidator<CreateTableDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<UpdateTableDto>>();
+            var businessValidator = sp.GetRequiredService<ITableValidator>();
+
+            var validatedService = new ValidatedTableService(
+                innerService,
+                createValidator,
+                updateValidator,
+                businessValidator);
+
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedTableService(innerService, currentUser, permissionChecker);
+            return new AuthorizedTableService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddScoped<ReservationService>();
