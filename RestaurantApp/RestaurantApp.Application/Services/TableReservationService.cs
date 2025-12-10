@@ -11,12 +11,11 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
 
-public class TableReservationService: ITableReservationService
+public class TableReservationService : ITableReservationService
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly ITableRepository _tableRepository;
     private readonly IRestaurantRepository _restaurantRepository;
-    private readonly IUserRepository _userRepository;
     private readonly IEmailComposer _emailComposer;
     private readonly ICurrentUserService _currentUserService;
 
@@ -24,14 +23,12 @@ public class TableReservationService: ITableReservationService
         IReservationRepository reservationRepository,
         ITableRepository tableRepository,
         IRestaurantRepository restaurantRepository,
-        IUserRepository userRepository,
         IEmailComposer emailComposer,
         ICurrentUserService currentUserService)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
         _restaurantRepository = restaurantRepository;
-        _userRepository = userRepository;
         _emailComposer = emailComposer;
         _currentUserService = currentUserService;
     }
@@ -55,31 +52,9 @@ public class TableReservationService: ITableReservationService
     public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
     {
         var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(dto.TableId);
-        if (table == null)
-        {
-            return Result<TableReservationDto>.NotFound(
-                $"Table {dto.TableId} not found in restaurant {dto.RestaurantId}");
-        }
-        
-        var timeValidation = ValidateTimeRange(dto.StartTime, dto.EndTime);
-        if (timeValidation.IsFailure)
-            return Result<TableReservationDto>.Failure(timeValidation.Error, timeValidation.StatusCode);
-        
-        var hasConflict = await _reservationRepository.HasConflictingTableReservationAsync(
-            dto.TableId,
-            dto.ReservationDate,
-            dto.StartTime,
-            dto.EndTime);
-
-        if (hasConflict)
-            return Result<TableReservationDto>.Failure("Table is already reserved for this time period", 409);
-        
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(dto.RestaurantId);
-        if (restaurant == null)
-            return Result<TableReservationDto>.NotFound($"Restaurant {dto.RestaurantId} not found");
-        
-        
-        var needsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true;
+
+        var needsConfirmation = restaurant!.Settings?.ReservationsNeedConfirmation == true;
         var initialStatus = needsConfirmation
             ? ReservationStatusEnumDto.Pending
             : ReservationStatusEnumDto.Confirmed;
@@ -89,8 +64,7 @@ public class TableReservationService: ITableReservationService
         {
             userId = _currentUserService.UserId;
         }
-        
-        
+
         var reservation = new TableReservation
         {
             RestaurantId = dto.RestaurantId,
@@ -104,14 +78,14 @@ public class TableReservationService: ITableReservationService
             EndTime = dto.EndTime,
             Notes = dto.Notes,
             TableId = dto.TableId,
-            Table = table,
+            Table = table!,
             Status = initialStatus.ToDomain(),
             CreatedAt = DateTime.UtcNow,
             NeedsConfirmation = needsConfirmation
         };
 
         var created = await _reservationRepository.AddTableReservationAsync(reservation);
-        
+
         await SendReservationNotificationAsync(created, needsConfirmation);
 
         return Result<TableReservationDto>.Success(created.ToTableReservationDto());
@@ -120,54 +94,19 @@ public class TableReservationService: ITableReservationService
     public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto)
     {
         var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
-        if (existing == null)
-            return Result.NotFound($"Reservation with id {reservationId} not found");
-        
-        if (HasTimeOrTableChanged(existing, dto))
-        {
-            var hasConflict = await _reservationRepository.HasConflictingTableReservationAsync(
-                dto.TableId,
-                dto.ReservationDate,
-                dto.StartTime,
-                dto.EndTime,
-                excludeReservationId: reservationId);
 
-            if (hasConflict)
-                return Result.Failure("Table is already reserved for this time period", 409);
-        }
-        
-        UpdateReservationFromDto(existing, dto);
+        UpdateReservationFromDto(existing!, dto);
 
-        await _reservationRepository.UpdateTableReservationAsync(existing);
+        await _reservationRepository.UpdateTableReservationAsync(existing!);
         return Result.Success();
     }
 
     public async Task<Result> DeleteAsync(int reservationId)
     {
         var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
-        if (existing == null)
-            return Result.NotFound($"Reservation {reservationId} not found");
 
-        await _reservationRepository.DeleteAsync(existing);
+        await _reservationRepository.DeleteAsync(existing!);
         return Result.Success();
-    }
-
-    private static Result ValidateTimeRange(TimeOnly startTime, TimeOnly endTime)
-    {
-        if (startTime > endTime)
-            return Result.Failure("Start time cannot be after end time", 400);
-
-        if (startTime == endTime)
-            return Result.Failure("Start time cannot equal end time", 400);
-
-        return Result.Success();
-    }
-    private static bool HasTimeOrTableChanged(TableReservation existing, TableReservationDto dto)
-    {
-        return existing.TableId != dto.TableId ||
-               existing.ReservationDate != dto.ReservationDate ||
-               existing.StartTime != dto.StartTime ||
-               existing.EndTime != dto.EndTime;
     }
 
     private static void UpdateReservationFromDto(TableReservation reservation, TableReservationDto dto)

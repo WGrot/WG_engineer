@@ -14,10 +14,13 @@ using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.DTOs.Permissions;
+using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Validators.Employee;
 using RestaurantApp.Shared.Validators.Menu;
 using RestaurantApp.Shared.Validators.Permission;
+using RestaurantApp.Shared.Validators.Reservation;
+using RestaurantApp.Shared.Validators.Reservations;
 
 namespace RestaurantApp.Application;
 
@@ -281,7 +284,30 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         
-        services.AddScoped<ITableReservationService, TableReservationService>();
+        services.AddValidatorsFromAssemblyContaining<CreateTableReservationDtoValidator>();
+        services.AddScoped<ITableReservationValidator, TableReservationValidator>();
+
+
+        services.AddScoped<TableReservationService>();
+        services.AddScoped<ITableReservationService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<TableReservationService>();
+
+            var createValidator = sp.GetRequiredService<IValidator<CreateTableReservationDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<TableReservationDto>>();
+            var businessValidator = sp.GetRequiredService<ITableReservationValidator>();
+    
+            var validatedService = new ValidatedTableReservationService(
+                innerService,
+                createValidator,
+                updateValidator,
+                businessValidator);
+
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedTableReservationService(validatedService, currentUser, permissionChecker);
+        });
         return services;
     }
 }
