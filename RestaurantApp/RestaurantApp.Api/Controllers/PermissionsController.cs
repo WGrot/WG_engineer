@@ -13,13 +13,12 @@ public class PermissionsController : ControllerBase
 {
     private readonly IRestaurantPermissionService _permissionService;
     private readonly IEmployeeService _employeeService;
-    private readonly IAuthorizationService _authorizationService;
 
-    public PermissionsController(IRestaurantPermissionService permissionService, IEmployeeService employeeService, IAuthorizationService authorizationService)
+
+    public PermissionsController(IRestaurantPermissionService permissionService, IEmployeeService employeeService)
     {
         _permissionService = permissionService;
         _employeeService = employeeService;
-        _authorizationService = authorizationService;
     }
 
     [HttpGet]
@@ -39,7 +38,6 @@ public class PermissionsController : ControllerBase
     [HttpGet("employee/{employeeId}")]
     public async Task<IActionResult> GetByEmployee(int employeeId)
     {
-        
         var result = await _permissionService.GetByEmployeeIdAsync(employeeId);
         return result.ToActionResult();
     }
@@ -68,35 +66,19 @@ public class PermissionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateRestaurantPermissionDto permissionDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-        
-        var employeeResult = await _employeeService.GetByIdAsync(permissionDto.RestaurantEmployeeId);
-
-        if (employeeResult.IsFailure)
-            return StatusCode(employeeResult.StatusCode, new { error = employeeResult.Error });
-
-
-
         var result = await _permissionService.CreateAsync(permissionDto);
-        
+
         if (result.IsSuccess && result.StatusCode == 201)
         {
             return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
-        
+
         return result.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, RestaurantPermissionDto permission)
+    public async Task<IActionResult> Update(RestaurantPermissionDto permission)
     {
-        if (id != permission.Id)
-            return BadRequest(new { error = "not found" });
-
-        if (!ModelState.IsValid) 
-            return BadRequest(ModelState);
-        
         var result = await _permissionService.UpdateAsync(permission);
         return result.ToActionResult();
     }
@@ -105,10 +87,7 @@ public class PermissionsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _permissionService.DeleteAsync(id);
-        
-        if (result.IsSuccess)
-            return NoContent();
-            
+
         return result.ToActionResult();
     }
 }

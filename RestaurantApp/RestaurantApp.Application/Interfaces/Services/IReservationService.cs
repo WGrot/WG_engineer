@@ -14,9 +14,7 @@ public interface IReservationService
     Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto);
     Task<Result> DeleteAsync(int reservationId);
     
-    Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
-        string userId,
-        ReservationSearchParameters searchParams);
+    Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(ReservationSearchParameters searchParams);
     
     Task<Result> CancelUserReservationAsync(string userId, int reservationId);
     

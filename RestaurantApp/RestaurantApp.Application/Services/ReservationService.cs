@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Mappers.EnumMappers;
@@ -15,16 +16,19 @@ public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IRestaurantRepository _restaurantRepository;
+    private readonly ICurrentUserService _currentUserService;
 
     private const int DefaultPageSize = 5;
     private const int MaxPageSize = 50;
 
     public ReservationService(
         IReservationRepository reservationRepository,
-        IRestaurantRepository restaurantRepository)
+        IRestaurantRepository restaurantRepository,
+        ICurrentUserService currentUserService)
     {
         _reservationRepository = reservationRepository;
         _restaurantRepository = restaurantRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
@@ -87,10 +91,9 @@ public class ReservationService : IReservationService
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
-        string userId,
         ReservationSearchParameters searchParams)
     {
-        searchParams.UserId = userId;
+        searchParams.UserId = _currentUserService.UserId;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
 

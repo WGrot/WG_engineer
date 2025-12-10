@@ -41,23 +41,8 @@ public class RestaurantSettingsController : ControllerBase
     public async Task<IActionResult> Create(
         [FromBody] CreateRestaurantSettingsDto restaurantSettingsDto)
     {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var restaurant = await _restaurantService.GetByIdAsync(restaurantSettingsDto.RestaurantId);
-
-            if (restaurant.IsFailure)
-            {
-                return restaurant.ToActionResult();
-            }
-            
-
-
-            var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettingsDto);
-            return createdSettings.ToActionResult();
-
+        var createdSettings = await _restaurantSettingsService.CreateAsync(restaurantSettingsDto);
+        return createdSettings.ToActionResult();
     }
 
     [HttpGet("{restaurantId}/needs-confirmation")]
@@ -66,7 +51,7 @@ public class RestaurantSettingsController : ControllerBase
         var result = await _restaurantSettingsService.NeedConfirmationAsync(restaurantId);
         return result.ToActionResult();
     }
-    
+
     [HttpGet("{restaurantId}/get-restaurant-settings")]
     public async Task<IActionResult> GetByRestaurantId(int restaurantId)
     {
@@ -77,35 +62,21 @@ public class RestaurantSettingsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateRestaurantSettingsDto restaurantSettings)
     {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var updatedSettings = await _restaurantSettingsService.UpdateAsync(id, restaurantSettings);
-
-            return updatedSettings.ToActionResult();
-
+        var updatedSettings = await _restaurantSettingsService.UpdateAsync(id, restaurantSettings);
+        return updatedSettings.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-
-            var deleted = await _restaurantSettingsService.DeleteAsync(id);
-
-            return deleted.ToActionResult();
+        var deleted = await _restaurantSettingsService.DeleteAsync(id);
+        return deleted.ToActionResult();
     }
 
     [HttpHead("{id}")]
     public async Task<IActionResult> Exists(int id)
     {
-
-            var exists = await _restaurantSettingsService.ExistsAsync(id);
-
-
-            return exists.ToActionResult();
-
-
+        var exists = await _restaurantSettingsService.ExistsAsync(id);
+        return exists.ToActionResult();
     }
 }

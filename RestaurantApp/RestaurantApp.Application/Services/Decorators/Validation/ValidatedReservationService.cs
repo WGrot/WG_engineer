@@ -71,14 +71,9 @@ public class ValidatedReservationService : IReservationService
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
-        string userId,
         ReservationSearchParameters searchParams)
     {
-        var businessResult = await _businessValidator.ValidateUserIdNotEmptyAsync(userId);
-        if (!businessResult.IsSuccess)
-            return Result<PaginatedReservationsDto>.From(businessResult);
-
-        return await _inner.GetUserReservationsAsync(userId, searchParams);
+        return await _inner.GetUserReservationsAsync(searchParams);
     }
 
     public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)

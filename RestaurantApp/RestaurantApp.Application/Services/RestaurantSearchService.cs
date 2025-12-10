@@ -61,6 +61,22 @@ public class RestaurantSearchService : IRestaurantSearchService
         double userLongitude,
         double radiusKm = 10)
     {
+        
+        if (userLatitude < -90 || userLatitude > 90)
+        {
+            return Result<IEnumerable<NearbyRestaurantDto>>.Failure("Invalid latitude. Must be between -90 and 90.");
+        }
+    
+        if (userLongitude < -180 || userLongitude > 180)
+        {
+            return Result<IEnumerable<NearbyRestaurantDto>>.Failure("Invalid longitude. Must be between -180 and 180.");
+        }
+    
+        if (radiusKm <= 0 || radiusKm > 100)
+        {
+            radiusKm = 100;
+        }
+        
         var nearbyRestaurants = await _restaurantRepository.GetNearbyAsync(
             userLatitude, 
             userLongitude, 

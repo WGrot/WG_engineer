@@ -65,12 +65,13 @@ public class AuthorizedReservationService : IReservationService
         return await _inner.DeleteAsync(reservationId);
     }
 
-    public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(string userId, ReservationSearchParameters searchParams)
+    public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
+        ReservationSearchParameters searchParams)
     {
-        if(_currentUser.UserId != userId)
-            return Result<PaginatedReservationsDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+        if(_currentUser.IsAuthenticated)
+            return Result<PaginatedReservationsDto>.Forbidden("User can not see reservations without being logged in");
         
-        return await _inner.GetUserReservationsAsync(userId, searchParams);
+        return await _inner.GetUserReservationsAsync(searchParams);
     }
 
     public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)

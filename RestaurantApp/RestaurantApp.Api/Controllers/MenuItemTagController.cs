@@ -23,30 +23,29 @@ public class MenuItemTagController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetTags([FromQuery] int? restaurantId)
     {
-        var tags = await _tagService.GetTagsAsync(restaurantId);
-        return tags.ToActionResult();
+        var result = await _tagService.GetTagsAsync(restaurantId);
+        return result.ToActionResult();
     }
     
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTag(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        return tag.ToActionResult();
+        var result = await _tagService.GetTagByIdAsync(id);
+        return result.ToActionResult();
     }
     
     [HttpPost]
     public async Task<IActionResult> CreateTag([FromBody] CreateMenuItemTagDto tag)
     {
-        var createdTag = await _tagService.CreateTagAsync(tag);
-        return createdTag.ToActionResult();
+        var result = await _tagService.CreateTagAsync(tag);
+        return result.ToActionResult();
     }
     
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTag(int id, [FromBody] MenuItemTagDto tag)
     {
-        var updatedTag = await _tagService.UpdateTagAsync(id, tag);
-
-        return updatedTag.ToActionResult();
+        var result = await _tagService.UpdateTagAsync(id, tag);
+        return result.ToActionResult();
     }
     
     [HttpDelete("{id}")]

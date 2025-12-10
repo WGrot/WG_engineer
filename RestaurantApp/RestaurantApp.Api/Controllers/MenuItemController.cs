@@ -23,15 +23,15 @@ public class MenuItemController : ControllerBase
     [HttpGet("{id}/tags")]
     public async Task<IActionResult> GetMenuItemTags(int id)
     {
-        var tags = await _menuItemService.GetMenuItemTagsAsync(id);
-        return tags.ToActionResult();
+        var result = await _menuItemService.GetMenuItemTagsAsync(id);
+        return result.ToActionResult();
     }
 
     [HttpPost("{menuItemId}/tags/{tagId}")]
     public async Task<IActionResult> AddTagToMenuItem(int menuItemId, int tagId)
     {
-        var menuItem = await _menuItemService.AddTagToMenuItemAsync(menuItemId, tagId);
-        return menuItem.ToActionResult();
+        var result = await _menuItemService.AddTagToMenuItemAsync(menuItemId, tagId);
+        return result.ToActionResult();
     }
 
 
@@ -39,7 +39,6 @@ public class MenuItemController : ControllerBase
     public async Task<IActionResult> RemoveTagFromMenuItem(int menuItemId, int tagId)
     {
         var menuItem = await _menuItemService.RemoveTagFromMenuItemAsync(menuItemId, tagId);
-
         return menuItem.ToActionResult();
     }
 

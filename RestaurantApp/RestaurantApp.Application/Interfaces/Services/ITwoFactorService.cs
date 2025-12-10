@@ -10,7 +10,7 @@ public interface ITwoFactorService
     byte[] GenerateQrCodeImage(string qrCodeUri);
     bool ValidateCode(string encryptedKey, string code);
     
-    Task<Result<Enable2FAResponse>> EnableTwoFactorAsync(string userId);
-    Task<Result> VerifyAndEnableAsync(string userId, string code);
-    Task<Result> DisableTwoFactorAsync(string userId, string code);
+    Task<Result<Enable2FAResponse>> EnableTwoFactorAsync();
+    Task<Result> VerifyAndEnableAsync(string code);
+    Task<Result> DisableTwoFactorAsync(string code);
 }

@@ -15,17 +15,20 @@ public class PasswordService: IPasswordService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILinkGenerator _linkGenerator;
     private readonly IEmailComposer _emailComposer;
+    private readonly ICurrentUserService _currentUserService;
 
     public PasswordService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         ILinkGenerator linkGenerator,
-        IEmailComposer emailComposer)
+        IEmailComposer emailComposer,
+        ICurrentUserService currentUserService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _linkGenerator = linkGenerator;
         _emailComposer = emailComposer;
+        _currentUserService = currentUserService;
     }
 
     public string GenerateSecurePassword(int length = 16)
@@ -112,12 +115,14 @@ public class PasswordService: IPasswordService
         return Result.Success();
     }
 
-    public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
+    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest request)
     {
-        if (string.IsNullOrWhiteSpace(userId))
+        if (!_currentUserService.IsAuthenticated)
         {
-            return Result.Unauthorized("User not logged in");
+            return Result.Forbidden("User is not authenticated");
         }
+        
+        var userId = _currentUserService.UserId;
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
@@ -125,8 +130,6 @@ public class PasswordService: IPasswordService
             return Result.Unauthorized("User not logged in");
         }
         
-        
-
         var changeResult = await _userManager.ChangePasswordAsync(
             user, 
             request.CurrentPassword, 

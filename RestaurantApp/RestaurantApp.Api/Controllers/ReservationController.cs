@@ -53,7 +53,7 @@ public class ReservationController : ControllerBase
         if (userId == null)
             return Unauthorized("User is not authenticated.");
 
-        var result = await _reservationService.GetUserReservationsAsync(userId, searchParams);
+        var result = await _reservationService.GetUserReservationsAsync(searchParams);
         return result.ToActionResult();
     }
 

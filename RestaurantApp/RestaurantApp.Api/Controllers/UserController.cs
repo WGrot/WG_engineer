@@ -77,12 +77,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> DeleteUser(string userId)
     {
         var result = await _userService.DeleteUserAsync(userId);
-    
-        if (result.IsSuccess)
-        {
-            return Ok(new { message = "User deleted successfully" });
-        }
-    
-        return BadRequest(result);
+        return result.ToActionResult();
     }
 }

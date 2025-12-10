@@ -1,5 +1,6 @@
 ﻿using OtpNet;
 using QRCoder;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.Common;
@@ -11,11 +12,13 @@ public class TwoFactorService: ITwoFactorService
 {
     private readonly IEncryptionService _encryptionService;
     private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TwoFactorService(IEncryptionService encryptionService, IUserRepository userRepository)
+    public TwoFactorService(IEncryptionService encryptionService, IUserRepository userRepository, ICurrentUserService currentUserService)
     {
         _encryptionService = encryptionService;
         _userRepository = userRepository;
+        _currentUserService = currentUserService;
     }
 
     public string GenerateSecretKey()
@@ -44,9 +47,10 @@ public class TwoFactorService: ITwoFactorService
         return totp.VerifyTotp(code, out _, new VerificationWindow(2, 2));
     }
 
-    public async Task<Result<Enable2FAResponse>> EnableTwoFactorAsync(string userId)
+    public async Task<Result<Enable2FAResponse>> EnableTwoFactorAsync()
     {
-        var user = await _userRepository.GetByIdAsync(userId);
+        var userId = _currentUserService.UserId;
+        var user = await _userRepository.GetByIdAsync(userId!);
         if (user == null)
             return Result<Enable2FAResponse>.Failure("User not found");
 
@@ -66,9 +70,10 @@ public class TwoFactorService: ITwoFactorService
         });
     }
 
-    public async Task<Result> VerifyAndEnableAsync(string userId, string code)
+    public async Task<Result> VerifyAndEnableAsync(string code)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
+        var userId = _currentUserService.UserId;
+        var user = await _userRepository.GetByIdAsync(userId!);
         if (user == null)
             return Result.Failure("User not found");
 
@@ -84,9 +89,10 @@ public class TwoFactorService: ITwoFactorService
         return Result.Success();
     }
 
-    public async Task<Result> DisableTwoFactorAsync(string userId, string code)
+    public async Task<Result> DisableTwoFactorAsync(string code)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
+        var userId = _currentUserService.UserId;
+        var user = await _userRepository.GetByIdAsync(userId!);
         if (user == null)
             return Result.Failure("User not found");
 

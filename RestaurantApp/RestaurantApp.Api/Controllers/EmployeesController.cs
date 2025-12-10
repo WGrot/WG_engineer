@@ -24,35 +24,29 @@ public class EmployeesController : ControllerBase
     {
         if (restaurantId.HasValue)
         {
-            
             return (await _employeeService.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId.Value)).ToActionResult();
         }
 
         if (!string.IsNullOrEmpty(userId))
         {
-        
             return (await _employeeService.GetByUserIdAsync(userId)).ToActionResult();
         }
         
         return (await _employeeService.GetAllAsync()).ToActionResult();
     }
 
-
-
-
+    
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeDto dto)
     {
-
         var result = await _employeeService.CreateAsync(dto);
         return result.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update([FromQuery] int restaurantId, UpdateEmployeeDto dto)
+    public async Task<IActionResult> Update(UpdateEmployeeDto dto)
     {
         return (await _employeeService.UpdateAsync(dto)).ToActionResult();
-
     }
 
 

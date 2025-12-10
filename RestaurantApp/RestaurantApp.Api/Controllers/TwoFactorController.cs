@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 
@@ -15,47 +16,27 @@ public class TwoFactorController : ControllerBase
         _twoFactorService = twoFactorService;
     }
 
-    private string? GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
     [HttpPost("enable")]
-    public async Task<ActionResult<Enable2FAResponse>> EnableTwoFactor()
+    public async Task<IActionResult> EnableTwoFactor()
     {
-        var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        var result = await _twoFactorService.EnableTwoFactorAsync(userId);
+        var result = await _twoFactorService.EnableTwoFactorAsync();
         
-        return result.IsSuccess 
-            ? Ok(result.Value) 
-            : BadRequest(result.Error);
+        return result.ToActionResult();
     }
 
     [HttpPost("verify-and-enable")]
-    public async Task<ActionResult> VerifyAndEnable([FromBody] Verify2FARequest request)
+    public async Task<IActionResult> VerifyAndEnable([FromBody] Verify2FARequest request)
     {
-        var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
+        var result = await _twoFactorService.VerifyAndEnableAsync(request.Code);
 
-        var result = await _twoFactorService.VerifyAndEnableAsync(userId, request.Code);
-        
-        return result.IsSuccess 
-            ? Ok(new { message = "2FA has been successfully enabled" }) 
-            : BadRequest(result.Error);
+        return result.ToActionResult();
     }
 
     [HttpPost("disable")]
-    public async Task<ActionResult> DisableTwoFactor([FromBody] Verify2FARequest request)
+    public async Task<IActionResult> DisableTwoFactor([FromBody] Verify2FARequest request)
     {
-        var userId = GetUserId();
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
+        var result = await _twoFactorService.DisableTwoFactorAsync(request.Code);
 
-        var result = await _twoFactorService.DisableTwoFactorAsync(userId, request.Code);
-        
-        return result.IsSuccess 
-            ? Ok(new { message = "2FA has been disabled" }) 
-            : BadRequest(result.Error);
+        return result.ToActionResult();
     }
 }

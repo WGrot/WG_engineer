@@ -20,7 +20,10 @@ public class RestaurantController : ControllerBase
     private readonly IRestaurantDashboardService _restaurantDashboardService;
     private readonly IRestaurantOpeningHoursService _restaurantOpeningHoursService;
 
-    public RestaurantController(IRestaurantOpeningHoursService openingHoursService, IRestaurantSearchService restaurantSearchService, IRestaurantDashboardService restaurantDashboardService, RestaurantApp.Application.Interfaces.Services.IRestaurantService restaurantService, ILogger<RestaurantController> logger, IRestaurantImageService imageService)
+    public RestaurantController(IRestaurantOpeningHoursService openingHoursService,
+        IRestaurantSearchService restaurantSearchService, IRestaurantDashboardService restaurantDashboardService,
+        RestaurantApp.Application.Interfaces.Services.IRestaurantService restaurantService,
+        ILogger<RestaurantController> logger, IRestaurantImageService imageService)
     {
         _restaurantService = restaurantService;
         _restaurantSearchService = restaurantSearchService;
@@ -29,14 +32,14 @@ public class RestaurantController : ControllerBase
         _imageService = imageService;
         _restaurantOpeningHoursService = openingHoursService;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var restaurantsResult = await _restaurantService.GetAllAsync();
         return restaurantsResult.ToActionResult();
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -44,7 +47,7 @@ public class RestaurantController : ControllerBase
 
         return restaurantResult.ToActionResult();
     }
-    
+
     [HttpGet("search")]
     public async Task<IActionResult> Search(
         [FromQuery] string? name = null,
@@ -56,15 +59,14 @@ public class RestaurantController : ControllerBase
         var restaurants = await _restaurantSearchService.SearchAsync(name, address, page, pageSize, sortBy);
         return restaurants.ToActionResult();
     }
-    
-    [HttpGet("open-now")]
 
+    [HttpGet("open-now")]
     public async Task<IActionResult> GetOpenNow()
     {
         var openRestaurantsResult = await _restaurantSearchService.GetOpenNowAsync();
         return openRestaurantsResult.ToActionResult();
     }
-    
+
     [HttpGet("{id}/is-open")]
     public async Task<IActionResult> IsRestaurantOpen(
         int id,
@@ -77,20 +79,15 @@ public class RestaurantController : ControllerBase
         var statusResult = await _restaurantOpeningHoursService.CheckIfOpenAsync(id, checkTime, checkDay);
         return statusResult.ToActionResult();
     }
-    
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] RestaurantDto restaurantDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var createdRestaurantResult = await _restaurantService.CreateAsync(restaurantDto);
         return createdRestaurantResult.ToActionResult();
     }
-    
+
     [HttpPost("create-as-user")]
     [Authorize]
     public async Task<IActionResult> CreateAsUser([FromBody] CreateRestaurantDto restaurantDto)
@@ -98,40 +95,35 @@ public class RestaurantController : ControllerBase
         var createdRestaurantResult = await _restaurantService.CreateAsUserAsync(restaurantDto);
         return createdRestaurantResult.ToActionResult();
     }
-    
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] RestaurantDto updateRestaurantDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var result = await _restaurantService.UpdateAsync(id, updateRestaurantDto);
         return result.ToActionResult();
     }
-    
+
     [HttpPatch("{id}/basic-info")]
     public async Task<IActionResult> UpdateName(int id, [FromBody] RestaurantBasicInfoDto dto)
     {
         var result = await _restaurantService.UpdateBasicInfoAsync(id, dto);
         return result.ToActionResult();
     }
-    
+
     [HttpPatch("{id}/opening-hours")]
     public async Task<IActionResult> UpdateOpeningHours(int id, [FromBody] List<OpeningHoursDto> openingHours)
     {
         var result = await _restaurantOpeningHoursService.UpdateOpeningHoursAsync(id, openingHours);
         return result.ToActionResult();
     }
-    
+
     [HttpPatch("{id}/structured-address")]
     public async Task<IActionResult> UpdateStructuredAddress(int id, [FromBody] StructuresAddressDto newAddress)
     {
         var result = await _restaurantService.UpdateStructuredAddressAsync(id, newAddress);
         return result.ToActionResult();
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -143,7 +135,7 @@ public class RestaurantController : ControllerBase
     public async Task<IActionResult> UploadRestaurantProfilePhoto(IFormFile image, int id)
     {
         await using var stream = image.OpenReadStream();
-        
+
         var result = await _imageService.UploadProfilePhotoAsync(
             id,
             stream,
@@ -176,46 +168,32 @@ public class RestaurantController : ControllerBase
         var result = await _imageService.DeleteGalleryPhotoAsync(id, photoIndex);
         return result.ToActionResult();
     }
-    
+
     [HttpGet("{id}/dashboard-data")]
-    public async Task< IActionResult> GetDashboardData(int id){
+    public async Task<IActionResult> GetDashboardData(int id)
+    {
         var result = await _restaurantDashboardService.GetDashboardDataAsync(id);
         return result.ToActionResult();
     }
-    
+
     [HttpGet("names")]
     public async Task<IActionResult> GetNames([FromQuery] List<int> ids)
     {
         var result = await _restaurantService.GetRestaurantNamesAsync(ids);
         return result.ToActionResult();
     }
-    
+
     [HttpGet("nearby")]
     public async Task<IActionResult> GetNearbyRestaurants(
         [FromQuery] double latitude,
         [FromQuery] double longitude,
         [FromQuery] double radius = 10)
     {
-        if (latitude < -90 || latitude > 90)
-        {
-            return BadRequest("Invalid latitude. Must be between -90 and 90.");
-        }
-    
-        if (longitude < -180 || longitude > 180)
-        {
-            return BadRequest("Invalid longitude. Must be between -180 and 180.");
-        }
-    
-        if (radius <= 0 || radius > 100)
-        {
-            radius = 100;
-        }
-
         var result = await _restaurantSearchService.GetNearbyRestaurantsAsync(
-            latitude, 
-            longitude, 
+            latitude,
+            longitude,
             radius);
-        
+
         return result.ToActionResult();
     }
 }
