@@ -41,15 +41,12 @@ public class S3BucketService: IBucketService
                 await _s3Client.PutBucketAsync(request);
                 _logger.LogInformation("Created bucket: {BucketName}", bucketName);
                 
-                
-                // Set public read policy for images bucket
                 if (bucketName == _config.BucketNames.Images)
                 {
                     await SetBucketPolicyAsync(bucketName, allowPublicRead: true);
                 }
                 else
                 {
-                    // Keep other buckets private
                     await SetBucketPolicyAsync(bucketName, allowPublicRead: false);
                 }
             }
@@ -71,7 +68,6 @@ public class S3BucketService: IBucketService
             
             if (allowPublicRead)
             {
-                // Policy allowing public read access
                 policy = $$"""
                 {
                     "Version": "2012-10-17",
@@ -88,7 +84,6 @@ public class S3BucketService: IBucketService
             }
             else
             {
-                // Policy denying public access (private bucket)
                 policy = $$"""
                 {
                     "Version": "2012-10-17",

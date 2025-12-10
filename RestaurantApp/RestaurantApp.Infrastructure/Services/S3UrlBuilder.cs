@@ -54,8 +54,6 @@ public class S3UrlBuilder: IUrlBuilder
 
         var uri = new Uri(fileUrl);
         
-        // Handle MinIO and other S3-compatible storage
-        // Format: http://localhost:9000/bucket-name/path/to/file.jpg
         var pathParts = uri.AbsolutePath.TrimStart('/').Split('/', 2);
 
         if (pathParts.Length < 2)

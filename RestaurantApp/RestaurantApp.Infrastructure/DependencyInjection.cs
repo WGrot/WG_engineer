@@ -90,9 +90,9 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantSettingsRepository, RestaurantSettingsRepository>();
         services.AddSingleton<IJwtSettings, JwtSettings>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-        services.AddScoped<ITwoFactorService, TwoFactorService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IImageLinkRepository, ImageLinkRepository>();
+        services.AddScoped<ITotpProvider, TotpProvider>();
         return services;
     }
 }

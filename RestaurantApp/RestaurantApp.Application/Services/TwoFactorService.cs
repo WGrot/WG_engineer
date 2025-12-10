@@ -1,51 +1,26 @@
-﻿using OtpNet;
-using QRCoder;
-using RestaurantApp.Application.Interfaces;
+﻿using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 
-namespace RestaurantApp.Infrastructure.Services;
+namespace RestaurantApp.Application.Services;
 
 public class TwoFactorService: ITwoFactorService
 {
     private readonly IEncryptionService _encryptionService;
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ITotpProvider _totpProvider;
 
-    public TwoFactorService(IEncryptionService encryptionService, IUserRepository userRepository, ICurrentUserService currentUserService)
+    public TwoFactorService(IEncryptionService encryptionService, IUserRepository userRepository, ICurrentUserService currentUserService, ITotpProvider totpProvider)
     {
         _encryptionService = encryptionService;
         _userRepository = userRepository;
         _currentUserService = currentUserService;
+        _totpProvider = totpProvider;
     }
-
-    public string GenerateSecretKey()
-    {
-        var key = KeyGeneration.GenerateRandomKey(20);
-        return Base32Encoding.ToString(key);
-    }
-
-    public string GenerateQrCodeUri(string email, string secretKey, string issuer = "RestaurantApp")
-    {
-        return $"otpauth://totp/{issuer}:{email}?secret={secretKey}&issuer={issuer}";
-    }
-
-    public byte[] GenerateQrCodeImage(string qrCodeUri)
-    {
-        using var qrGenerator = new QRCodeGenerator();
-        using var qrCodeData = qrGenerator.CreateQrCode(qrCodeUri, QRCodeGenerator.ECCLevel.Q);
-        using var qrCode = new PngByteQRCode(qrCodeData);
-        return qrCode.GetGraphic(20);
-    }
-
-    public bool ValidateCode(string encryptedKey, string code)
-    {
-        var decryptedSecretKey = Base32Encoding.ToBytes(_encryptionService.Decrypt(encryptedKey));
-        var totp = new Totp(decryptedSecretKey);
-        return totp.VerifyTotp(code, out _, new VerificationWindow(2, 2));
-    }
+    
 
     public async Task<Result<Enable2FAResponse>> EnableTwoFactorAsync()
     {
@@ -54,9 +29,9 @@ public class TwoFactorService: ITwoFactorService
         if (user == null)
             return Result<Enable2FAResponse>.Failure("User not found");
 
-        var secretKey = GenerateSecretKey();
-        var qrCodeUri = GenerateQrCodeUri(user.Email!, secretKey);
-        var qrCodeImage = GenerateQrCodeImage(qrCodeUri);
+        var secretKey = _totpProvider.GenerateSecretKey();
+        var qrCodeUri = _totpProvider.GenerateQrCodeUri(user.Email!, secretKey);
+        var qrCodeImage = _totpProvider.GenerateQrCodeImage(qrCodeUri);
         var encryptedSecretKey = _encryptionService.Encrypt(secretKey);
 
         user.TwoFactorSecretKey = encryptedSecretKey;
@@ -80,7 +55,8 @@ public class TwoFactorService: ITwoFactorService
         if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
             return Result.Failure("2FA has not been initialized");
 
-        if (!ValidateCode(user.TwoFactorSecretKey, code))
+        var decryptedKey = _encryptionService.Decrypt(user.TwoFactorSecretKey);
+        if (!_totpProvider.ValidateCode(decryptedKey, code))
             return Result.Failure("Invalid code");
 
         user.TwoFactorEnabled = true;
@@ -99,7 +75,8 @@ public class TwoFactorService: ITwoFactorService
         if (!user.TwoFactorEnabled)
             return Result.Failure("2FA is not enabled");
 
-        if (!ValidateCode(user.TwoFactorSecretKey!, code))
+        var decryptedKey = _encryptionService.Decrypt(user.TwoFactorSecretKey!);
+        if (!_totpProvider.ValidateCode(decryptedKey, code))
             return Result.Failure("Invalid code");
 
         user.TwoFactorEnabled = false;

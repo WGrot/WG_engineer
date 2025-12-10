@@ -15,28 +15,31 @@ public class AuthService: IAuthService
     private readonly IUserRepository _userRepository;      
     private readonly IIdentityService _identityService;      
     private readonly ITokenService _tokenService;
-    private readonly ITwoFactorService _twoFactorService;
+    private readonly ITotpProvider _totpProvider;
     private readonly IEmailComposer _emailComposer;
     private readonly ILinkGenerator _emailLinkGenerator;
     private readonly ITokenBlacklistService _tokenBlacklistService;
+    private readonly IEncryptionService _encryptionService;
     
 
     public AuthService(
         IUserRepository userRepository,
         IIdentityService identityService,
         ITokenService tokenService,
-        ITwoFactorService twoFactorService,
+        ITotpProvider totpProvider,
         IEmailComposer emailComposer,
         ILinkGenerator emailLinkGenerator,
-        ITokenBlacklistService tokenBlacklistService)
+        ITokenBlacklistService tokenBlacklistService,
+        IEncryptionService encryptionService)
     {
         _userRepository = userRepository;
         _identityService = identityService;
         _tokenService = tokenService;
-        _twoFactorService = twoFactorService;
+        _totpProvider = totpProvider;
         _emailComposer = emailComposer;
         _emailLinkGenerator = emailLinkGenerator;
         _tokenBlacklistService = tokenBlacklistService;
+        _encryptionService = encryptionService;
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -220,7 +223,8 @@ public class AuthService: IAuthService
         if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
             return Result<LoginResponse>.Failure("2FA is not properly configured", 500);
 
-        bool isValid = _twoFactorService.ValidateCode(user.TwoFactorSecretKey, twoFactorCode);
+        var decryptedKey = _encryptionService.Decrypt(user.TwoFactorSecretKey);
+        bool isValid = _totpProvider.ValidateCode(decryptedKey, twoFactorCode);
         if (!isValid)
         {
             await _identityService.RecordFailedAccessAsync(user);

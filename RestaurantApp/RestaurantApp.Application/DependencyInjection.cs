@@ -8,7 +8,6 @@ using RestaurantApp.Application.Services.Decorators.Authorization;
 using RestaurantApp.Application.Services.Decorators.Validation;
 using RestaurantApp.Application.Services.Email;
 using RestaurantApp.Application.Services.Validators;
-using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
 using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
@@ -351,23 +350,10 @@ public static class DependencyInjection
             return new AuthorizedRestaurantService(validatedService, currentUser, permissionChecker);
         });
         
-        
-        
-        
-        services.AddTransient<IEmailComposer, EmailComposer>();
-        services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
-        services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
-        services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
-        services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
-        services.AddScoped<IPasswordService, PasswordService>();
-        services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IAuthService, AuthService>();
-        
         services.AddValidatorsFromAssemblyContaining<CreateTableReservationDtoValidator>();
         services.AddScoped<ITableReservationValidator, TableReservationValidator>();
-
-
+        services.AddScoped<ITwoFactorService, TwoFactorService>();
+        
         services.AddScoped<TableReservationService>();
         services.AddScoped<ITableReservationService>(sp =>
         {
@@ -388,6 +374,21 @@ public static class DependencyInjection
 
             return new AuthorizedTableReservationService(validatedService, currentUser, permissionChecker);
         });
+        
+        
+        services.AddTransient<IEmailComposer, EmailComposer>();
+        services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
+        services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
+        services.AddScoped<IRestaurantDashboardService, RestaurantDashboardService>();
+        services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        
+
+
+
         return services;
     }
 }
