@@ -1,5 +1,4 @@
-﻿// RestaurantApp.Application/Services/ReviewService.cs
-using RestaurantApp.Application.Interfaces;
+﻿using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
@@ -14,7 +13,6 @@ public class ReviewService : IReviewService
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
 
-
     public ReviewService(
         IReviewRepository reviewRepository,
         IRestaurantRepository restaurantRepository,
@@ -23,7 +21,6 @@ public class ReviewService : IReviewService
         _reviewRepository = reviewRepository;
         _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
-
     }
 
     public async Task<Result<ReviewDto>> GetByIdAsync(int id, CancellationToken ct = default)
@@ -55,25 +52,15 @@ public class ReviewService : IReviewService
 
     public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto, CancellationToken ct = default)
     {
-        if (dto.Rating < 1 || dto.Rating > 5)
-            return Result<ReviewDto>.Failure("Review rating must be between 1 and 5.");
-
         var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
-        if (restaurant == null)
-            return Result<ReviewDto>.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
-
         var userName = await _userRepository.GetUserNameByIdAsync(userId, ct);
 
-        var existingReview = await _reviewRepository.GetUserReviewForRestaurantAsync(userId, dto.RestaurantId, ct);
-        if (existingReview != null)
-            return Result<ReviewDto>.Failure("User already submitted review for this restaurant.");
-
-        var review = dto.ToEntity(userId, userName, restaurant);
+        var review = dto.ToEntity(userId, userName, restaurant!);
 
         _reviewRepository.Add(review);
         await _reviewRepository.SaveChangesAsync(ct);
 
-        await RecalculateScoresAsync(restaurant.Id, ct);
+        await RecalculateScoresAsync(restaurant!.Id, ct);
 
         return Result.Success(review.ToDto());
     }
@@ -81,16 +68,8 @@ public class ReviewService : IReviewService
     public async Task<Result<ReviewDto>> UpdateAsync(string userId, int id, UpdateReviewDto dto, CancellationToken ct = default)
     {
         var review = await _reviewRepository.GetByIdWithRestaurantAsync(id, ct);
-        if (review == null)
-            return Result<ReviewDto>.NotFound($"Review with ID {id} not found.");
 
-        if (review.UserId != userId)
-            return Result<ReviewDto>.Failure("User does not have access to this review.");
-
-        if (dto.Rating < 1 || dto.Rating > 5)
-            return Result<ReviewDto>.Failure("Review rating must be between 1 and 5.");
-
-        review.UpdateEntity(dto);
+        review!.UpdateEntity(dto);
         await _reviewRepository.SaveChangesAsync(ct);
 
         await RecalculateScoresAsync(review.RestaurantId, ct);
@@ -101,13 +80,8 @@ public class ReviewService : IReviewService
     public async Task<Result> DeleteAsync(string userId, int id, CancellationToken ct = default)
     {
         var review = await _reviewRepository.GetByIdAsync(id, ct);
-        if (review == null)
-            return Result.NotFound($"Review with ID {id} not found.");
 
-        if (review.UserId != userId)
-            return Result.Failure("User does not have access to this review.");
-
-        _reviewRepository.Remove(review);
+        _reviewRepository.Remove(review!);
         await _reviewRepository.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -116,10 +90,8 @@ public class ReviewService : IReviewService
     public async Task<Result> ToggleActiveStatusAsync(int id, CancellationToken ct = default)
     {
         var review = await _reviewRepository.GetByIdAsync(id, ct);
-        if (review == null)
-            return Result.NotFound($"Review with ID {id} not found.");
 
-        review.IsActive = !review.IsActive;
+        review!.IsActive = !review.IsActive;
         review.UpdatedAt = DateTime.UtcNow;
 
         await _reviewRepository.SaveChangesAsync(ct);
@@ -130,10 +102,8 @@ public class ReviewService : IReviewService
     public async Task<Result> VerifyReviewAsync(int id, CancellationToken ct = default)
     {
         var review = await _reviewRepository.GetByIdAsync(id, ct);
-        if (review == null)
-            return Result.NotFound($"Review with ID {id} not found.");
 
-        review.IsVerified = true;
+        review!.IsVerified = true;
         review.UpdatedAt = DateTime.UtcNow;
 
         await _reviewRepository.SaveChangesAsync(ct);
@@ -167,7 +137,7 @@ public class ReviewService : IReviewService
 
         return Result.Success(result);
     }
-    
+
     private async Task RecalculateScoresAsync(int restaurantId, CancellationToken ct = default)
     {
         var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId, ct);
@@ -177,7 +147,7 @@ public class ReviewService : IReviewService
 
         double sum = 0;
         int[] ratingCounts = new int[5];
-        
+
         foreach (var review in reviews)
         {
             sum += review.Rating;

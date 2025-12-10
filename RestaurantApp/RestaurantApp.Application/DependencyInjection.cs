@@ -16,6 +16,7 @@ using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.DTOs.Permissions;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Restaurant;
+using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.DTOs.Users;
 using RestaurantApp.Shared.Validators.Employee;
@@ -23,6 +24,7 @@ using RestaurantApp.Shared.Validators.Menu;
 using RestaurantApp.Shared.Validators.Permission;
 using RestaurantApp.Shared.Validators.Reservation;
 using RestaurantApp.Shared.Validators.Reservations;
+using RestaurantApp.Shared.Validators.Review;
 using RestaurantApp.Shared.Validators.Table;
 using RestaurantApp.Shared.Validators.User;
 
@@ -210,14 +212,30 @@ public static class DependencyInjection
             );
         });
         
+        services.AddValidatorsFromAssemblyContaining<CreateReviewDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateReviewDtoValidator>();
+        services.AddScoped<IReviewValidator, ReviewValidator>();
+
+
         services.AddScoped<ReviewService>();
         services.AddScoped<IReviewService>(sp =>
         {
             var innerService = sp.GetRequiredService<ReviewService>();
+
+            var createValidator = sp.GetRequiredService<IValidator<CreateReviewDto>>();
+            var updateValidator = sp.GetRequiredService<IValidator<UpdateReviewDto>>();
+            var businessValidator = sp.GetRequiredService<IReviewValidator>();
+
+            var validatedService = new ValidatedReviewService(
+                innerService,
+                createValidator,
+                updateValidator,
+                businessValidator);
+
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedReviewService(innerService, currentUser, permissionChecker);
+            return new AuthorizedReviewService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
