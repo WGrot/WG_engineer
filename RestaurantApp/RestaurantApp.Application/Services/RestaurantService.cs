@@ -71,7 +71,7 @@ public class RestaurantService : IRestaurantService
             Address = restaurantDto.Address
         };
 
-        InitializeOpeningHours(restaurant);
+        restaurant.InitializeOpeningHours();
 
         if (restaurantDto.OpeningHours?.Any() == true)
         {
@@ -94,13 +94,13 @@ public class RestaurantService : IRestaurantService
         {
             var restaurant = new Restaurant { Name = dto.Name, Address = dto.Address };
 
-            if (dto.StructuresAddress != null && IsStructuredAddressComplete(dto.StructuresAddress))
+            if (dto.StructuresAddress != null && dto.StructuresAddress.ToEntity().IsStructuredAddressComplete())
             {
                 restaurant.StructuredAddress = dto.StructuresAddress.ToEntity();
                 restaurant.Address = restaurant.StructuredAddress.ToCombinedString();
             }
 
-            InitializeOpeningHours(restaurant);
+            restaurant.InitializeOpeningHours();
             await _restaurantRepository.AddAsync(restaurant);
             await _restaurantRepository.SaveChangesAsync();
 
@@ -125,7 +125,13 @@ public class RestaurantService : IRestaurantService
                 RestaurantId = restaurant.Id,
                 ReservationsNeedConfirmation = true
             });
-            await GeocodeRestaurantAsync(restaurant);
+            var geocodeResult = await GeocodeRestaurantAsync(restaurant);
+            
+            if (geocodeResult.IsFailure)
+            {
+                return Result<RestaurantDto>.Failure(geocodeResult.Error!, geocodeResult.StatusCode);
+            }
+            
             await _restaurantRepository.SaveChangesAsync();
 
             await _restaurantRepository.CommitTransactionAsync();
@@ -178,8 +184,13 @@ public class RestaurantService : IRestaurantService
         restaurant!.StructuredAddress = dto.ToEntity();
         restaurant.Address = restaurant.StructuredAddress.ToCombinedString();
 
-        await GeocodeRestaurantAsync(restaurant);
+        var result = await GeocodeRestaurantAsync(restaurant);
 
+        if (result.IsFailure)
+        {
+            return result;
+        }
+        
         _restaurantRepository.Update(restaurant);
         await _restaurantRepository.SaveChangesAsync();
 
@@ -196,12 +207,6 @@ public class RestaurantService : IRestaurantService
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetTablesAsync(int restaurantId)
-    {
-        var tables = await _tableRepository.GetByRestaurantIdWithSeatsAsync(restaurantId);
-        return Result<IEnumerable<TableDto>>.Success(tables.ToDtoList());
-    }
-
     public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids)
     {
         var restaurants = await _restaurantRepository.GetByIdsAsync(ids);
@@ -214,59 +219,41 @@ public class RestaurantService : IRestaurantService
 
         return Result<List<RestaurantDto>>.Success(result);
     }
-
-    private static void InitializeOpeningHours(Restaurant restaurant)
+    
+    private async Task<Result> GeocodeRestaurantAsync(Restaurant restaurant)
     {
-        restaurant.OpeningHours = new List<OpeningHours>();
-
-        foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
-        {
-            restaurant.OpeningHours.Add(new OpeningHours
-            {
-                DayOfWeek = day,
-                OpenTime = new TimeOnly(10, 0),
-                CloseTime = new TimeOnly(22, 0),
-                RestaurantId = restaurant.Id
-            });
-        }
-    }
-
-    private static bool IsStructuredAddressComplete(StructuresAddressDto address)
-    {
-        return !string.IsNullOrEmpty(address.City) &&
-               !string.IsNullOrEmpty(address.Street) &&
-               !string.IsNullOrEmpty(address.PostalCode) &&
-               !string.IsNullOrEmpty(address.Country);
-    }
-
-    private async Task GeocodeRestaurantAsync(Restaurant restaurant)
-    {
+        double? lat = null;
+        double? lon = null;
+        
         if (restaurant.StructuredAddress != null &&
             !string.IsNullOrEmpty(restaurant.StructuredAddress.Street) &&
             !string.IsNullOrEmpty(restaurant.StructuredAddress.City))
         {
-            var (lat, lon) = await _geocodingService.GeocodeStructuredAsync(
+            (lat, lon) = await _geocodingService.GeocodeStructuredAsync(
                 restaurant.StructuredAddress.Street,
                 restaurant.StructuredAddress.City,
                 restaurant.StructuredAddress.PostalCode,
-                restaurant.StructuredAddress.Country ?? "Polska");
+                restaurant.StructuredAddress.Country);
+        }
 
-            restaurant.Location = new GeoLocation
-            {
-                Latitude = (double)lat,
-                Longitude = (double)lon
-            };
-            restaurant.LocationPoint = new Point((double)lon, (double)lat) { SRID = 4326 };
-        }
-        else if (!string.IsNullOrEmpty(restaurant.Address))
+        if (!string.IsNullOrEmpty(restaurant.Address))
         {
-            var (lat, lon) = await _geocodingService.GeocodeAddressAsync(restaurant.Address);
-            restaurant.Location = new GeoLocation
-            {
-                Latitude = (double)lat,
-                Longitude = (double)lon
-            };
+            (lat, lon) = await _geocodingService.GeocodeAddressAsync(restaurant.Address);
         }
+
+        if (lat == null || lon == null)
+        {
+            return Result.Failure("Cannot geocode the restaurant address.", 422);
+        }
+        
+        restaurant.Location = new GeoLocation
+        {
+            Latitude = (double)lat,
+            Longitude = (double)lon
+        };
+        restaurant.LocationPoint = new Point((double)lon, (double)lat) { SRID = 4326 };
+        
+        return Result.Success();
     }
 
     private async Task SendRestaurantCreatedEmailAsync(CreateRestaurantDto dto)

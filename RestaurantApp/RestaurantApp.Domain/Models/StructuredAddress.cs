@@ -4,7 +4,7 @@ public class StructuredAddress
 {
     public string Street { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
-    public string? PostalCode { get; set; }
+    public string PostalCode { get; set; } = string.Empty;
     public string Country { get; set; } = "Poland";
     
     public string ToCombinedString()
@@ -30,5 +30,14 @@ public class StructuredAddress
             parts.Add(Country.Trim());
 
         return string.Join(", ", parts);
+    }
+    
+    
+    public bool IsStructuredAddressComplete()
+    {
+        return !string.IsNullOrEmpty(City) &&
+               !string.IsNullOrEmpty(Street) &&
+               !string.IsNullOrEmpty(PostalCode) &&
+               !string.IsNullOrEmpty(Country);
     }
 }

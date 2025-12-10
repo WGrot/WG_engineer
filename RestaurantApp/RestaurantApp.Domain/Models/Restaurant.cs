@@ -59,4 +59,20 @@ public class Restaurant
         return ImageLinks.Any(l => l.Type == ImageType.RestaurantProfile);
     }
     
+    public void InitializeOpeningHours()
+    {
+        OpeningHours = new List<OpeningHours>();
+
+        foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            OpeningHours.Add(new OpeningHours
+            {
+                DayOfWeek = day,
+                OpenTime = new TimeOnly(10, 0),
+                CloseTime = new TimeOnly(22, 0),
+                RestaurantId = Id
+            });
+        }
+    }
+    
 }

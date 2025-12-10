@@ -132,7 +132,11 @@
         }
         else
         {
-            errorMessage = "Failed to create restaurant. Please try again.";
+            errorMessage = (int)response.StatusCode switch
+            {
+                422 => "Geocoding error, try correcting the address",
+                _ => "Failed to create restaurant. Please try again."
+            };
         }
     }
 }
