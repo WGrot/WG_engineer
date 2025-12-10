@@ -60,7 +60,8 @@ public partial class EditReviewModal : ComponentBase
                     Content = tempContent.Trim(),
                     CreatedAt = Review.CreatedAt,
                     UpdatedAt = DateTime.Now,
-                    IsVerified = Review.IsVerified
+                    IsVerified = Review.IsVerified,
+                    RestaurantAddress = Review.RestaurantAddress
                 };
 
                 await OnUpdate.InvokeAsync(updatedReview);
