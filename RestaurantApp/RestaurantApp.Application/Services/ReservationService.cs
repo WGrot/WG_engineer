@@ -11,7 +11,7 @@ using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
 
-public class ReservationService: IReservationService
+public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IRestaurantRepository _restaurantRepository;
@@ -26,14 +26,13 @@ public class ReservationService: IReservationService
         _reservationRepository = reservationRepository;
         _restaurantRepository = restaurantRepository;
     }
-    
 
     public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
     {
         var reservation = await _reservationRepository.GetByIdWithRestaurantAsync(reservationId);
 
         if (reservation == null)
-            return Result<ReservationDto>.NotFound("Reservation not found");
+            return Result<ReservationDto>.NotFound("Reservation not found.");
 
         return Result<ReservationDto>.Success(reservation.ToDto());
     }
@@ -47,9 +46,6 @@ public class ReservationService: IReservationService
     public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto)
     {
         var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(reservationDto.RestaurantId);
-
-        if (restaurant == null)
-            return Result<ReservationDto>.NotFound($"Restaurant {reservationDto.RestaurantId} not found");
 
         var reservation = new ReservationBase
         {
@@ -65,7 +61,7 @@ public class ReservationService: IReservationService
             Notes = reservationDto.Notes,
             Status = ReservationStatusEnumDto.Pending.ToDomain(),
             CreatedAt = DateTime.UtcNow,
-            NeedsConfirmation = restaurant.Settings?.ReservationsNeedConfirmation == true
+            NeedsConfirmation = restaurant!.Settings?.ReservationsNeedConfirmation == true
         };
 
         var created = await _reservationRepository.AddAsync(reservation);
@@ -76,10 +72,7 @@ public class ReservationService: IReservationService
     {
         var existing = await _reservationRepository.GetByIdAsync(reservationId);
 
-        if (existing == null)
-            return Result.NotFound($"Reservation {reservationId} not found");
-
-        existing.UpdateFromDto(reservationDto);
+        existing!.UpdateFromDto(reservationDto);
         await _reservationRepository.UpdateAsync(existing);
 
         return Result.Success();
@@ -89,20 +82,14 @@ public class ReservationService: IReservationService
     {
         var existing = await _reservationRepository.GetByIdAsync(reservationId);
 
-        if (existing == null)
-            return Result.NotFound($"Reservation {reservationId} not found");
-
-        await _reservationRepository.DeleteAsync(existing);
+        await _reservationRepository.DeleteAsync(existing!);
         return Result.Success();
     }
-    
+
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
         string userId,
         ReservationSearchParameters searchParams)
     {
-        if (string.IsNullOrEmpty(userId))
-            return Result<PaginatedReservationsDto>.Failure("User ID is required.");
-        
         searchParams.UserId = userId;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
@@ -115,35 +102,25 @@ public class ReservationService: IReservationService
 
     public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)
     {
-        if (string.IsNullOrEmpty(userId))
-            return Result.Failure("User ID is required.", 400);
-
         var reservation = await _reservationRepository.GetByIdAndUserIdAsync(reservationId, userId);
 
-        if (reservation == null)
-            return Result.Failure("Reservation not found or does not belong to the user", 404);
-
-        reservation.Status = ReservationStatus.Cancelled;
+        reservation!.Status = ReservationStatus.Cancelled;
         await _reservationRepository.UpdateAsync(reservation);
 
         return Result.Success();
     }
-    
 
     public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(
         string userId,
         ReservationSearchParameters searchParams)
     {
-        if (string.IsNullOrEmpty(userId))
-            return Result<PaginatedReservationsDto>.Failure("User ID is required.");
-
         var managedRestaurantIds = await _reservationRepository.GetManagedRestaurantIdsAsync(userId);
 
         if (!managedRestaurantIds.Any())
         {
             return Result<PaginatedReservationsDto>.Success(CreateEmptyPaginatedResult(searchParams));
         }
-        
+
         searchParams.RestaurantIds = managedRestaurantIds;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
@@ -158,15 +135,11 @@ public class ReservationService: IReservationService
     {
         var reservation = await _reservationRepository.GetByIdAsync(reservationId);
 
-        if (reservation == null)
-            return Result.NotFound($"Reservation {reservationId} not found");
-
-        reservation.Status = status.ToDomain();
+        reservation!.Status = status.ToDomain();
         await _reservationRepository.UpdateAsync(reservation);
 
         return Result.Success();
     }
-    
 
     public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams)
     {

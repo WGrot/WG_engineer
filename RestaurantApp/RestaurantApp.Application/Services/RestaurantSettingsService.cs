@@ -8,17 +8,13 @@ using RestaurantApp.Shared.DTOs.Settings;
 
 namespace RestaurantApp.Application.Services;
 
-public class RestaurantSettingsService: IRestaurantSettingsService
+public class RestaurantSettingsService : IRestaurantSettingsService
 {
     private readonly IRestaurantSettingsRepository _repository;
-    private readonly ILogger<RestaurantSettingsService> _logger;
 
-    public RestaurantSettingsService(
-        IRestaurantSettingsRepository repository,
-        ILogger<RestaurantSettingsService> logger)
+    public RestaurantSettingsService(IRestaurantSettingsRepository repository)
     {
         _repository = repository;
-        _logger = logger;
     }
 
     public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync()
@@ -32,9 +28,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
         var settings = await _repository.GetByIdAsync(id);
 
         if (settings is null)
-        {
-            return Result<SettingsDto>.NotFound($"Restaurant settings with id {id} not found");
-        }
+            return Result<SettingsDto>.NotFound($"Restaurant settings with ID {id} not found.");
 
         return Result<SettingsDto>.Success(settings.ToDto());
     }
@@ -44,10 +38,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
         var settings = await _repository.GetByRestaurantIdAsync(restaurantId);
 
         if (settings is null)
-        {
-            return Result<SettingsDto>.NotFound(
-                $"Restaurant settings for restaurant {restaurantId} not found");
-        }
+            return Result<SettingsDto>.NotFound($"Restaurant settings for restaurant {restaurantId} not found.");
 
         return Result<SettingsDto>.Success(settings.ToDto());
     }
@@ -68,12 +59,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
     {
         var existingSettings = await _repository.GetByIdAsync(id);
 
-        if (existingSettings is null)
-        {
-            return Result<SettingsDto>.NotFound($"Restaurant settings with id {id} not found");
-        }
-
-        existingSettings.ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation;
+        existingSettings!.ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation;
 
         await _repository.UpdateAsync(existingSettings);
         return Result<SettingsDto>.Success(existingSettings.ToDto());
@@ -83,12 +69,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
     {
         var settings = await _repository.GetByIdAsync(id);
 
-        if (settings is null)
-        {
-            return Result.NotFound($"Restaurant settings with id {id} not found");
-        }
-
-        await _repository.DeleteAsync(settings);
+        await _repository.DeleteAsync(settings!);
         return Result.Success();
     }
 
@@ -97,9 +78,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
         var exists = await _repository.ExistsAsync(id);
 
         if (!exists)
-        {
-            return Result<bool>.NotFound($"Restaurant settings with id {id} not found");
-        }
+            return Result<bool>.NotFound($"Restaurant settings with ID {id} not found.");
 
         return Result<bool>.Success(true);
     }
@@ -109,10 +88,7 @@ public class RestaurantSettingsService: IRestaurantSettingsService
         var settings = await _repository.GetByRestaurantIdAsync(restaurantId);
 
         if (settings is null)
-        {
-            return Result<bool>.NotFound(
-                $"Restaurant settings for restaurant {restaurantId} not found");
-        }
+            return Result<bool>.NotFound($"Restaurant settings for restaurant {restaurantId} not found.");
 
         return Result<bool>.Success(settings.ReservationsNeedConfirmation);
     }

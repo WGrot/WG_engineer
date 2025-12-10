@@ -192,14 +192,26 @@ public static class DependencyInjection
             return new AuthorizedTableService(validatedService, currentUser, permissionChecker);
         });
         
+        services.AddValidatorsFromAssemblyContaining<ReservationDtoValidator>();
+        services.AddScoped<IReservationValidator, ReservationValidator>();
+        
         services.AddScoped<ReservationService>();
         services.AddScoped<IReservationService>(sp =>
         {
             var innerService = sp.GetRequiredService<ReservationService>();
+
+            var validator = sp.GetRequiredService<IValidator<ReservationDto>>();
+            var businessValidator = sp.GetRequiredService<IReservationValidator>();
+
+            var validatedService = new ValidatedReservationService(
+                innerService,
+                validator,
+                businessValidator);
+
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedReservationService(innerService, currentUser, permissionChecker);
+            return new AuthorizedReservationService(validatedService, currentUser, permissionChecker);
         });
         
         services.AddValidatorsFromAssemblyContaining<CreateEmployeeDtoValidator>();
@@ -276,14 +288,22 @@ public static class DependencyInjection
             return new AuthorizedUserService(validatedService, currentUser, permissionChecker);
         });
         
+        services.AddScoped<IRestaurantSettingsValidator, RestaurantSettingsValidator>();
+        
         services.AddScoped<RestaurantSettingsService>();
         services.AddScoped<IRestaurantSettingsService>(sp =>
         {
             var innerService = sp.GetRequiredService<RestaurantSettingsService>();
+            var businessValidator = sp.GetRequiredService<IRestaurantSettingsValidator>();
+
+            var validatedService = new ValidatedRestaurantSettingsService(
+                innerService,
+                businessValidator);
+
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
             var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedRestaurantSettingsService(innerService, currentUser, permissionChecker);
+            return new AuthorizedRestaurantSettingsService(validatedService, currentUser, permissionChecker);
         });
         
         
