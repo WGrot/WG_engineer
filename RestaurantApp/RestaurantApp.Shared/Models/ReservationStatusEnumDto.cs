@@ -5,5 +5,6 @@ public enum ReservationStatusEnumDto
     Pending,
     Confirmed,
     Cancelled,
-    Completed
+    Completed,
+    NoShow
 }

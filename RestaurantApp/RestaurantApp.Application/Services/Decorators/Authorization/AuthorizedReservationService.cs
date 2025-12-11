@@ -68,7 +68,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
         ReservationSearchParameters searchParams)
     {
-        if(_currentUser.IsAuthenticated)
+        if(!_currentUser.IsAuthenticated)
             return Result<PaginatedReservationsDto>.Forbidden("User can not see reservations without being logged in");
         
         return await _inner.GetUserReservationsAsync(searchParams);

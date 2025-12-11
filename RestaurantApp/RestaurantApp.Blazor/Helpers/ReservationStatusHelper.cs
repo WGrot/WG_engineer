@@ -12,6 +12,7 @@ public static class ReservationStatusHelper
             ReservationStatusEnumDto.Confirmed => "bg-primary",
             ReservationStatusEnumDto.Cancelled => "bg-danger",
             ReservationStatusEnumDto.Completed => "bg-success",
+            ReservationStatusEnumDto.NoShow => "bg-dark text-white",
             _ => "bg-secondary"
         };
 }
