@@ -11,7 +11,14 @@ public static class RestaurantSettingsMapper
         {
             Id = entity.Id,
             RestaurantId = entity.RestaurantId,
-            ReservationsNeedConfirmation = entity.ReservationsNeedConfirmation
+            ReservationsNeedConfirmation = entity.ReservationsNeedConfirmation,
+            MaxReservationDuration = entity.MaxReservationDuration,
+            MinReservationDuration = entity.MinReservationDuration,
+            MaxAdvanceBookingTime =  entity.MaxAdvanceBookingTime,
+            MinAdvanceBookingTime = entity.MinAdvanceBookingTime,
+            MaxGuestsPerReservation = entity.MaxGuestsPerReservation,
+            MinGuestsPerReservation = entity.MinGuestsPerReservation,
+            ReservationsPerUserLimit = entity.ReservationsPerUserLimit
 
         };
     }
@@ -23,14 +30,29 @@ public static class RestaurantSettingsMapper
         {
             Id = dto.Id,
             RestaurantId = dto.RestaurantId,
-            ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation
+            ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation,
+            MaxReservationDuration = dto.MaxReservationDuration,
+            MinReservationDuration = dto.MinReservationDuration,
+            MaxAdvanceBookingTime = dto.MaxAdvanceBookingTime,
+            MinAdvanceBookingTime = dto.MinAdvanceBookingTime,
+            MaxGuestsPerReservation = dto.MaxGuestsPerReservation,
+            MinGuestsPerReservation = dto.MinGuestsPerReservation,
+            ReservationsPerUserLimit = dto.ReservationsPerUserLimit
 
         };
     }
 
-    public static void UpdateFromDto(this RestaurantSettings entity, SettingsDto dto)
+    public static void UpdateFromDto(this RestaurantSettings entity, UpdateRestaurantSettingsDto dto)
     {
         entity.ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation;
+        entity.MaxReservationDuration = dto.MaxReservationDuration;
+        entity.MinReservationDuration = dto.MinReservationDuration;
+        entity.MaxAdvanceBookingTime = dto.MaxAdvanceBookingTime;
+        entity.MinAdvanceBookingTime = dto.MinAdvanceBookingTime;
+        entity.MaxGuestsPerReservation = dto.MaxGuestsPerReservation;
+        entity.MinGuestsPerReservation = dto.MinGuestsPerReservation;
+        entity.ReservationsPerUserLimit = dto.ReservationsPerUserLimit;
+        
         
     }
 

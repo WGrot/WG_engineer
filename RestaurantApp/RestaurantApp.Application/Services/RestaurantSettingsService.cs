@@ -48,7 +48,14 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         var settings = new RestaurantSettings
         {
             RestaurantId = dto.RestaurantId,
-            ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation
+            ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation,
+            MaxReservationDuration = dto.MaxReservationDuration,
+            MinReservationDuration = dto.MinReservationDuration,
+            MaxAdvanceBookingTime = dto.MaxAdvanceBookingTime,
+            MinAdvanceBookingTime = dto.MinAdvanceBookingTime,
+            MaxGuestsPerReservation = dto.MaxGuestsPerReservation,
+            MinGuestsPerReservation = dto.MinGuestsPerReservation,
+            ReservationsPerUserLimit = dto.ReservationsPerUserLimit
         };
 
         var created = await _repository.AddAsync(settings);
@@ -59,7 +66,7 @@ public class RestaurantSettingsService : IRestaurantSettingsService
     {
         var existingSettings = await _repository.GetByIdAsync(id);
 
-        existingSettings!.ReservationsNeedConfirmation = dto.ReservationsNeedConfirmation;
+        existingSettings!.UpdateFromDto(dto);
 
         await _repository.UpdateAsync(existingSettings);
         return Result<SettingsDto>.Success(existingSettings.ToDto());
