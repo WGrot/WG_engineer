@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Shared.Common;
+﻿using RestaurantApp.Domain.Models;
+using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Reservation;
 
 namespace RestaurantApp.Application.Interfaces.Validators;
@@ -8,7 +9,7 @@ public interface ITableReservationValidator
     Task<Result> ValidateReservationExistsAsync(int reservationId);
     Task<Result> ValidateTableExistsAsync(int tableId, int restaurantId);
     Task<Result> ValidateRestaurantExistsAsync(int restaurantId);
-    Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime);
+    Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime, RestaurantSettings restaurantSettings);
     Task<Result> ValidateNoConflictAsync(int tableId, DateOnly date, TimeOnly startTime, TimeOnly endTime,
         int? excludeReservationId = null);
     Task<Result> ValidateForCreateAsync(CreateTableReservationDto dto);

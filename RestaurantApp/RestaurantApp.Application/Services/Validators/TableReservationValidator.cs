@@ -1,5 +1,6 @@
 ﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Validators;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Reservation;
 
@@ -10,15 +11,18 @@ public class TableReservationValidator : ITableReservationValidator
     private readonly IReservationRepository _reservationRepository;
     private readonly ITableRepository _tableRepository;
     private readonly IRestaurantRepository _restaurantRepository;
+    private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
 
     public TableReservationValidator(
         IReservationRepository reservationRepository,
         ITableRepository tableRepository,
-        IRestaurantRepository restaurantRepository)
+        IRestaurantRepository restaurantRepository,
+        IRestaurantSettingsRepository restaurantSettingsRepository)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
         _restaurantRepository = restaurantRepository;
+        _restaurantSettingsRepository = restaurantSettingsRepository;
     }
 
     public async Task<Result> ValidateReservationExistsAsync(int reservationId)
@@ -48,13 +52,54 @@ public class TableReservationValidator : ITableReservationValidator
         return Result.Success();
     }
 
-    public Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime)
+    public Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime, RestaurantSettings restaurantSettings)
     {
-        if (startTime > endTime)
-            return Task.FromResult(Result.Failure("Start time cannot be after end time."));
+        if (startTime >= endTime)
+            return Task.FromResult(Result.Failure("Start time must be before end time."));
 
-        if (startTime == endTime)
-            return Task.FromResult(Result.Failure("Start time cannot equal end time."));
+        var duration = endTime - startTime;
+
+        if (duration < restaurantSettings.MinReservationDuration)
+        {
+            var minMinutes = (int)restaurantSettings.MinReservationDuration.TotalMinutes;
+            return Task.FromResult(Result.Failure($"Reservation must be at least {minMinutes} minutes long."));
+        }
+
+        if (duration > restaurantSettings.MaxReservationDuration)
+        {
+            var maxMinutes = (int)restaurantSettings.MaxReservationDuration.TotalMinutes;
+            return Task.FromResult(Result.Failure($"Reservation cannot exceed {maxMinutes} minutes."));
+        }
+
+        return Task.FromResult(Result.Success());
+    }
+    
+    public Task<Result> ValidateDate(DateTime reservationDateTime, RestaurantSettings settings)
+    {
+        var timeUntilReservation = reservationDateTime - DateTime.UtcNow;
+
+        if (timeUntilReservation < settings.MinAdvanceBookingTime)
+        {
+            var minHours = (int)settings.MinAdvanceBookingTime.TotalHours;
+            return Task.FromResult(Result.Failure($"Reservation must be made at least {minHours} hours in advance."));
+        }
+
+        if (timeUntilReservation > settings.MaxAdvanceBookingTime)
+        {
+            var maxDays = (int)settings.MaxAdvanceBookingTime.TotalDays;
+            return Task.FromResult(Result.Failure($"Reservation in this restaurant cannot be made more than {maxDays} days in advance."));
+        }
+
+        return Task.FromResult(Result.Success());
+    }
+    
+    public Task<Result> ValidateGuestCountAsync(int guestCount, RestaurantSettings settings)
+    {
+        if (guestCount < settings.MinGuestsPerReservation)
+            return Task.FromResult(Result.Failure($"Minimum {settings.MinGuestsPerReservation} guests required."));
+
+        if (guestCount > settings.MaxGuestsPerReservation)
+            return Task.FromResult(Result.Failure($"Maximum {settings.MaxGuestsPerReservation} guests allowed."));
 
         return Task.FromResult(Result.Success());
     }
@@ -80,13 +125,29 @@ public class TableReservationValidator : ITableReservationValidator
 
     public async Task<Result> ValidateForCreateAsync(CreateTableReservationDto dto)
     {
+        var settings = await _restaurantSettingsRepository.GetByRestaurantIdAsync(dto.RestaurantId);
+
+        if (settings == null)
+        {
+            return Result.Failure("Restaurant settings not found for the specified restaurant.");
+        }
+        
         var tableResult = await ValidateTableExistsAsync(dto.TableId, dto.RestaurantId);
         if (!tableResult.IsSuccess)
             return tableResult;
-
-        var timeResult = await ValidateTimeRangeAsync(dto.StartTime, dto.EndTime);
+        
+        var timeResult = await ValidateTimeRangeAsync(dto.StartTime, dto.EndTime, settings);
         if (!timeResult.IsSuccess)
             return timeResult;
+        
+        var guestResult = await ValidateGuestCountAsync(dto.NumberOfGuests, settings);
+        if(!guestResult.IsSuccess)
+            return guestResult;
+        
+        var dateResult = await ValidateDate(dto.ReservationDate, settings);
+        if (!dateResult.IsSuccess)
+            return dateResult;
+        
 
         var conflictResult = await ValidateNoConflictAsync(
             dto.TableId,
@@ -105,13 +166,29 @@ public class TableReservationValidator : ITableReservationValidator
 
     public async Task<Result> ValidateForUpdateAsync(int reservationId, TableReservationDto dto)
     {
+        var settings = await _restaurantSettingsRepository.GetByRestaurantIdAsync(dto.RestaurantId);
+
+        if (settings == null)
+        {
+            return Result.Failure("Restaurant settings not found for the specified restaurant.");
+        }
+
+        
         var existsResult = await ValidateReservationExistsAsync(reservationId);
         if (!existsResult.IsSuccess)
             return existsResult;
 
-        var timeResult = await ValidateTimeRangeAsync(dto.StartTime, dto.EndTime);
+        var timeResult = await ValidateTimeRangeAsync(dto.StartTime, dto.EndTime, settings);
         if (!timeResult.IsSuccess)
             return timeResult;
+        
+        var guestResult = await ValidateGuestCountAsync(dto.NumberOfGuests, settings);
+        if(!guestResult.IsSuccess)
+            return guestResult;
+        
+        var dateResult = await ValidateDate(dto.ReservationDate, settings);
+        if (!dateResult.IsSuccess)
+            return dateResult;
 
         var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
     
