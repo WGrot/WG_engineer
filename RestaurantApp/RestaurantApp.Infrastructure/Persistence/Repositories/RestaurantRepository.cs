@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using RestaurantApp.Application.Dto;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Models;
 
@@ -186,6 +187,20 @@ public class RestaurantRepository : IRestaurantRepository
             await _currentTransaction.DisposeAsync();
             _currentTransaction = null;
         }
+    }
+
+    public async Task UpdateStatsAsync(int restaurantId, ReviewStatsDto stats)
+    {
+        await _context.Restaurants
+            .Where(r => r.Id == restaurantId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.AverageRating, stats.AverageRating)
+                .SetProperty(r => r.TotalReviews, stats.TotalReviews)
+                .SetProperty(r => r.TotalRatings1Star, stats.Stars1)
+                .SetProperty(r => r.TotalRatings2Star, stats.Stars2)
+                .SetProperty(r => r.TotalRatings3Star, stats.Stars3)
+                .SetProperty(r => r.TotalRatings4Star, stats.Stars4)
+                .SetProperty(r => r.TotalRatings5Star, stats.Stars5));
     }
 
     public async Task<IEnumerable<(Restaurant Restaurant, double DistanceKm)>> GetNearbyAsync(

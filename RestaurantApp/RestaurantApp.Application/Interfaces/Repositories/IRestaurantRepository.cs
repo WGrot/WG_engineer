@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Domain.Models;
+﻿using RestaurantApp.Application.Dto;
+using RestaurantApp.Domain.Models;
 
 namespace RestaurantApp.Application.Interfaces.Repositories;
 
@@ -31,6 +32,8 @@ public interface IRestaurantRepository
     Task<IDisposable> BeginTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackTransactionAsync();
+    
+    Task UpdateStatsAsync(int restaurantId, ReviewStatsDto stats);
     
     Task<IEnumerable<(Restaurant Restaurant, double DistanceKm)>> GetNearbyAsync(
         double latitude, 

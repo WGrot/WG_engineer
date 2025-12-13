@@ -1,6 +1,7 @@
 ﻿// RestaurantApp.Infrastructure/Repositories/ReviewRepository.cs
 
 using Microsoft.EntityFrameworkCore;
+using RestaurantApp.Application.Dto;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Models;
 
@@ -68,6 +69,24 @@ public class ReviewRepository : IReviewRepository
             .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId 
                                       && r.UserId == userId 
                                       && r.IsActive);
+    }
+
+    public async Task<ReviewStatsDto?> GetStatsByRestaurantIdAsync(int restaurantId)
+    {
+        return await _context.Reviews
+            .Where(r => r.RestaurantId == restaurantId && r.IsActive)
+            .GroupBy(r => 1)
+            .Select(g => new ReviewStatsDto
+            {
+                AverageRating = g.Average(r => r.Rating),
+                TotalReviews = g.Count(),
+                Stars1 = g.Count(r => r.Rating == 1),
+                Stars2 = g.Count(r => r.Rating == 2),
+                Stars3 = g.Count(r => r.Rating == 3),
+                Stars4 = g.Count(r => r.Rating == 4),
+                Stars5 = g.Count(r => r.Rating == 5)
+            })
+            .FirstOrDefaultAsync();
     }
 
     public async Task<(List<Review> Reviews, int TotalCount)> GetByRestaurantIdPaginatedAsync(int restaurantId,

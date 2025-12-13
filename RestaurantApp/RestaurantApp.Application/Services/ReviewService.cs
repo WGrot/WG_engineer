@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces;
+﻿using RestaurantApp.Application.Dto;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
@@ -138,28 +139,13 @@ public class ReviewService : IReviewService
 
     private async Task RecalculateScoresAsync(int restaurantId)
     {
-        var reviews = await _reviewRepository.GetByRestaurantIdAsync(restaurantId);
-        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-
-        if (restaurant == null) return;
-
-        double sum = 0;
-        int[] ratingCounts = new int[5];
-
-        foreach (var review in reviews)
+        var stats = await _reviewRepository.GetStatsByRestaurantIdAsync(restaurantId);
+    
+        if (stats == null)
         {
-            sum += review.Rating;
-            ratingCounts[review.Rating - 1]++;
+            stats = new ReviewStatsDto();
         }
 
-        restaurant.AverageRating = reviews.Count > 0 ? sum / reviews.Count : 0;
-        restaurant.TotalRatings1Star = ratingCounts[0];
-        restaurant.TotalRatings2Star = ratingCounts[1];
-        restaurant.TotalRatings3Star = ratingCounts[2];
-        restaurant.TotalRatings4Star = ratingCounts[3];
-        restaurant.TotalRatings5Star = ratingCounts[4];
-        restaurant.TotalReviews = reviews.Count;
-
-        await _restaurantRepository.SaveChangesAsync();
+        await _restaurantRepository.UpdateStatsAsync(restaurantId, stats);
     }
 }
