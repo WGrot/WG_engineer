@@ -25,7 +25,7 @@ public class AuthorizedRestaurantImageService : IRestaurantImageService
     public async Task<Result<ImageUploadResult>> UploadProfilePhotoAsync(int restaurantId, Stream fileStream, string fileName)
     {
         if (!await AuthorizePermissionAsync(restaurantId))
-            return Result<ImageUploadResult>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<ImageUploadResult>.Forbidden("You dont have permission to edit this restaurant.");
         
         return await _inner.UploadProfilePhotoAsync(restaurantId, fileStream, fileName);
     }
@@ -33,7 +33,7 @@ public class AuthorizedRestaurantImageService : IRestaurantImageService
     public async Task<Result<List<ImageUploadResult>>> UploadGalleryPhotosAsync(int restaurantId, IEnumerable<ImageFileDto> images)
     {
         if (!await AuthorizePermissionAsync(restaurantId))
-            return Result<List<ImageUploadResult>>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<List<ImageUploadResult>>.Forbidden("You dont have permission to edit this restaurant.");
         
         return await _inner.UploadGalleryPhotosAsync(restaurantId, images);
     }
@@ -41,7 +41,7 @@ public class AuthorizedRestaurantImageService : IRestaurantImageService
     public async Task<Result> DeleteProfilePhotoAsync(int restaurantId)
     {
         if (!await AuthorizePermissionAsync(restaurantId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit this restaurant.");
         
         return await _inner.DeleteProfilePhotoAsync(restaurantId);
     }
@@ -49,7 +49,7 @@ public class AuthorizedRestaurantImageService : IRestaurantImageService
     public async Task<Result> DeleteGalleryPhotoAsync(int restaurantId, int photoIndex)
     {
         if (!await AuthorizePermissionAsync(restaurantId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit this restaurant.");
         
         return await _inner.DeleteGalleryPhotoAsync(restaurantId, photoIndex);
     }

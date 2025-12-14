@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
@@ -13,11 +14,16 @@ public class JwtService: IJwtService
 {
     private readonly IRestaurantEmployeeRepository _employeeRepository;
     private readonly IJwtSettings _jwtSettings;
+    private readonly UserManager<ApplicationUser> _userManager;  // Dodaj to
 
-    public JwtService(IRestaurantEmployeeRepository employeeRepository, IJwtSettings jwtSettings)
+    public JwtService(
+        IRestaurantEmployeeRepository employeeRepository, 
+        IJwtSettings jwtSettings,
+        UserManager<ApplicationUser> userManager)  // Dodaj to
     {
         _employeeRepository = employeeRepository;
         _jwtSettings = jwtSettings;
+        _userManager = userManager;
     }
 
     public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified = false)
@@ -30,6 +36,13 @@ public class JwtService: IJwtService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("2fa_verified", is2FAVerified.ToString().ToLower())
         };
+        
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
 
         var employeeData = await _employeeRepository.GetEmployeeClaimsDataAsync(user.Id);
 

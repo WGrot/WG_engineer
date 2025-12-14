@@ -34,7 +34,7 @@ public class AuthorizedMenuItemTagService : IMenuItemTagService
     public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto tag)
     {
         if (!await AuthorizeForRestaurant(tag.RestaurantId))
-            return Result<MenuItemTagDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemTagDto>.Forbidden("You dont have permission to create tags for this restaurant.");
         
         return await _inner.CreateTagAsync(tag);
     }
@@ -42,7 +42,7 @@ public class AuthorizedMenuItemTagService : IMenuItemTagService
     public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto tag)
     {
         if (!await AuthorizeForRestaurant(tag.RestaurantId))
-            return Result<MenuItemTagDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemTagDto>.Forbidden("You dont have permission to edit tags for this restaurant.");
         
         return await _inner.UpdateTagAsync(id, tag);
     }
@@ -50,7 +50,7 @@ public class AuthorizedMenuItemTagService : IMenuItemTagService
     public async Task<Result> DeleteTagAsync(int id)
     {
         if (!await AuthorizeForTag(id))
-            return Result<MenuItemTagDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemTagDto>.Forbidden("You dont have permission to delete tags for this restaurant.");
         
         return await _inner.DeleteTagAsync(id);
     }

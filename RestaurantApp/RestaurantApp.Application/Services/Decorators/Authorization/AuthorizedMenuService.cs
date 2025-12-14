@@ -39,7 +39,7 @@ public class AuthorizedMenuService :IMenuService
     public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto)
     {
         if (!await AuthorizeForRestaurant(dto.RestaurantId))
-            return Result<MenuDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuDto>.Forbidden("You dont have permission to create menu for this restaurant.");
         
         return await _inner.CreateMenuAsync(dto);
     }
@@ -47,7 +47,7 @@ public class AuthorizedMenuService :IMenuService
     public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto)
     {
         if (!await AuthorizeForMenuAsync(menuId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit menu for this restaurant.");
         
         return await _inner.UpdateMenuAsync(menuId, dto);
     }
@@ -55,7 +55,7 @@ public class AuthorizedMenuService :IMenuService
     public async Task<Result> DeleteMenuAsync(int menuId)
     {
         if (!await AuthorizeForMenuAsync(menuId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to delete menu for this restaurant.");
         
         return await _inner.DeleteMenuAsync(menuId);
     }
@@ -63,7 +63,7 @@ public class AuthorizedMenuService :IMenuService
     public async Task<Result> ActivateMenuAsync(int menuId)
     {
         if (!await AuthorizeForMenuAsync(menuId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit menu for this restaurant.");
         
         return await _inner.ActivateMenuAsync(menuId);
     }
@@ -71,7 +71,7 @@ public class AuthorizedMenuService :IMenuService
     public async Task<Result> DeactivateMenuAsync(int menuId)
     {
         if (!await AuthorizeForMenuAsync(menuId))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to delete menu for this restaurant.");
         
         return await _inner.DeactivateMenuAsync(menuId);
     }

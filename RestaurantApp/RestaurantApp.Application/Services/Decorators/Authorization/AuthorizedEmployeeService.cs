@@ -41,7 +41,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId)
     {
          if (!await AuthorizePermission(restaurantId))
-             return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
+             return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission see restaurant employees.");
 
          return await _inner.GetByRestaurantIdAsync(restaurantId);
     }
@@ -55,7 +55,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId)
     {
         if (!await AuthorizePermission(restaurantId))
-            return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission see restaurant employees");
 
         return await _inner.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId);
     }
@@ -68,7 +68,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto)
     {
         if (!await AuthorizePermission(dto.RestaurantId))
-            return Result<RestaurantEmployeeDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<RestaurantEmployeeDto>.Forbidden("You dont have permission to create employees for this restaurant.");
 
         return await _inner.CreateAsync(dto);
     }
@@ -76,7 +76,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto)
     {
         if (!await AuthorizeForEmployee(dto.Id))
-            return Result<RestaurantEmployeeDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<RestaurantEmployeeDto>.Forbidden("You dont have permission to edit this employee.");
 
         return await _inner.UpdateAsync(dto);
     }
@@ -84,7 +84,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result> DeleteAsync(int id)
     {
         if (!await AuthorizeForEmployee(id))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to delete this employee.");
 
         return await _inner.DeleteAsync(id);
     }
@@ -92,7 +92,7 @@ public class AuthorizedEmployeeService : IEmployeeService
     public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive)
     {
         if (!await AuthorizeForEmployee(id))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit this employee.");
 
         return await _inner.UpdateActiveStatusAsync(id, isActive);
     }

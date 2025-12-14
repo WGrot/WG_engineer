@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
+using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Auth;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
@@ -16,15 +18,21 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly ITokenService _tokenService;
     private readonly IConfiguration _configuration;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
     public AuthController(
         IAuthService authService,
         ITokenService tokenService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager)
     {
         _authService = authService;
         _tokenService = tokenService;
         _configuration = configuration;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     [HttpPost("register")]
@@ -120,6 +128,21 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.ResendEmailConfirmationAsync(request.Email);
         return result.ToActionResult();
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost("make-admin/{userId}")]
+    public async Task<IActionResult> MakeAdmin(string userId)
+    {
+        if (!await _roleManager.RoleExistsAsync("Admin"))
+        {
+            await _roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+    
+        var user = await _userManager.FindByIdAsync(userId);
+        await _userManager.AddToRoleAsync(user, "Admin");
+    
+        return Ok();
     }
 
     #region Cookie Helpers

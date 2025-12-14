@@ -37,7 +37,7 @@ public class AuthorizedUserService : IUserService
         string? phoneNumber, string? email, int? amount)
     {
         if (!await AuthorizeRestaurantPermission())
-            return Result<IEnumerable<ResponseUserDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<IEnumerable<ResponseUserDto>>.Forbidden("You dont have permission to search for other users");
         
         return await _inner.SearchAsync(firstName, lastName, phoneNumber, email, amount);
     }
@@ -45,7 +45,7 @@ public class AuthorizedUserService : IUserService
     public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
     {
         if (!await AuthorizeRestaurantPermission())
-            return Result<CreateUserDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<CreateUserDto>.Forbidden("You dont have permission to create users");
         
         return await _inner.CreateAsync(userDto);
     }
@@ -54,7 +54,7 @@ public class AuthorizedUserService : IUserService
     {
         if (_currentUser.UserId != dto.Id)
         {
-            return Result.Forbidden("You don't have permission to view other users' details.");
+            return Result.Forbidden("You don't have permission to edit other users' details.");
         }
         return await _inner.UpdateUserAsync(dto);
     }
@@ -63,7 +63,7 @@ public class AuthorizedUserService : IUserService
     {
         if (_currentUser.UserId != userId)
         {
-            return Result.Forbidden("You don't have permission to view other users' details.");
+            return Result.Forbidden("You don't have permission to delete other users.");
         }
         return await _inner.DeleteUserAsync(userId);
     }

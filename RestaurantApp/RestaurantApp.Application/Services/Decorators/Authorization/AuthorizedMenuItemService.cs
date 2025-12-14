@@ -46,7 +46,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
     {
         if (!await AuthorizeForMenuAsync(menuId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to create menu items for this restaurant.");
         
         return await _inner.AddMenuItemAsync(menuId, itemDto);
     }
@@ -54,14 +54,14 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
     {
         if (!await AuthorizeForCategoryAsync(categoryId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to create menu items for this restaurant.");
         return await _inner.AddMenuItemToCategoryAsync(categoryId, itemDto);
     }
 
     public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to edit menu items for this restaurant.");
         
         return await _inner.UpdateMenuItemAsync(itemId, itemDto);
     }
@@ -69,7 +69,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result> DeleteMenuItemAsync(int itemId)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to delete menu items for this restaurant.");
         
         return await _inner.DeleteMenuItemAsync(itemId);
     }
@@ -77,7 +77,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to edit menu items for this restaurant.");
         
         return await _inner.UpdateMenuItemPriceAsync(itemId, price, currencyCode);
     }
@@ -85,7 +85,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to edit menu items for this restaurant.");
         
         return await _inner.MoveMenuItemToCategoryAsync(itemId, categoryId);
     }
@@ -93,7 +93,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> AddTagToMenuItemAsync(int menuItemId, int tagId)
     {
         if (!await AuthorizeForMenuItem(menuItemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to edit menu items for this restaurant.");
         
         return await _inner.AddTagToMenuItemAsync(menuItemId, tagId);
     }
@@ -101,7 +101,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result<MenuItemDto>> RemoveTagFromMenuItemAsync(int menuItemId, int tagId)
     {
         if (!await AuthorizeForMenuItem(menuItemId))
-            return Result<MenuItemDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemDto>.Forbidden("You dont have permission to edit menu items for this restaurant.");
         
         return await _inner.RemoveTagFromMenuItemAsync(menuItemId, tagId);
     }
@@ -114,7 +114,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, Stream imageStream, string fileName)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<ImageUploadResult>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<ImageUploadResult>.Forbidden("You dont have permission to upload item images for this restaurant.");
         
         return await _inner.UploadMenuItemImageAsync(itemId, imageStream, fileName);
     }
@@ -122,7 +122,7 @@ public class AuthorizedMenuItemService : IMenuItemService
     public async Task<Result> DeleteMenuItemImageAsync(int itemId)
     {
         if (!await AuthorizeForMenuItem(itemId))
-            return Result<ImageUploadResult>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<ImageUploadResult>.Forbidden("You dont have permission to delete item images for this restaurant.");
         
         return await _inner.DeleteMenuItemImageAsync(itemId);
     }

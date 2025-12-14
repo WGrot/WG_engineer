@@ -46,7 +46,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
     public async Task<Result<RestaurantPermissionDto>> CreateAsync(CreateRestaurantPermissionDto dto)
     {
         if (!await AuthorizeByEmployeeId(dto.RestaurantEmployeeId))
-            return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to create permissions for this restaurant.");
         
         return await _inner.CreateAsync(dto);
     }
@@ -54,7 +54,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
     public async Task<Result<RestaurantPermissionDto>> UpdateAsync(RestaurantPermissionDto dto)
     {
         if (!await AuthorizePermission(dto.Id))
-            return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to edit permissions for this restaurant.");
         
         return await _inner.UpdateAsync(dto);
     }
@@ -62,7 +62,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
     public async Task<Result> DeleteAsync(int id)
     {
         if (!await AuthorizePermission(id))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to delete permissions for this restaurant.");
         
         return await _inner.DeleteAsync(id);
     }
@@ -75,7 +75,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
     public async Task<Result> UpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto)
     {
         if (!await AuthorizeInrestaurant(dto.RestaurantId, PermissionType.ManagePermissions))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit permissions for this restaurant.");
 
         return await _inner.UpdateEmployeePermissionsAsync(dto);
     }

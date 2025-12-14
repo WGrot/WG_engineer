@@ -27,7 +27,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
     {
         if (!await AuthorizeReservationOperation(reservationId, false))
-            return Result<ReservationDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<ReservationDto>.Forbidden("You dont have permission to see this reservation.");
 
         return await _inner.GetByIdAsync(reservationId);
     }
@@ -35,7 +35,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId)
     {
         if (!await AuthorizeInRestaurant(restaurantId))
-            return Result<List<ReservationDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<List<ReservationDto>>.Forbidden("You dont have permission to see those reservations.");
 
         return await _inner.GetByRestaurantIdAsync(restaurantId);
     }
@@ -43,7 +43,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto)
     {
         if (!await AuthorizeInRestaurant(reservationDto.RestaurantId))
-            return Result<ReservationDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<ReservationDto>.Forbidden("You dont have permission to create reservations.");
         
         
         return await _inner.CreateAsync(reservationDto);
@@ -52,7 +52,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto)
     {
         if (!await AuthorizeReservationOperation(reservationId, true))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit this reservation.");
 
         return await _inner.UpdateAsync(reservationId, reservationDto);
     }
@@ -60,7 +60,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result> DeleteAsync(int reservationId)
     {
         if (!await AuthorizeReservationOperation(reservationId, true))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to delete this reservation.");
 
         return await _inner.DeleteAsync(reservationId);
     }
@@ -77,7 +77,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)
     {
         if (!await AuthorizeReservationOperation(reservationId, false))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to cancel this reservation.");
         
         return await _inner.CancelUserReservationAsync(userId, reservationId);
     }
@@ -85,7 +85,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(string userId, ReservationSearchParameters searchParams)
     {
         if(_currentUser.UserId != userId)
-            return Result<PaginatedReservationsDto>.Forbidden("You dont have permission to create categories for this restaurant.");  
+            return Result<PaginatedReservationsDto>.Forbidden("You dont have see this content.");  
         
         return await _inner.GetManagedReservationsAsync(userId, searchParams);
     }
@@ -93,7 +93,7 @@ public class AuthorizedReservationService : IReservationService
     public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status)
     {
         if (!await AuthorizeReservationOperation(reservationId, false))
-            return Result.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result.Forbidden("You dont have permission to edit this reserwation.");
         
         return await _inner.UpdateStatusAsync(reservationId, status);
     }

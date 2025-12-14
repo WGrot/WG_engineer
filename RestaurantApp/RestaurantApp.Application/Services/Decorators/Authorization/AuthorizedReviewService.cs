@@ -50,7 +50,7 @@ public class AuthorizedReviewService : IReviewService
     {
         if (_currentUser.UserId != userId)
         {
-            return Result<ReviewDto>.Forbidden("You don't have permission to view reviews of other users.");
+            return Result<ReviewDto>.Forbidden("You don't have create reviews of other users.");
         }
         return await _inner.CreateAsync(userId, dto);
     }
@@ -59,7 +59,7 @@ public class AuthorizedReviewService : IReviewService
     {
         if (_currentUser.UserId != userId)
         {
-            return Result<ReviewDto>.Forbidden("You don't have permission to view reviews of other users.");
+            return Result<ReviewDto>.Forbidden("You don't have permission to edit reviews of other users.");
         }
         return await _inner.UpdateAsync(userId, id, dto);
     }
@@ -68,7 +68,7 @@ public class AuthorizedReviewService : IReviewService
     {
         if (_currentUser.UserId != userId)
         {
-            return Result<ReviewDto>.Forbidden("You don't have permission to view reviews of other users.");
+            return Result<ReviewDto>.Forbidden("You don't have permission to delete reviews of other users.");
         }
         return await _inner.DeleteAsync(userId, id);
     }

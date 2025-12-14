@@ -39,7 +39,7 @@ public class AuthorizedMenuItemVariantService : IMenuItemVariantService
     public async Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant)
     {
         if (!await AuthorizeForMenuItem(variant.MenuItemId))
-            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to create menu item variants for this restaurant.");
         
         return await _inner.CreateVariantAsync(variant);
     }
@@ -47,7 +47,7 @@ public class AuthorizedMenuItemVariantService : IMenuItemVariantService
     public async Task<Result<MenuItemVariantDto>> UpdateVariantAsync(int id, MenuItemVariantDto variantDto)
     {
         if (!await AuthorizeForMenuItem(variantDto.MenuItemId))
-            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to edit menu item variants for this restaurant.");
         
         return await _inner.UpdateVariantAsync(id, variantDto);
     }
@@ -55,7 +55,7 @@ public class AuthorizedMenuItemVariantService : IMenuItemVariantService
     public async Task<Result> DeleteVariantAsync(int id)
     {
         if (!await AuthorizeForVariant(id))
-            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<MenuItemVariantDto>.Forbidden("You dont have permission to delete menu item variants for this restaurant.");
         
         return await _inner.DeleteVariantAsync(id);
     }

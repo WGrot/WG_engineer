@@ -93,6 +93,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IImageLinkRepository, ImageLinkRepository>();
         services.AddScoped<ITotpProvider, TotpProvider>();
+
         return services;
     }
 }

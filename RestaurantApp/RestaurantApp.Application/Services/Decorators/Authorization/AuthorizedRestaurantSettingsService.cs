@@ -40,7 +40,7 @@ public class AuthorizedRestaurantSettingsService : IRestaurantSettingsService
     public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto)
     {
         if (!await AuthorizeForRestaurant(dto.RestaurantId))
-            return Result<SettingsDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<SettingsDto>.Forbidden("You dont have permission to define business rules for this restaurant.");
         
         return await _inner.CreateAsync(dto);
     }
@@ -48,7 +48,7 @@ public class AuthorizedRestaurantSettingsService : IRestaurantSettingsService
     public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto)
     {
         if (!await AuthorizeForRestaurant(dto.RestaurantId))
-            return Result<SettingsDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<SettingsDto>.Forbidden("You dont have permission to edit business rules for this restaurant.");
         
         return await _inner.UpdateAsync(id, dto);
     }
@@ -56,7 +56,7 @@ public class AuthorizedRestaurantSettingsService : IRestaurantSettingsService
     public async Task<Result> DeleteAsync(int id)
     {
         if (!await AuthorizeForSetting(id))
-            return Result<SettingsDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<SettingsDto>.Forbidden("You dont have permission to delete business rules for this restaurant.");
         
         return await _inner.DeleteAsync(id);
     }

@@ -25,7 +25,7 @@ public class AuthorizedTableService : ITableService
     public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto)
     {
         if (!await AuthorizeForRestaurant(dto.RestaurantId))
-            return Result<TableDto>.Forbidden("You dont have permission to create categories for this restaurant.");
+            return Result<TableDto>.Forbidden("You dont have permission to create tables for this restaurant.");
         
         return await _inner.CreateTableAsync(dto);
     }
