@@ -9,6 +9,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject MemoryTokenStore TokenStorageService
+@inject PermissionService PermissionService
 @inject ICurrentUserDataService userDataService
 
 <div class="edit-container">
@@ -34,23 +35,30 @@
                             Basic Info
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link @(activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "tables")"
+                    @if (canManageTables)
+                    {
+                        <li class="nav-item">
+                            <button class="nav-link @(activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                    @onclick="@(() => activeTab = "tables")"
+                                    type="button">
+                                <i class="bi bi-grid-3x3-gap me-2"></i>
+                                Tables
+                            </button>
+                        </li>
+                    }
+                    @if (canManageSettigns)
+                    {
+                        <li class="nav-item">
+                            <button
+                                class="nav-link @(activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "settings")"
                                 type="button">
-                            <i class="bi bi-grid-3x3-gap me-2"></i>
-                            Tables
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button
-                            class="nav-link @(activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                            @onclick="@(() => activeTab = "settings")"
-                            type="button">
-                            <i class="bi bi-gear"></i>
-                            Settings
-                        </button>
-                    </li>
+                                <i class="bi bi-gear"></i>
+                                Settings
+                            </button>
+                        </li>
+                    }
+                    @if(canManageEmployees){
                     <li class="nav-item">
                         <button
                             class="nav-link @(activeTab == "employees" ? "active" : "") px-4 py-3 border-0 rounded-top"
@@ -60,15 +68,20 @@
                             Employees
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button
-                            class="nav-link @(activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                            @onclick="@(() => activeTab = "menu")"
-                            type="button">
-                            <i class="bi bi-book me-2"></i>
-                            Menu
-                        </button>
-                    </li>
+                    }
+                    @if (canManageMenu)
+                    {
+                        <li class="nav-item">
+                            <button
+                                class="nav-link @(activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => activeTab = "menu")"
+                                type="button">
+                                <i class="bi bi-book me-2"></i>
+                                Menu
+                            </button>
+                        </li>
+                    }
+                    @if(canManageRestaurant){
                     <li class="nav-item">
                         <button
                             class="nav-link @(activeTab == "appearance" ? "active" : "") px-4 py-3 border-0 rounded-top"
@@ -78,6 +91,7 @@
                             Appearance
                         </button>
                     </li>
+                    }
 
                 </ul>
             </div>
@@ -117,9 +131,17 @@
     private bool isLoading = true;
     string activeTab = "basic";
 
+    bool canManageMenu = false;
+    bool canManageTables = false;
+    bool canManageRestaurant = false;
+    bool canManageSettigns = false;
+    bool canManageEmployees = false;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadRestaurant();
+        await GetUserPermissions();
+
     }
 
     private async Task LoadRestaurant()
@@ -138,6 +160,15 @@
             isLoading = false;
         }
         StateHasChanged();
+    }
+
+    private async Task GetUserPermissions()
+    {
+         canManageMenu = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageMenu.ToString());
+         canManageRestaurant = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurant.ToString());
+         canManageSettigns = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurantSettings.ToString());
+         canManageTables = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageTables.ToString());
+         canManageEmployees = await PermissionService.HasAnyPermissionAsync(Id, new[] { PermissionTypeEnumDto.ManageEmployees.ToString(), PermissionTypeEnumDto.ManagePermissions.ToString() });
     }
     
     public void Dispose()

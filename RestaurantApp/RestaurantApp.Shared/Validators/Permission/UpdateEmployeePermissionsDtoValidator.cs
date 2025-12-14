@@ -17,6 +17,6 @@ public class UpdateEmployeePermissionsDtoValidator : AbstractValidator<UpdateEmp
 
         RuleForEach(x => x.Permissions)
             .IsInEnum()
-            .WithMessage("Invalid permission type in list.");
+            .WithMessage($"Invalid permission type in list.");
     }
 }

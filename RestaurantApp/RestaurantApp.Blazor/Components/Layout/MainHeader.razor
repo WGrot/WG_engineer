@@ -239,6 +239,7 @@
         AuthService.OnLogout += HandleOnLogOutEvent;
         AuthService.OnLogin += CheckAuthenticationStatus;
         userDataService.OnActiveRestaurantChanged += ChangeActiveRestaurantDisplayName;
+        
         _refreshTimer = new Timer(async _ =>
         {
             await InvokeAsync(async () =>
