@@ -1,7 +1,10 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Validators;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Employees;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services.Validators;
 
@@ -10,15 +13,18 @@ public class EmployeeValidator : IEmployeeValidator
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
     private readonly IRestaurantEmployeeRepository _employeeRepository;
+    private readonly ICurrentUserService _currentUserService;
 
     public EmployeeValidator(
         IRestaurantRepository restaurantRepository,
         IUserRepository userRepository,
-        IRestaurantEmployeeRepository employeeRepository)
+        IRestaurantEmployeeRepository employeeRepository,
+        ICurrentUserService currentUserService)
     {
         _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
         _employeeRepository = employeeRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> ValidateForCreateAsync(CreateEmployeeDto dto)
@@ -36,7 +42,19 @@ public class EmployeeValidator : IEmployeeValidator
 
     public async Task<Result> ValidateForUpdateAsync(UpdateEmployeeDto dto)
     {
-        return await ValidateEmployeeExistsAsync(dto.Id);
+        var employee = await _employeeRepository.GetByIdAsync(dto.Id);
+        if (employee == null)
+            return Result.NotFound($"Employee with ID {dto.Id} not found.");
+
+        if (dto.RoleEnumDto == RestaurantRoleEnumDto.Owner)
+        {
+            var currentUserEmployee = await _employeeRepository.GetByUserIdWithDetailsAsync(_currentUserService.UserId!);
+            var restaurantUser = currentUserEmployee.FirstOrDefault(e => e.RestaurantId == employee.RestaurantId);
+            if(restaurantUser == null || restaurantUser.Role != RestaurantRole.Owner)
+                return Result.Failure("Only the owner can assign the owner role to another employee.");
+        }
+        
+        return Result.Success();
     }
 
     public async Task<Result> ValidateEmployeeExistsAsync(int employeeId)

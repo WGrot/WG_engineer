@@ -10,6 +10,7 @@ public interface IRestaurantEmployeeRepository
     Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id);
     Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId);
     Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId);
+    
     Task<RestaurantEmployee?> GetByIdAsync(int id);
     Task AddAsync(RestaurantEmployee employee);
     void Update(RestaurantEmployee employee);
