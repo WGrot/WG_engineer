@@ -112,4 +112,13 @@ public class RestaurantPermissionRepository: IRestaurantPermissionRepository
             .Select(p => (int?)p.Id)
             .FirstOrDefaultAsync();
     }
+
+    public async Task AddRangeAsync(List<RestaurantPermission> permissions)
+    {
+        if (permissions.Count == 0)
+            return;
+
+        await _context.RestaurantPermissions.AddRangeAsync(permissions);
+        await _context.SaveChangesAsync();
+    }
 }

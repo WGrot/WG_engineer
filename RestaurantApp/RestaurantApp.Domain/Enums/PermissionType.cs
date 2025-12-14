@@ -9,5 +9,4 @@ public enum PermissionType
     ManageEmployees = 5,
     ManagePermissions = 6,
     ManageRestaurantSettings = 7,
-    ManageFinances = 8
 }

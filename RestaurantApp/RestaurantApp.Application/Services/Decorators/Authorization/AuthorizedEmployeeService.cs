@@ -25,10 +25,10 @@ public class AuthorizedEmployeeService : IEmployeeService
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
     {
-        //TODO authorize
-        // if (!await AuthorizePermission(id))
-        //     return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission to create categories for this restaurant.");
-
+        if (!_currentUser.IsAdmin)
+        {
+            return Result<IEnumerable<RestaurantEmployeeDto>>.Forbidden("You dont have permission to see all employees.");
+        }
         return await _inner.GetAllAsync();
     }
 

@@ -18,4 +18,6 @@ public interface IRestaurantPermissionRepository
     Task<RestaurantPermission> UpdateAsync(RestaurantPermission permission);
     Task DeleteAsync(RestaurantPermission permission);
     Task<int?> GetPermissionIdAsync(int employeeId, PermissionType permission);
+    
+    Task AddRangeAsync(List<RestaurantPermission> permissions);
 }

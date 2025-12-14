@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces;
+﻿using RestaurantApp.Application.Helpers;
+using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
@@ -13,14 +14,17 @@ namespace RestaurantApp.Application.Services;
 public class EmployeeService : IEmployeeService
 {
     private readonly IRestaurantEmployeeRepository _employeeRepository;
+    private readonly IRestaurantPermissionRepository _restaurantPermissionRepository;
     private readonly IUserRepository _userRepository;
 
     public EmployeeService(
         IRestaurantEmployeeRepository employeeRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IRestaurantPermissionRepository restaurantPermissionRepository)
     {
         _employeeRepository = employeeRepository;
         _userRepository = userRepository;
+        _restaurantPermissionRepository = restaurantPermissionRepository;
     }
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
@@ -89,11 +93,26 @@ public class EmployeeService : IEmployeeService
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
-
+        
         await _employeeRepository.AddAsync(employee);
         await _employeeRepository.SaveChangesAsync();
 
         var createdEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id);
+        if (createdEmployee == null)
+        {
+            return Result<RestaurantEmployeeDto>.Failure("Failed to retrieve the created employee.");
+        }
+        
+        foreach (var permissionType in RolePermissionHelper.GetDefaultPermissions(dto.RoleEnumDto.ToDomain()))
+        {
+            createdEmployee.Permissions.Add(new RestaurantPermission
+            {
+                RestaurantEmployeeId = createdEmployee.Id,
+                Permission = permissionType
+            });
+        }
+        
+        await _restaurantPermissionRepository.AddRangeAsync(createdEmployee.Permissions);
         return Result<RestaurantEmployeeDto>.Success(createdEmployee!.ToDto());
     }
 

@@ -189,14 +189,13 @@
     {
         return permission switch
         {
-            PermissionTypeEnumDto.ViewReservations => "View Reservations",
+            PermissionTypeEnumDto.ManageRestaurant => "Manage Restaurant Info",
             PermissionTypeEnumDto.ManageReservations => "Manage Reservations",
             PermissionTypeEnumDto.ManageTables => "Manage Tables",
             PermissionTypeEnumDto.ManageMenu => "Manage Menu",
             PermissionTypeEnumDto.ManageEmployees => "Manage Employees",
             PermissionTypeEnumDto.ManagePermissions => "View Reports",
             PermissionTypeEnumDto.ManageRestaurantSettings => "Manage Restaurant Settings",
-            PermissionTypeEnumDto.ManageFinances => "Manage Finances",
             _ => permission.ToString()
         };
     }
