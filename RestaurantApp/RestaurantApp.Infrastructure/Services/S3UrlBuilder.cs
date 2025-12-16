@@ -1,8 +1,7 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Util;
 using Microsoft.Extensions.Options;
-using RestaurantApp.Application.Common.Interfaces;
+using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 
 namespace RestaurantApp.Infrastructure.Services;

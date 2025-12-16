@@ -7,7 +7,6 @@ namespace RestaurantApp.Infrastructure.Persistence.Repositories;
 public class RestaurantSettingsRepository: IRestaurantSettingsRepository
 {
     private readonly ApplicationDbContext _context;
-
     public RestaurantSettingsRepository(ApplicationDbContext context)
     {
         _context = context;

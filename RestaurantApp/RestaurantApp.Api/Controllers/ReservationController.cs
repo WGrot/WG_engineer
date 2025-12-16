@@ -15,8 +15,6 @@ public class ReservationController : ControllerBase
 {
     private readonly IReservationService _reservationService;
     private readonly ITableReservationService _tableReservationService;
-    private readonly IAuthorizationService _authorizationService;
-    private readonly ILogger<ReservationController> _logger;
 
     public ReservationController(
         IReservationService reservationService,
@@ -26,8 +24,6 @@ public class ReservationController : ControllerBase
     {
         _reservationService = reservationService;
         _tableReservationService = tableReservationService;
-        _authorizationService = authorizationService;
-        _logger = logger;
     }
     
 
@@ -159,7 +155,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status)
     {
-
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 

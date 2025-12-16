@@ -12,12 +12,9 @@ namespace RestaurantApp.Api.Controllers;
 public class MenuItemTagController : ControllerBase
 {
     private readonly IMenuItemTagService _tagService;
-
-
-    public MenuItemTagController(IMenuItemTagService tagService, IAuthorizationService authorizationService)
+    public MenuItemTagController(IMenuItemTagService tagService)
     {
         _tagService = tagService;
-
     }
     
     [HttpGet]

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using RestaurantApp.Infrastructure.Persistence;
 namespace RestaurantApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216155911_NavigationFromReservationToUser")]
+    partial class NavigationFromReservationToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -725,6 +728,32 @@ namespace RestaurantApp.Infrastructure.Migrations
                     b.ToTable("RestaurantPermissions");
                 });
 
+            modelBuilder.Entity("RestaurantApp.Domain.Models.RestaurantReviewResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewId")
+                        .IsUnique();
+
+                    b.ToTable("RestaurantResponses");
+                });
+
             modelBuilder.Entity("RestaurantApp.Domain.Models.RestaurantSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -813,9 +842,35 @@ namespace RestaurantApp.Infrastructure.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("RestaurantApp.Domain.Models.Seat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TableId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TableId");
+
+                    b.ToTable("Seats");
                 });
 
             modelBuilder.Entity("RestaurantApp.Domain.Models.Table", b =>
@@ -1142,6 +1197,17 @@ namespace RestaurantApp.Infrastructure.Migrations
                     b.Navigation("RestaurantEmployee");
                 });
 
+            modelBuilder.Entity("RestaurantApp.Domain.Models.RestaurantReviewResponse", b =>
+                {
+                    b.HasOne("RestaurantApp.Domain.Models.Review", "Review")
+                        .WithOne("RestaurantResponse")
+                        .HasForeignKey("RestaurantApp.Domain.Models.RestaurantReviewResponse", "ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Review");
+                });
+
             modelBuilder.Entity("RestaurantApp.Domain.Models.RestaurantSettings", b =>
                 {
                     b.HasOne("RestaurantApp.Domain.Models.Restaurant", "Restaurant")
@@ -1161,15 +1227,18 @@ namespace RestaurantApp.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RestaurantApp.Domain.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                    b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("RestaurantApp.Domain.Models.Seat", b =>
+                {
+                    b.HasOne("RestaurantApp.Domain.Models.Table", "Table")
+                        .WithMany("Seats")
+                        .HasForeignKey("TableId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Restaurant");
-
-                    b.Navigation("User");
+                    b.Navigation("Table");
                 });
 
             modelBuilder.Entity("RestaurantApp.Domain.Models.Table", b =>
@@ -1237,6 +1306,16 @@ namespace RestaurantApp.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantApp.Domain.Models.RestaurantEmployee", b =>
                 {
                     b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("RestaurantApp.Domain.Models.Review", b =>
+                {
+                    b.Navigation("RestaurantResponse");
+                });
+
+            modelBuilder.Entity("RestaurantApp.Domain.Models.Table", b =>
+                {
+                    b.Navigation("Seats");
                 });
 #pragma warning restore 612, 618
         }

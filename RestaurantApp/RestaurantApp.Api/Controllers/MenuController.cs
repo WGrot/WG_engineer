@@ -33,7 +33,6 @@ public class MenuController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
     {
-
         return (await _menuService.CreateMenuAsync(menuDto)).ToActionResult();
     }
 

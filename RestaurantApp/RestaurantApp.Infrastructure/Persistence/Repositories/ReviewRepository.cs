@@ -24,7 +24,6 @@ public class ReviewRepository : IReviewRepository
     public async Task<Review?> GetByIdWithResponseAsync(int id)
     {
         return await _context.Reviews
-            .Include(r => r.RestaurantResponse)
             .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
     }
 
@@ -32,14 +31,12 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Reviews
             .Include(r => r.Restaurant)
-            .Include(r => r.RestaurantResponse)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
     public async Task<List<Review>> GetAllActiveAsync()
     {
         return await _context.Reviews
-            .Include(r => r.RestaurantResponse)
             .Where(r => r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
@@ -48,7 +45,6 @@ public class ReviewRepository : IReviewRepository
     public async Task<List<Review>> GetByRestaurantIdAsync(int restaurantId)
     {
         return await _context.Reviews
-            .Include(r => r.RestaurantResponse)
             .Where(r => r.RestaurantId == restaurantId && r.IsActive)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
@@ -95,7 +91,6 @@ public class ReviewRepository : IReviewRepository
         string? sortBy)
     {
         var query = _context.Reviews
-            .Include(r => r.RestaurantResponse)
             .Where(r => r.RestaurantId == restaurantId && r.IsActive);
 
         query = sortBy?.ToLower() switch

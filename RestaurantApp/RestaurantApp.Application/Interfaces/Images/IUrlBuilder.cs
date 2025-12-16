@@ -1,4 +1,4 @@
-﻿namespace RestaurantApp.Application.Common.Interfaces;
+﻿namespace RestaurantApp.Application.Interfaces.Images;
 
 public interface IUrlBuilder
 {

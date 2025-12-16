@@ -17,7 +17,6 @@ public class TableRepository : ITableRepository
     {
         return await _context.Tables
             .Include(t => t.Restaurant)
-            .Include(t => t.Seats)
             .ToListAsync();
     }
 
@@ -25,7 +24,6 @@ public class TableRepository : ITableRepository
     {
         return await _context.Tables
             .Include(t => t.Restaurant)
-            .Include(t => t.Seats)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -33,7 +31,6 @@ public class TableRepository : ITableRepository
     {
         return await _context.Tables
             .Where(t => t.RestaurantId == restaurantId)
-            .Include(t => t.Seats)
             .ToListAsync();
     }
 
@@ -41,7 +38,6 @@ public class TableRepository : ITableRepository
     {
         var query = _context.Tables
             .Include(t => t.Restaurant)
-            .Include(t => t.Seats)
             .AsQueryable();
 
         if (minCapacity.HasValue)

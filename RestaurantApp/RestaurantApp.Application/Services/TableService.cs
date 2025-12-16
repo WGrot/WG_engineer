@@ -96,21 +96,8 @@ public class TableService : ITableService
             Capacity = dto.Capacity,
             Location = dto.Location,
             RestaurantId = dto.RestaurantId,
-            Seats = new List<Seat>()
-        };
 
-        if (dto.SeatCount > 0)
-        {
-            for (int i = 1; i <= dto.SeatCount; i++)
-            {
-                table.Seats.Add(new Seat
-                {
-                    SeatNumber = $"{table.TableNumber}-{i}",
-                    IsAvailable = true,
-                    Type = "Standard"
-                });
-            }
-        }
+        };
 
         return table;
     }

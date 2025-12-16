@@ -27,7 +27,6 @@ public static class TableMapper
             Capacity = dto.Capacity,
             Location = dto.Location,
             RestaurantId = dto.RestaurantId,
-            Seats = new List<Seat>()
 
         };
     }

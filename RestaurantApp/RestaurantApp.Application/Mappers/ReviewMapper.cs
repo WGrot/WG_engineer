@@ -32,15 +32,6 @@ public static class ReviewMapper
     {
         return entities.Select(e => e.ToDto()).ToList();
     }
-    public static RestaurantReviewResponse ToDto(this RestaurantReviewResponse response)
-    {
-        return new RestaurantReviewResponse
-        {
-            Id = response.Id,
-            Content = response.Content,
-            CreatedAt = response.CreatedAt
-        };
-    }
     
     public static Review ToEntity(this CreateReviewDto dto, string userId, string userName, Restaurant restaurant)
     {

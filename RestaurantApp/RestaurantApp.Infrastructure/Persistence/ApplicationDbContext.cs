@@ -15,7 +15,6 @@ public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
     public DbSet<Menu> Menus => Set<Menu>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<Table> Tables => Set<Table>();
-    public DbSet<Seat> Seats => Set<Seat>();
     public DbSet<OpeningHours> OpeningHours => Set<OpeningHours>();
     public DbSet<ReservationBase> Reservations => Set<ReservationBase>();
     public DbSet<TableReservation> TableReservations { get; set; }
@@ -27,7 +26,6 @@ public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
     public DbSet<MenuItemTag> MenuItemTags => Set<MenuItemTag>();
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Review> Reviews => Set<Review>();
-    public DbSet<RestaurantReviewResponse> RestaurantResponses => Set<RestaurantReviewResponse>();
     
     public DbSet<ImageLink> ImageLinks => Set<ImageLink>();
 

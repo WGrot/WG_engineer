@@ -8,6 +8,8 @@ public class Review
     public Restaurant Restaurant { get; set; }
     
     public string UserId { get; set; }
+    
+    public ApplicationUser User { get; set; } = null!;
     public string UserName { get; set; } 
 
     public int Rating { get; set; } 
@@ -20,6 +22,4 @@ public class Review
 
     public bool IsVerified { get; set; } = false;
     public bool IsActive { get; set; } = true; 
-    
-    public RestaurantReviewResponse? RestaurantResponse { get; set; }
 }

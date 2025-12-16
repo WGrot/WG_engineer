@@ -24,4 +24,6 @@ public class ReservationBase
     public Restaurant Restaurant { get; set; } = null!;
     
     public string? UserId { get; set; }
+    
+    public ApplicationUser? User { get; set; } = null;
 }
