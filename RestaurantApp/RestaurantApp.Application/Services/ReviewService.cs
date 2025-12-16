@@ -3,8 +3,11 @@ using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
+using RestaurantApp.Domain.Enums;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Review;
+using RestaurantApp.Shared.DTOs.SearchParameters;
+using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
 
@@ -13,15 +16,18 @@ public class ReviewService : IReviewService
     private readonly IReviewRepository _reviewRepository;
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IReservationRepository _reservationRepository;
 
     public ReviewService(
         IReviewRepository reviewRepository,
         IRestaurantRepository restaurantRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IReservationRepository reservationRepository)
     {
         _reviewRepository = reviewRepository;
         _restaurantRepository = restaurantRepository;
         _userRepository = userRepository;
+        _reservationRepository = reservationRepository;
     }
 
     public async Task<Result<ReviewDto>> GetByIdAsync(int id)
@@ -54,9 +60,12 @@ public class ReviewService : IReviewService
     public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto)
     {
         var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
-        var userName = await _userRepository.GetUserNameByIdAsync(userId);
+        var user = await _userRepository.GetUserNameByIdAsync(userId);
 
-        var review = dto.ToEntity(userId, userName, restaurant!);
+        
+        var review = dto.ToEntity(userId, user!, restaurant!);
+        
+        review.IsVerified = await CheckVerification(userId, dto.RestaurantId);
 
         _reviewRepository.Add(review);
         await _reviewRepository.SaveChangesAsync();
@@ -71,6 +80,8 @@ public class ReviewService : IReviewService
         var review = await _reviewRepository.GetByIdWithRestaurantAsync(id);
 
         review!.UpdateEntity(dto);
+        review!.IsVerified = await CheckVerification(userId, review.RestaurantId);
+        
         await _reviewRepository.SaveChangesAsync();
 
         await RecalculateScoresAsync(review.RestaurantId);
@@ -147,5 +158,23 @@ public class ReviewService : IReviewService
         }
 
         await _restaurantRepository.UpdateStatsAsync(restaurantId, stats);
+    }
+    
+    private async Task<bool> CheckVerification(string userId, int restaurantId)
+    {
+        var pastUserReservations = await _reservationRepository.SearchAsync(new ReservationSearchParameters
+        {
+            UserId = userId,
+            RestaurantId = restaurantId,
+            Status = ReservationStatusEnumDto.Completed
+        });
+        
+        
+        if (pastUserReservations.Any())
+        {
+            return true;
+        }
+
+        return false;
     }
 }
