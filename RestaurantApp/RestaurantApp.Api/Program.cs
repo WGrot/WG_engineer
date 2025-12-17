@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Api.Helpers;
@@ -138,6 +139,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
+
+
 using (var scope = app.Services.CreateScope())
 {
     var bucketService = scope.ServiceProvider.GetRequiredService<IBucketService>();
@@ -162,6 +165,26 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("Starting database migration...");
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+        logger.LogInformation("Database migration completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating the database.");
+        throw; 
+    }
+}
+
 app.UseHttpsRedirection();
 
 
@@ -174,3 +197,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
