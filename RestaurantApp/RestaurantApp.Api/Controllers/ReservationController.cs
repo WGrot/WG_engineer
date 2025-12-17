@@ -18,9 +18,7 @@ public class ReservationController : ControllerBase
 
     public ReservationController(
         IReservationService reservationService,
-        ITableReservationService tableReservationService,
-        IAuthorizationService authorizationService,
-        ILogger<ReservationController> logger)
+        ITableReservationService tableReservationService)
     {
         _reservationService = reservationService;
         _tableReservationService = tableReservationService;
@@ -103,9 +101,6 @@ public class ReservationController : ControllerBase
     [HttpPost("table")]
     public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto dto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         var result = await _tableReservationService.CreateAsync(dto);
         return result.ToActionResult();
     }

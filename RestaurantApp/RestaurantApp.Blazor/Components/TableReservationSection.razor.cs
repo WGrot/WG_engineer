@@ -69,7 +69,7 @@ public partial class TableReservationSection : ComponentBase
             successMessage = "";
             
             
-            var reservation = new CreateTableReservationDto
+            var reservationDto = new CreateTableReservationDto
             {
                 TableId = Table.Id,
                 RestaurantId = Table.RestaurantId,
@@ -84,7 +84,7 @@ public partial class TableReservationSection : ComponentBase
                 UseUserId = autoFilldata
             };
 
-            var response = await Http.PostAsJsonAsync("api/Reservation/table", reservation);
+            var response = await Http.PostAsJsonAsync("api/Reservation/table", reservationDto);
 
             if (response.IsSuccessStatusCode)
             {

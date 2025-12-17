@@ -18,19 +18,22 @@ public class TableReservationService : ITableReservationService
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IEmailComposer _emailComposer;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
 
     public TableReservationService(
         IReservationRepository reservationRepository,
         ITableRepository tableRepository,
         IRestaurantRepository restaurantRepository,
         IEmailComposer emailComposer,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IRestaurantSettingsRepository restaurantSettingsRepository)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
         _restaurantRepository = restaurantRepository;
         _emailComposer = emailComposer;
         _currentUserService = currentUserService;
+        _restaurantSettingsRepository = restaurantSettingsRepository;
     }
 
     public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
@@ -51,10 +54,8 @@ public class TableReservationService : ITableReservationService
 
     public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
     {
-        var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(dto.TableId);
-        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(dto.RestaurantId);
-
-        var needsConfirmation = restaurant!.Settings?.ReservationsNeedConfirmation == true;
+        var restaurantSettings = await _restaurantSettingsRepository.GetByRestaurantIdAsync(dto.RestaurantId);
+        bool needsConfirmation = restaurantSettings!.ReservationsNeedConfirmation;
         var initialStatus = needsConfirmation
             ? ReservationStatusEnumDto.Pending
             : ReservationStatusEnumDto.Confirmed;
@@ -65,24 +66,7 @@ public class TableReservationService : ITableReservationService
             userId = _currentUserService.UserId;
         }
 
-        var reservation = new TableReservation
-        {
-            RestaurantId = dto.RestaurantId,
-            UserId = userId,
-            NumberOfGuests = dto.NumberOfGuests,
-            CustomerName = dto.CustomerName,
-            CustomerEmail = dto.CustomerEmail,
-            CustomerPhone = dto.CustomerPhone,
-            ReservationDate = dto.ReservationDate,
-            StartTime = dto.StartTime,
-            EndTime = dto.EndTime,
-            Notes = dto.Notes,
-            TableId = dto.TableId,
-            Table = table!,
-            Status = initialStatus.ToDomain(),
-            CreatedAt = DateTime.UtcNow,
-            NeedsConfirmation = needsConfirmation
-        };
+        var reservation = CreateReservation(dto, userId, initialStatus, needsConfirmation);
 
         var created = await _reservationRepository.AddTableReservationAsync(reservation);
 
@@ -136,5 +120,30 @@ public class TableReservationService : ITableReservationService
             var email = new ReservationConfirmedEmail(reservation);
             await _emailComposer.SendAsync(reservation.CustomerEmail, email);
         }
+    }
+    
+    private TableReservation CreateReservation(
+        CreateTableReservationDto dto,
+        string? userId,
+        ReservationStatusEnumDto initialStatus,
+        bool needsConfirmation)
+    {
+        return new TableReservation
+        {
+            RestaurantId = dto.RestaurantId,
+            UserId = userId,
+            NumberOfGuests = dto.NumberOfGuests,
+            CustomerName = dto.CustomerName,
+            CustomerEmail = dto.CustomerEmail,
+            CustomerPhone = dto.CustomerPhone,
+            ReservationDate = dto.ReservationDate,
+            StartTime = dto.StartTime,
+            EndTime = dto.EndTime,
+            Notes = dto.Notes,
+            TableId = dto.TableId,
+            Status = initialStatus.ToDomain(),
+            CreatedAt = DateTime.UtcNow,
+            NeedsConfirmation = needsConfirmation
+        };
     }
 }

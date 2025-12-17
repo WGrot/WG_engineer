@@ -16,5 +16,4 @@ public class CreateTableReservationDto
     public TimeOnly EndTime { get; set; }
     
     public string? Notes { get; set; }
-    public bool RequiresConfirmation { get; set; } = false;
 }

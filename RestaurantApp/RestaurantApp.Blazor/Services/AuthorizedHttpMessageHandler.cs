@@ -16,15 +16,12 @@ public class AuthorizedHttpMessageHandler : DelegatingHandler
         CancellationToken ct)
     {
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-
         var token = _tokenStore.GetAccessToken();
 
-        if (!string.IsNullOrEmpty(token))
-        {
+        if (!string.IsNullOrEmpty(token)) {
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
         }
-
         return await base.SendAsync(request, ct);
     }
 }

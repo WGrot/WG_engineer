@@ -144,7 +144,7 @@ public class TableReservationValidator : ITableReservationValidator
         if(!guestResult.IsSuccess)
             return guestResult;
         
-        var dateResult = await ValidateDate(dto.ReservationDate, settings);
+        var dateResult = await ValidateDate(dto.ReservationDate.Add(dto.StartTime.ToTimeSpan()), settings);
         if (!dateResult.IsSuccess)
             return dateResult;
         

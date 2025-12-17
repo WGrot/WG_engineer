@@ -4,57 +4,66 @@ using RestaurantApp.Application.Interfaces.Services;
 
 namespace RestaurantApp.Infrastructure.Services;
 
-public class AesEncryptionService: IEncryptionService
+public class AesEncryptionService : IEncryptionService
 {
+    private const int KeySize = 32;     
+    private const int NonceSize = 12;    
+    private const int TagSize = 16;      
+
     private readonly byte[] _key;
-    private readonly byte[] _iv;
 
     public AesEncryptionService(IConfiguration configuration)
     {
         var base64Key = configuration["EncryptionSettings:Key"];
-        var base64IV = configuration["EncryptionSettings:IV"];
-
         _key = Convert.FromBase64String(base64Key);
-        _iv = Convert.FromBase64String(base64IV);
 
-        if (_key.Length != 32 || _iv.Length != 16)
+        if (_key.Length != KeySize)
         {
-            throw new ArgumentException("Key must be 32 bytes and IV must be 16 bytes.");
+            throw new ArgumentException("Encryption key must be 32 bytes (AES-256).");
         }
     }
 
     public string Encrypt(string plainText)
     {
-        using var aesAlg = Aes.Create();
-        aesAlg.Key = _key;
-        aesAlg.IV = _iv;
-        aesAlg.Mode = CipherMode.CBC;
+        var plaintextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
 
-        var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+        var nonce = RandomNumberGenerator.GetBytes(NonceSize);
+        var ciphertext = new byte[plaintextBytes.Length];
+        var tag = new byte[TagSize];
 
-        using var msEncrypt = new MemoryStream();
-        using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-        using (var swEncrypt = new StreamWriter(csEncrypt))
-        {
-            swEncrypt.Write(plainText);
-        }
-        return Convert.ToBase64String(msEncrypt.ToArray());
+        using var aes = new AesGcm(_key, TagSize);
+        aes.Encrypt(nonce, plaintextBytes, ciphertext, tag);
+
+        var result = new byte[NonceSize + ciphertext.Length + TagSize];
+        Buffer.BlockCopy(nonce, 0, result, 0, NonceSize);
+        Buffer.BlockCopy(ciphertext, 0, result, NonceSize, ciphertext.Length);
+        Buffer.BlockCopy(tag, 0, result, NonceSize + ciphertext.Length, TagSize);
+
+        return Convert.ToBase64String(result);
     }
 
     public string Decrypt(string cipherText)
     {
-        var cipherBytes = Convert.FromBase64String(cipherText);
+        var fullCipher = Convert.FromBase64String(cipherText);
 
-        using var aesAlg = Aes.Create();
-        aesAlg.Key = _key;
-        aesAlg.IV = _iv;
-        aesAlg.Mode = CipherMode.CBC;
+        if (fullCipher.Length < NonceSize + TagSize)
+        {
+            throw new CryptographicException("Invalid encrypted payload.");
+        }
 
-        var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+        var nonce = new byte[NonceSize];
+        var tag = new byte[TagSize];
+        var ciphertext = new byte[fullCipher.Length - NonceSize - TagSize];
 
-        using var msDecrypt = new MemoryStream(cipherBytes);
-        using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-        using var srDecrypt = new StreamReader(csDecrypt);
-        return srDecrypt.ReadToEnd();
+        Buffer.BlockCopy(fullCipher, 0, nonce, 0, NonceSize);
+        Buffer.BlockCopy(fullCipher, NonceSize, ciphertext, 0, ciphertext.Length);
+        Buffer.BlockCopy(fullCipher, NonceSize + ciphertext.Length, tag, 0, TagSize);
+
+        var plaintext = new byte[ciphertext.Length];
+
+        using var aes = new AesGcm(_key, TagSize);
+        aes.Decrypt(nonce, ciphertext, tag, plaintext);
+
+        return System.Text.Encoding.UTF8.GetString(plaintext);
     }
 }
