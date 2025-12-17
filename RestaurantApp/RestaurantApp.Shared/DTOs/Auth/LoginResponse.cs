@@ -8,6 +8,4 @@ public class LoginResponse
     public ResponseUserLoginDto ResponseUser { get; set; } = new();
     
     public bool RequiresTwoFactor { get; set; }
-    
-    public bool IsEmailVeryfied { get; set; }
 }
