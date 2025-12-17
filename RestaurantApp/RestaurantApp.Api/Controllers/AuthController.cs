@@ -52,8 +52,10 @@ public class AuthController : ControllerBase
 
         var data = result.Value!;
 
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        var (refreshToken, refreshExpiresAt) = await _tokenService.GenerateRefreshTokenAsync(user!,  GetIpAddress());
         if (!data.RequiresTwoFactor)
-            SetRefreshTokenCookie(data.RefreshToken, data.RefreshExpiresAt);
+            SetRefreshTokenCookie(refreshToken, refreshExpiresAt);
 
         return result.ToActionResult();
     }

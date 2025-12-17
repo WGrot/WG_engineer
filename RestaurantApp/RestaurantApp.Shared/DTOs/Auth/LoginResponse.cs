@@ -10,6 +10,4 @@ public class LoginResponse
     public bool RequiresTwoFactor { get; set; }
     
     public bool IsEmailVeryfied { get; set; }
-    public string RefreshToken { get; set; }
-    public DateTime RefreshExpiresAt { get; set; }
 }

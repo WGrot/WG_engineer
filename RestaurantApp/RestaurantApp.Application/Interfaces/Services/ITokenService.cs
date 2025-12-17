@@ -4,14 +4,22 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface ITokenService
 {
-    Task<(string AccessToken, string RefreshToken, DateTime RefreshExpiresAt)> GenerateTokensAsync(
-        ApplicationUser user, 
-        bool is2FAVerified, 
-        string createdByIp);
+    // Task<(string AccessToken, string RefreshToken, DateTime RefreshExpiresAt)> GenerateTokensAsync(
+    //     ApplicationUser user, 
+    //     bool is2FAVerified, 
+    //     string createdByIp);
     
     Task<(bool Success, string? NewAccessToken, string? NewRefreshToken)> ValidateAndRotateRefreshTokenAsync(
         string presentedRefreshToken, 
         string ipAddress);
+
+    Task<(string RefreshToken, DateTime ExpiresAt)> GenerateRefreshTokenAsync(
+        ApplicationUser user,
+        string createdByIp);
+
+    Task<string> GenerateAccessTokenAsync(
+        ApplicationUser user,
+        bool is2FaVerified);
     
     Task RevokeRefreshTokenAsync(
         string presentedRefreshToken, 

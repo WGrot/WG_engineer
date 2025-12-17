@@ -22,13 +22,45 @@ public class TokenService: ITokenService
         _jwtService = jwtService;
     }
 
-    public async Task<(string AccessToken, string RefreshToken, DateTime RefreshExpiresAt)> GenerateTokensAsync(
+    // public async Task<(string AccessToken, string RefreshToken, DateTime RefreshExpiresAt)> GenerateTokensAsync(
+    //     ApplicationUser user, 
+    //     bool is2FAVerified, 
+    //     string createdByIp)
+    // {
+    //     var accessToken = await _jwtService.GenerateJwtTokenAsync(user, is2FAVerified);
+    //
+    //     var refreshToken = TokenHelper.GenerateRefreshToken();
+    //     var refreshHash = TokenHelper.HashToken(refreshToken);
+    //
+    //     var expiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenDays);
+    //
+    //     var rt = new RefreshToken
+    //     {
+    //         TokenHash = refreshHash,
+    //         ExpiresAt = expiresAt,
+    //         CreatedAt = DateTime.UtcNow,
+    //         CreatedByIp = createdByIp,
+    //         UserId = user.Id
+    //     };
+    //
+    //     await _refreshTokenRepository.AddAsync(rt);
+    //     await _refreshTokenRepository.SaveChangesAsync();
+    //
+    //     return (accessToken, refreshToken, expiresAt);
+    // }
+    
+    
+    public async Task<string> GenerateAccessTokenAsync(
         ApplicationUser user, 
-        bool is2FAVerified, 
+        bool is2FAVerified)
+    {
+        return await _jwtService.GenerateJwtTokenAsync(user, is2FAVerified);
+    }
+    
+    public async Task<(string RefreshToken, DateTime ExpiresAt)> GenerateRefreshTokenAsync(
+        ApplicationUser user, 
         string createdByIp)
     {
-        var accessToken = await _jwtService.GenerateJwtTokenAsync(user, is2FAVerified);
-
         var refreshToken = TokenHelper.GenerateRefreshToken();
         var refreshHash = TokenHelper.HashToken(refreshToken);
 
@@ -46,7 +78,7 @@ public class TokenService: ITokenService
         await _refreshTokenRepository.AddAsync(rt);
         await _refreshTokenRepository.SaveChangesAsync();
 
-        return (accessToken, refreshToken, expiresAt);
+        return (refreshToken, expiresAt);
     }
 
     public async Task<(bool Success, string? NewAccessToken, string? NewRefreshToken)> ValidateAndRotateRefreshTokenAsync(

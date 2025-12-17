@@ -88,21 +88,21 @@ public class AuthService: IAuthService
             if (twoFactorResult.Value?.RequiresTwoFactor == true)
                 return twoFactorResult;
         }
-
-        var (accessToken, refreshToken, refreshExpiresAt) = 
-            await _tokenService.GenerateTokensAsync(user, user.TwoFactorEnabled, ipAddress);
-
+        var (refreshToken, refreshExpiresAt) = await _tokenService.GenerateRefreshTokenAsync(user, ipAddress);
+        
+        string accessToken = await _tokenService.GenerateAccessTokenAsync(user, user.TwoFactorEnabled);
+        
         var response = new LoginResponse
         {
             Token = accessToken,
-            RefreshToken = refreshToken,
-            RefreshExpiresAt = refreshExpiresAt,
             RequiresTwoFactor = false,
             ResponseUser = MapToLoginDto(user)
         };
 
         return Result<LoginResponse>.Success(response);
     }
+    
+    
 
     public async Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress)
     {

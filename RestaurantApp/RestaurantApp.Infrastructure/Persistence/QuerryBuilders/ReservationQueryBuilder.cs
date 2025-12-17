@@ -156,8 +156,7 @@ public static class ReservationQueryBuilder
                 .ThenBy(r => r.StartTime),
 
             "next" => query
-                .Where(r => (r.ReservationDate == now.Date && r.StartTime >= currentTime)
-                            || r.ReservationDate > now.Date)
+                .Where(r => (r.ReservationDate == now.Date && r.StartTime >= currentTime))
                 .OrderBy(r => r.ReservationDate)
                 .ThenBy(r => r.StartTime),
 
