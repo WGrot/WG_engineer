@@ -83,7 +83,7 @@ public class AuthorizedEmployeeService : IEmployeeService
 
     public async Task<Result> DeleteAsync(int id)
     {
-        if (!await AuthorizeForEmployee(id))
+        if (!await AuthorizeForEmployee(id) && !await AuthorizeForUser(id))
             return Result.Forbidden("You dont have permission to delete this employee.");
 
         return await _inner.DeleteAsync(id);
@@ -111,5 +111,13 @@ public class AuthorizedEmployeeService : IEmployeeService
             return false;
 
         return await _authorizationChecker.CanManageEmployeeAsync(_currentUser.UserId!, employeeId);
+    }
+    
+    private async Task<bool> AuthorizeForUser(int employeeId)
+    {
+        if (!_currentUser.IsAuthenticated)
+            return false;
+        
+        return await _authorizationChecker.IsEmployeeWithId(_currentUser.UserId!, employeeId);
     }
 }

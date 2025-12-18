@@ -165,6 +165,14 @@ public class AuthorizationChecker: IAuthorizationChecker
             .AnyAsync(p => p.Permission == PermissionType.ManageEmployees);
     }
 
+    public async Task<bool> IsEmployeeWithId(string userId, int restaurantEmployeeId)
+    {
+        return await _context.RestaurantEmployees
+            .AsNoTracking()
+            .Where(e => e.Id == restaurantEmployeeId && e.UserId == userId)
+            .AnyAsync();
+    }
+
     public async Task<bool> HasPermissionInAnyRestaurantAsync(string userId, PermissionType permission)
     {
         var result = await _context.RestaurantEmployees
