@@ -45,9 +45,8 @@ public class UserNotificationService : IUserNotificationService
         return Result.Success(result);
     }
     
-    public async Task<Result<NotificationDto>> CreateAsync(CreateNotificationDto dto)
+    public async Task<Result<NotificationDto>> CreateAsync(UserNotification notification)
     {
-        var notification = dto.MapToEntity();
         await _repository.AddAsync(notification);
         return Result.Success( notification!.MapToDto());
     }

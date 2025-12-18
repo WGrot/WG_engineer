@@ -79,11 +79,11 @@ public class NotificationsController : ControllerBase
         return NoContent();
     }
     
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateNotificationDto dto)
-    {
-        dto.UserId = UserId;
-        var result = await _notificationService.CreateAsync(dto);
-        return result.ToActionResult();
-    }
+    // [HttpPost]
+    // public async Task<IActionResult> Create(CreateNotificationDto dto)
+    // {
+    //     dto.UserId = UserId;
+    //     var result = await _notificationService.CreateAsync(dto);
+    //     return result.ToActionResult();
+    // }
 }

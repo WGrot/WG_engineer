@@ -94,7 +94,7 @@ public static class DependencyInjection
         services.AddScoped<IImageLinkRepository, ImageLinkRepository>();
         services.AddScoped<ITotpProvider, TotpProvider>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
-
+        services.AddScoped<IEmployeeInvitationRepository, EmployeeInvitationRepository>();
         return services;
     }
 }

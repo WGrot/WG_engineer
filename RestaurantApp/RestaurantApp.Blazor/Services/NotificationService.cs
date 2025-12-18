@@ -87,6 +87,12 @@ public class NotificationService : IDisposable
             Console.WriteLine($"Failed to remove notification: {ex.Message}");
         }
     }
+
+    public void RemoveLocally(NotificationDto notification)
+    {
+        _notifications.Remove(notification);
+        NotifyStateChanged();
+    }
     
     public async Task MarkAsReadAsync(int notificationId)
     {

@@ -18,9 +18,12 @@ public class ApplicationUser : IdentityUser
     
     public bool CanBeSearched { get; set; } = true;
     
-    public ICollection<UserNotification> Notifications { get; set; } = [];
+
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;
     }
+    
+    public ICollection<UserNotification> Notifications { get; set; } = [];
+    public ICollection<EmployeeInvitation> ReceivedInvitations { get; set; } = [];
 }

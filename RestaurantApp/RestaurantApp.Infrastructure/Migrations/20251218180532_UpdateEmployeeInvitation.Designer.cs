@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using RestaurantApp.Infrastructure.Persistence;
 namespace RestaurantApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251218180532_UpdateEmployeeInvitation")]
+    partial class UpdateEmployeeInvitation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -271,9 +274,6 @@ namespace RestaurantApp.Infrastructure.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("NotificationId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("RespondedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -296,8 +296,6 @@ namespace RestaurantApp.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NotificationId");
 
                     b.HasIndex("RestaurantId");
 
@@ -1033,12 +1031,6 @@ namespace RestaurantApp.Infrastructure.Migrations
 
             modelBuilder.Entity("RestaurantApp.Domain.Models.EmployeeInvitation", b =>
                 {
-                    b.HasOne("RestaurantApp.Domain.Models.UserNotification", "Notification")
-                        .WithMany()
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("RestaurantApp.Domain.Models.Restaurant", "Restaurant")
                         .WithMany("EmployeeInvitations")
                         .HasForeignKey("RestaurantId")
@@ -1050,8 +1042,6 @@ namespace RestaurantApp.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Notification");
 
                     b.Navigation("Restaurant");
 

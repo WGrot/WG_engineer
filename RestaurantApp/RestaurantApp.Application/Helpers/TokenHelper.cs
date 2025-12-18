@@ -10,6 +10,15 @@ public static class TokenHelper
         var bytes = RandomNumberGenerator.GetBytes(size);
         return Convert.ToBase64String(bytes);
     }
+    
+    public static string GenerateUrlToken(int length = 32)
+    {
+        var bytes = RandomNumberGenerator.GetBytes(length);
+        return Convert.ToBase64String(bytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", "");
+    }
 
     public static string HashToken(string token)
     {

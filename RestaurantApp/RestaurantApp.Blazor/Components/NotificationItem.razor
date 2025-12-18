@@ -2,6 +2,7 @@
 @using RestaurantApp.Shared.Models
 @inject NavigationManager NavigationManager
 
+
 <div class="notification-item @CssClass">
     <div class="notification-content">
         <strong>@Notification.Title</strong>
@@ -45,6 +46,7 @@
 
     private void OnAccept()
     {
+        
         if (!string.IsNullOrEmpty(Notification.ActionUrl))
         {
             NavigationManager.NavigateTo(Notification.ActionUrl);

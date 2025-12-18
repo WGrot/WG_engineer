@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using RestaurantApp.Application.Interfaces;
 
 namespace RestaurantApp.Api.Helpers;
 
@@ -26,5 +27,12 @@ public class UrlHelper : IUrlHelper
         var frontendUrl = _configuration["AppURL:FrontendUrl"];
         var resetLink = $"{frontendUrl}/reset-password?userId={encodedUserId}&token={encodedToken}";
         return resetLink;
+    }
+
+    public string GenerateInvitationLink(string token)
+    {
+        var encodedToken = WebUtility.UrlEncode(token);
+        var frontendUrl = _configuration["AppURL:FrontendUrl"];
+        return $"{frontendUrl}/invitations/accept?token={encodedToken}";
     }
 }

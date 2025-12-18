@@ -1,7 +1,10 @@
-﻿@using RestaurantApp.Blazor.Services
+﻿@using System.Web
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.DTOs.Employees
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Shared.Models
 @inject NotificationService NotificationService
+@inject HttpClient Http
 @implements IDisposable
 
 @{
@@ -60,8 +63,16 @@
 
     private async Task HandleDeclineInvitation(NotificationDto notification)
     {
-        // TODO: Add logic to decline the invitation (e.g., API call)
-        await NotificationService.RemoveNotificationAsync(notification);
+
+        var url = notification.ActionUrl;
+        var uri = new Uri(url);
+        var token = HttpUtility.ParseQueryString(uri.Query)["token"];
+        var request = new TokenRequest{ Token = token};
+        var response = await Http.PostAsJsonAsync("api/EmployeeInvitations/reject", request);
+        if (response.IsSuccessStatusCode)
+        {
+            NotificationService.RemoveLocally(notification);
+        }
     }
 
     private async Task ClearAll()

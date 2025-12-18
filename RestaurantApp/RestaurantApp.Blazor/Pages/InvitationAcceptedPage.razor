@@ -1,0 +1,144 @@
+﻿@page "/invitations/accept"
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.DTOs.Employees
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject NotificationService NotificationService
+
+<div class="verification-page">
+    <div class="verification-container">
+        <div class="verification-card">
+            @if (_isLoading)
+            {
+                <div class="icon-container">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <h2 class="verification-title">Processing Invitation...</h2>
+
+                <p class="verification-message">
+                    Please wait while we confirm your invitation.
+                </p>
+            }
+            else if (_isSuccess)
+            {
+                <div class="icon-container">
+                    <i class="bi bi-person-check-fill success-icon"></i>
+                </div>
+
+                <h2 class="verification-title">Welcome to the Team!</h2>
+
+                <p class="verification-message">
+                    You have been successfully added as an employee.
+                    Please log in again to access your new workplace.
+                </p>
+
+                <div class="info-box">
+                    <p class="info-text">Permission Update Required</p>
+                    <p class="info-subtext">
+                        Your permissions have been updated. A fresh login is needed to apply the changes.
+                    </p>
+                </div>
+
+                <button @onclick="GoToLogin" class="login-btn">
+                    <span>Log out</span>
+                </button>
+            }
+            else
+            {
+                <div class="icon-container">
+                    <i class="bi bi-x-circle-fill error-icon"></i>
+                </div>
+
+                <h2 class="verification-title">Invitation Failed</h2>
+
+                <p class="verification-message">
+                    @_errorMessage
+                </p>
+
+                <button @onclick="GoToHome" class="login-btn">
+                    <span>Go to Home</span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Token { get; set; }
+
+    private bool _isLoading = true;
+    private bool _isSuccess;
+    private string _errorMessage = "Something went wrong. Please try again.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            _isLoading = false;
+            _errorMessage = "Invalid invitation link. No token provided.";
+            return;
+        }
+
+        await AcceptInvitationAsync();
+    }
+
+    private async Task AcceptInvitationAsync()
+    {
+        try
+        {
+            var request = new TokenRequest{ Token = Token};
+            var response = await Http.PostAsJsonAsync("api/EmployeeInvitations/accept", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _isSuccess = true;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var returnUrl = Uri.EscapeDataString($"/invitations/accept?token={Token}");
+                Navigation.NavigateTo($"/login?returnUrl={returnUrl}");
+                return;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                _errorMessage = "This invitation belongs to another user.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                _errorMessage = "You are already an employee of this restaurant.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                _errorMessage = "This invitation is invalid or has expired.";
+            }
+            else
+            {
+                _errorMessage = "Something went wrong. Please try again later.";
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Unable to connect to the server. Please check your connection.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void GoToLogin()
+    {
+        InvokeAsync(AuthService.LogoutAsync);
+        Navigation.NavigateTo("/login");
+    }
+
+    private void GoToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

@@ -33,6 +33,8 @@ public class Restaurant
     public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
     public virtual ICollection<ReservationBase> Reservations { get; set; } = new List<ReservationBase>();
     
+    public ICollection<EmployeeInvitation> EmployeeInvitations { get; set; } = new List<EmployeeInvitation>();
+    
     public double AverageRating { get; set; } = 0;
     public int TotalReviews { get; set; } = 0;
     public int TotalRatings1Star { get; set; } = 0;

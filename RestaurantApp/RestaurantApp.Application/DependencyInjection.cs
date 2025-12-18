@@ -388,6 +388,7 @@ public static class DependencyInjection
         
 
         services.AddScoped<IUserNotificationService, UserNotificationService>();
+        services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
 
         return services;
     }

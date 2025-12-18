@@ -29,6 +29,8 @@ public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
     
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     
+    public DbSet<EmployeeInvitation> EmployeeInvitations => Set<EmployeeInvitation>();
+    
     public DbSet<ImageLink> ImageLinks => Set<ImageLink>();
 
     protected override void OnModelCreating(ModelBuilder builder)
