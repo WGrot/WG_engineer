@@ -68,6 +68,15 @@ public class AuthorizedUserService : IUserService
         return await _inner.DeleteUserAsync(userId);
     }
 
+    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
+    {
+        if (!_currentUser.IsAuthenticated)
+        {
+            return Result<UserDetailsDto>.Forbidden("You don't have permission to view other users.");
+        }
+        return await _inner.GetMyDetailsAsync();
+    }
+
     private async Task<bool> AuthorizeRestaurantPermission()
     {
         if (!_currentUser.IsAuthenticated)

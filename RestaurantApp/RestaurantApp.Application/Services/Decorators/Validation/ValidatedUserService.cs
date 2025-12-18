@@ -78,4 +78,9 @@ public class ValidatedUserService : IUserService
 
         return await _inner.DeleteUserAsync(userId);
     }
+
+    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
+    {
+        return await _inner.GetMyDetailsAsync();
+    }
 }

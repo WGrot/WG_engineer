@@ -14,4 +14,6 @@ public interface IUserService
     Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto);
     Task<Result> UpdateUserAsync(UpdateUserDto dto);
     Task<Result> DeleteUserAsync(string userId);
+    
+    Task<Result<UserDetailsDto>> GetMyDetailsAsync();
 }

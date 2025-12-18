@@ -163,7 +163,7 @@ public class AuthService: IAuthService
 
     public async Task<Result<List<ResponseUserDto>>> GetAllUsersAsync()
     {
-        var users = await _userRepository.SearchAsync(null, null, null, null, null);
+        var users = await _userRepository.SearchAsync(null, null, null, null, null, true);
         var userDtos = users.Select(MapToDto).ToList();
         return Result<List<ResponseUserDto>>.Success(userDtos);
     }

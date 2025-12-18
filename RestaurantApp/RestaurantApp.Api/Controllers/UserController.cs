@@ -79,4 +79,11 @@ public class UserController : ControllerBase
         var result = await _userService.DeleteUserAsync(userId);
         return result.ToActionResult();
     }
+    
+    [HttpGet("my-details")]
+    public async Task<IActionResult> GetMyDetails()
+    {
+        var result = await _userService.GetMyDetailsAsync();
+        return result.ToActionResult();
+    }
 }

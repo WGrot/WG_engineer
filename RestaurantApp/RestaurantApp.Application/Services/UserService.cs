@@ -2,6 +2,7 @@
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
+using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -18,19 +19,22 @@ public class UserService : IUserService
     private readonly IEmployeeService _employeeService;
     private readonly IPasswordService _passwordService;
     private readonly IEmailComposer _emailComposer;
+    private readonly ICurrentUserService _currentUserService;
 
     public UserService(
         IUserRepository userRepository,
         UserManager<ApplicationUser> userManager,
         IEmployeeService employeeService,
         IPasswordService passwordService,
-        IEmailComposer emailComposer)
+        IEmailComposer emailComposer,
+        ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
         _userManager = userManager;
         _employeeService = employeeService;
         _passwordService = passwordService;
         _emailComposer = emailComposer;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
@@ -47,7 +51,7 @@ public class UserService : IUserService
     {
         try
         {
-            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount);
+            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount, false);
             var responseUserDtos = users.Select(MapToResponseDto).ToList();
             return Result<IEnumerable<ResponseUserDto>>.Success(responseUserDtos);
         }
@@ -138,6 +142,14 @@ public class UserService : IUserService
         return Result.Success();
     }
 
+    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
+    {
+        var user = await _userManager.FindByIdAsync(_currentUserService.UserId);
+
+        return Result.Success(user!.MapToDetaisDto());
+
+    }
+
     private static ResponseUserDto MapToResponseDto(ApplicationUser user)
     {
         return new ResponseUserDto
@@ -161,10 +173,9 @@ public class UserService : IUserService
         if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
             user.PhoneNumber = dto.PhoneNumber;
 
-        if (!string.IsNullOrWhiteSpace(dto.Email))
+        if (dto.CanBeSearched.HasValue)
         {
-            user.Email = dto.Email;
-            user.UserName = dto.Email;
+            user.CanBeSearched = dto.CanBeSearched.Value;
         }
     }
 

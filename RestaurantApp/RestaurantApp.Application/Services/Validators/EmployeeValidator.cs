@@ -31,12 +31,19 @@ public class EmployeeValidator : IEmployeeValidator
     {
         var user = await _userRepository.GetByIdAsync(dto.UserId);
         if (user == null)
-            return Result.NotFound($"User with ID {dto.UserId} not found.");
+            return Result.NotFound($"User not found.");
 
         var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
         if (restaurant == null)
-            return Result.NotFound($"Restaurant with ID {dto.RestaurantId} not found.");
+            return Result.NotFound($"Restaurant with not found.");
 
+        var existingEmployee = await _employeeRepository.GetByUserIdWithDetailsAsync(dto.UserId);
+        foreach (var employee in existingEmployee)
+        {
+            if (employee.RestaurantId == dto.RestaurantId)
+                return Result.Failure($"User is already an employee of restaurant.");
+        }
+        
         return Result.Success();
     }
 

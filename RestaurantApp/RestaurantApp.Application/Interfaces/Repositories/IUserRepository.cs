@@ -14,6 +14,6 @@ public interface IUserRepository
         string? lastName,
         string? phoneNumber,
         string? email,
-        int? amount);
+        int? amount, bool? asAdmin);
     Task UpdateAsync(ApplicationUser user);
 }

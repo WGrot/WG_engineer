@@ -16,7 +16,7 @@ public class ApplicationUser : IdentityUser
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
     
-    
+    public bool CanBeSearched { get; set; } = true;
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;

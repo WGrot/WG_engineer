@@ -34,9 +34,14 @@ public class UserRepository : IUserRepository
         string? lastName,
         string? phoneNumber,
         string? email,
-        int? amount)
+        int? amount, 
+        bool? asAdmin)
     {
         var query = _context.Users.AsQueryable();
+        if (asAdmin is false)
+        {
+            query = query.Where(u => u.CanBeSearched == true);  
+        }
 
         if (!string.IsNullOrWhiteSpace(firstName))
         {
