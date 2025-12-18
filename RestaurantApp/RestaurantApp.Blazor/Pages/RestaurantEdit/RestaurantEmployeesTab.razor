@@ -18,12 +18,13 @@
     @bind-IsVisible="showAddEmployeeModal"
     RestaurantId="Id"
     OnEmployeeAdded="HandleEmployeeAdded"
-    Title="Dodaj nowego pracownika" />
+    Title="Add new employee account" />
 
 <SearchUserModal
     @bind-IsVisible="showSearch"
     RestaurantId="Id"
-    Title="Search for existing employee accounts" />
+    Title="Search for existing employee accounts" 
+    OnEmployeeAdded="HandleEmployeeAdded"/>
 
 <ManagePermissionsModal
     @bind-IsVisible="showPermissionsModal"
@@ -40,7 +41,6 @@
             <div class="text-center">
                 <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
                 <div class="mt-3">
-                    <p class="mb-2"><strong>Employee account created</strong></p>
                     <p class="mb-1">Email: <strong>@newEmployeeResponse.Email</strong></p>
                     <p >Email with additional info was sent to employee inbox</p>
                 </div>
@@ -188,6 +188,8 @@ else
         selectedEmployee = employee;
         showPermissionsModal = true;
     }
+
+
 
     private async Task HandleEmployeeAdded(CreateUserResponse response)
     {
