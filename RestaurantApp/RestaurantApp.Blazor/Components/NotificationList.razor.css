@@ -53,7 +53,7 @@
     align-items: flex-start;
 }
 
-.notification-item:last-child {
+.notification-items ::deep .notification-item:last-child {
     border-bottom: none;
 }
 

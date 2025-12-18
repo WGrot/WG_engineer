@@ -60,8 +60,6 @@ public class NotificationService : IDisposable
 
     public void AddNotification(NotificationDto notification)
     {
-        if (notification == null) return;
-        
         if (_notifications.Any(n => n.Id == notification.Id)) return;
 
         _notifications.Insert(0, notification); 
@@ -72,57 +70,82 @@ public class NotificationService : IDisposable
         StartAutoHideTimer(); 
     }
     
-    public void AddNotifications(IEnumerable<NotificationDto> notifications)
+    public async Task RemoveNotificationAsync(NotificationDto notification)
     {
-        foreach (var notification in notifications)
+        try
         {
-            if (_notifications.All(n => n.Id != notification.Id))
+            var response = await _http.DeleteAsync($"api/notifications/{notification.Id}");
+            
+            if (response.IsSuccessStatusCode)
             {
-                _notifications.Add(notification);
+                _notifications.Remove(notification);
+                NotifyStateChanged();
             }
         }
-        NotifyStateChanged();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to remove notification: {ex.Message}");
+        }
     }
     
-    public void MarkAsRead(int notificationId)
+    public async Task MarkAsReadAsync(int notificationId)
     {
         var notification = _notifications.FirstOrDefault(n => n.Id == notificationId);
-        if (notification != null)
+        if (notification == null) return;
+
+        try
         {
-            notification.IsRead = true;
-            NotifyStateChanged();
+            var response = await _http.PatchAsync($"api/notifications/{notificationId}/read", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                notification.IsRead = true;
+                NotifyStateChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to mark as read: {ex.Message}");
         }
     }
     
-    public void MarkAllAsRead()
+    public async Task MarkAllAsReadAsync()
     {
-        foreach (var notification in _notifications)
+        try
         {
-            notification.IsRead = true;
+            var response = await _http.PatchAsync("api/notifications/read-all", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                foreach (var notification in _notifications)
+                {
+                    notification.IsRead = true;
+                }
+                NotifyStateChanged();
+            }
         }
-        NotifyStateChanged();
-    }
-    
-    public void ClearAll()
-    {
-        _notifications.Clear();
-        HideList(); 
-    }
-    
-    public void RemoveNotification(int notificationId)
-    {
-        var notification = _notifications.FirstOrDefault(n => n.Id == notificationId);
-        if (notification != null)
+        catch (Exception ex)
         {
-            _notifications.Remove(notification);
-            NotifyStateChanged();
+            Console.WriteLine($"Failed to mark all as read: {ex.Message}");
         }
     }
     
-    public void RemoveNotification(NotificationDto notification)
+    public async Task ClearAllAsync()
     {
-        _notifications.Remove(notification);
-        NotifyStateChanged();
+        try
+        {
+            var response = await _http.DeleteAsync("api/notifications/read");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _notifications.RemoveAll(n => n.IsRead);
+                HideList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to clear notifications: {ex.Message}");
+        }
     }
 
     public void ToggleListVisibility()

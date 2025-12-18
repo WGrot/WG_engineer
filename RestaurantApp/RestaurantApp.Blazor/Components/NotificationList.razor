@@ -23,16 +23,10 @@
         {
             @foreach (var notification in NotificationService.Notifications.Reverse())
             {
-                <div class="notification-item @GetCssClass(notification.Type)">
-                    
-                    <div class="notification-content">
-                        <strong>@notification.Title</strong>
-                        <p>@notification.Content</p>
-                    </div>
-                    <button class="dismiss-btn" @onclick="() => Remove(notification)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                </div>
+                <NotificationItem 
+                    Notification="notification"
+                    OnDismiss="Remove"
+                    OnDeclineInvitation="HandleDeclineInvitation" />
             }
         }
         else
@@ -45,33 +39,34 @@
 </div>
 
 @code {
+    private bool _isLoading;
+
     protected override async Task OnInitializedAsync()
     {
         NotificationService.OnChange += StateHasChanged;
-    
+        
         if (!NotificationService.Notifications.Any())
         {
+            _isLoading = true;
             await NotificationService.LoadNotificationsAsync();
+            _isLoading = false;
         }
     }
 
-    private string GetCssClass(NotificationTypeEnumDto type) => type switch
+    private async Task Remove(NotificationDto notification)
     {
-        NotificationTypeEnumDto.Success => "notification-success",
-        NotificationTypeEnumDto.Error => "notification-error",
-        NotificationTypeEnumDto.Warning => "notification-warning",
-        NotificationTypeEnumDto.Info => "notification-info",
-        _ => "notification-info"
-    };
-    
-    private void Remove(NotificationDto notification)
-    {
-        NotificationService.RemoveNotification(notification);
+        await NotificationService.RemoveNotificationAsync(notification);
     }
 
-    private void ClearAll()
+    private async Task HandleDeclineInvitation(NotificationDto notification)
     {
-        NotificationService.ClearAll();
+        // TODO: Add logic to decline the invitation (e.g., API call)
+        await NotificationService.RemoveNotificationAsync(notification);
+    }
+
+    private async Task ClearAll()
+    {
+        await NotificationService.ClearAllAsync();
     }
 
     public void Dispose()

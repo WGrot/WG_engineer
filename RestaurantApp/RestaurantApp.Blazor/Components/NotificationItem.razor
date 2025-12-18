@@ -1,0 +1,63 @@
+﻿@using RestaurantApp.Shared.DTOs.Users
+@using RestaurantApp.Shared.Models
+@inject NavigationManager NavigationManager
+
+<div class="notification-item @CssClass">
+    <div class="notification-content">
+        <strong>@Notification.Title</strong>
+        <p>@Notification.Content</p>
+        
+        @if (Notification.Category == NotificationCategoryEnumDto.EmployeeInvitation)
+        {
+            <div class="notification-actions mt-2">
+                <button class="btn btn-success btn-sm me-2" @onclick="OnAccept">
+                    <i class="bi bi-check-lg me-1"></i>Accept
+                </button>
+                <button class="btn btn-danger btn-sm" @onclick="OnDecline">
+                    <i class="bi bi-x-lg me-1"></i>Decline
+                </button>
+            </div>
+        }
+    </div>
+    <button class="dismiss-btn" @onclick="OnDismissClick">
+        <i class="bi bi-x"></i>
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public NotificationDto Notification { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<NotificationDto> OnDismiss { get; set; }
+
+    [Parameter]
+    public EventCallback<NotificationDto> OnDeclineInvitation { get; set; }
+
+    private string CssClass => Notification.Type switch
+    {
+        NotificationTypeEnumDto.Success => "notification-success",
+        NotificationTypeEnumDto.Error => "notification-error",
+        NotificationTypeEnumDto.Warning => "notification-warning",
+        NotificationTypeEnumDto.Info => "notification-info",
+        _ => "notification-info"
+    };
+
+    private void OnAccept()
+    {
+        if (!string.IsNullOrEmpty(Notification.ActionUrl))
+        {
+            NavigationManager.NavigateTo(Notification.ActionUrl);
+        }
+    }
+
+    private async Task OnDecline()
+    {
+        await OnDeclineInvitation.InvokeAsync(Notification);
+    }
+
+    private async Task OnDismissClick()
+    {
+        await OnDismiss.InvokeAsync(Notification);
+    }
+}
