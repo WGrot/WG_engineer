@@ -17,6 +17,8 @@ public class ApplicationUser : IdentityUser
     public bool IsActive { get; set; } = true;
     
     public bool CanBeSearched { get; set; } = true;
+    
+    public ICollection<UserNotification> Notifications { get; set; } = [];
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;

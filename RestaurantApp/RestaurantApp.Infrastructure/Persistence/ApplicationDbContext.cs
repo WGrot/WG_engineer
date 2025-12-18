@@ -27,6 +27,8 @@ public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Review> Reviews => Set<Review>();
     
+    public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+    
     public DbSet<ImageLink> ImageLinks => Set<ImageLink>();
 
     protected override void OnModelCreating(ModelBuilder builder)
