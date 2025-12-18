@@ -19,37 +19,46 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     private readonly IEmployeeInvitationRepository _invitationRepository;
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IRestaurantEmployeeRepository _employeeRepository;
-    private readonly IUserNotificationService _userNotificationService;
+    private readonly ICurrentUserService _currentUserService;
     private readonly InvitationSettings _settings;
     private readonly IUserNotificationRepository _userNotificationRepository;
     private readonly IUrlHelper _urlHelper;
+    private readonly IUserRepository _userRepository;
+    private readonly IRestaurantPermissionRepository _restaurantPermissionRepository;
 
     public EmployeeInvitationService(
         IEmployeeInvitationRepository invitationRepository,
         IRestaurantRepository restaurantRepository,
         IRestaurantEmployeeRepository employeeRepository,
         IOptions<InvitationSettings> settings,
-        IUserNotificationService userNotificationService,
+        ICurrentUserService currentUserService,
         IUserNotificationRepository userNotificationRepository,
+        IUserRepository userRepository,
+        IRestaurantPermissionRepository restaurantPermissionRepository,
         IUrlHelper urlHelper)
     {
         _invitationRepository = invitationRepository;
         _restaurantRepository = restaurantRepository;
         _employeeRepository = employeeRepository;
-        _userNotificationService = userNotificationService;
+        _currentUserService = currentUserService;
         _settings = settings.Value;
         _userNotificationRepository = userNotificationRepository;
+        _userRepository = userRepository;
+        _restaurantPermissionRepository = restaurantPermissionRepository;
         _urlHelper = urlHelper;
     }
 
     public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto)
     {
         var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
-
+        var user = await _userRepository.GetByEmailAsync(dto.Email);
+        
+        
         var invitation = new EmployeeInvitation
         {
             RestaurantId = dto.RestaurantId,
-            UserId = dto.UserId,
+            UserId = user!.Id,
+            SenderId = _currentUserService.UserId!,
             Role = dto.Role.ToDomain(),
             Token = TokenHelper.GenerateUrlToken(_settings.TokenLength),
             Status = InvitationStatus.Pending,
@@ -61,7 +70,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         
         var notification = await _userNotificationRepository.AddAsync(new UserNotification()
         {
-            UserId = dto.UserId,
+            UserId = user!.Id,
             Title = "Restaurant Invitation",
             Content = $"You have been invited to join '{restaurant.Name}' as a {dto.Role.ToString()}.",
             ActionUrl = invitationLink,
@@ -78,49 +87,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         return Result.Success(invitation.ToDto());
     }
     
-
-    public async Task<Result> CancelInvitationAsync(int invitationId)
-    {
-        var invitation = await _invitationRepository.GetByIdAsync(invitationId)
-            ?? throw new InvalidOperationException("Invitation not found.");
-
-        // var isOwner = await _restaurantRepository.IsOwnerAsync(invitation.RestaurantId, ownerId);
-        // if (!isOwner){}
-
-        if (invitation.Status != InvitationStatus.Pending)
-            throw new InvalidOperationException("Only pending invitations can be cancelled.");
-
-        invitation.Status = InvitationStatus.Cancelled;
-        invitation.RespondedAt = DateTime.UtcNow;
-
-        await _invitationRepository.UpdateAsync(invitation);
-
-        // TODO: Optionally notify user that invitation was cancelled
-        // await _emailService.SendInvitationCancelledEmailAsync(user.Email, restaurant.Name);
-        
-        return Result.Success();
-    }
-
-    public async Task<Result<IEnumerable<EmployeeInvitation>>> GetRestaurantInvitationsAsync(int restaurantId,
-        string ownerId)
-    {
-        // var isOwner = await _restaurantRepository.IsOwnerAsync(restaurantId, ownerId);
-        // if (!isOwner){}
-
-        return Result.Success( await _invitationRepository.GetByRestaurantIdAsync(restaurantId));
-    }
-
     public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token)
     {
         var invitation = await ValidateTokenAsync(token);
-            // ?? throw new InvalidTokenException();
-
-        // if (invitation.UserId != userId)
-            // throw new UnauthorizedInvitationAccessException();
-
-        // var isAlreadyEmployee = await _employeeRepository.ExistsAsync(invitation.RestaurantId, userId);
-        // if (isAlreadyEmployee)
-        //     throw new UserAlreadyEmployeeException();
 
         invitation.Status = InvitationStatus.Accepted;
         invitation.RespondedAt = DateTime.UtcNow;
@@ -132,13 +101,36 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             RestaurantId = invitation.RestaurantId,
             UserId = invitation.UserId,
             Role = invitation.Role,
+            CreatedAt = DateTime.UtcNow,
+            Permissions = new List<RestaurantPermission>(),
+            IsActive = true
             
         };
 
         await _employeeRepository.AddAsync(employee);
         await _userNotificationRepository.DeleteAsync(invitation.NotificationId, invitation.UserId);
-        // TODO: Notify restaurant owner about accepted invitation
+        
+        await _userNotificationRepository.AddAsync(new UserNotification()
+        {
+            UserId = invitation!.SenderId,
+            Title = "Restaurant Invitation",
+            Content = $"User {invitation.User.UserName} accepted your invitation to work at restaurant {invitation.Restaurant.Name}.",
+            Type = NotificationType.Success,
+            Category = NotificationCategory.General, 
+            CreatedAt = DateTime.UtcNow,
+            IsRead = false
+        });
 
+        foreach (var permissionType in RolePermissionHelper.GetDefaultPermissions(invitation.Role))
+        {
+            employee.Permissions.Add(new RestaurantPermission
+            {
+                RestaurantEmployeeId = employee.Id,
+                Permission = permissionType
+            });
+        }
+        
+        await _restaurantPermissionRepository.AddRangeAsync(employee.Permissions);
 
         return Result.Success(invitation.ToDto());
     }
@@ -152,17 +144,21 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         invitation.RespondedAt = DateTime.UtcNow;
 
         await _invitationRepository.UpdateAsync(invitation);
-
-        // TODO: Notify restaurant owner about rejected invitation
-        // await _emailService.SendInvitationRejectedEmailAsync(owner.Email, user.Name, restaurant.Name);
+        
+        await _userNotificationRepository.AddAsync(new UserNotification()
+        {
+            UserId = invitation!.SenderId,
+            Title = "Restaurant Invitation",
+            Content = $"User {invitation.User.UserName} rejected your invitation to work at restaurant {invitation.Restaurant.Name}.",
+            Type = NotificationType.Warning,
+            Category = NotificationCategory.General, 
+            CreatedAt = DateTime.UtcNow,
+            IsRead = false
+        });
+        
         await _userNotificationRepository.DeleteAsync(invitation.NotificationId, invitation.UserId);
         
         return Result.Success( invitation.ToDto());
-    }
-
-    public async Task<Result<IEnumerable<EmployeeInvitation>>> GetUserPendingInvitationsAsync(string userId)
-    {
-        return Result.Success( (await _invitationRepository.GetPendingByUserIdAsync(userId)));
     }
 
     public async Task<EmployeeInvitation?> ValidateTokenAsync(string token)

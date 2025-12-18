@@ -26,5 +26,6 @@ public class EmployeeInvitationConfiguration : IEntityTypeConfiguration<Employee
             .WithMany(u => u.ReceivedInvitations)
             .HasForeignKey(e => e.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        
     }
 }

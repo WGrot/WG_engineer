@@ -27,13 +27,6 @@ public class EmployeeInvitationsController : ControllerBase
     }
 
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> CancelInvitation(int id)
-    {
-        return (await _invitationService.CancelInvitationAsync(id)).ToActionResult();
-    }
-
-
     [HttpPost("accept")]
     public async Task<IActionResult> AcceptInvitation([FromBody] TokenRequest request)
     {

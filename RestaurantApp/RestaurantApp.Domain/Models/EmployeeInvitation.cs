@@ -24,4 +24,8 @@ public class EmployeeInvitation
     
     public Restaurant Restaurant { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
+    
+    public string SenderId { get; set; }
+    
+    public ApplicationUser Sender { get; set; } = null!;
 }

@@ -1,0 +1,201 @@
+﻿@using RestaurantApp.Shared.DTOs.Employees
+@using RestaurantApp.Shared.Models
+@inject HttpClient Http
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus me-2"></i>Invite Employee
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="Close" disabled="@isSending"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @errorMessage
+                        </div>
+                    }
+                    
+                    @if (invitationSent)
+                    {
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h5 class="text-success mb-2">Invitation Sent!</h5>
+                            <p class="text-muted mb-0">
+                                An invitation email has been sent to <strong>@email</strong>
+                            </p>
+                            <p class="text-muted small">
+                                The invitation will expire in 48 hours.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" 
+                                       class="form-control" 
+                                       placeholder="employee@example.com"
+                                       @bind="email"
+                                       @bind:event="oninput"
+                                       disabled="@isSending"/>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" @bind="selectedRole" disabled="@isSending">
+                                <option value="">-- Select role --</option>
+                                @foreach (var role in Enum.GetValues<RestaurantRoleEnumDto>())
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="alert alert-info d-flex align-items-start">
+                            <i class="bi bi-info-circle me-2 mt-1"></i>
+                            <small>
+                                The employee will receive an email with an invitation link. 
+                                They need to have an account to accept the invitation.
+                            </small>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    @if (invitationSent)
+                    {
+                        <button type="button" class="btn btn-primary" @onclick="Close">
+                            <i class="bi bi-check me-1"></i>Done
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary" @onclick="Close" disabled="@isSending">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" @onclick="SendInvitation" disabled="@(isSending || !IsFormValid)">
+                            @if (isSending)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>Sending...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-send me-1"></i>
+                                <span>Send Invitation</span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public int RestaurantId { get; set; }
+    [Parameter] public EventCallback OnInvitationSent { get; set; }
+
+    private string email = "";
+    private RestaurantRoleEnumDto selectedRole = RestaurantRoleEnumDto.Employee;
+    private bool isSending = false;
+    private bool invitationSent = false;
+    private string? errorMessage;
+
+    private bool IsFormValid => !string.IsNullOrWhiteSpace(email);
+
+    private async Task Close()
+    {
+        ClearForm();
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private void ClearForm()
+    {
+        email = "";
+        selectedRole = RestaurantRoleEnumDto.Employee;
+        errorMessage = null;
+        isSending = false;
+        invitationSent = false;
+    }
+
+    private async Task SendInvitation()
+    {
+        if (!IsFormValid)
+        {
+            errorMessage = "Please fill in all fields.";
+            return;
+        }
+
+        isSending = true;
+        errorMessage = null;
+
+        try
+        {
+            var request = new CreateInvitationDto()
+            {
+                RestaurantId = RestaurantId,
+                Email = email,
+                Role = selectedRole
+            };
+
+            var response = await Http.PostAsJsonAsync("api/employeeinvitations", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                invitationSent = true;
+                
+                if (OnInvitationSent.HasDelegate)
+                {
+                    await OnInvitationSent.InvokeAsync();
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (content.Contains("already an employee"))
+                {
+                    errorMessage = "This user is already an employee of this restaurant.";
+                }
+                else
+                {
+                    errorMessage = "A pending invitation already exists for this user.";
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to send invitation. Please try again.";
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Unable to connect to the server. Please check your connection.";
+        }
+        finally
+        {
+            isSending = false;
+        }
+    }
+
+    private class CreateInvitationRequest
+    {
+        public int RestaurantId { get; set; }
+        public string Email { get; set; } = "";
+        public string Role { get; set; } = "";
+    }
+}

@@ -376,6 +376,27 @@ public static class DependencyInjection
         });
         
         
+        
+
+        services.AddScoped<IEmployeeInvitationValidator, EmployeeInvitationValidator>();
+        services.AddScoped<EmployeeInvitationService>();
+        services.AddScoped<IEmployeeInvitationService>(sp =>
+        {
+            var innerService = sp.GetRequiredService<EmployeeInvitationService>();
+            
+            var businessValidator = sp.GetRequiredService<IEmployeeInvitationValidator>();
+    
+            var validatedService = new ValidatedInvitationService(
+                innerService,
+                businessValidator);
+
+            var currentUser = sp.GetRequiredService<ICurrentUserService>();
+            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
+
+            return new AuthorizedInvitationService(validatedService, currentUser, permissionChecker);
+        });
+        
+        
         services.AddTransient<IEmailComposer, EmailComposer>();
         services.AddScoped<IRestaurantSearchService, RestaurantSearchService>();
         services.AddScoped<IRestaurantOpeningHoursService, RestaurantOpeningHoursService>();
@@ -388,7 +409,6 @@ public static class DependencyInjection
         
 
         services.AddScoped<IUserNotificationService, UserNotificationService>();
-        services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
 
         return services;
     }

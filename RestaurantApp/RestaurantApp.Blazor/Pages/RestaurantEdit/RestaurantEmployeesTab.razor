@@ -11,7 +11,7 @@
 
 <div class="d-flex justify-content-center">
     <button @onclick="OpenAddEmployeeModal" class="button--primary button--lg button  mb-3 me-3 w-50">Add new employee</button>
-    <button @onclick="OpenSearchEmployeeModal" class="button--primary button button--lg mb-3 w-50">Search for existing employee accounts</button>
+    <button @onclick="OpenSearchEmployeeModal" class="button--primary button button--lg mb-3 w-50">Invite employees with existing accounts</button>
 </div>
 
 <AddEmployeeModal
@@ -20,17 +20,15 @@
     OnEmployeeAdded="HandleEmployeeAdded"
     Title="Add new employee account" />
 
-<SearchUserModal
-    @bind-IsVisible="showSearch"
-    RestaurantId="Id"
-    Title="Search for existing employee accounts" 
-    OnEmployeeAdded="HandleEmployeeAdded"/>
 
 <ManagePermissionsModal
     @bind-IsVisible="showPermissionsModal"
     Employee="selectedEmployee"
     RestaurantId="Id"
     OnPermissionsUpdated="HandlePermissionsUpdated" />
+
+<SentInvitationModal @bind-IsVisible="showSearch"
+                     RestaurantId="@Id"/>
 
 <GenericModal @bind-IsVisible="showSuccessModal"
               Title="Employee added successfully"
