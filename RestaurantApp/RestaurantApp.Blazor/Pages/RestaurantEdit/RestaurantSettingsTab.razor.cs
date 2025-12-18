@@ -4,6 +4,7 @@ using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.Settings;
+using RestaurantApp.Shared.DTOs.Users;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
@@ -127,7 +128,7 @@ public partial class RestaurantSettingsTab
             if (response.IsSuccessStatusCode)
             {
                 StateHasChanged();
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto()
                 {
                     Title = "Info",
                     Content = "Restaurant has been deleted. You will be logged out.",
@@ -181,7 +182,7 @@ public partial class RestaurantSettingsTab
                 originalSettings = CloneSettings(settings);
                 hasChanges = false;
                 successMessage = "Settings updated successfully!";
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto()
                 {
                     Title = "Success",
                     Content = "Restaurant settings have been updated.",

@@ -387,7 +387,7 @@
         {
             if (!string.IsNullOrEmpty(emailSuccessMessage))
             {
-                NotificationService.AddNotification(new Notification()
+                NotificationService.AddNotification(new NotificationDto()
                 {
                     Title = "Success",
                     Content = emailSuccessMessage,
@@ -396,7 +396,7 @@
             }
             else
             {
-                NotificationService.AddNotification(new Notification()
+                NotificationService.AddNotification(new NotificationDto()
                 {
                     Title = "Error",
                     Content = emailErrorMessage,

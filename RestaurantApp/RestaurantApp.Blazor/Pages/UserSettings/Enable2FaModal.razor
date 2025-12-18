@@ -7,6 +7,7 @@
 @using RestaurantApp.Shared.DTOs.Auth
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Shared.DTOs.Auth.TwoFactor
+@using RestaurantApp.Shared.DTOs.Users
 
 @inject HttpClient Http
 @inject NotificationService NotificationService
@@ -119,7 +120,7 @@
     {
         if (string.IsNullOrWhiteSpace(model.Code) || model.Code.Length != 6)
         {
-            NotificationService.AddNotification(new Notification
+            NotificationService.AddNotification(new NotificationDto()
             {
                 Title = "Error",
                 Content = "Please enter a valid 6-digit code.",
@@ -143,7 +144,7 @@
 
             if (result.IsSuccessStatusCode)
             {
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto()
                 {
                     Title = "Success",
                     Content = "Two-factor authentication has been enabled successfully.",
@@ -156,7 +157,7 @@
             else
             {
                 var errorContent = await result.Content.ReadAsStringAsync();
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto
                 {
                     Title = "Error",
                     Content = errorContent.Contains("Invalid") 
@@ -168,7 +169,7 @@
         }
         catch (Exception ex)
         {
-            NotificationService.AddNotification(new Notification
+            NotificationService.AddNotification(new NotificationDto
             {
                 Title = "Error",
                 Content = "An unexpected error occurred. Please try again.",

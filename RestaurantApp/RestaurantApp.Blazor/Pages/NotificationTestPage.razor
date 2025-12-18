@@ -4,6 +4,7 @@
 @using RestaurantApp.Shared.Common
 @using RestaurantApp.Blazor.Components.Layout
 @using Microsoft.AspNetCore.Components.Authorization
+@using RestaurantApp.Shared.DTOs.Users
 @inject NotificationService NotificationService
 
 <AuthorizeView>
@@ -24,7 +25,7 @@
 @code {
     private void AddSuccess()
     {
-        NotificationService.AddNotification(new Notification
+        NotificationService.AddNotification(new NotificationDto
         {
             Title = "Udało się!",
             Content = "Operacja zakończona pomyślnie.",
@@ -34,7 +35,7 @@
 
     private void AddError()
     {
-        NotificationService.AddNotification(new Notification
+        NotificationService.AddNotification(new NotificationDto
         {
             Title = "Błąd Krytyczny",
             Content = "Nie można było połączyć się z serwerem.",
@@ -44,7 +45,7 @@
 
     private void AddInfo()
     {
-        NotificationService.AddNotification(new Notification
+        NotificationService.AddNotification(new NotificationDto
         {
             Title = "Informacja",
             Content = "Zamówienie #123 zmieniło statusEnumDto na 'W realizacji'.",

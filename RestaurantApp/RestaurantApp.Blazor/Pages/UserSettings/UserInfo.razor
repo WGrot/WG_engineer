@@ -1,6 +1,7 @@
 ﻿@using RestaurantApp.Blazor.Extensions
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Blazor.Components
+@using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.Common
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
@@ -132,7 +133,7 @@ else
             if (result.IsSuccessStatusCode)
             {
                 changesMade = false;
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto
                 {
                     Title = "Success",
                     Content = "User data has been updated successfully.",
@@ -141,7 +142,7 @@ else
             }
             else
             {
-                NotificationService.AddNotification(new Notification
+                NotificationService.AddNotification(new NotificationDto
                 {
                     Title = "Error",
                     Content = $"Error updating user try again later or contact support, StatusEnumDto Code: {result.StatusCode}",
