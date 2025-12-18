@@ -1,6 +1,6 @@
 ﻿namespace RestaurantApp.Shared.Models;
 
-public enum NotificationType
+public enum NotificationTypeEnumDto
 {
     Success,
     Error,

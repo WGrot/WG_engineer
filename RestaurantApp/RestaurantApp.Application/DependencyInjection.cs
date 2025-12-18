@@ -387,7 +387,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         
 
-
+        services.AddScoped<IUserNotificationService, UserNotificationService>();
 
         return services;
     }

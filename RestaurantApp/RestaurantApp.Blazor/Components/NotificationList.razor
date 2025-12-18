@@ -51,12 +51,12 @@
         NotificationService.OnChange += StateHasChanged;
     }
 
-    private string GetCssClass(NotificationType type) => type switch
+    private string GetCssClass(NotificationTypeEnumDto type) => type switch
     {
-        NotificationType.Success => "notification-success",
-        NotificationType.Error => "notification-error",
-        NotificationType.Warning => "notification-warning",
-        NotificationType.Info => "notification-info",
+        NotificationTypeEnumDto.Success => "notification-success",
+        NotificationTypeEnumDto.Error => "notification-error",
+        NotificationTypeEnumDto.Warning => "notification-warning",
+        NotificationTypeEnumDto.Info => "notification-info",
         _ => "notification-info"
     };
     

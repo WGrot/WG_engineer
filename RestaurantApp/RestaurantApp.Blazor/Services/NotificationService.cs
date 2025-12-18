@@ -1,7 +1,4 @@
-﻿using RestaurantApp.Shared.Models;
-using System.Collections.Generic;
-using System.Linq;
-using RestaurantApp.Shared.Common;
+﻿using RestaurantApp.Shared.Common;
 
 
     public class NotificationService

@@ -131,7 +131,7 @@ public partial class RestaurantSettingsTab
                 {
                     Title = "Info",
                     Content = "Restaurant has been deleted. You will be logged out.",
-                    Type = NotificationType.Info,
+                    Type = NotificationTypeEnumDto.Info,
                 });
                 await AuthService.LogoutAsync();
                 Nav.NavigateTo($"/login");
@@ -185,7 +185,7 @@ public partial class RestaurantSettingsTab
                 {
                     Title = "Success",
                     Content = "Restaurant settings have been updated.",
-                    Type = NotificationType.Success,
+                    Type = NotificationTypeEnumDto.Success,
                 });
             }
             else

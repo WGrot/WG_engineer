@@ -136,7 +136,7 @@ else
                 {
                     Title = "Success",
                     Content = "User data has been updated successfully.",
-                    Type = NotificationType.Success
+                    Type = NotificationTypeEnumDto.Success
                 });
             }
             else
@@ -145,7 +145,7 @@ else
                 {
                     Title = "Error",
                     Content = $"Error updating user try again later or contact support, StatusEnumDto Code: {result.StatusCode}",
-                    Type = NotificationType.Error
+                    Type = NotificationTypeEnumDto.Error
                 });
             }
         }

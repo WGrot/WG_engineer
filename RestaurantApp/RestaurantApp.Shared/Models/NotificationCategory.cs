@@ -1,6 +1,6 @@
 ﻿namespace RestaurantApp.Shared.Models;
 
-public enum NotificationCategory
+public enum NotificationCategoryEnumDto
 {
     General,
     EmployeeInvitation,
