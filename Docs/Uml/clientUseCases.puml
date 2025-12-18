@@ -1,0 +1,61 @@
+@startuml System Zarządzania Restauracją - Przypadki Użycia
+
+left to right direction
+skinparam packageStyle rectangle
+
+
+
+actor "Klient" as Client
+actor "Gość" as Guest
+
+
+usecase "Stworzenie rezerwacji" as UC1
+usecase "Przeglądanie listy restauracji" as UC2
+usecase "Stworzenie rezerwacji \n jako gość" as UC3
+usecase "Stworzenie rezerwacji \n jako klient" as UC4
+usecase "Zarządzanie swoimi rezerwacjami" as UC5
+usecase "Sprawdzenie dostępności stolików" as UC6
+usecase "Wyświetlenie menu" as UC7
+usecase "Dodanie recenzji" as UC8
+usecase "Wyświetlenie recenzji" as UC9
+usecase "Zarządzanie danymi profilu" as UC10
+usecase "Wyświetlenie restauracji \n blisko użytkownika" as UC11
+usecase "Przeglądanie historii rezerwacji" as UC12
+usecase "Wyświetlenie profilu restauracji" as UC13
+
+
+Guest <|-right- Client
+UC1 <|-left- UC3
+UC1 <|-right- UC4
+
+
+UC2 -[hidden]right-> UC3
+UC2 -[hidden]left-> UC11
+UC2 -[hidden]-> UC13
+UC4 -[hidden]right-> UC12
+UC1 -[hidden]right-> UC8
+UC1 -[hidden]-> UC10
+UC11 -[hidden]left-> UC6
+UC11 -[hidden]left-> UC7
+UC11 -[hidden]left-> UC9
+UC4 -[hidden]right-> UC8
+
+
+Client -- UC4
+Guest -- UC3
+Guest -- UC2
+Guest -- UC11
+UC13 ..> UC2 : extends
+UC13 ..> UC11 : extends
+Client -- UC12
+UC12 <.. UC5 : extends
+Client -- UC8
+UC8 ..> UC13 : extends
+Client -- UC10
+Guest -- UC6
+Guest -- UC7
+Guest -- UC9
+UC6 ..> UC13 : extends
+UC7 ..> UC13 : extends
+UC9 ..> UC13 : extends
+@enduml

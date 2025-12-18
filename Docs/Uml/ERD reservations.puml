@@ -1,0 +1,74 @@
+@startuml
+entity ApplicationUser {
+    * Id : string <<PK>>
+    --
+    * Email : string
+    * PasswordHash : string
+    * TwoFactorEnabled : bool
+    CreatedAt : datetime
+    FirstName : string
+    LastName : string
+    <<inne pola IdentityUser>>
+
+}
+
+
+entity Restaurant {
+    * Id : int <<PK>>
+    --
+    * Name : string
+    * Address : string
+    *Location : Point
+    Description : string
+    CreatedAt : datetime
+}
+
+entity Review {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    * UserId : string <<FK>>
+    * Rating : int
+    Content : string
+    CreatedAt : datetime
+    IsVerfied : bool
+    CreatedAt : datetime
+    UpdatedAt : datetime
+}
+
+entity Reservation {
+    * Id : int <<PK>>
+    --
+    * ReservationDatr : DateTime
+    * StartTime : TimeOnly
+    * EndTime : TimeOnly
+    * NumberOfGuests : int
+    * Status : ReservationStatus
+    *TableId : int <<FK>>
+    * RestaurantId : int <<FK>>
+    Notes : string
+    UserId : string <<FK>>
+    CreatedAt : datetime
+}
+
+entity Table {
+    * Id : int <<PK>>
+    --
+    * TableNumber : string
+    * Capacity : int
+    * RestaurantId : int <<FK>>
+    Location : string
+
+
+}
+ApplicationUser |o--right--o{  Reservation
+Reservation }o--|| Table
+Restaurant ||-right-o{ Table
+Restaurant ||-up-o{ Reservation
+Restaurant ||-left-o{ Review
+ApplicationUser ||--o{ Review
+
+
+
+
+@enduml

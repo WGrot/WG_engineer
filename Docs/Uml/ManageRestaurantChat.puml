@@ -1,0 +1,42 @@
+@startuml System Zarządzania Restauracją - Przypadki Użycia
+
+title Zarządznioe Restauracją - Przypadki Użycia
+left to right direction
+skinparam packageStyle rectangle
+
+
+
+actor "Manger Restauracji" as Manager
+actor "Właściciel Restauracji" as Owner
+actor "Pracownik Restauracji" as Employee
+
+usecase "Dodanie profilu restauracji" as UC6
+usecase "Usunięcie profilu restauracji" as UC7
+usecase "Zarządzanie profilem\nrestauracji" as UC1
+usecase "Zarządzanie stolikami" as UC2
+usecase "Zarządzanie menu" as UC3
+usecase "Zarządzanie pracownikami" as UC4
+usecase "Zarządzanie zdjęciami\nrestauracji" as UC5
+
+
+
+
+
+Manager <|-- Owner
+Employee <|-- Manager
+
+Manager --> UC1
+Manager --> UC4
+
+
+Employee --> UC2
+Employee --> UC3
+
+Manager --> UC5
+
+
+
+Owner --> UC6
+Owner --> UC7
+
+@enduml

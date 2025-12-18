@@ -1,0 +1,78 @@
+@startuml
+top to bottom direction
+title Actors in Restaurant Management System
+
+
+actor Owner as "Właściciel restauracji"
+actor Employee as "Pracownik restauracji"
+
+package "Zarządzanie Profilem Restauracji" {
+        usecase "Stworzenie profilu restauracji" as UC1
+        usecase "Usunięcie profilu restauracji" as UC2
+        usecase "Wyświetlenie profilu restauracji\nz możliwością edycji" as UC3
+        usecase "Edycja podstawowych informacji\no restauracji" as UC4
+        usecase "Edycja godzin otwarcia\nrestauracji" as UC5
+        usecase "Edycja ustawień restauracji" as UC6
+
+
+
+        usecase "Wyświetlenie danych o stolikach" as UC7
+        usecase "Dodanie stolika" as UC8
+        usecase "Edycja stolika" as UC9
+        usecase "Usunięcie stolika" as UC10
+
+
+
+        usecase "Wyświetlenie menu restauracji\nz możliwością edycji" as UC11
+        usecase "Dodanie tagu do pozycji w menu" as UC12
+        usecase "Usunięcie tagu z pozycji w menu" as UC13
+        usecase "Dodanie kategorii w menu" as UC14
+        usecase "Edycja kategorii w menu" as UC15
+        usecase "Usunięcie kategorii z menu" as UC16
+        usecase "Dodanie pozycji do menu" as UC17
+        usecase "Edycja pozycji w menu" as UC18
+        usecase "Usunięcie pozycji z menu" as UC19
+        usecase "Przeniesienie pozycji\ndo innej kategorii" as UC20
+
+
+
+        usecase "Wyświetlenie pracowników\nrestauracji" as UC21
+        usecase "Stworzenie nowego konta\ndla pracownika" as UC22
+        usecase "Dodanie istniejącego konta\njako pracownika" as UC23
+        usecase "Usunięcie pracownika\nz restauracji" as UC24
+        usecase "Dezaktywowanie pracownika\nw restauracji" as UC25
+        usecase "Zmiana roli pracownika" as UC26
+        usecase "Edycja uprawnień pracownika" as UC27
+        usecase "Wyszukanie kont pracowników" as UC28
+
+
+
+        usecase "Edycja zdjęć restauracji" as UC29
+        usecase "Ustawienie zdjęcia profilowego\nrestauracji" as UC30
+        usecase "Wgranie zdjęć do galerii\nrestauracji" as UC31
+
+
+Owner <|-- Employee
+
+'Employee --> UC1
+'Employee --> UC2
+'Employee --> UC3
+'Employee --> UC4
+'Employee --> UC5
+'Employee --> UC6
+'
+'Employee --> UC7
+'Employee --> UC8
+'Employee --> UC9
+'Employee --> UC10
+
+UC3 .> UC4 : <<invokes>>
+UC3 .> UC5 : <<invokes>>
+UC3 .> UC7 : <<invokes>>
+UC3 .> UC21 : <<invokes>>
+UC3 .> UC11 : <<invokes>>
+
+UC11 .> UC12 : <<invokes>>
+UC11 .> UC13 : <<invokes>>
+
+@enduml

@@ -1,0 +1,49 @@
+@startuml System Zarządzania Restauracją - Przypadki Użycia
+
+left to right direction
+skinparam packageStyle rectangle
+
+
+
+actor "Właściciel" as Owner
+actor "Pracownik" as Employee
+
+usecase "Stworzenie rezerwacji \n jako pracownik" as UC1
+usecase "Zarządzanie rezerwacjami \n klientów" as UC2
+usecase "Wyświetlenie \n pulpitu restauracji" as UC3
+usecase "Zmiana \n aktywnej restauracji" as UC4
+usecase "Zarządzanie \n profilem restauracji" as UC5
+usecase "Rejestracja profilu restauracji" as UC6
+usecase "Usunięcie profilu restauracji" as UC7
+usecase "Zarządzanie \n uprawnieniami pracowników" as UC8
+usecase "Zarządzanie \n zawartością menu" as UC9
+usecase "Zarządzanie \n konfiguracją  stolików" as UC10
+usecase "Zarządzanie \n regułami biznesowymi" as UC11
+usecase "Akceptacja \n oczekującej rezerwacji" as UC12
+usecase "Zmiana statusu rezerwacji" as UC13
+Employee <|-right- Owner
+
+Employee -- UC1
+Employee -- UC2
+Employee -- UC3
+Employee -- UC4
+Employee -- UC5
+note right of UC5
+Dostęp do konkretnych
+rozszerzających przypdaków użycia
+zależny od uprawnień pracownika.
+
+end note
+
+UC5 <.. UC8 :extends
+UC5 <.. UC9 :extends
+UC5 <.. UC10 :extends
+UC5 <.. UC11 :extends
+
+UC2 <.. UC12 : extends
+UC2 <.. UC13 : extends
+
+Owner -- UC6
+Owner -- UC7
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml System Zarządzania Restauracją - Przypadki Użycia
+
+title Zarządznie Rezerwacjami - Przypadki Użycia
+top to bottom direction
+skinparam packageStyle rectangle
+
+
+
+actor "Klient" as Client
+actor "Gość" as Guest
+
+actor "Pracownik Restauracji" as Employee
+
+usecase "Stworzenie rezerwacji" as UC1
+usecase "Stworzenie rezerwacji \n jako pracownik" as UC2
+usecase "Stworzenie rezerwacji \n jako gość" as UC3
+usecase "Stworzenie rezerwacji \n jako klient" as UC4
+
+usecase "Zarządzanie swoimi rezerwacjami" as UC5
+usecase "Zarządzanie rezerwacjami \n klientów jako pracownik"
+
+
+
+UC1 <|-- UC2
+UC1 <|-- UC3
+UC1 <|-- UC4
+
+Client --> UC4
+Guest --> UC3
+Employee --> UC2
+@enduml

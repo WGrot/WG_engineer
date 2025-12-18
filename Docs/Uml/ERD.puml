@@ -1,0 +1,87 @@
+@startuml
+entity ApplicationUser {
+    * Id : string <<PK>>
+    --
+    * Email : string
+    * PasswordHash : string
+    * TwoFactorEnabled : bool
+    CreatedAt : datetime
+    FirstName : string
+    LastName : string
+    <<inne pola IdentityUser>>
+
+}
+
+
+entity RestaurantEmployee {
+    * Id : int <<PK>>
+    --
+    * UserId : int <<FK>>
+    * RestaurantId : int <<FK>>
+    * Role : RestaurantRole
+    * CreatedAt : datetime
+    * bool IsActive : bool
+}
+
+entity ResataurantPermission {
+    * Id : int <<PK>>
+    --
+    * EmployeeId : int <<FK>>
+    * Email : string
+    * PasswordHash : string
+    CreatedAt : datetime
+}
+
+entity RestaurantSettings {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    *ReservationNeedsConfirmation : bool
+    * MinReservationDuration : int
+    * MaxReservationDuration : int
+    * MinAdvanceBookingTime : int
+    * MaxAdvanceBookingTime : int
+    * ReservationsPerUserLimit : int
+}
+
+entity Restaurant {
+    * Id : int <<PK>>
+    --
+    * Name : string
+    * Address : string
+    *Location : Point
+    Description : string
+    CreatedAt : datetime
+}
+
+entity OpeningHours {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    * DayOfWeek : int
+    * OpenTime : time
+    * CloseTime : time
+    * IsClosed : bool
+
+}
+
+entity ImageLink {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    * Type : ImageType
+    * Url : string
+    * ThumbnailUrl : string
+    <<pozostałe \nmetadane obrazu>>
+
+}
+
+
+ApplicationUser ||--o{ RestaurantEmployee
+RestaurantEmployee ||--o{ ResataurantPermission
+RestaurantEmployee }|-right-|| Restaurant
+Restaurant ||--|| RestaurantSettings
+Restaurant ||-right-{ OpeningHours
+ImageLink }o--o| Restaurant
+
+@enduml

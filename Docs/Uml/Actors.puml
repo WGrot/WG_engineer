@@ -1,0 +1,13 @@
+@startuml
+left to right direction
+title Przypadki użycia - zarządzanie restauracją
+
+
+
+actor Owner as "Restaurant Owner"
+actor Employee as "Restaurant Employee"
+
+Owner <|-- Employee
+
+
+@enduml

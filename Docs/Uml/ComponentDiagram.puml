@@ -1,0 +1,70 @@
+@startuml
+!pragma allowmixing
+skinparam componentStyle rectangle
+
+' Frontend
+package "Interfejs użytkownika" as front{
+        component [Blazor WebAssembly]
+
+}
+
+package "Współdzielone" as shared{
+    component [Klasy DTO] as Dtos
+}
+
+
+package "Backend" as back{
+
+    package "Warstwa prezentacji" as api{
+        component [Web API]
+    }
+
+    package "Warstwa aplikacji" as application{
+        component [Serwisy \n biznesowe]
+        component [Interfejsy \nrepozytoriów]
+        component [Interfejsy \n serwisów]
+        component [Mappery]
+        component [Logika biznesowa]
+
+    }
+
+    package "Warstwa domeny" as domain{
+        component [Modele domenowe]
+
+    }
+
+    package "Warstwa infrastruktury" as inf{
+        component [Repozytoria \ndanych] as Repos
+        component [Integracja \n serwisów zewnętrznych] as ExtServices
+    }
+}
+
+' External Services
+cloud "Serwisy zewnętrzne" as external{
+    component [Nominatim API] as Nominatim
+    component [Serwer SMTP] as SMTP
+}
+
+' External Services
+package "Magazyny danych" as data{
+    component [Redis] as Redis
+    component [MinIO S3] as MinIO
+    component [PostgressDB] as db
+}
+
+
+' Connections - Infrastructure to External Services
+inf --> external
+front --> shared
+front --> api
+api -down-> application
+application --right-> domain
+
+
+inf -up-> domain
+inf --> data
+inf -up-> application
+
+back -up-> shared
+
+@enduml
