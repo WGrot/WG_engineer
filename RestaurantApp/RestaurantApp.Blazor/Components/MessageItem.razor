@@ -1,0 +1,53 @@
+﻿@using RestaurantApp.Blazor.Models
+@using RestaurantApp.Shared.Common
+
+<div class="toast show @MessageClass" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header @HeaderClass">
+        <i class="bi @IconClass me-2"></i>
+        <strong class="me-auto">@Message.Title</strong>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="OnDismissClick"></button>
+    </div>
+    <div class="toast-body">
+        @Message.Content
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public FrontendMessage Message { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<FrontendMessage> OnDismiss { get; set; }
+
+    private string MessageClass => Message.Type switch
+    {
+        FrontendMessageType.Success => "border-success",
+        FrontendMessageType.Error => "border-danger",
+        FrontendMessageType.Warning => "border-warning",
+        FrontendMessageType.Info => "border-info",
+        _ => "border-info"
+    };
+
+    private string HeaderClass => Message.Type switch
+    {
+        FrontendMessageType.Success => "bg-primary text-white",
+        FrontendMessageType.Error => "bg-danger text-white",
+        FrontendMessageType.Warning => "bg-warning text-dark",
+        FrontendMessageType.Info => "bg-info text-white",
+        _ => "bg-info text-white"
+    };
+
+    private string IconClass => Message.Type switch
+    {
+        FrontendMessageType.Success => "bi-check-circle-fill",
+        FrontendMessageType.Error => "bi-x-circle-fill",
+        FrontendMessageType.Warning => "bi-exclamation-triangle-fill",
+        FrontendMessageType.Info => "bi-info-circle-fill",
+        _ => "bi-info-circle-fill"
+    };
+
+    private async Task OnDismissClick()
+    {
+        await OnDismiss.InvokeAsync(Message);
+    }
+}

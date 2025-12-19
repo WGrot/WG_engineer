@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using RestaurantApp.Shared.DTOs.Users
 @inject NotificationService NotificationService
+@inject MessageService MessageService
 
 <AuthorizeView>
     <Authorized>
@@ -25,31 +26,17 @@
 @code {
     private void AddSuccess()
     {
-        NotificationService.AddNotification(new NotificationDto
-        {
-            Title = "Udało się!",
-            Content = "Operacja zakończona pomyślnie.",
-            Type = NotificationTypeEnumDto.Success
-        });
+        MessageService.AddSuccess("Saved", "Data saved successfully.");
     }
 
     private void AddError()
     {
-        NotificationService.AddNotification(new NotificationDto
-        {
-            Title = "Błąd Krytyczny",
-            Content = "Nie można było połączyć się z serwerem.",
-            Type = NotificationTypeEnumDto.Error
-        });
+        MessageService.AddError("Saved", "Data saved successfully.");
+        MessageService.AddWarning("Saved", "Data saved successfully.");
     }
 
     private void AddInfo()
     {
-        NotificationService.AddNotification(new NotificationDto
-        {
-            Title = "Informacja",
-            Content = "Zamówienie #123 zmieniło statusEnumDto na 'W realizacji'.",
-            Type = NotificationTypeEnumDto.Info
-        });
+        MessageService.AddInfo("Saved", "Data saved successfully.");
     }
 }

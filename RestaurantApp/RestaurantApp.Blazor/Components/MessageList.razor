@@ -1,0 +1,40 @@
+﻿@using RestaurantApp.Blazor.Models
+@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.Common
+@inject MessageService MessageService
+@implements IDisposable
+
+@if (_messages.Any())
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        @foreach (var message in _messages)
+        {
+            <MessageItem Message="message" OnDismiss="Remove" />
+        }
+    </div>
+}
+
+@code {
+    private List<FrontendMessage> _messages = new();
+
+    protected override void OnInitialized()
+    {
+        MessageService.OnChange += HandleStateChange;
+    }
+
+    private void HandleStateChange()
+    {
+        _messages = MessageService.GetMessages();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Remove(FrontendMessage message)
+    {
+        await MessageService.RemoveNotificationAsync(message);
+    }
+
+    public void Dispose()
+    {
+        MessageService.OnChange -= HandleStateChange;
+    }
+}

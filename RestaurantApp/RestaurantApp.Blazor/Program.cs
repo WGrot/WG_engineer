@@ -15,7 +15,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddGeolocationServices();
 
 builder.Services.AddSingleton<MemoryTokenStore>();
-
+builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<JwtTokenParser>();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
