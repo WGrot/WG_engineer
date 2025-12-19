@@ -10,7 +10,7 @@
 @using RestaurantApp.Shared.DTOs.Users
 
 @inject HttpClient Http
-@inject NotificationService NotificationService
+@inject MessageService MessageService
 
 
 @if (IsVisible)
@@ -120,13 +120,7 @@
     {
         if (string.IsNullOrWhiteSpace(model.Code) || model.Code.Length != 6)
         {
-            NotificationService.AddNotification(new NotificationDto()
-            {
-                Title = "Error",
-                Content = "Please enter a valid 6-digit code.",
-                Type = NotificationTypeEnumDto.Error
-            });
-            return;
+            MessageService.AddError("Error", "Please enter a valid 6-digit code.");
         }
 
         isSaving = true;
@@ -144,12 +138,7 @@
 
             if (result.IsSuccessStatusCode)
             {
-                NotificationService.AddNotification(new NotificationDto()
-                {
-                    Title = "Success",
-                    Content = "Two-factor authentication has been enabled successfully.",
-                    Type = NotificationTypeEnumDto.Success
-                });
+                MessageService.AddSuccess("Success", "Two-factor authentication has been enabled successfully.");
 
                 await On2FAEnabled.InvokeAsync();
                 await Close();
@@ -157,24 +146,17 @@
             else
             {
                 var errorContent = await result.Content.ReadAsStringAsync();
-                NotificationService.AddNotification(new NotificationDto
-                {
-                    Title = "Error",
-                    Content = errorContent.Contains("Invalid") 
-                        ? "Invalid verification code. Please try again." 
-                        : "An error occurred while enabling 2FA. Please try again.",
-                    Type = NotificationTypeEnumDto.Error
-                });
+                string content = errorContent.Contains("Invalid verification code")
+                    ? "Invalid verification code. Please try again."
+                    : "An error occurred while enabling 2FA. Please try again.";
+                MessageService.AddError("Error", content);
+
+
             }
         }
         catch (Exception ex)
         {
-            NotificationService.AddNotification(new NotificationDto
-            {
-                Title = "Error",
-                Content = "An unexpected error occurred. Please try again.",
-                Type = NotificationTypeEnumDto.Error
-            });
+            MessageService.AddError("Error","An unexpected error occurred. Please try again.");
         }
         finally
         {

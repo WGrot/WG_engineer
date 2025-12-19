@@ -58,17 +58,17 @@ public class NotificationService : IDisposable
         }
     }
 
-    public void AddNotification(NotificationDto notification)
-    {
-        if (_notifications.Any(n => n.Id == notification.Id)) return;
-
-        _notifications.Insert(0, notification); 
-        
-        IsListVisible = true; 
-        NotifyStateChanged(); 
-        
-        StartAutoHideTimer(); 
-    }
+    // public void AddNotification(NotificationDto notification)
+    // {
+    //     if (_notifications.Any(n => n.Id == notification.Id)) return;
+    //
+    //     _notifications.Insert(0, notification); 
+    //     
+    //     IsListVisible = true; 
+    //     NotifyStateChanged(); 
+    //     
+    //     StartAutoHideTimer(); 
+    // }
     
     public async Task RemoveNotificationAsync(NotificationDto notification)
     {

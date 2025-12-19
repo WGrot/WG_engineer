@@ -4,6 +4,7 @@
 @using RestaurantApp.Blazor.Components
 @inject HttpClient Http
 @inject AuthService Auth
+@inject MessageService MessageService
 <div calss = "container mt-4">
     <h3 class="mb-4 fw-bold text-center">
         User employment and permissions info
@@ -80,6 +81,7 @@
     private async Task DeleteEmployment()
     {
         var result = await Http.DeleteAsync($"/api/Employees/{EmployeeIdToDelete}");
+        MessageService.AddSuccess("Success", "Employee entry deleted successfully.");
         if (result.IsSuccessStatusCode)
         {
             await Auth.LogoutAsync();

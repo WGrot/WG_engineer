@@ -10,7 +10,7 @@
 @using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
-@inject NotificationService NotificationService
+@inject MessageService MessageService
 @inject ICurrentUserDataService userDataService
 
 <div class="container">
@@ -387,21 +387,11 @@
         {
             if (!string.IsNullOrEmpty(emailSuccessMessage))
             {
-                NotificationService.AddNotification(new NotificationDto()
-                {
-                    Title = "Success",
-                    Content = emailSuccessMessage,
-                    Type = NotificationTypeEnumDto.Success,
-                });
+                MessageService.AddSuccess("Success", emailSuccessMessage);
             }
             else
             {
-                NotificationService.AddNotification(new NotificationDto()
-                {
-                    Title = "Error",
-                    Content = emailErrorMessage,
-                    Type = NotificationTypeEnumDto.Error,
-                });
+                MessageService.AddError("error", emailErrorMessage);
             }
             
             StateHasChanged();

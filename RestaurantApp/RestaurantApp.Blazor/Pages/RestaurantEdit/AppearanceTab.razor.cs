@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.Models;
 
@@ -8,6 +9,7 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
 public partial class AppearanceTab : ComponentBase
 {
+    [Inject] MessageService MessageService { get; set; } = null!;
      [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
 
@@ -17,13 +19,9 @@ public partial class AppearanceTab : ComponentBase
     private bool isUploadingPhotos = false;
     private bool isDeletingProfile = false;
     private bool isDeletingPhotos = false;
-    private string? errorMessage;
-    private string? successMessage;
 
     private async Task OnProfilePhotoSelected(InputFileChangeEventArgs e)
     {
-        errorMessage = null;
-        successMessage = null;
         isUploadingProfile = true;
 
         try
@@ -40,7 +38,8 @@ public partial class AppearanceTab : ComponentBase
 
                 if (response.IsSuccessStatusCode)
                 {
-                    successMessage = "Profile photo uploaded successfully";
+
+                    MessageService.AddSuccess("Success", "Profile photo uploaded successfully");
 
                     var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
@@ -50,13 +49,13 @@ public partial class AppearanceTab : ComponentBase
                 }
                 else
                 {
-                    errorMessage = $"Error uploading photo: {response.StatusCode}";
+                    MessageService.AddError("Error", "Error uploading photo");
                 }
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            MessageService.AddError("Error", "Error uploading photo");
         }
         finally
         {
@@ -66,8 +65,6 @@ public partial class AppearanceTab : ComponentBase
 
     private async Task OnRestaurantPhotosSelected(InputFileChangeEventArgs e)
     {
-        errorMessage = null;
-        successMessage = null;
         isUploadingPhotos = true;
 
         try
@@ -88,7 +85,7 @@ public partial class AppearanceTab : ComponentBase
 
                 if (response.IsSuccessStatusCode)
                 {
-                    successMessage = "Restaurant photos uploaded successfully";
+                    MessageService.AddSuccess("Success", "Photos uploaded successfully");
                     var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                     if (updatedRestaurant != null)
                     {
@@ -97,13 +94,13 @@ public partial class AppearanceTab : ComponentBase
                 }
                 else
                 {
-                    errorMessage = $"Error uploading photos: {response.StatusCode}";
+                    MessageService.AddError("Error", "Error uploading photo");
                 }
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            MessageService.AddError("Error", "Error uploading photo");
         }
         finally
         {
@@ -113,8 +110,6 @@ public partial class AppearanceTab : ComponentBase
 
     private async Task DeleteProfilePhoto()
     {
-        errorMessage = null;
-        successMessage = null;
         isDeletingProfile = true;
 
         try
@@ -123,7 +118,7 @@ public partial class AppearanceTab : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = "Profile photo deleted successfully";
+                MessageService.AddSuccess("Success", "Profile photo deleted successfully");
                 var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {
@@ -132,12 +127,12 @@ public partial class AppearanceTab : ComponentBase
             }
             else
             {
-                errorMessage = $"Error deleting photo: {response.StatusCode}";
+                MessageService.AddError("Error", "Error deleting photo");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            MessageService.AddError("Error", "Error uploading photo");
         }
         finally
         {
@@ -147,8 +142,6 @@ public partial class AppearanceTab : ComponentBase
 
     private async Task DeleteRestaurantPhoto(int photoIndex)
     {
-        errorMessage = null;
-        successMessage = null;
         isDeletingPhotos = true;
 
         try
@@ -157,7 +150,7 @@ public partial class AppearanceTab : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = "Restaurant photo deleted successfully";
+                MessageService.AddSuccess("Success", "Photo deleted successfully");
                 var updatedRestaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
                 if (updatedRestaurant != null)
                 {
@@ -166,12 +159,12 @@ public partial class AppearanceTab : ComponentBase
             }
             else
             {
-                errorMessage = $"Error deleting photo: {response.StatusCode}";
+                MessageService.AddError("Error", "Error uploading photo");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            MessageService.AddError("Error", "Error uploading photo");
         }
         finally
         {

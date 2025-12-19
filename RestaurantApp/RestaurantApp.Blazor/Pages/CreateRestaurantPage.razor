@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject HttpClient Http
+@inject MessageService MessageService
 
 <AuthorizeView>
     <Authorized>
@@ -45,13 +46,6 @@
                     <input type="text" class="form-control" id="country" @bind="addressDto.Country" placeholder="Enter restaurant address">
                 </div>
 
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        @errorMessage
-                    </div>
-                }
-
                 <button type="submit" class="button button--lg button--primary px-5 w-100">
                     Create Restaurant Profile
                 </button>
@@ -76,7 +70,6 @@
 
     private string restaurantName = "";
     private StructuresAddressDto addressDto = new StructuresAddressDto();
-    private string errorMessage = "";
 
     void GoToLogin()
     {
@@ -86,35 +79,34 @@
 
     private async Task CreateRestaurant()
     {
-        errorMessage = "";
         
         if (string.IsNullOrWhiteSpace(restaurantName))
         {
-            errorMessage = "Restaurant name is required";
+            MessageService.AddError("Incorrect data", "Restaurant name is required");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(addressDto.Street))
         {
-            errorMessage = "Street is required";
+            MessageService.AddError("Incorrect data", "Street is required");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(addressDto.City))
         {
-            errorMessage = "City is required";
+            MessageService.AddError("Incorrect data", "City name is required");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(addressDto.PostalCode))
         {
-            errorMessage = "Postal Code is required";
+            MessageService.AddError("Incorrect data", "Postal Code is required");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(addressDto.Country))
         {
-            errorMessage = "Country is required";
+            MessageService.AddError("Incorrect data", "Country name is required");
             return;
         }
         
@@ -128,15 +120,18 @@
         var response = await Http.PostAsJsonAsync("api/Restaurant/create-as-user", restaurantDto);
         if (response.IsSuccessStatusCode)
         {
-            Navigation.NavigateTo($"/homepage");
+            MessageService.AddSuccess("Success", "Restaurant created successfully, you will be logged out to refresh your permissions.");
+            await Task.Delay(1500);
+            await AuthService.LogoutAsync();
         }
         else
         {
-            errorMessage = (int)response.StatusCode switch
+            var errorMessage = (int)response.StatusCode switch
             {
                 422 => "Geocoding error, try correcting the address",
                 _ => "Failed to create restaurant. Please try again."
             };
+            MessageService.AddError("Error", errorMessage);
         }
     }
 }

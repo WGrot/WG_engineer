@@ -53,14 +53,6 @@
                                       maxlength="1000"></textarea>
                             <small class="text-muted">@(tempContent?.Length ?? 0) / 1000 characters</small>
                         </div>
-
-                        @if (!string.IsNullOrEmpty(errorMessage))
-                        {
-                            <div class="alert alert-danger" role="alert">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                @errorMessage
-                            </div>
-                        }
                     </form>
                 </div>
 

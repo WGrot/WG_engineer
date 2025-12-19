@@ -5,7 +5,7 @@
 @using RestaurantApp.Shared.Common
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
-@inject NotificationService NotificationService
+@inject MessageService MessageService
 
 @if (user != null)
 {
@@ -133,21 +133,11 @@ else
             if (result.IsSuccessStatusCode)
             {
                 changesMade = false;
-                NotificationService.AddNotification(new NotificationDto
-                {
-                    Title = "Success",
-                    Content = "User data has been updated successfully.",
-                    Type = NotificationTypeEnumDto.Success
-                });
+                MessageService.AddSuccess("Success", "User data has been updated successfully.");
             }
             else
             {
-                NotificationService.AddNotification(new NotificationDto
-                {
-                    Title = "Error",
-                    Content = $"Error updating user try again later or contact support, StatusEnumDto Code: {result.StatusCode}",
-                    Type = NotificationTypeEnumDto.Error
-                });
+                MessageService.AddError("Error", $"Error updating user try again later or contact support");
             }
         }
         catch (Exception e)

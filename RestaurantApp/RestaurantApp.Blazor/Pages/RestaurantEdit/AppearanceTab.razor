@@ -117,24 +117,7 @@
                 </div>
             }
             <small class="form-text text-muted">You can select multiple photos at once</small>
-        </div>
-
-
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                @errorMessage
-            </div>
-        }
-
-        @if (!string.IsNullOrEmpty(successMessage))
-        {
-            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                @successMessage
-            </div>
-        }
+        </div>      
     }
     else
     {

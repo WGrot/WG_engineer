@@ -1,6 +1,8 @@
-﻿@using RestaurantApp.Shared.DTOs.Employees
+﻿@using RestaurantApp.Blazor.Services
+@using RestaurantApp.Shared.DTOs.Employees
 @using RestaurantApp.Shared.Models
 @inject HttpClient Http
+@inject MessageService MessageService
 
 @if (IsVisible)
 {
@@ -14,14 +16,6 @@
                     <button type="button" class="btn-close" @onclick="Close" disabled="@isSending"></button>
                 </div>
                 <div class="modal-body">
-                    @if (!string.IsNullOrEmpty(errorMessage))
-                    {
-                        <div class="alert alert-danger d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            @errorMessage
-                        </div>
-                    }
-                    
                     @if (invitationSent)
                     {
                         <div class="text-center py-4">
@@ -115,7 +109,6 @@
     private RestaurantRoleEnumDto selectedRole = RestaurantRoleEnumDto.Employee;
     private bool isSending = false;
     private bool invitationSent = false;
-    private string? errorMessage;
 
     private bool IsFormValid => !string.IsNullOrWhiteSpace(email);
 
@@ -129,7 +122,6 @@
     {
         email = "";
         selectedRole = RestaurantRoleEnumDto.Employee;
-        errorMessage = null;
         isSending = false;
         invitationSent = false;
     }
@@ -138,12 +130,12 @@
     {
         if (!IsFormValid)
         {
-            errorMessage = "Please fill in all fields.";
+            MessageService.AddWarning("Error", "Please fill in all fields");
             return;
         }
 
         isSending = true;
-        errorMessage = null;
+
 
         try
         {
@@ -170,21 +162,23 @@
                 var content = await response.Content.ReadAsStringAsync();
                 if (content.Contains("already an employee"))
                 {
-                    errorMessage = "This user is already an employee of this restaurant.";
+                    MessageService.AddError("Error", "This user is already an employee of this restaurant.");
                 }
                 else
                 {
-                    errorMessage = "A pending invitation already exists for this user.";
+                    MessageService.AddError("Error", "A pending invitation already exists for this user.");
+
                 }
             }
             else
             {
-                errorMessage = "Failed to send invitation. Please try again.";
+                MessageService.AddError("Error", "Failed to send invitation. Please try again.");
+
             }
         }
         catch (Exception)
         {
-            errorMessage = "Unable to connect to the server. Please check your connection.";
+            MessageService.AddError("Error", "Unable to connect to the server. Please check your connection.");
         }
         finally
         {

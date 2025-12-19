@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Review;
 
@@ -6,18 +7,21 @@ namespace RestaurantApp.Blazor.Components;
 
 public partial class EditReviewModal : ComponentBase
 {
-        [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public ReviewDto? Review { get; set; }
     [Parameter] public EventCallback<ReviewDto> OnUpdate { get; set; }
     [Parameter] public EventCallback<int> OnDelete { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    
+    [Inject] private MessageService MessageService { get; set; } = null!;
+    
 
     private int tempRating;
     private string tempContent = "";
     private bool isSubmitting = false;
     private bool isDeleting = false;
-    private string errorMessage = "";
+
 
     protected override void OnParametersSet()
     {
@@ -25,7 +29,6 @@ public partial class EditReviewModal : ComponentBase
         {
             tempRating = Review.Rating;
             tempContent = Review.Content ?? "";
-            errorMessage = "";
         }
     }
 
@@ -38,12 +41,11 @@ public partial class EditReviewModal : ComponentBase
     {
         if (tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))
         {
-            errorMessage = "Please provide both a rating and a review.";
+            MessageService.AddWarning("Error", "Please provide both a rating and a review.");
             return;
         }
 
         isSubmitting = true;
-        errorMessage = "";
 
         try
         {
@@ -70,7 +72,7 @@ public partial class EditReviewModal : ComponentBase
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to update review: {ex.Message}";
+            MessageService.AddError("Error", "Failed to update review.");
         }
         finally
         {
@@ -81,18 +83,17 @@ public partial class EditReviewModal : ComponentBase
     private async Task HandleDelete()
     {
         if (Review == null) return;
-
         isDeleting = true;
-        errorMessage = "";
 
         try
         {
             await OnDelete.InvokeAsync(Review.Id);
+            MessageService.AddSuccess("Success", "Review deleted.");
             await Close();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to delete review: {ex.Message}";
+           MessageService.AddError("Error", "Failed to delete review.");
         }
         finally
         {
@@ -109,7 +110,6 @@ public partial class EditReviewModal : ComponentBase
     {
         tempRating = 0;
         tempContent = "";
-        errorMessage = "";
         isSubmitting = false;
         isDeleting = false;
         

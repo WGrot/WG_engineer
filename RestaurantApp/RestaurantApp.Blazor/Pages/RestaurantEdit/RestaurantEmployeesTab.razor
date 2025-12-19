@@ -3,11 +3,13 @@
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Extensions
+@using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Employees
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject MessageService MessageService
 
 <div class="d-flex justify-content-center">
     <button @onclick="OpenAddEmployeeModal" class="button--primary button--lg button  mb-3 me-3 w-50">Add new employee</button>
@@ -229,16 +231,17 @@ else
             if (response.IsSuccessStatusCode)
             {
                 await LoadEmployees();
+                MessageService.AddSuccess("Success", "Employee deleted successfully");
             }
             else
             {
-                error = "Failed to delete employee";
+                MessageService.AddError("Error", "Failed to delete employee");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error removing employee: {ex.Message}");
-            error = "An error occurred while deleting the employee";
+            MessageService.AddError("Error", "Failed to delete employee");
         }
         finally
         {

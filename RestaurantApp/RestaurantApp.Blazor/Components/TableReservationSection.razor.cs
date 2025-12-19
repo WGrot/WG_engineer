@@ -15,6 +15,8 @@ public partial class TableReservationSection : ComponentBase
     [Inject]
     private HttpClient Http { get; set; } = null!;
     
+    [Inject] private MessageService MessageService { get; set; } = null!;
+    
     [Inject]
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public DateTime StartTime { get; set; }
@@ -22,6 +24,7 @@ public partial class TableReservationSection : ComponentBase
     [Parameter] public TableDto Table { get; set; }
     [Parameter] public DateTime EndTime { get; set; }
     
+    [Parameter] public EventCallback OnReservationMade { get; set; }
     [Parameter] public bool autoFilldata { get; set; } = true;
     private string customerName = "";
     private string customerEmail = "";
@@ -29,8 +32,6 @@ public partial class TableReservationSection : ComponentBase
     private string specialRequests = "";
     private string userId = "";
     private int numberOfGuests = 2;
-    private string successMessage = "";
-    private string errorMessage = "";
     private bool isSubmitting = false;
     ResponseUserDto? currentUser = new ResponseUserDto();
 
@@ -65,9 +66,6 @@ public partial class TableReservationSection : ComponentBase
         try
         {
             isSubmitting = true;
-            errorMessage = "";
-            successMessage = "";
-            
             
             var reservationDto = new CreateTableReservationDto
             {
@@ -88,18 +86,19 @@ public partial class TableReservationSection : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = "Reservation confirmed! You will receive a confirmation email shortly.";
+                MessageService.AddSuccess("Success", "Your reservation has been made successfully.");
+                await OnReservationMade.InvokeAsync();
                 
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to make reservation: {error}";
+                MessageService.AddError("Error", "Failed to make reservation.");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error making reservation: {ex.Message}";
+            MessageService.AddError("Error", "An unexpected error occurred while making the reservation.");
             Console.WriteLine($"Error: {ex}");
         }
         finally

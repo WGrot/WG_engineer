@@ -11,6 +11,7 @@
 @using RestaurantApp.Shared.DTOs.Users
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject MessageService MessageService
 
 <div class="booking-container">
     @if (isLoadingRestaurant)
@@ -31,23 +32,6 @@
     {
         <div class="container mt-4">
             <div class="row justify-content-evenly">
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Error!</strong> @errorMessage
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                }
-
-                @if (!string.IsNullOrEmpty(successMessage))
-                {
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <strong>Success!</strong> @successMessage
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                }
                 <div class="col-lg-8 col-12 w-100">
                     <div>
 
@@ -144,7 +128,8 @@
                                     <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
                                         <i class="bi bi-check-circle-fill me-2"></i>
                                         No tables available for selected date and time. Please try different time.
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"  aria-label="Close"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                                aria-label="Close"></button>
                                     </div>
                                 }
                                 else
@@ -154,7 +139,8 @@
                                         {
                                             <div class="col-12 col-sm-6 col-md-4 col-lg-3"
                                                  @onclick="() => selectedTableId = table.Id">
-                                                <TableComponent Table="table" isSelected="(table.Id == selectedTableId)" />
+                                                <TableComponent Table="table"
+                                                                isSelected="(table.Id == selectedTableId)"/>
                                             </div>
                                         }
                                     </div>
@@ -250,15 +236,15 @@
     .arrow-btn {
         background-color: transparent;
         border: none;
-        color: #6c757d; 
+        color: #6c757d;
         transition: color 0.2s, transform 0.1s;
         padding: 6px 10px;
         cursor: pointer;
     }
 
     .arrow-btn:active {
-        color: #ffffff; 
-        transform: scale(0.95); 
+        color: #ffffff;
+        transform: scale(0.95);
     }
 
     .arrow-btn:focus {
@@ -272,7 +258,7 @@
     [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
     [Parameter] public bool AutoFillData { get; set; } = true;
-    
+
     [Parameter] public EventCallback<TableReservationDto> OnReservationCreated { get; set; }
     [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
@@ -297,9 +283,6 @@
     private bool isLoadingRestaurant = false;
     private bool isCheckingAvailability = false;
     private bool isSubmitting = false;
-
-    private string errorMessage = "";
-    private string successMessage = "";
 
     protected async override Task OnParametersSetAsync()
     {
@@ -348,8 +331,6 @@
     {
         availableTables = null;
         selectedTableId = 0;
-        errorMessage = "";
-        successMessage = "";
     }
 
     private async Task PreviousDay()
@@ -372,36 +353,35 @@
         try
         {
             isCheckingAvailability = true;
-            errorMessage = "";
-            successMessage = "";
-            
+
             if (endTime <= startTime)
             {
-                errorMessage = "End time must be after start time.";
+                MessageService.AddWarning("Incorrect data", "End time must be after start time.");
+
                 availableTables = new List<TableDto>();
                 return;
             }
-            
+
             var startTimeOnly = TimeOnly.FromDateTime(startTime);
             var endTimeOnly = TimeOnly.FromDateTime(endTime);
-            
+
             var dayOfWeek = selectedDate.DayOfWeek;
             var openingHours = restaurant?.OpeningHours?.FirstOrDefault(h => h.DayOfWeek == dayOfWeek);
 
             if (openingHours != null && openingHours.IsClosed)
             {
-                errorMessage = "Restaurant is closed on this day.";
+                MessageService.AddWarning("Incorrect data", "Restaurant is closed on this day.");
                 availableTables = new List<TableDto>();
                 return;
             }
 
             if (openingHours != null && (startTimeOnly < openingHours.OpenTime || endTimeOnly > openingHours.CloseTime))
             {
-                errorMessage = $"Restaurant is open from {openingHours.OpenTime:HH:mm} to {openingHours.CloseTime:HH:mm} on {dayOfWeek}.";
+                MessageService.AddWarning("Incorrect data", "Selected hours do not fit into opening schedule for this restaurant.");
                 availableTables = new List<TableDto>();
                 return;
             }
-            
+
             var availableTablesList = new List<TableDto>();
 
             foreach (var table in allTables.Where(t => t.Capacity >= numberOfGuests))
@@ -417,7 +397,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error checking availability: {ex.Message}";
+            MessageService.AddError("Error", "Error checking availability.");
             Console.WriteLine($"Error: {ex}");
         }
         finally
@@ -434,13 +414,14 @@
                       $"?date={date:yyyy-MM-dd}" +
                       $"&startTime={startTime:HH:mm:ss}" +
                       $"&endTime={endTime:HH:mm:ss}";
-        
+
             var response = await Http.GetFromJsonAsync<TableAvailabilityResultDto>(url);
-        
+
             return response?.IsAvailable ?? false;
         }
         catch (Exception ex)
         {
+            MessageService.AddError("Error", $"Error checking table {tableId} availability.");
             Console.WriteLine($"Error checking table {tableId} availability: {ex.Message}");
             return false;
         }
@@ -459,11 +440,7 @@
         try
         {
             isSubmitting = true;
-            errorMessage = "";
-            successMessage = "";
-            
 
-            
             var reservation = new CreateTableReservationDto
             {
                 TableId = selectedTableId,
@@ -476,37 +453,34 @@
                 EndTime = TimeOnly.FromDateTime(endTime),
                 NumberOfGuests = numberOfGuests,
                 Notes = specialRequests,
-                UseUserId = AutoFillData 
+                UseUserId = AutoFillData
             };
 
             var response = await Http.PostAsJsonAsync("api/Reservation/table", reservation);
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = "Reservation confirmed! You will receive a confirmation email shortly.";
+                MessageService.AddSuccess("Success", "Reservation created successfully.");
                 var createdReservation = await response.Content.ReadFromJsonAsync<TableReservationDto>();
-                
+
                 if (OnReservationCreated.HasDelegate)
                 {
-                    await Task.Delay(2000);
                     await OnReservationCreated.InvokeAsync(createdReservation);
                 }
                 else
                 {
-
-                    await Task.Delay(2000);
                     Navigation.NavigateTo($"/restaurant/{Id}");
                 }
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to make reservation: {error}";
+                MessageService.AddError("Error", "failed to make reservation.");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error making reservation: {ex.Message}";
+            MessageService.AddError("Error", "Error making reservation.");
             Console.WriteLine($"Error: {ex}");
         }
         finally

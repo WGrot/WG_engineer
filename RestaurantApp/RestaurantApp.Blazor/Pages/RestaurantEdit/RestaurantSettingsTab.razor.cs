@@ -16,7 +16,7 @@ public partial class RestaurantSettingsTab
 
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private AuthService AuthService { get; set; } = default!;
-    [Inject] private NotificationService NotificationService { get; set; } = default!;
+    [Inject] private MessageService MessageService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
     private SettingsDto settings;
@@ -26,8 +26,6 @@ public partial class RestaurantSettingsTab
     private bool isDeleting = false;
     private bool isSaving = false;
     private bool hasChanges = false;
-    private string successMessage = string.Empty;
-    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,7 +53,7 @@ public partial class RestaurantSettingsTab
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading settings: {ex.Message}";
+            MessageService.AddError("Error", "Error loading settings");
             settings = new SettingsDto { RestaurantId = Id };
             originalSettings = CloneSettings(settings);
         }
@@ -120,7 +118,6 @@ public partial class RestaurantSettingsTab
     private async Task DeleteRestaurant()
     {
         isDeleting = true;
-        errorMessage = string.Empty;
 
         try
         {
@@ -128,24 +125,19 @@ public partial class RestaurantSettingsTab
             if (response.IsSuccessStatusCode)
             {
                 StateHasChanged();
-                NotificationService.AddNotification(new NotificationDto()
-                {
-                    Title = "Info",
-                    Content = "Restaurant has been deleted. You will be logged out.",
-                    Type = NotificationTypeEnumDto.Info,
-                });
+                MessageService.AddInfo("Info","Restaurant has been deleted. You will be logged out.");
                 await AuthService.LogoutAsync();
                 Nav.NavigateTo($"/login");
             }
             else
             {
-                errorMessage = $"Error deleting restaurant: {response.StatusCode}";
+                MessageService.AddError("Error", "Failed to delete restaurant.");
                 showDeleteModal = false;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred: {ex.Message}";
+            MessageService.AddError("Error", "Failed to delete restaurant.");
             showDeleteModal = false;
         }
         finally
@@ -158,8 +150,7 @@ public partial class RestaurantSettingsTab
     private async Task SaveChanges()
     {
         isSaving = true;
-        errorMessage = string.Empty;
-        successMessage = string.Empty;
+
 
         try
         {
@@ -181,22 +172,17 @@ public partial class RestaurantSettingsTab
             {
                 originalSettings = CloneSettings(settings);
                 hasChanges = false;
-                successMessage = "Settings updated successfully!";
-                NotificationService.AddNotification(new NotificationDto()
-                {
-                    Title = "Success",
-                    Content = "Restaurant settings have been updated.",
-                    Type = NotificationTypeEnumDto.Success,
-                });
+
+                MessageService.AddSuccess("Success", "Settings updated successfully!");
             }
             else
             {
-                errorMessage = $"Error updating settings: {response.StatusCode}";
+                MessageService.AddError("Error", "Error updating settings");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred: {ex.Message}";
+            MessageService.AddError("Error", "Error updating settings");
         }
         finally
         {

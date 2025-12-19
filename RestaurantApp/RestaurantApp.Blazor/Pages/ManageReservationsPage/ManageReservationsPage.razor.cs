@@ -4,6 +4,7 @@ using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
 using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Blazor.Helpers;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
@@ -14,10 +15,11 @@ namespace RestaurantApp.Blazor.Pages.ManageReservationsPage;
 partial class ManageReservationsPage
 {
     [Inject] private HttpClient Http { get; set; } = null!;
+    [Inject] private MessageService MessageService { get; set; } = null!;
 
     private List<ReservationDto>? reservations;
     private bool isLoading = true;
-    private string? error;
+
 
     private ReservationSearchParameters searchParameters = new ReservationSearchParameters
     {
@@ -94,6 +96,7 @@ partial class ManageReservationsPage
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            MessageService.AddError("Error", "Failed to load reservations");
             reservations = new List<ReservationDto>();
         }
         finally
@@ -126,7 +129,7 @@ partial class ManageReservationsPage
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
+            MessageService.AddError("Error", "Failed to load reservations");
             reservations = new List<ReservationDto>();
         }
         finally
@@ -150,13 +153,16 @@ partial class ManageReservationsPage
 
             if (!response.IsSuccessStatusCode)
             {
-                var message = await response.Content.ReadAsStringAsync();
-                error = $"Failed to approve reservation: {response.StatusCode} - {message}";
+                MessageService.AddError("Error", "Failed to approve reservation");
+            }
+            else
+            {
+                MessageService.AddSuccess("Success", "Reservation approved");
             }
         }
         catch (Exception ex)
         {
-            error = $"Error approving reservation: {ex.Message}";
+            MessageService.AddError("Error", "Failed to approve reservation");
         }
     }
 
@@ -165,8 +171,6 @@ partial class ManageReservationsPage
         searchParameters = new ReservationSearchParameters();
     }
     
-    
-
     private void OpenReservationModal(ReservationDto reservation)
     {
         selectedReservation = reservation;
@@ -174,15 +178,6 @@ partial class ManageReservationsPage
         modalError = null;
         modalSuccess = null;
         showReservationModal = true;
-    }
-
-    private void CloseModal()
-    {
-        showReservationModal = false;
-        selectedReservation = null;
-        selectedStatus = null;
-        modalError = null;
-        modalSuccess = null;
     }
    
 }
