@@ -10,6 +10,7 @@ using RestaurantApp.Api.Hubs;
 using RestaurantApp.Api.Middleware;
 using RestaurantApp.Application;
 using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure;
 using RestaurantApp.Infrastructure.Persistence;

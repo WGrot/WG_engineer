@@ -14,8 +14,6 @@ namespace RestaurantApp.Application.Services;
 public class TableReservationService : ITableReservationService
 {
     private readonly IReservationRepository _reservationRepository;
-    private readonly ITableRepository _tableRepository;
-    private readonly IRestaurantRepository _restaurantRepository;
     private readonly IEmailComposer _emailComposer;
     private readonly ICurrentUserService _currentUserService;
     private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
@@ -23,16 +21,12 @@ public class TableReservationService : ITableReservationService
 
     public TableReservationService(
         IReservationRepository reservationRepository,
-        ITableRepository tableRepository,
-        IRestaurantRepository restaurantRepository,
         IEmailComposer emailComposer,
         ICurrentUserService currentUserService,
         IRestaurantSettingsRepository restaurantSettingsRepository,
         IRealtimeSender realtimeSender)
     {
         _reservationRepository = reservationRepository;
-        _tableRepository = tableRepository;
-        _restaurantRepository = restaurantRepository;
         _emailComposer = emailComposer;
         _currentUserService = currentUserService;
         _restaurantSettingsRepository = restaurantSettingsRepository;
@@ -106,7 +100,7 @@ public class TableReservationService : ITableReservationService
             await _realtimeSender.SendTableAvailabilityChangedAsync(existing.RestaurantId, existing.TableId); 
         }
         
-        await _reservationRepository.DeleteAsync(existing!);
+        await _reservationRepository.DeleteAsync(existing);
 
         return Result.Success();
     }

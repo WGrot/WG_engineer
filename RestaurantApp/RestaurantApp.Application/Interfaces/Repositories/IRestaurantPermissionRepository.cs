@@ -1,6 +1,5 @@
 ﻿using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Interfaces.Repositories;
 

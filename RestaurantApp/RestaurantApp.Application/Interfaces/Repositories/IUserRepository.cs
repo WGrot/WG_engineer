@@ -1,5 +1,4 @@
 ﻿using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Application.Interfaces.Repositories;
 

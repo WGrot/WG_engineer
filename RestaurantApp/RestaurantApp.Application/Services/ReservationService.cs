@@ -77,7 +77,7 @@ public class ReservationService : IReservationService
         var existing = await _reservationRepository.GetByIdAsync(reservationId);
 
         existing!.UpdateFromDto(reservationDto);
-        await _reservationRepository.UpdateAsync(existing);
+        await _reservationRepository.UpdateAsync(existing!);
 
         return Result.Success();
     }

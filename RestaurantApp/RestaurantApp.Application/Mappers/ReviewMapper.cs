@@ -1,7 +1,6 @@
 ﻿using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Review;
-using RestaurantApp.Shared.DTOs.SearchParameters;
+
 
 namespace RestaurantApp.Application.Mappers;
 
@@ -13,8 +12,8 @@ public static class ReviewMapper
         {
             Id = review.Id,
             RestaurantId = review.RestaurantId,
-            RestaurantName = review.Restaurant?.Name ?? "Unknown",
-            RestaurantAddress = review.Restaurant?.Address ?? "",
+            RestaurantName = review.Restaurant.Name,
+            RestaurantAddress = review.Restaurant.Address,
             UserId = review.UserId,
             UserName = review.UserName,
             Rating = review.Rating,

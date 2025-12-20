@@ -55,14 +55,14 @@ public class AuthService: IAuthService
         
         var createResult = await _identityService.CreateUserAsync(user, request.Password);
         if (createResult.IsFailure)
-            return Result.Failure(createResult.Error, createResult.StatusCode);
+            return Result.Failure(createResult.Error!, createResult.StatusCode);
 
         var createdUser = createResult.Value!;
         
         var token = await _identityService.GenerateEmailConfirmationTokenAsync(createdUser);
         var confirmationLink = _emailLinkGenerator.GenerateEmailConfirmationLink(createdUser.Id, token);
         
-        var email = new AccountRegisteredEmail(createdUser.FirstName, confirmationLink);
+        var email = new AccountRegisteredEmail(createdUser.FirstName!, confirmationLink);
         await _emailComposer.SendAsync(createdUser.Email!, email);
 
         return Result.Success();
@@ -88,7 +88,6 @@ public class AuthService: IAuthService
             if (twoFactorResult.Value?.RequiresTwoFactor == true)
                 return twoFactorResult;
         }
-        var (refreshToken, refreshExpiresAt) = await _tokenService.GenerateRefreshTokenAsync(user, ipAddress);
         
         string accessToken = await _tokenService.GenerateAccessTokenAsync(user, user.TwoFactorEnabled);
         
@@ -145,14 +144,14 @@ public class AuthService: IAuthService
         }
         catch
         {
-
+            // ignored
         }
     }
 
     public async Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId)
     {
         if (string.IsNullOrEmpty(userId))
-            return Result<ResponseUserDto>.Failure("User ID is required", 400);
+            return Result<ResponseUserDto>.Failure("User ID is required");
         
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -171,7 +170,7 @@ public class AuthService: IAuthService
     public async Task<Result> ConfirmEmailAsync(string userId, string token)
     {
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
-            return Result.Failure("Incorrect verification data", 400);
+            return Result.Failure("Incorrect verification data");
 
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -186,14 +185,14 @@ public class AuthService: IAuthService
     public async Task<Result> ResendEmailConfirmationAsync(string email)
     {
         if (string.IsNullOrEmpty(email))
-            return Result.Failure("Email is required", 400);
+            return Result.Failure("Email is required");
 
         var user = await _userRepository.GetByEmailAsync(email);
         if (user == null)
             return Result.Success();
 
         if (user.EmailConfirmed)
-            return Result.Failure("Email is already confirmed", 400);
+            return Result.Failure("Email is already confirmed");
 
         var token = await _identityService.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink = _emailLinkGenerator.GenerateEmailConfirmationLink(user.Id, token);

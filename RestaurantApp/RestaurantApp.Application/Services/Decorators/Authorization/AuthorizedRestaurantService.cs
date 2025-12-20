@@ -1,26 +1,19 @@
-﻿using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Services;
+﻿using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.Restaurant;
-using RestaurantApp.Shared.DTOs.Tables;
 
 namespace RestaurantApp.Application.Services.Decorators.Authorization;
 
 public class AuthorizedRestaurantService : IRestaurantService
 {
     private readonly IRestaurantService _inner;
-    private readonly ICurrentUserService _currentUser;
-    private readonly IAuthorizationChecker _authorizationChecker;
 
     public AuthorizedRestaurantService(
-        IRestaurantService inner,
-        ICurrentUserService currentUser,
-        IAuthorizationChecker authorizationChecker)
+        IRestaurantService inner)
     {
         _inner = inner;
-        _currentUser = currentUser;
-        _authorizationChecker = authorizationChecker;
+
     }
 
     public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()

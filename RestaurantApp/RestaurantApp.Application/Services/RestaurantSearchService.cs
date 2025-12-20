@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Shared.Common;
@@ -11,14 +10,12 @@ namespace RestaurantApp.Application.Services;
 public class RestaurantSearchService : IRestaurantSearchService
 {
     private readonly IRestaurantRepository _restaurantRepository;
-    private readonly ILogger<RestaurantSearchService> _logger;
 
     public RestaurantSearchService(
-        IRestaurantRepository restaurantRepository,
-        ILogger<RestaurantSearchService> logger)
+        IRestaurantRepository restaurantRepository)
     {
         _restaurantRepository = restaurantRepository;
-        _logger = logger;
+
     }
 
     public async Task<Result<PaginatedRestaurantsDto>> SearchAsync(

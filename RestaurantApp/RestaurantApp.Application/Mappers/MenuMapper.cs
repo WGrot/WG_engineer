@@ -1,6 +1,5 @@
 ﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Menu;
-using RestaurantApp.Shared.DTOs.Menu.Categories;
 
 namespace RestaurantApp.Application.Mappers;
 
@@ -16,7 +15,7 @@ public static class MenuMapper
             Name = entity.Name,
             Description = entity.Description,
             IsActive = entity.IsActive,
-            Categories = entity.Categories?.Select(c => c.ToDto()).ToList() ?? new List<MenuCategoryDto>(),
+            Categories = entity.Categories.Select(c => c.ToDto()).ToList(),
             Items = entity.Items?.Select(i => i.ToDto()).ToList()
         };
     }
@@ -30,7 +29,7 @@ public static class MenuMapper
             Name = dto.Name,
             Description = dto.Description,
             IsActive = dto.IsActive,
-            Categories = dto.Categories?.Select(c => c.ToEntity()).ToList() ?? new List<MenuCategory>(),
+            Categories = dto.Categories.Select(c => c.ToEntity()).ToList(),
             Items = dto.Items?.Select(i => i.ToEntity()).ToList()
 
         };

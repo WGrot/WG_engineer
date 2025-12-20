@@ -6,6 +6,6 @@ public interface IGeocodingService
     Task<(double? lat, double? lon)> GeocodeStructuredAsync(
         string street, 
         string city, 
-        string postalCode = null, 
+        string postalCode = "", 
         string country = "Poland");
 }

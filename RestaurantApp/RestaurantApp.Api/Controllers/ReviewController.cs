@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Review;
 
 namespace RestaurantApp.Api.Controllers;
@@ -11,13 +12,13 @@ namespace RestaurantApp.Api.Controllers;
 [Authorize]
 public class ReviewsController : ControllerBase
 {
-    private readonly RestaurantApp.Application.Interfaces.Services.IReviewService _reviewService;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IReviewService _reviewService;
 
-    public ReviewsController(RestaurantApp.Application.Interfaces.Services.IReviewService reviewService, IAuthorizationService authorizationService)
+
+    public ReviewsController(IReviewService reviewService)
     {
         _reviewService = reviewService;
-        _authorizationService = authorizationService;
+
     }
 
     [HttpGet("{id}")]

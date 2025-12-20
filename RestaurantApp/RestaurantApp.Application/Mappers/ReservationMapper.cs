@@ -1,6 +1,5 @@
 ﻿using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 
 namespace RestaurantApp.Application.Mappers;
@@ -24,8 +23,8 @@ public static class ReservationMapper
             UserId = entity.UserId,
             requiresConfirmation = entity.NeedsConfirmation,
             RestaurantId = entity.RestaurantId,
-            RestaurantName = entity.Restaurant?.Name ?? string.Empty,
-            RestaurantAddress = entity.Restaurant?.Address ?? string.Empty,
+            RestaurantName = entity.Restaurant.Name,
+            RestaurantAddress = entity.Restaurant.Address,
             Status = entity.Status.ToShared(),
         };
     }
@@ -93,11 +92,11 @@ public static class ReservationMapper
             Notes = reservation.Notes,
             UserId = reservation.UserId,
             RestaurantId = reservation.RestaurantId,
-            RestaurantName = reservation.Restaurant?.Name ?? string.Empty,
-            RestaurantAddress = reservation.Restaurant?.Address ?? string.Empty,
+            RestaurantName = reservation.Restaurant.Name,
+            RestaurantAddress = reservation.Restaurant.Address,
             
             TableId = reservation.TableId,
-            Table = reservation.Table?.ToDto() 
+            Table = reservation.Table.ToDto()
         };
     }
     

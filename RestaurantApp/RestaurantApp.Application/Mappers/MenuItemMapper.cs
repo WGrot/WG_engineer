@@ -1,7 +1,5 @@
 ﻿using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
-using RestaurantApp.Shared.DTOs.Menu.Tags;
 
 namespace RestaurantApp.Application.Mappers;
 
@@ -20,7 +18,7 @@ public static class MenuItemMapper
             ThumbnailUrl = entity.ThumbnailUrl,
             CategoryId = entity.CategoryId,
 
-            Tags = entity.Tags?.ToDto().ToList() ?? new List<MenuItemTagDto>()
+            Tags = entity.Tags.ToDto().ToList()
         };
     }
 
@@ -42,7 +40,7 @@ public static class MenuItemMapper
             
         };
         
-        if (dto.Tags?.Any() == true)
+        if (dto.Tags.Any())
         {
             menuItem.Tags = dto.Tags.Select(t => t.ToEntity()).ToHashSet();
         }
@@ -58,7 +56,7 @@ public static class MenuItemMapper
         entity.Price.CurrencyCode = dto.CurrencyCode;
         
         entity.Tags.Clear();
-        if (dto.Tags?.Any() == true)
+        if (dto.Tags.Any())
         {
             foreach (var tagDto in dto.Tags)
             {

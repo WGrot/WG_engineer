@@ -1,5 +1,4 @@
-﻿using RestaurantApp.Application.Common.Interfaces;
-using RestaurantApp.Application.Interfaces.Images;
+﻿using RestaurantApp.Application.Interfaces.Images;
 using SkiaSharp;
 
 namespace RestaurantApp.Infrastructure.Services;

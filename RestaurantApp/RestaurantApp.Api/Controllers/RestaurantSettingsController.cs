@@ -10,17 +10,11 @@ namespace RestaurantApp.Api.Controllers;
 public class RestaurantSettingsController : ControllerBase
 {
     private readonly IRestaurantSettingsService _restaurantSettingsService;
-    private readonly IRestaurantService _restaurantService;
-    private readonly ILogger<RestaurantSettingsController> _logger;
 
     public RestaurantSettingsController(
-        IRestaurantSettingsService restaurantSettingsService,
-        IRestaurantService restaurantService,
-        ILogger<RestaurantSettingsController> logger)
+        IRestaurantSettingsService restaurantSettingsService)
     {
         _restaurantSettingsService = restaurantSettingsService;
-        _restaurantService = restaurantService;
-        _logger = logger;
     }
 
     [HttpGet]

@@ -35,7 +35,7 @@ public class MenuItemRepository : IMenuItemRepository
             .Include(mi => mi.Category)
             .Include(mi => mi.Tags)
             .Include(mi => mi.ImageLink)
-            .Where(mi => mi.MenuId == menuId || mi.Category.MenuId == menuId)
+            .Where(mi => mi.Category != null && (mi.MenuId == menuId || mi.Category.MenuId == menuId))
             .ToListAsync();
     }
 

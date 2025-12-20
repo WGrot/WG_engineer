@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
 namespace RestaurantApp.Infrastructure.Persistence.QuerryBuilders;
@@ -149,7 +148,7 @@ public static class ReservationQueryBuilder
         var now = DateTime.UtcNow;
         var currentTime = TimeOnly.FromDateTime(now);
 
-        return searchParams.SortBy?.ToLower() switch
+        return searchParams.SortBy.ToLower() switch
         {
             "oldest" => query
                 .OrderBy(r => r.CreatedAt)

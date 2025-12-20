@@ -1,9 +1,7 @@
 ﻿using RestaurantApp.Application.Dto;
-using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
-using RestaurantApp.Domain.Enums;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Review;
 using RestaurantApp.Shared.DTOs.SearchParameters;

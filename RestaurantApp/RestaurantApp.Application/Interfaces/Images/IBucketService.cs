@@ -1,4 +1,6 @@
-﻿public interface IBucketService
+﻿namespace RestaurantApp.Application.Interfaces.Images;
+
+public interface IBucketService
 {
     Task<bool> EnsureBucketExistsAsync(string bucketName);
     Task InitializeDefaultBucketsAsync();

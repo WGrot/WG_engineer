@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Users;
@@ -11,11 +10,10 @@ namespace RestaurantApp.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IAuthorizationService _authorizationService;
-    public UserController(IUserService userService, IAuthorizationService authorizationService)
+
+    public UserController(IUserService userService)
     {
         _userService = userService;
-        _authorizationService = authorizationService;
     }
     
     [HttpGet("{id}")]

@@ -24,7 +24,7 @@ public class MenuRepository : IMenuRepository
             .Include(m => m.Categories)
                 .ThenInclude(c => c.Items)
                     .ThenInclude(mi => mi.ImageLink)
-            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Include(m => m.Items!.Where(i => i.CategoryId == null))
             .FirstOrDefaultAsync(m => m.Id == menuId);
     }
 
@@ -37,9 +37,9 @@ public class MenuRepository : IMenuRepository
             .Include(m => m.Categories)
                 .ThenInclude(c => c.Items)
                     .ThenInclude(i => i.ImageLink)  
-            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Include(m => m.Items!.Where(i => i.CategoryId == null))
                 .ThenInclude(i => i.ImageLink)      
-            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Include(m => m.Items!.Where(i => i.CategoryId == null))
                 .ThenInclude(i => i.Tags)
             .Where(m => m.RestaurantId == restaurantId);
 
@@ -60,9 +60,9 @@ public class MenuRepository : IMenuRepository
             .Include(m => m.Categories)
                 .ThenInclude(c => c.Items)
                     .ThenInclude(i => i.ImageLink) 
-            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Include(m => m.Items!.Where(i => i.CategoryId == null))
                 .ThenInclude(i => i.ImageLink)      
-            .Include(m => m.Items.Where(i => i.CategoryId == null))
+            .Include(m => m.Items!.Where(i => i.CategoryId == null))
                 .ThenInclude(i => i.Tags)
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
             .FirstOrDefaultAsync();

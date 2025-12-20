@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
+using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Menu;
 
 
@@ -10,12 +10,11 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class MenuController : ControllerBase
 {
-    private readonly RestaurantApp.Application.Interfaces.Services.IMenuService _menuService;
-    private readonly IAuthorizationService _authorizationService;
-    public MenuController(RestaurantApp.Application.Interfaces.Services.IMenuService menuService, IAuthorizationService authorizationService)
+    private readonly IMenuService _menuService;
+
+    public MenuController(IMenuService menuService)
     {
         _menuService = menuService;
-        _authorizationService = authorizationService;
     }
 
     [HttpGet("{id}")]

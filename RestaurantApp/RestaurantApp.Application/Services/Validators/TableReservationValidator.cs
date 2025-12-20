@@ -212,7 +212,7 @@ public class TableReservationValidator : ITableReservationValidator
         return await ValidateReservationExistsAsync(reservationId);
     }
 
-    private static bool HasTimeOrTableChanged(Domain.Models.TableReservation existing, TableReservationDto dto)
+    private static bool HasTimeOrTableChanged(TableReservation existing, TableReservationDto dto)
     {
         return existing.TableId != dto.TableId ||
                existing.ReservationDate != dto.ReservationDate ||

@@ -62,7 +62,7 @@ public class PasswordService: IPasswordService
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            return Result.Failure("Email is required", 400);
+            return Result.Failure("Email is required");
         }
 
         var user = await _userManager.FindByEmailAsync(email);
@@ -74,7 +74,7 @@ public class PasswordService: IPasswordService
 
         if (!user.EmailConfirmed)
         {
-            return Result.Failure("Email is not confirmed", 400);
+            return Result.Failure("Email is not confirmed");
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -124,7 +124,7 @@ public class PasswordService: IPasswordService
         
         var userId = _currentUserService.UserId;
 
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.FindByIdAsync(userId!);
         if (user == null)
         {
             return Result.Unauthorized("User not logged in");
@@ -152,17 +152,17 @@ public class PasswordService: IPasswordService
     {
         if (string.IsNullOrWhiteSpace(request.UserId))
         {
-            return Result.Failure("User ID is required", 400);
+            return Result.Failure("User ID is required");
         }
 
         if (string.IsNullOrWhiteSpace(request.Token))
         {
-            return Result.Failure("Reset token is required", 400);
+            return Result.Failure("Reset token is required");
         }
 
         if (string.IsNullOrWhiteSpace(request.NewPassword))
         {
-            return Result.Failure("New password is required", 400);
+            return Result.Failure("New password is required");
         }
 
         return Result.Success();
@@ -173,7 +173,7 @@ public class PasswordService: IPasswordService
         var errorDetails = string.Join(Environment.NewLine, 
             errors.Select(e => $"{e.Code}: {e.Description}"));
         
-        return Result.Failure($"{message}: {errorDetails}", 400);
+        return Result.Failure($"{message}: {errorDetails}");
     }
 
     #endregion

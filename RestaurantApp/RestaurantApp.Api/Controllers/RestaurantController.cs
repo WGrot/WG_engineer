@@ -13,22 +13,20 @@ namespace RestaurantApp.Api.Controllers;
 [Route("api/[controller]")]
 public class RestaurantController : ControllerBase
 {
-    private readonly RestaurantApp.Application.Interfaces.Services.IRestaurantService _restaurantService;
+    private readonly IRestaurantService _restaurantService;
     private readonly IRestaurantSearchService _restaurantSearchService;
-    private readonly ILogger<RestaurantController> _logger;
     private readonly IRestaurantImageService _imageService;
     private readonly IRestaurantDashboardService _restaurantDashboardService;
     private readonly IRestaurantOpeningHoursService _restaurantOpeningHoursService;
 
     public RestaurantController(IRestaurantOpeningHoursService openingHoursService,
         IRestaurantSearchService restaurantSearchService, IRestaurantDashboardService restaurantDashboardService,
-        RestaurantApp.Application.Interfaces.Services.IRestaurantService restaurantService,
-        ILogger<RestaurantController> logger, IRestaurantImageService imageService)
+        IRestaurantService restaurantService,
+        IRestaurantImageService imageService)
     {
         _restaurantService = restaurantService;
         _restaurantSearchService = restaurantSearchService;
         _restaurantDashboardService = restaurantDashboardService;
-        _logger = logger;
         _imageService = imageService;
         _restaurantOpeningHoursService = openingHoursService;
     }

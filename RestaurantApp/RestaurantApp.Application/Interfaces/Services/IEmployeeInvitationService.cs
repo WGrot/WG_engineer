@@ -1,5 +1,4 @@
-﻿using RestaurantApp.Domain.Enums;
-using RestaurantApp.Domain.Models;
+﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Employees;
 

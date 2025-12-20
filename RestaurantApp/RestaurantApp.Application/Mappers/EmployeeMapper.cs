@@ -1,7 +1,6 @@
 ﻿using RestaurantApp.Application.Mappers.EnumMappers;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Employees;
-using RestaurantApp.Shared.DTOs.Permissions;
 
 namespace RestaurantApp.Application.Mappers;
 
@@ -14,9 +13,9 @@ public static class EmployeeMapper
             Id = entity.Id,
             UserId = entity.UserId,
             RestaurantId = entity.RestaurantId,
-            Restaurant = entity.Restaurant?.ToDto(),
+            Restaurant = entity.Restaurant.ToDto(),
             RoleEnumDto = entity.Role.ToShared(),
-            Permissions = entity.Permissions?.Select(p => p.ToDto()).ToList() ?? new List<RestaurantPermissionDto>(),
+            Permissions = entity.Permissions.Select(p => p.ToDto()).ToList() ,
             CreatedAt = entity.CreatedAt,
             IsActive = entity.IsActive
         };
@@ -31,27 +30,12 @@ public static class EmployeeMapper
             UserId = dto.UserId,
             RestaurantId = dto.RestaurantId,
             Role = dto.RoleEnumDto.ToDomain(),
-            Permissions = dto.Permissions?.Select(p => p.ToEntity()).ToList() ?? new List<RestaurantPermission>(),
+            Permissions = dto.Permissions.Select(p => p.ToEntity()).ToList(),
             CreatedAt = dto.CreatedAt,
             IsActive = dto.IsActive
         };
     }
-
-
-    public static void UpdateFromDto(this RestaurantEmployee entity, RestaurantEmployeeDto dto)
-    {
-        entity.UserId = dto.UserId;
-        entity.RestaurantId = dto.RestaurantId;
-        entity.Role = dto.RoleEnumDto.ToDomain();
-        entity.IsActive = dto.IsActive;
-        
-
-        if (dto.Permissions != null)
-        {
-            entity.Permissions = dto.Permissions.Select(p => p.ToEntity()).ToList();
-        }
-        
-    }
+    
     
     public static List<RestaurantEmployeeDto> ToDtoList(this IEnumerable<RestaurantEmployee> entities)
     {

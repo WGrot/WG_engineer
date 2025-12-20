@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Services;
 
 namespace RestaurantApp.Api.Hubs;
 

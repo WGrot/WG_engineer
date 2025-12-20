@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Shared.Common;
@@ -45,10 +44,10 @@ public class MenuItemTagService : IMenuItemTagService
 
         existingTag!.UpdateFromDto(dto);
 
-        _tagRepository.Update(existingTag);
+        _tagRepository.Update(existingTag!);
         await _tagRepository.SaveChangesAsync();
 
-        return Result<MenuItemTagDto>.Success(existingTag.ToDto());
+        return Result<MenuItemTagDto>.Success(existingTag!.ToDto());
     }
 
     public async Task<Result> DeleteTagAsync(int id)

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;

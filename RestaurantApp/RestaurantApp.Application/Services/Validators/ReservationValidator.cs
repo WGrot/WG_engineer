@@ -39,7 +39,7 @@ public class ReservationValidator : IReservationValidator
     public Task<Result> ValidateUserIdNotEmptyAsync(string userId)
     {
         if (string.IsNullOrEmpty(userId))
-            return Task.FromResult(Result.Failure("User ID is required.", 400));
+            return Task.FromResult(Result.Failure("User ID is required."));
 
         return Task.FromResult(Result.Success());
     }

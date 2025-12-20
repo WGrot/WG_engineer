@@ -1,5 +1,4 @@
-﻿using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Employees;

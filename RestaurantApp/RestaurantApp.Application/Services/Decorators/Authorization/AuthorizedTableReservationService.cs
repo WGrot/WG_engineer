@@ -1,5 +1,4 @@
-﻿using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Services;
+﻿using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Reservation;
 
@@ -8,17 +7,13 @@ namespace RestaurantApp.Application.Services.Decorators.Authorization;
 public class AuthorizedTableReservationService : ITableReservationService
 {
     private readonly ITableReservationService _inner;
-    private readonly ICurrentUserService _currentUser;
-    private readonly IAuthorizationChecker _authorizationChecker;
+
 
     public AuthorizedTableReservationService(
-        ITableReservationService inner,
-        ICurrentUserService currentUser,
-        IAuthorizationChecker authorizationChecker)
+        ITableReservationService inner)
     {
         _inner = inner;
-        _currentUser = currentUser;
-        _authorizationChecker = authorizationChecker;
+
     }
 
     public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)

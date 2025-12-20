@@ -257,9 +257,9 @@ public static class DependencyInjection
                 businessValidator);
 
             var currentUser = sp.GetRequiredService<ICurrentUserService>();
-            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedReviewService(validatedService, currentUser, permissionChecker);
+
+            return new AuthorizedReviewService(validatedService, currentUser);
         });
         
         services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
@@ -344,10 +344,8 @@ public static class DependencyInjection
                 basicInfoValidator,
                 businessValidator);
             
-            var currentUser = sp.GetRequiredService<ICurrentUserService>();
-            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
 
-            return new AuthorizedRestaurantService(validatedService, currentUser, permissionChecker);
+            return new AuthorizedRestaurantService(validatedService);
         });
         
         services.AddValidatorsFromAssemblyContaining<CreateTableReservationDtoValidator>();
@@ -369,10 +367,7 @@ public static class DependencyInjection
                 updateValidator,
                 businessValidator);
 
-            var currentUser = sp.GetRequiredService<ICurrentUserService>();
-            var permissionChecker = sp.GetRequiredService<IAuthorizationChecker>();
-
-            return new AuthorizedTableReservationService(validatedService, currentUser, permissionChecker);
+            return new AuthorizedTableReservationService(validatedService);
         });
         
         

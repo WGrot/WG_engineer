@@ -9,16 +9,15 @@ public class AuthorizedReviewService : IReviewService
 {
     private readonly IReviewService _inner;
     private readonly ICurrentUserService _currentUser;
-    private readonly IAuthorizationChecker _authorizationChecker;
+
 
     public AuthorizedReviewService(
         IReviewService inner,
-        ICurrentUserService currentUser,
-        IAuthorizationChecker authorizationChecker)
+        ICurrentUserService currentUser)
     {
         _inner = inner;
         _currentUser = currentUser;
-        _authorizationChecker = authorizationChecker;
+
     }
 
     public async Task<Result<ReviewDto>> GetByIdAsync(int id)

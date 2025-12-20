@@ -5,8 +5,6 @@ using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.Restaurant;
-using RestaurantApp.Shared.DTOs.Tables;
-
 namespace RestaurantApp.Application.Services.Decorators.Validation;
 
 public class ValidatedRestaurantService: IRestaurantService

@@ -50,9 +50,9 @@ public class MenuItemVariantService : IMenuItemVariantService
         var existingVariant = await _repository.GetByIdAsync(id);
 
         existingVariant!.UpdateFromDto(variantDto);
-        await _repository.UpdateAsync(existingVariant);
+        await _repository.UpdateAsync(existingVariant!);
 
-        return Result<MenuItemVariantDto>.Success(existingVariant.ToDto());
+        return Result<MenuItemVariantDto>.Success(existingVariant!.ToDto());
     }
 
     public async Task<Result> DeleteVariantAsync(int id)

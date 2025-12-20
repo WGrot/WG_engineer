@@ -4,7 +4,6 @@ using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Infrastructure.Persistence.QuerryBuilders;
 using RestaurantApp.Shared.DTOs.SearchParameters;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Infrastructure.Persistence.Repositories;
 

@@ -62,7 +62,7 @@ public class TableService : ITableService
         {
             await _tableRepository.UpdateAsync(table);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Result.InternalError("Concurrency error while updating table.");
         }

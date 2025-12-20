@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using RestaurantApp.Shared.Models;
 using System.Net.Http.Json;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
@@ -14,9 +11,8 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
 public partial class MenuTab : ComponentBase
 {
-    [Inject]
-    private HttpClient Http { get; set; } = null!;
-     [Parameter] public int Id { get; set; }
+    [Inject] private HttpClient Http { get; set; } = null!;
+    [Parameter] public int Id { get; set; }
     [Parameter] public RestaurantDto? restaurant { get; set; }
 
     private MenuDto? menu;
@@ -37,19 +33,20 @@ public partial class MenuTab : ComponentBase
     private MenuItemDto newItem = new();
 
     private CreateMenuDto newMenu = new();
-    
+
     private CreateMenuItemTagDto newTag;
     private bool showAddTag = false;
 
     private void ShowAddTagForm()
     {
         showAddTag = true;
-        newTag = new CreateMenuItemTagDto 
-        { 
+        newTag = new CreateMenuItemTagDto
+        {
             ColorHex = "#FFFFFF",
             RestaurantId = Id
         };
     }
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -62,7 +59,7 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            menu =await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
             foreach (var item in menu.Items)
             {
                 if (item.CategoryId == null)
@@ -76,8 +73,7 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error loading menu: {ex.Message}");
         }
     }
-    
-    
+
 
     private async Task LoadTags()
     {
@@ -87,12 +83,11 @@ public partial class MenuTab : ComponentBase
             tags = response;
         }
     }
-    
+
 
     private void ShowAddCategoryForm()
     {
         showAddCategory = true;
-
     }
 
     private void ShowAddItemForm(int? categoryId)
@@ -104,7 +99,7 @@ public partial class MenuTab : ComponentBase
             Description = "",
             Name = "",
             Price = new PriceDto(),
-            CurrencyCode = "PLN", 
+            CurrencyCode = "PLN",
             ImageUrl = ""
         };
     }
@@ -129,7 +124,6 @@ public partial class MenuTab : ComponentBase
 
     private async Task AddCategory()
     {
-
         newCategory.MenuId = menu.Id;
         if (string.IsNullOrEmpty(newCategory.Name)) return;
 
@@ -148,7 +142,7 @@ public partial class MenuTab : ComponentBase
         }
     }
 
-    
+
     private async Task CreateMenu()
     {
         try
@@ -166,6 +160,7 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error creating menu: {ex.Message}");
         }
     }
+
     private async Task SaveCategory(MenuCategoryDto category)
     {
         try
@@ -286,7 +281,7 @@ public partial class MenuTab : ComponentBase
         try
         {
             int? categoryId = targetCategoryId == "uncategorized" ? null : int.Parse(targetCategoryId);
-            
+
             var response = await Http.PatchAsJsonAsync($"api/MenuItem/item/{itemId}/move", categoryId);
 
             if (response.IsSuccessStatusCode)
@@ -300,7 +295,7 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error moving item: {ex.Message}");
         }
     }
-    
+
     private async Task UploadItemImage(InputFileChangeEventArgs e, int itemId)
     {
         try
@@ -329,7 +324,7 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error uploading image: {ex.Message}");
         }
     }
-    
+
     private async Task DeleteItemImage(int itemId)
     {
         try
@@ -349,15 +344,14 @@ public partial class MenuTab : ComponentBase
             Console.WriteLine($"Error deleting image: {ex.Message}");
         }
     }
-    
+
     private async Task HandleMoveItem((int ItemId, string? CategoryId) moveData)
     {
         await MoveItem(moveData.ItemId, moveData.CategoryId);
     }
-    
+
     private async Task AddTag()
     {
-
         var response = await Http.PostAsJsonAsync("api/MenuItemTag", newTag);
         if (response.IsSuccessStatusCode)
         {
@@ -375,5 +369,4 @@ public partial class MenuTab : ComponentBase
             await LoadTags();
         }
     }
-    
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -11,12 +10,10 @@ namespace RestaurantApp.Api.Controllers;
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-    private readonly IAuthorizationService _authorizationService;
     
-    public EmployeesController(IEmployeeService employeeService, IAuthorizationService authorizationService)
+    public EmployeesController(IEmployeeService employeeService)
     {
         _employeeService = employeeService;
-        _authorizationService = authorizationService;
     }
 
     [HttpGet]

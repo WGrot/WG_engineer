@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         var data = result.Value!;
 
         var user = await _userManager.FindByEmailAsync(request.Email);
-        var (refreshToken, refreshExpiresAt) = await _tokenService.GenerateRefreshTokenAsync(user!,  GetIpAddress());
+        var (refreshToken, refreshExpiresAt) = await _tokenService.GenerateRefreshTokenAsync(user!, GetIpAddress());
         if (!data.RequiresTwoFactor)
             SetRefreshTokenCookie(refreshToken, refreshExpiresAt);
 
@@ -78,7 +78,7 @@ public class AuthController : ControllerBase
         var refreshDays = _configuration.GetValue("JwtConfig:RefreshTokenDays", 14);
         SetRefreshTokenCookie(newRefresh!, DateTime.UtcNow.AddDays(refreshDays));
 
-        return Result.Success(new RefreshResponse { Token = newAccess }).ToActionResult();
+        return Result.Success(new RefreshResponse { Token = newAccess! }).ToActionResult();
     }
 
     [HttpPost("logout")]
@@ -131,7 +131,7 @@ public class AuthController : ControllerBase
         var result = await _authService.ResendEmailConfirmationAsync(request.Email);
         return result.ToActionResult();
     }
-    
+
     [Authorize(Roles = "Admin")]
     [HttpPost("make-admin/{userId}")]
     public async Task<IActionResult> MakeAdmin(string userId)
@@ -140,10 +140,12 @@ public class AuthController : ControllerBase
         {
             await _roleManager.CreateAsync(new IdentityRole("Admin"));
         }
-    
+
         var user = await _userManager.FindByIdAsync(userId);
-        await _userManager.AddToRoleAsync(user, "Admin");
-    
+        if (user != null)
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+        }
         return Ok();
     }
 

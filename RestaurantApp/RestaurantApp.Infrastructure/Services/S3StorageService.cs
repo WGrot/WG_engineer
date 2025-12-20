@@ -2,7 +2,6 @@
 using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Enums;

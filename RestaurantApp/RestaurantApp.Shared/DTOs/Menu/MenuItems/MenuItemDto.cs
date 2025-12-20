@@ -9,7 +9,7 @@ public class MenuItemDto
     public string Description { get; set; } = string.Empty;
     
     public int? CategoryId { get; set; }
-    public  PriceDto Price { get; set; }
+    public  PriceDto Price { get; set; } = new PriceDto();
     public string CurrencyCode { get; set; } = "PLN";
     public string? ImageUrl { get; set; }
     public string? ThumbnailUrl { get; set; }

@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using RestaurantApp.Application.Interfaces.Services;
+﻿using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;

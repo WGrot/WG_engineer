@@ -2,7 +2,7 @@
 using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Shared.Common;
 
-namespace RestaurantApp.Application.Services.Decorators.Validation;
+namespace RestaurantApp.Application.Services.Validators;
 
 public class MenuItemValidator : IMenuItemValidator
 {

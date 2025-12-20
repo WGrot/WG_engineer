@@ -1,5 +1,4 @@
 ﻿using RestaurantApp.Application.Helpers;
-using RestaurantApp.Application.Interfaces;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
@@ -113,7 +112,7 @@ public class EmployeeService : IEmployeeService
         }
         
         await _restaurantPermissionRepository.AddRangeAsync(createdEmployee.Permissions);
-        return Result<RestaurantEmployeeDto>.Success(createdEmployee!.ToDto());
+        return Result<RestaurantEmployeeDto>.Success(createdEmployee.ToDto());
     }
 
     public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto)

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs.Users;
 
 namespace RestaurantApp.Infrastructure.Persistence.Repositories;
 
@@ -45,12 +44,12 @@ public class UserRepository : IUserRepository
 
         if (!string.IsNullOrWhiteSpace(firstName))
         {
-            query = query.Where(u => u.FirstName.ToLower().Contains(firstName.ToLower()));
+            query = query.Where(u => u.FirstName!.ToLower().Contains(firstName.ToLower()));
         }
 
         if (!string.IsNullOrWhiteSpace(lastName))
         {
-            query = query.Where(u => u.LastName.ToLower().Contains(lastName.ToLower()));
+            query = query.Where(u => u.LastName!.ToLower().Contains(lastName.ToLower()));
         }
 
         if (!string.IsNullOrWhiteSpace(phoneNumber))

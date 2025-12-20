@@ -26,7 +26,7 @@ public class JwtService: IJwtService
         _userManager = userManager;
     }
 
-    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified = false)
+    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FaVerified = false)
     {
         var claims = new List<Claim>
         {
@@ -34,7 +34,7 @@ public class JwtService: IJwtService
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("2fa_verified", is2FAVerified.ToString().ToLower())
+            new Claim("2fa_verified", is2FaVerified.ToString().ToLower())
         };
         
         var roles = await _userManager.GetRolesAsync(user);

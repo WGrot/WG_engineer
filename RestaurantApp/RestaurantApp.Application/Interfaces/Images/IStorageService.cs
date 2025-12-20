@@ -1,9 +1,8 @@
-﻿using RestaurantApp.Application.Interfaces.Images;
-using RestaurantApp.Domain.Enums;
+﻿using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.Images;
 
-namespace RestaurantApp.Application.Common.Interfaces;
+namespace RestaurantApp.Application.Interfaces.Images;
 
 public interface IStorageService
 {

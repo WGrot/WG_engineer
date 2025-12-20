@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Menu.Variants;
@@ -11,12 +10,10 @@ namespace RestaurantApp.Api.Controllers;
 public class MenuItemVariantsController : ControllerBase
 {
     private readonly IMenuItemVariantService _menuItemVariantService;
-    private readonly IAuthorizationService _authorizationService;
 
-    public MenuItemVariantsController(IMenuItemVariantService menuItemVariantService, IAuthorizationService authorizationService)
+    public MenuItemVariantsController(IMenuItemVariantService menuItemVariantService)
     {
         _menuItemVariantService = menuItemVariantService;
-        _authorizationService = authorizationService;
     }
     
     [HttpGet]

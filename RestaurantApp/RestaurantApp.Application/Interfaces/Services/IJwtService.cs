@@ -5,6 +5,6 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IJwtService
 {
-    Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FAVerified = false);
+    Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FaVerified = false);
     ClaimsPrincipal? ValidateToken(string token);
 }

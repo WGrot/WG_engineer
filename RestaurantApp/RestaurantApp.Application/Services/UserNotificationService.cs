@@ -25,9 +25,9 @@ public class UserNotificationService : IUserNotificationService
         var notification = await _repository.GetByIdAsync(id);
 
         if (notification is null || notification.UserId != userId)
-            return null;
+            return Result.Failure<NotificationDto?>($"User {userId} not found");
         
-        return Result.Success( notification!.MapToDto())!;
+        return Result.Success( notification.MapToDto())!;
     }
 
     public async Task<Result<List<NotificationDto>>> GetByUserIdAsync(string userId)

@@ -136,7 +136,7 @@ public class UserService : IUserService
         {
             var errors = string.Join(Environment.NewLine,
                 result.Errors.Select(e => $"{e.Code}: {e.Description}"));
-            return Result.Failure($"Failed to delete user: {errors}", 400);
+            return Result.Failure($"Failed to delete user: {errors}");
         }
 
         return Result.Success();
@@ -144,7 +144,7 @@ public class UserService : IUserService
 
     public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
     {
-        var user = await _userManager.FindByIdAsync(_currentUserService.UserId);
+        var user = await _userManager.FindByIdAsync(_currentUserService.UserId!);
 
         return Result.Success(user!.MapToDetaisDto());
 
@@ -201,7 +201,7 @@ public class UserService : IUserService
 
     private async Task SendWelcomeEmailAsync(ApplicationUser user, string password)
     {
-        var emailBody = new EmployeeAccontCreated(user.FirstName, password);
+        var emailBody = new EmployeeAccontCreated(user.FirstName!, password);
         await _emailComposer.SendAsync(user.Email!, emailBody);
     }
 }

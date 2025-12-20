@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using RestaurantApp.Application.Helpers;
 using RestaurantApp.Application.Interfaces;
-using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Interfaces.Settings;
@@ -32,11 +31,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         IRestaurantEmployeeRepository employeeRepository,
         IOptions<InvitationSettings> settings,
         ICurrentUserService currentUserService,
-        IUserNotificationRepository userNotificationRepository,
         IUserRepository userRepository,
         IRestaurantPermissionRepository restaurantPermissionRepository,
         IUserNotificationService userNotificationService,
-        
         IUrlHelper urlHelper)
     {
         _invitationRepository = invitationRepository;
@@ -72,9 +69,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         
         var notification = await _userNotificationService.CreateAsync(new UserNotification()
         {
-            UserId = user!.Id,
+            UserId = user.Id,
             Title = "Restaurant Invitation",
-            Content = $"You have been invited to join '{restaurant.Name}' as a {dto.Role.ToString()}.",
+            Content = $"You have been invited to join '{restaurant!.Name}' as a {dto.Role.ToString()}.",
             ActionUrl = invitationLink,
             Type = NotificationType.Info,
             Category = NotificationCategory.EmployeeInvitation, 
@@ -82,7 +79,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             IsRead = false
         });
         
-        invitation.NotificationId = notification!.Id;
+        invitation.NotificationId = notification.Id;
         
         await _invitationRepository.AddAsync(invitation);
 
@@ -93,7 +90,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     {
         var invitation = await ValidateTokenAsync(token);
 
-        invitation.Status = InvitationStatus.Accepted;
+        invitation!.Status = InvitationStatus.Accepted;
         invitation.RespondedAt = DateTime.UtcNow;
 
         await _invitationRepository.UpdateAsync(invitation);
@@ -114,7 +111,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         
         await _userNotificationService.CreateAsync(new UserNotification()
         {
-            UserId = invitation!.SenderId,
+            UserId = invitation.SenderId,
             Title = "Restaurant Invitation",
             Content = $"User {invitation.User.UserName} accepted your invitation to work at restaurant {invitation.Restaurant.Name}.",
             Type = NotificationType.Success,
@@ -142,14 +139,14 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         var invitation = await ValidateTokenAsync(token);
 
 
-        invitation.Status = InvitationStatus.Rejected;
+        invitation!.Status = InvitationStatus.Rejected;
         invitation.RespondedAt = DateTime.UtcNow;
 
         await _invitationRepository.UpdateAsync(invitation);
         
         await _userNotificationService.CreateAsync(new UserNotification()
         {
-            UserId = invitation!.SenderId,
+            UserId = invitation.SenderId,
             Title = "Restaurant Invitation",
             Content = $"User {invitation.User.UserName} rejected your invitation to work at restaurant {invitation.Restaurant.Name}.",
             Type = NotificationType.Warning,

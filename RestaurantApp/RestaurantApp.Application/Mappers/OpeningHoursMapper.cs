@@ -1,5 +1,4 @@
 ﻿using RestaurantApp.Domain.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.OpeningHours;
 
 namespace RestaurantApp.Application.Mappers;
@@ -23,7 +22,7 @@ public static class OpeningHoursMapper
     {
         return new OpeningHours
         {
-            DayOfWeek = (DayOfWeek)dto.DayOfWeek,
+            DayOfWeek = dto.DayOfWeek,
             OpenTime = dto.OpenTime,
             CloseTime = dto.CloseTime,
             IsClosed = dto.IsClosed

@@ -2,11 +2,11 @@
 
 public class StorageConfiguration
 {
-    public string Endpoint { get; set; }
+    public required string Endpoint { get; set; }
     
     public string? PublicEndpoint { get; set; } 
-    public string AccessKey { get; set; }
-    public string SecretKey { get; set; }
+    public required string AccessKey { get; set; }
+    public required string SecretKey { get; set; }
     public bool UseSSL { get; set; }
-    public BucketNamesConfiguration BucketNames { get; set; }
+    public required BucketNamesConfiguration BucketNames { get; set; }
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestaurantApp.Infrastructure.Persistence.Configurations.Configuration;
 using System.Text.Json;
+using RestaurantApp.Application.Interfaces.Images;
 
 namespace RestaurantApp.Infrastructure.Services;
 

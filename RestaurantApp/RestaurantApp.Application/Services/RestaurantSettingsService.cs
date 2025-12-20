@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Domain.Models;
@@ -68,8 +67,8 @@ public class RestaurantSettingsService : IRestaurantSettingsService
 
         existingSettings!.UpdateFromDto(dto);
 
-        await _repository.UpdateAsync(existingSettings);
-        return Result<SettingsDto>.Success(existingSettings.ToDto());
+        await _repository.UpdateAsync(existingSettings!);
+        return Result<SettingsDto>.Success(existingSettings!.ToDto());
     }
 
     public async Task<Result> DeleteAsync(int id)

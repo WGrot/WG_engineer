@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Permissions;
@@ -12,13 +11,11 @@ namespace RestaurantApp.Api.Controllers;
 public class PermissionsController : ControllerBase
 {
     private readonly IRestaurantPermissionService _permissionService;
-    private readonly IEmployeeService _employeeService;
 
 
-    public PermissionsController(IRestaurantPermissionService permissionService, IEmployeeService employeeService)
+    public PermissionsController(IRestaurantPermissionService permissionService)
     {
         _permissionService = permissionService;
-        _employeeService = employeeService;
     }
 
     [HttpGet]

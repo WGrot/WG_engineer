@@ -1,6 +1,8 @@
 ﻿using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 
+namespace RestaurantApp.Application.Interfaces.Repositories;
+
 public interface IReservationRepository
 {
 

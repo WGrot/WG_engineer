@@ -10,7 +10,6 @@ using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.GeoCoding;
 using RestaurantApp.Shared.DTOs.Restaurant;
-using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Application.Services;
@@ -18,7 +17,6 @@ namespace RestaurantApp.Application.Services;
 public class RestaurantService : IRestaurantService
 {
     private readonly IRestaurantRepository _restaurantRepository;
-    private readonly ITableRepository _tableRepository;
     private readonly IRestaurantEmployeeRepository _employeeRepository;
     private readonly IUserRepository _userRepository;
     private readonly IGeocodingService _geocodingService;
@@ -29,7 +27,6 @@ public class RestaurantService : IRestaurantService
 
     public RestaurantService(
         IRestaurantRepository restaurantRepository,
-        ITableRepository tableRepository,
         IRestaurantEmployeeRepository employeeRepository,
         IUserRepository userRepository,
         IGeocodingService geocodingService,
@@ -39,7 +36,6 @@ public class RestaurantService : IRestaurantService
         IRestaurantSettingsRepository restaurantSettingsRepository)
     {
         _restaurantRepository = restaurantRepository;
-        _tableRepository = tableRepository;
         _employeeRepository = employeeRepository;
         _userRepository = userRepository;
         _geocodingService = geocodingService;
@@ -261,8 +257,8 @@ public class RestaurantService : IRestaurantService
         var user = await _userRepository.GetByIdAsync(_currentUserService.UserId!);
         if (user != null)
         {
-            var emailBody = new RestaurantCreatedEmail(user.FirstName, dto);
-            await _emailComposer.SendAsync(user.Email, emailBody);
+            var emailBody = new RestaurantCreatedEmail(user.FirstName!, dto);
+            await _emailComposer.SendAsync(user.Email!, emailBody);
         }
     }
 }

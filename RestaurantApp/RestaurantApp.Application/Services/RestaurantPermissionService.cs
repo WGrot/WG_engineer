@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Mappers.EnumMappers;
@@ -12,14 +11,12 @@ namespace RestaurantApp.Application.Services;
 public class RestaurantPermissionService : IRestaurantPermissionService
 {
     private readonly IRestaurantPermissionRepository _repository;
-    private readonly ILogger<RestaurantPermissionService> _logger;
 
     public RestaurantPermissionService(
-        IRestaurantPermissionRepository repository,
-        ILogger<RestaurantPermissionService> logger)
+        IRestaurantPermissionRepository repository)
     {
         _repository = repository;
-        _logger = logger;
+
     }
 
     public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetAllAsync()

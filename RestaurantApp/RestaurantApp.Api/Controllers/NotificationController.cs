@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
-using RestaurantApp.Shared.Common;
-using RestaurantApp.Shared.DTOs.Users;
+
 
 namespace RestaurantApp.Api.Controllers;
 

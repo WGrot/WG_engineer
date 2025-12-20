@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using RestaurantApp.Application.Common.Interfaces;
 using RestaurantApp.Application.Interfaces.Images;
 using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;

@@ -2,7 +2,7 @@
 
 public class BucketNamesConfiguration
 {
-    public string Images { get; set; }
-    public string Documents { get; set; }
-    public string TempFiles { get; set; }
+    public required string Images { get; set; }
+    public required string Documents { get; set; }
+    public required string TempFiles { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using RestaurantApp.Shared.Common;
+﻿using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Images;
 
 namespace RestaurantApp.Application.Interfaces.Services;

@@ -13,12 +13,9 @@ public class MenuCategoryController: ControllerBase
 {
     
     private readonly IMenuCategoryService _menuCategoryService;
-    private readonly IAuthorizationService _authorizationService;
-
-    public MenuCategoryController(IMenuCategoryService menuCategoryService, IAuthorizationService authorizationService)
+    public MenuCategoryController(IMenuCategoryService menuCategoryService)
     {
         _menuCategoryService = menuCategoryService;
-        _authorizationService = authorizationService;
     }
     
     [HttpGet]

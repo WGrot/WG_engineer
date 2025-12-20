@@ -4,11 +4,11 @@ namespace RestaurantApp.Application.Interfaces.Images;
 
 public class ImageSettings
 {
-    public ImageSizeConfig UserProfile { get; set; }
-    public ImageSizeConfig RestaurantProfile { get; set; }
-    public ImageSizeConfig RestaurantBackground { get; set; }
-    public ImageSizeConfig MenuItem { get; set; }
-    public ImageSizeConfig RestaurantPhotos { get; set; }
+    public required ImageSizeConfig UserProfile { get; set; }
+    public required ImageSizeConfig RestaurantProfile { get; set; }
+    public required ImageSizeConfig RestaurantBackground { get; set; }
+    public required ImageSizeConfig MenuItem { get; set; }
+    public required ImageSizeConfig RestaurantPhotos { get; set; }
 
     public ImageSizeConfig GetConfig(ImageType imageType)
     {

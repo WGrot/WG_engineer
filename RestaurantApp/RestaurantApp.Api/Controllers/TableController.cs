@@ -12,12 +12,12 @@ namespace RestaurantApp.Api.Controllers
     {
         private readonly ITableService _tableService;
         private readonly ITableAvailabilityService _tableAvailabilityService;
-        private readonly IAuthorizationService _authorizationService;
 
-        public TableController(ITableService tableService, IAuthorizationService authorizationService, ITableAvailabilityService tableAvailabilityService)
+
+        public TableController(ITableService tableService, ITableAvailabilityService tableAvailabilityService)
         {
             _tableService = tableService;
-            _authorizationService = authorizationService;
+
             _tableAvailabilityService = tableAvailabilityService;
         }
 

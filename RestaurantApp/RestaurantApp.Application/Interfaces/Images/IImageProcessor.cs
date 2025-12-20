@@ -1,6 +1,4 @@
-﻿using RestaurantApp.Application.Interfaces.Images;
-
-namespace RestaurantApp.Application.Common.Interfaces;
+﻿namespace RestaurantApp.Application.Interfaces.Images;
 public interface IImageProcessor
 {
     Task<ImageProcessingResult> ProcessImageAsync(
