@@ -7,14 +7,29 @@ public class NotificationHub : Hub
     public override async Task OnConnectedAsync()
     {
         var userId = Context.UserIdentifier;
-        Console.WriteLine($"[Hub] User connected. UserIdentifier: {userId ?? "NULL"}");
-        Console.WriteLine($"[Hub] ConnectionId: {Context.ConnectionId}");
+        var restaurantClaims = Context.User?.FindAll("restaurant_employee");
         
+        Console.WriteLine($"[Hub] User connected. UserId: {userId}");
+
         if (!string.IsNullOrEmpty(userId))
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
-            Console.WriteLine($"[Hub] Added to group: {userId}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
+            Console.WriteLine($"[Hub] Added to group: user_{userId}");
         }
+
+        if (restaurantClaims != null)
+        {
+            foreach (var claim in restaurantClaims)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"restaurant_{claim.Value}");
+                Console.WriteLine($"[Hub] Added to group: restaurant_{claim.Value}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("[Hub] WARNING: No restaurant_employee claims found!");
+        }
+
         await base.OnConnectedAsync();
     }
 

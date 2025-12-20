@@ -18,6 +18,7 @@ builder.Services.AddSingleton<MemoryTokenStore>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<JwtTokenParser>();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<TableAvailabilityService>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
     sp.GetRequiredService<JwtAuthenticationStateProvider>());
 

@@ -19,4 +19,12 @@ public class SignalrNotificationSender: INotificationSender
         await _hubContext.Clients.Group(userId).SendAsync("NewNotification", notificationId);
         Console.WriteLine($"[Sender] Sent!");
     }
+
+    public async Task SendTableAvailabilityChangedAsync(int restaurantId, int tableId)
+    {
+        Console.WriteLine($"[Sender] Sending table change to restaurant_{restaurantId}, tableId: {tableId}");
+        await _hubContext.Clients
+            .Group($"restaurant_{restaurantId}")
+            .SendAsync("TableAvailabilityChanged", tableId);
+    }
 }

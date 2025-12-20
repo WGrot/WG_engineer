@@ -35,7 +35,7 @@
         </div>
         <div class="color-bar-flex">
 
-            @foreach (var segment in GetSegments())
+            @foreach (var segment in Segments)
             {
                 <div class="@(segment.value == '0' ? "segment-zero" : "segment-one")"
                      style="flex-grow: @segment.count"></div>

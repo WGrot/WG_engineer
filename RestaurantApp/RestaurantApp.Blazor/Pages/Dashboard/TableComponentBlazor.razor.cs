@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.Models;
 
@@ -9,12 +8,13 @@ namespace RestaurantApp.Blazor.Pages.Dashboard;
 public partial class TableComponentBlazor : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
-    [Parameter]
-    public TableDto Table { get; set; }
     
-    private string? TrimmedAvailability = new string('2', 96);
-    private string TableAvailibilitymap = new string('2', 96);
+    [Parameter] public TableDto Table { get; set; }
+    [Parameter] public Action<int, TableComponentBlazor>? RegisterComponent { get; set; }
     [Parameter] public EventCallback<(TableDto table, bool isAvailable)> OnAvailabilityChanged { get; set; }
+
+    private string TableAvailabilityMap = new string('2', 96);
+    private List<(char value, int count)> Segments = new();
 
     private bool _isAvailable;
     [Parameter]
@@ -31,16 +31,19 @@ public partial class TableComponentBlazor : ComponentBase
         }
     }
     
-    private string HeaderClass => isAvailable ? "bg-light" :  "bg-purple";
+    private string HeaderClass => isAvailable ? "bg-light" : "bg-purple";
 
     protected override async Task OnInitializedAsync()
     {
+        RegisterComponent?.Invoke(Table.Id, this);
         await LoadTableAvailability();
-
-        TrimmedAvailability = TrimEdges(TableAvailibilitymap);
-        
     }
-    
+
+    public async Task RefreshAsync()
+    {
+        await LoadTableAvailability();
+        await InvokeAsync(StateHasChanged);
+    }
 
     private async Task LoadTableAvailability()
     {
@@ -48,67 +51,71 @@ public partial class TableComponentBlazor : ComponentBase
         var response = await Http.GetFromJsonAsync<TableAvailability>(url);
         if (response != null)
         {
-            TableAvailibilitymap = response.availabilityMap;
+            TableAvailabilityMap = response.availabilityMap;
             UpdateAvailabilityStatus();
+            UpdateSegments();
         }
     }
     
     private void UpdateAvailabilityStatus()
     {
         var now = DateTime.Now;
-        
         int quarterIndex = (now.Hour * 60 + now.Minute) / 15;
 
-        if (quarterIndex >= 0 && quarterIndex < TableAvailibilitymap.Length)
+        if (quarterIndex >= 0 && quarterIndex < TableAvailabilityMap.Length)
         {
-            isAvailable = TableAvailibilitymap[quarterIndex] == '1';
+            isAvailable = TableAvailabilityMap[quarterIndex] == '1';
         }
         else
         {
             isAvailable = false;
         }
     }
-    
-    
-    
-    private string? TrimEdges(string? input)
+
+    private void UpdateSegments()
+    {
+        var trimmed = TrimEdges(TableAvailabilityMap);
+        Segments = ComputeSegments(trimmed);
+    }
+
+    private string TrimEdges(string input)
     {
         if (string.IsNullOrEmpty(input))
             return input;
-        int leading2s = 0;
-        leading2s = input.TakeWhile(c => c == '2').Count();
 
-        if(leading2s > 95) // all '2's
+        int leading2s = input.TakeWhile(c => c == '2').Count();
+
+        if (leading2s > 95)
             return input;
 
         return input.Trim('2');
     }
     
-    private List<(char value, int count)> GetSegments()
+    private List<(char value, int count)> ComputeSegments(string? availability)
     {
         var segments = new List<(char value, int count)>();
-        if (!string.IsNullOrEmpty(TrimmedAvailability))
+        
+        if (string.IsNullOrEmpty(availability))
+            return segments;
+
+        char currentBit = availability[0];
+        int count = 1;
+        
+        for (int i = 1; i < availability.Length; i++)
         {
-            char currentBit = TrimmedAvailability[0];
-            int count = 1;
-            
-            for (int i = 1; i < TrimmedAvailability.Length; i++)
+            if (availability[i] == currentBit)
             {
-                if (TrimmedAvailability[i] == currentBit)
-                {
-                    count++;
-                }
-                else
-                {
-                    segments.Add((currentBit, count));
-                    currentBit = TrimmedAvailability[i];
-                    count = 1;
-                }
+                count++;
             }
-            segments.Add((currentBit, count));
+            else
+            {
+                segments.Add((currentBit, count));
+                currentBit = availability[i];
+                count = 1;
+            }
         }
+        segments.Add((currentBit, count));
+        
         return segments;
     }
-    
-    
 }
