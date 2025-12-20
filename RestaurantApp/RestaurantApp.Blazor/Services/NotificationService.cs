@@ -26,7 +26,7 @@ public class NotificationService : IAsyncDisposable
     {
         _http = http;
         _authService = authService;
-        _hubUrl = configuration["ApiBaseUrl"] + "/hubs/notifications"; // dostosuj do swojej konfiguracji
+        _hubUrl = configuration["ApiBaseUrl"] + "/hubs/notifications";
         _tokenStore = tokenStore;
         
         _authService.OnLogin += HandleLoginAsync;

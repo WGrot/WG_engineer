@@ -4,11 +4,11 @@ using RestaurantApp.Application.Services;
 
 namespace RestaurantApp.Api.Hubs;
 
-public class SignalrNotificationSender: INotificationSender
+public class SignalrRealtimeSender: IRealtimeSender
 {
-    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly IHubContext<RealtimeHub> _hubContext;
 
-    public SignalrNotificationSender(IHubContext<NotificationHub> hubContext)
+    public SignalrRealtimeSender(IHubContext<RealtimeHub> hubContext)
     {
         _hubContext = hubContext;
     }

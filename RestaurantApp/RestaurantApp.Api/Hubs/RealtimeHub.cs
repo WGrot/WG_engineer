@@ -2,7 +2,7 @@
 
 namespace RestaurantApp.Api.Hubs;
 
-public class NotificationHub : Hub
+public class RealtimeHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -24,10 +24,6 @@ public class NotificationHub : Hub
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"restaurant_{claim.Value}");
                 Console.WriteLine($"[Hub] Added to group: restaurant_{claim.Value}");
             }
-        }
-        else
-        {
-            Console.WriteLine("[Hub] WARNING: No restaurant_employee claims found!");
         }
 
         await base.OnConnectedAsync();

@@ -11,9 +11,9 @@ namespace RestaurantApp.Application.Services;
 public class UserNotificationService : IUserNotificationService
 {
     private readonly IUserNotificationRepository _repository;
-    private readonly INotificationSender _sender;
+    private readonly IRealtimeSender _sender;
     public UserNotificationService(IUserNotificationRepository repository,
-        INotificationSender sender)
+        IRealtimeSender sender)
     {
         _repository = repository;
         _sender = sender;

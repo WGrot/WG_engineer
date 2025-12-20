@@ -135,13 +135,17 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddSignalR();
-builder.Services.AddScoped<INotificationSender, SignalrNotificationSender>();
+builder.Services.AddScoped<IRealtimeSender, SignalrRealtimeSender>();
+
+var allowedOrigins = builder.Configuration
+    .GetSection("AppURL:AllowedOrigins")
+    .Get<string[]>() ?? new[] { "http://localhost:5198" };
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("BlazorPolicy", builder =>
+    options.AddPolicy("BlazorPolicy", policy =>
     {
-        builder.WithOrigins("http://localhost:5198", "https://localhost:7174")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -155,7 +159,7 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
-app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<RealtimeHub>("/hubs/notifications");
 
 using (var scope = app.Services.CreateScope())
 {

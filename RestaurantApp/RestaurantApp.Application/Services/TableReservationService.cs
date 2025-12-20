@@ -19,7 +19,7 @@ public class TableReservationService : ITableReservationService
     private readonly IEmailComposer _emailComposer;
     private readonly ICurrentUserService _currentUserService;
     private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
-    private readonly INotificationSender _notificationSender;
+    private readonly IRealtimeSender _realtimeSender;
 
     public TableReservationService(
         IReservationRepository reservationRepository,
@@ -28,7 +28,7 @@ public class TableReservationService : ITableReservationService
         IEmailComposer emailComposer,
         ICurrentUserService currentUserService,
         IRestaurantSettingsRepository restaurantSettingsRepository,
-        INotificationSender notificationSender)
+        IRealtimeSender realtimeSender)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
@@ -36,7 +36,7 @@ public class TableReservationService : ITableReservationService
         _emailComposer = emailComposer;
         _currentUserService = currentUserService;
         _restaurantSettingsRepository = restaurantSettingsRepository;
-        _notificationSender = notificationSender;
+        _realtimeSender = realtimeSender;
     }
 
     public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
@@ -76,7 +76,7 @@ public class TableReservationService : ITableReservationService
         await SendReservationNotificationAsync(created, needsConfirmation);
         if (dto.ReservationDate == DateTime.Today)
         {
-            await _notificationSender.SendTableAvailabilityChangedAsync(dto.RestaurantId, dto.TableId); 
+            await _realtimeSender.SendTableAvailabilityChangedAsync(dto.RestaurantId, dto.TableId); 
         }
 
 
@@ -92,7 +92,7 @@ public class TableReservationService : ITableReservationService
         await _reservationRepository.UpdateTableReservationAsync(existing!);
         if (dto.ReservationDate == DateTime.Today)
         {
-            await _notificationSender.SendTableAvailabilityChangedAsync(dto.RestaurantId, dto.TableId); 
+            await _realtimeSender.SendTableAvailabilityChangedAsync(dto.RestaurantId, dto.TableId); 
         }
         return Result.Success();
     }
@@ -103,7 +103,7 @@ public class TableReservationService : ITableReservationService
 
         if (existing!.ReservationDate == DateTime.Today)
         {
-            await _notificationSender.SendTableAvailabilityChangedAsync(existing.RestaurantId, existing.TableId); 
+            await _realtimeSender.SendTableAvailabilityChangedAsync(existing.RestaurantId, existing.TableId); 
         }
         
         await _reservationRepository.DeleteAsync(existing!);
