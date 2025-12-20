@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Domain.Models;
@@ -10,10 +11,12 @@ namespace RestaurantApp.Application.Services;
 public class UserNotificationService : IUserNotificationService
 {
     private readonly IUserNotificationRepository _repository;
-
-    public UserNotificationService(IUserNotificationRepository repository)
+    private readonly INotificationSender _sender;
+    public UserNotificationService(IUserNotificationRepository repository,
+        INotificationSender sender)
     {
         _repository = repository;
+        _sender = sender;
     }
     
 
@@ -45,10 +48,11 @@ public class UserNotificationService : IUserNotificationService
         return Result.Success(result);
     }
     
-    public async Task<Result<NotificationDto>> CreateAsync(UserNotification notification)
+    public async Task<UserNotification> CreateAsync(UserNotification notification)
     {
         await _repository.AddAsync(notification);
-        return Result.Success( notification!.MapToDto());
+        await _sender.SendAsync(notification.UserId, notification.Id);
+        return notification;
     }
 
     public async Task<Result> MarkAsReadAsync(int id, string userId)

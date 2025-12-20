@@ -11,7 +11,7 @@ public interface IUserNotificationService
     Task<Result<List<NotificationDto>>> GetUnreadByUserIdAsync(string userId);
     Task<Result<int>> GetUnreadCountAsync(string userId);
     
-    Task<Result<NotificationDto>> CreateAsync(UserNotification notification);
+    Task<UserNotification> CreateAsync(UserNotification notification);
     
     Task<Result> MarkAsReadAsync(int id, string userId);
     Task<Result> MarkAllAsReadAsync(string userId);

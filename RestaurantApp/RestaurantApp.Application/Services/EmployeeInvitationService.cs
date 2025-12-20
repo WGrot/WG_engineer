@@ -21,7 +21,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     private readonly IRestaurantEmployeeRepository _employeeRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly InvitationSettings _settings;
-    private readonly IUserNotificationRepository _userNotificationRepository;
+    private readonly IUserNotificationService _userNotificationService;
     private readonly IUrlHelper _urlHelper;
     private readonly IUserRepository _userRepository;
     private readonly IRestaurantPermissionRepository _restaurantPermissionRepository;
@@ -35,6 +35,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         IUserNotificationRepository userNotificationRepository,
         IUserRepository userRepository,
         IRestaurantPermissionRepository restaurantPermissionRepository,
+        IUserNotificationService userNotificationService,
+        
         IUrlHelper urlHelper)
     {
         _invitationRepository = invitationRepository;
@@ -42,9 +44,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _employeeRepository = employeeRepository;
         _currentUserService = currentUserService;
         _settings = settings.Value;
-        _userNotificationRepository = userNotificationRepository;
         _userRepository = userRepository;
         _restaurantPermissionRepository = restaurantPermissionRepository;
+        _userNotificationService = userNotificationService;
         _urlHelper = urlHelper;
     }
 
@@ -68,7 +70,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
 
         var invitationLink = _urlHelper.GenerateInvitationLink(invitation.Token);
         
-        var notification = await _userNotificationRepository.AddAsync(new UserNotification()
+        var notification = await _userNotificationService.CreateAsync(new UserNotification()
         {
             UserId = user!.Id,
             Title = "Restaurant Invitation",
@@ -108,9 +110,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         };
 
         await _employeeRepository.AddAsync(employee);
-        await _userNotificationRepository.DeleteAsync(invitation.NotificationId, invitation.UserId);
+        await _userNotificationService.DeleteAsync(invitation.NotificationId, invitation.UserId);
         
-        await _userNotificationRepository.AddAsync(new UserNotification()
+        await _userNotificationService.CreateAsync(new UserNotification()
         {
             UserId = invitation!.SenderId,
             Title = "Restaurant Invitation",
@@ -145,7 +147,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
 
         await _invitationRepository.UpdateAsync(invitation);
         
-        await _userNotificationRepository.AddAsync(new UserNotification()
+        await _userNotificationService.CreateAsync(new UserNotification()
         {
             UserId = invitation!.SenderId,
             Title = "Restaurant Invitation",
@@ -156,7 +158,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             IsRead = false
         });
         
-        await _userNotificationRepository.DeleteAsync(invitation.NotificationId, invitation.UserId);
+        await _userNotificationService.DeleteAsync(invitation.NotificationId, invitation.UserId);
         
         return Result.Success( invitation.ToDto());
     }

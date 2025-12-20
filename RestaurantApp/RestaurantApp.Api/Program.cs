@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantApp.Api.Helpers;
+using RestaurantApp.Api.Hubs;
 using RestaurantApp.Api.Middleware;
 using RestaurantApp.Application;
 using RestaurantApp.Application.Interfaces;
@@ -117,9 +118,24 @@ builder.Services.AddAuthentication(options =>
         {
             Console.WriteLine($"Token validated for user: {context.Principal?.Identity?.Name}");
             return Task.CompletedTask;
+        },
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
         }
     };
 });
+
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationSender, SignalrNotificationSender>();
 
 builder.Services.AddCors(options =>
 {
@@ -139,7 +155,7 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
-
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 using (var scope = app.Services.CreateScope())
 {
