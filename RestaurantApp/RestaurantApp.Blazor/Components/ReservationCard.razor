@@ -46,13 +46,14 @@
                     </div>
                     <div>
                         <i class="bi bi-people me-1 text-primary"></i>@Reservation.NumberOfGuests guests
-                        @if (Reservation is TableReservationDto tableRes)
-                        {
-                            <span class="ms-2">
-                                <i class="bi bi-hash text-primary"></i> Table @tableRes.Table.Capacity
-                            </span>
-                        }
+
                     </div>
+                    @if (Reservation is TableReservationDto tableRes)
+                    {
+                        <div>
+                            <i class="bi bi-123 me-1 text-primary"></i>Table number @tableRes.Table.TableNumber
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -60,7 +61,7 @@
 </div>
 
 @code {
-    [Parameter] public ReservationDto Reservation { get; set; } = default!;
-    [Parameter] public EventCallback<ReservationDto> OnClick { get; set; }
+    [Parameter] public TableReservationDto Reservation { get; set; } = default!;
+    [Parameter] public EventCallback<TableReservationDto> OnClick { get; set; }
     [Parameter] public EventCallback<(int ReservationId, int RestaurantId)> OnApprove { get; set; }
 }

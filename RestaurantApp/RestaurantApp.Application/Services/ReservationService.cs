@@ -158,7 +158,7 @@ public class ReservationService : IReservationService
     }
 
     private static PaginatedReservationsDto CreatePaginatedResult(
-        IEnumerable<ReservationBase> items,
+        IEnumerable<TableReservation> items,
         int totalCount,
         int page,
         int pageSize)
@@ -178,7 +178,7 @@ public class ReservationService : IReservationService
     {
         return new PaginatedReservationsDto
         {
-            Reservations = new List<ReservationDto>(),
+            Reservations = new List<TableReservationDto>(),
             Page = searchParams.Page,
             PageSize = searchParams.PageSize,
             TotalCount = 0,

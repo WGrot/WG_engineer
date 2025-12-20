@@ -17,7 +17,7 @@ partial class ManageReservationsPage
     [Inject] private HttpClient Http { get; set; } = null!;
     [Inject] private MessageService MessageService { get; set; } = null!;
 
-    private List<ReservationDto>? reservations;
+    private List<TableReservationDto>? reservations;
     private bool isLoading = true;
 
 
@@ -30,7 +30,7 @@ partial class ManageReservationsPage
     
     private bool showReservationModal = false;
     private bool showDeleteConfirmation = false;
-    private ReservationDto? selectedReservation;
+    private TableReservationDto? selectedReservation;
     private ReservationStatusEnumDto? selectedStatus;
     private bool isProcessing = false;
     private string? modalError;
@@ -87,7 +87,7 @@ partial class ManageReservationsPage
     private async Task LoadInitialReservations()
     {
         isInitialLoading = true;
-        reservations = new List<ReservationDto>();
+        reservations = new List<TableReservationDto>();
 
         try
         {
@@ -97,7 +97,7 @@ partial class ManageReservationsPage
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
             MessageService.AddError("Error", "Failed to load reservations");
-            reservations = new List<ReservationDto>();
+            reservations = new List<TableReservationDto>();
         }
         finally
         {
@@ -130,7 +130,7 @@ partial class ManageReservationsPage
         catch (Exception ex)
         {
             MessageService.AddError("Error", "Failed to load reservations");
-            reservations = new List<ReservationDto>();
+            reservations = new List<TableReservationDto>();
         }
         finally
         {
@@ -171,7 +171,7 @@ partial class ManageReservationsPage
         searchParameters = new ReservationSearchParameters();
     }
     
-    private void OpenReservationModal(ReservationDto reservation)
+    private void OpenReservationModal(TableReservationDto reservation)
     {
         selectedReservation = reservation;
         selectedStatus = reservation.Status;

@@ -25,8 +25,7 @@ public interface IReservationRepository
         TimeOnly endTime,
         int? excludeReservationId = null);
     
-    Task<(IEnumerable<ReservationBase> Items, int TotalCount)> SearchAsync(
-        ReservationSearchParameters searchParams,
+    Task<(IEnumerable<TableReservation> Items, int TotalCount)> SearchAsync(ReservationSearchParameters searchParams,
         int page,
         int pageSize);
     

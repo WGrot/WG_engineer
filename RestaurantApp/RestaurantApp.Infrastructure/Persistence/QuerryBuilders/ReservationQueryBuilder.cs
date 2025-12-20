@@ -8,7 +8,7 @@ namespace RestaurantApp.Infrastructure.Persistence.QuerryBuilders;
 
 public static class ReservationQueryBuilder
 {
-    public static IQueryable<ReservationBase>? BuildQuery(
+    public static IQueryable<TableReservation>? BuildQuery(
         ApplicationDbContext context,
         ReservationSearchParameters searchParams,
         out string? errorMessage)
@@ -21,7 +21,7 @@ public static class ReservationQueryBuilder
         }
         NormalizeDates(searchParams);
         
-        var query = context.Reservations
+        var query = context.TableReservations
             .Include(r => r.Restaurant)
             .AsQueryable();
         
@@ -68,8 +68,8 @@ public static class ReservationQueryBuilder
         }
     }
 
-    private static IQueryable<ReservationBase> ApplyFilters(
-        IQueryable<ReservationBase> query,
+    private static IQueryable<TableReservation> ApplyFilters(
+        IQueryable<TableReservation> query,
         ReservationSearchParameters searchParams)
     {
 
@@ -142,8 +142,8 @@ public static class ReservationQueryBuilder
         return query;
     }
 
-    private static IQueryable<ReservationBase> ApplySorting(
-        IQueryable<ReservationBase> query,
+    private static IQueryable<TableReservation> ApplySorting(
+        IQueryable<TableReservation> query,
         ReservationSearchParameters searchParams)
     {
         var now = DateTime.UtcNow;

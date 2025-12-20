@@ -100,4 +100,10 @@ public static class ReservationMapper
             Table = reservation.Table?.ToDto() 
         };
     }
+    
+    public static List<TableReservationDto> ToDtoList(this IEnumerable<TableReservation> entities)
+    {
+        return entities.Select(e => e.ToTableReservationDto()).ToList();
+    }
+
 }

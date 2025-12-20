@@ -12,7 +12,7 @@ public partial class ReservationDetailsModal : ComponentBase
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
 
-    [Parameter] public ReservationDto? Reservation { get; set; }
+    [Parameter] public TableReservationDto? Reservation { get; set; }
 
     private ReservationStatusEnumDto? SelectedStatus;
     private bool IsProcessing;

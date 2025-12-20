@@ -120,7 +120,7 @@ public class ReservationRepository : IReservationRepository
 
 
 
-    public async Task<(IEnumerable<ReservationBase> Items, int TotalCount)> SearchAsync(
+    public async Task<(IEnumerable<TableReservation> Items, int TotalCount)> SearchAsync(
         ReservationSearchParameters searchParams,
         int page,
         int pageSize)
@@ -129,12 +129,14 @@ public class ReservationRepository : IReservationRepository
 
         if (query == null)
         {
-            return (Enumerable.Empty<ReservationBase>(), 0);
+            return (Enumerable.Empty<TableReservation>(), 0);
         }
 
-        var totalCount = await query.CountAsync();
+        var queryWithIncludes = query.Include(r => r.Table);
 
-        var items = await query
+        var totalCount = await queryWithIncludes.CountAsync();
+
+        var items = await queryWithIncludes
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -151,7 +153,9 @@ public class ReservationRepository : IReservationRepository
             return Enumerable.Empty<ReservationBase>();
         }
 
-        return await query.ToListAsync();
+        return await query
+            .Include(r => r.Table)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<int>> GetManagedRestaurantIdsAsync(string userId)

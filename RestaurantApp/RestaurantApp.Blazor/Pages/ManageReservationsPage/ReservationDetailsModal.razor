@@ -2,6 +2,7 @@
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Helpers
+@using RestaurantApp.Shared.DTOs.Reservation
 
 <GenericModal @bind-IsVisible="IsVisible"
               Title="Manage Reservation"
@@ -26,12 +27,17 @@
                             <p>
                                 <strong>Time:</strong> @Reservation.StartTime.ToString("HH:mm") - @Reservation.EndTime.ToString("HH:mm")
                             </p>
+                            @if (Reservation is TableReservationDto tableRes)
+                            {
+                                <p><strong>Table number:</strong> @Reservation.Table.TableNumber</p>
+                            }
+                            
                             <p><strong>Guests:</strong> @Reservation.NumberOfGuests</p>
                         </div>
                     </div>
                     <div class="mt-3">
                         <p class="mb-0">
-                            <strong>Current StatusEnumDto:</strong>
+                            <strong>Current Status:</strong>
                             <span class="badge @Reservation.Status.GetStatusBadgeClass() ms-2">
                                 @Reservation.Status
                             </span>
@@ -65,7 +71,7 @@
     </ChildContent>
 
     <FooterContent>
-        <button class="btn btn-primary me-2"
+        <button class="button button--primary me-2"
                 @onclick="OnUpdateClicked"
                 disabled="@IsProcessing">
             @if (IsProcessing)
@@ -75,7 +81,7 @@
             Update Status
         </button>
 
-        <button class="btn btn-danger me-2"
+        <button class="button button--red me-2"
                 @onclick="ShowDeleteConfirmation"
                 disabled="@IsProcessing">
             <i class="bi bi-trash"></i> Delete
