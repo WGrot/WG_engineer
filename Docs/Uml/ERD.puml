@@ -5,9 +5,9 @@ entity ApplicationUser {
     * Email : string
     * PasswordHash : string
     * TwoFactorEnabled : bool
+    * FirstName : string
+    * LastName : string
     CreatedAt : datetime
-    FirstName : string
-    LastName : string
     <<inne pola IdentityUser>>
 
 }
@@ -16,17 +16,38 @@ entity ApplicationUser {
 entity RestaurantEmployee {
     * Id : int <<PK>>
     --
-    * UserId : int <<FK>>
+    * UserId : string <<FK>>
     * RestaurantId : int <<FK>>
     * Role : RestaurantRole
     * CreatedAt : datetime
     * bool IsActive : bool
 }
 
-entity ResataurantPermission {
+entity EmployeeInvitation {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    * UserId : string <<FK>>
+    * NotificationId : int <<FK>>
+    * Role : RestaurantRole
+    * Status : InvitationStatus
+    * CreatedAt : datetime
+    * ExpiresAt : datetime
+}
+
+entity RestaurantPermission {
     * Id : int <<PK>>
     --
     * EmployeeId : int <<FK>>
+    * Email : string
+    * PasswordHash : string
+    CreatedAt : datetime
+}
+
+entity UserNotification {
+    * Id : int <<PK>>
+    --
+    * UserId : string <<FK>>
     * Email : string
     * PasswordHash : string
     CreatedAt : datetime
@@ -78,10 +99,14 @@ entity ImageLink {
 
 
 ApplicationUser ||--o{ RestaurantEmployee
-RestaurantEmployee ||--o{ ResataurantPermission
+RestaurantEmployee ||-up-o{ RestaurantPermission
 RestaurantEmployee }|-right-|| Restaurant
 Restaurant ||--|| RestaurantSettings
 Restaurant ||-right-{ OpeningHours
 ImageLink }o--o| Restaurant
+Restaurant ||--{ EmployeeInvitation
+EmployeeInvitation }o--|| ApplicationUser
+ApplicationUser ||-right-o{ UserNotification
+EmployeeInvitation ||--|| UserNotification
 
 @enduml
