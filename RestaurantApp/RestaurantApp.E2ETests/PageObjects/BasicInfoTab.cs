@@ -1,12 +1,19 @@
-﻿using Microsoft.Playwright;
+﻿// PageObjects/BasicInfoTab.cs
+using Microsoft.Playwright;
 
 namespace RestaurantApp.E2ETests.PageObjects;
 
 public class BasicInfoTab
 {
     private readonly IPage _page;
+    
+    public OpeningHoursSection OpeningHours { get; }
 
-    public BasicInfoTab(IPage page) => _page = page;
+    public BasicInfoTab(IPage page)
+    {
+        _page = page;
+        OpeningHours = new OpeningHoursSection(page);
+    }
 
     // Locators
     private ILocator NameInput => _page.Locator("#name");
@@ -23,11 +30,11 @@ public class BasicInfoTab
     {
         await NameInput.ClearAsync();
         await NameInput.FillAsync(data.Name);
-        await NameInput.PressAsync("Tab"); // Trigger blur -> onchange
+        await NameInput.PressAsync("Tab");
 
         await DescriptionInput.ClearAsync();
         await DescriptionInput.FillAsync(data.Description);
-        await DescriptionInput.PressAsync("Tab"); // Trigger blur -> onchange
+        await DescriptionInput.PressAsync("Tab");
     }
 
     public async Task FillAddressAsync(AddressFormData data)
@@ -51,11 +58,8 @@ public class BasicInfoTab
 
     public async Task SaveAsync()
     {
-        // Wait for button to appear first
         await SaveButton.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await SaveButton.ClickAsync();
-        
-        // Wait for API response
         await _page.WaitForResponseAsync(r => 
             r.Url.Contains("/basic-info") && r.Status == 200);
     }

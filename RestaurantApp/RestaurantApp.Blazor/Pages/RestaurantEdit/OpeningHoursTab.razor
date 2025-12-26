@@ -25,15 +25,13 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <input type="time"
                                                class="form-control form-control-sm"
-                                               @bind="hours.OpenTime"
-                                               @bind:format="HH:mm"
-                                               @bind:after="() => changesMade = true"/>
+                                               value="@hours.OpenTime.ToString("HH:mm")"
+                                               @oninput="e => OnTimeChanged(hours, e, true)"/>
                                         <span class="fw-bold">—</span>
                                         <input type="time"
                                                class="form-control form-control-sm"
-                                               @bind="hours.CloseTime"
-                                               @bind:format="HH:mm"
-                                               @bind:after="() => changesMade = true"/>
+                                               value="@hours.CloseTime.ToString("HH:mm")"
+                                               @oninput="e => OnTimeChanged(hours, e, false)"/>
                                     </div>
                                 }
                                 else
@@ -81,6 +79,20 @@
         InitializeOpeningHours();
     }
 
+    
+    private void OnTimeChanged(OpeningHoursDto hours, ChangeEventArgs e, bool isOpenTime)
+    {
+        if (TimeOnly.TryParse(e.Value?.ToString(), out var time))
+        {
+            if (isOpenTime)
+                hours.OpenTime = time;
+            else
+                hours.CloseTime = time;
+        
+            changesMade = true;
+            StateHasChanged();
+        }
+    }
     private void InitializeOpeningHours()
     {
         modifiedRestaurant = new RestaurantDto
