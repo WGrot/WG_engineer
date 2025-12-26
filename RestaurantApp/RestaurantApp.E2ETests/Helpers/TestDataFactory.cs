@@ -106,6 +106,19 @@ public static class TestDataFactory
     }
 
     #endregion
+    
+    
+    public static TestRestaurant GenerateRestaurant()
+    {
+        return new TestRestaurant
+        {
+            Name = $"Test Restaurant {Guid.NewGuid().ToString("N")[..8]}",
+            Street = "Nowy Świat 0",
+            City = "Warszawa",
+            PostalCode = "00-046",
+            Country = "Polska"
+        };
+    }
 }
 
 

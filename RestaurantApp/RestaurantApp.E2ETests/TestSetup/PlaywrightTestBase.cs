@@ -1,10 +1,12 @@
 ﻿using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
+using RestaurantApp.E2ETests.PageObjects;
 
 namespace RestaurantApp.E2ETests.TestSetup;
 
 public class PlaywrightTestBase: PageTest
 {
+    protected LoginPage _loginPage = null!;
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
@@ -26,26 +28,27 @@ public class PlaywrightTestBase: PageTest
     public async Task BaseSetUp()
     {
         Page.SetDefaultTimeout(TestConfiguration.DefaultTimeout);
+        _loginPage = new LoginPage(Page);
         
         Page.SetDefaultNavigationTimeout(TestConfiguration.NavigationTimeout);
     }
 
-    // [TearDown]
-    // public async Task BaseTearDown()
-    // {
-    //     if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Failed)
-    //     {
-    //         var screenshotPath = Path.Combine(
-    //             "screenshots",
-    //             $"{TestContext.CurrentContext.Test.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.png"
-    //         );
-    //         
-    //         Directory.CreateDirectory("screenshots");
-    //         await Page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
-    //         
-    //         TestContext.AddTestAttachment(screenshotPath, "Screenshot on failure");
-    //     }
-    // }
+    [TearDown]
+    public async Task BaseTearDown()
+    {
+        if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Failed)
+        {
+            var screenshotPath = Path.Combine(
+                "screenshots",
+                $"{TestContext.CurrentContext.Test.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.png"
+            );
+            
+            Directory.CreateDirectory("screenshots");
+            await Page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
+            
+            TestContext.AddTestAttachment(screenshotPath, "Screenshot on failure");
+        }
+    }
     
     protected async Task WaitForBlazorAsync()
     {
@@ -58,4 +61,15 @@ public class PlaywrightTestBase: PageTest
         var logoutButton = Page.Locator("[data-testid='logout-button'], .logout-btn, a[href='/logout']");
         return await logoutButton.IsVisibleAsync();
     }
+    
+    public async Task LoginAsVerifiedUserAsync()
+    {
+        await _loginPage.GotoAsync();
+        await _loginPage.LoginAsync("jan@kowalski.com", "123123123");
+        
+        
+        await WaitForBlazorAsync();
+        await Page.WaitForTimeoutAsync(500);
+    }
+    
 }
