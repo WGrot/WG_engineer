@@ -46,8 +46,8 @@ public static class TestDataFactory
     public static UserCredentials GetValidUserCredentials()
     {
 
-        var email = Environment.GetEnvironmentVariable("TEST_USER_EMAIL");
-        var password = Environment.GetEnvironmentVariable("TEST_USER_PASSWORD");
+        var email = "jan@kowalski.com";
+        var password = "123123123";
 
         if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
         {
@@ -56,8 +56,8 @@ public static class TestDataFactory
         
         return new UserCredentials
         {
-            Email = "test@example.com",
-            Password = "TestPassword123!"
+            Email = email,
+            Password = password
         };
     }
     
@@ -67,7 +67,32 @@ public static class TestDataFactory
 
     #region TOTP Generation
 
+    public static UserCredentials GetUserWith2FACredentials()
+    {
+        var email = "2fa@2fa.com";
+        var password = "123123123";
+        var totpSecret = "2JNP4PTFM6IL2HNDCEJEXHSA2WHWWQKC";
 
+        if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+        {
+            return new UserCredentials 
+            { 
+                Email = email, 
+                Password = password,
+                TotpSecret = totpSecret
+            };
+        }
+
+        // Default 2FA test user
+        return new UserCredentials
+        {
+            Email = "test2fa@example.com",
+            Password = "TestPassword123!",
+            TotpSecret = "JBSWY3DPEHPK3PXP" // Example base32 secret
+        };
+    }
+    
+    
     public static string GenerateValidTotpCode(string? base32Secret)
     {
         if (string.IsNullOrEmpty(base32Secret))
