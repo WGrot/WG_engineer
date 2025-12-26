@@ -2,30 +2,18 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
 @using System.Text
+@using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Auth
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject MessageService MessageService
 
 <div class="register-page">
     <div class="register-container">
         <div class="register-card">
             <h2 class="register-title">Create Account</h2>
             
-            @if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger">
-                    @_errorMessage
-                </div>
-            }
-            
-            @if (!string.IsNullOrEmpty(_successMessage))
-            {
-                <div class="alert alert-success">
-                    @_successMessage
-                </div>
-            }
             
             <EditForm Model="@_registerModel" OnValidSubmit="@HandleRegister">
                 <DataAnnotationsValidator />
@@ -83,14 +71,11 @@
 @code {
     private RegisterModel _registerModel = new();
     private bool _isLoading = false;
-    private string _errorMessage = string.Empty;
-    private string _successMessage = string.Empty;
+
     
     private async Task HandleRegister()
     {
         _isLoading = true;
-        _errorMessage = string.Empty;
-        _successMessage = string.Empty;
         
         try
         {
@@ -109,9 +94,8 @@
             
             if (response.IsSuccessStatusCode)
             {
-                _successMessage = "Account created successfully! You can now log in.";
                 
-                await Task.Delay(2000);
+                MessageService.AddSuccess("Success", "Account created successfully! You can now log in.");
                 Navigation.NavigateTo($"/email-verification?email={Uri.EscapeDataString(_registerModel.Email)}");
             }
             else
@@ -124,22 +108,23 @@
                     if (errorResponse != null && errorResponse.ContainsKey("errors"))
                     {
                         var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(errorResponse["errors"].ToString());
-                        _errorMessage = string.Join("; ", errors.SelectMany(e => e.Value));
+                        MessageService.AddError("Register failed", string.Join("; ", errors.SelectMany(e => e.Value)));
                     }
                     else
                     {
-                        _errorMessage = "Registration failed. Please try again.";
+                        MessageService.AddError("Error","Error during register process");
                     }
                 }
                 catch
                 {
-                    _errorMessage = "Registration failed. Please check your information and try again.";
+
+                    MessageService.AddError("Error","Registration failed. Please check your information and try again.");
                 }
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
+            MessageService.AddError("Error", "$An error occurred: {ex.Message}");
             Console.WriteLine($"Registration error: {ex}");
         }
         finally

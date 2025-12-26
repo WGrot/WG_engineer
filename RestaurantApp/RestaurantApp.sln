@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Application",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.Infrastructure", "RestaurantApp.Infrastructure\RestaurantApp.Infrastructure.csproj", "{F41DD948-AD11-428A-9423-8518DDF822B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantApp.E2ETests", "RestaurantApp.E2ETests\RestaurantApp.E2ETests.csproj", "{9ACE7649-B992-4AE4-8B32-E20D93BAE0C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,5 +49,9 @@ Global
 		{F41DD948-AD11-428A-9423-8518DDF822B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F41DD948-AD11-428A-9423-8518DDF822B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F41DD948-AD11-428A-9423-8518DDF822B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ACE7649-B992-4AE4-8B32-E20D93BAE0C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ACE7649-B992-4AE4-8B32-E20D93BAE0C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ACE7649-B992-4AE4-8B32-E20D93BAE0C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ACE7649-B992-4AE4-8B32-E20D93BAE0C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
