@@ -53,7 +53,13 @@
     {
         if (Table != null)
         {
-            modifiedTable = Table;
+            modifiedTable = new TableDto
+            {
+                Id = Table.Id,
+                TableNumber = Table.TableNumber,
+                Capacity = Table.Capacity,
+                Location = Table.Location
+            };
             isCreatingNew = false;
         }
         else
