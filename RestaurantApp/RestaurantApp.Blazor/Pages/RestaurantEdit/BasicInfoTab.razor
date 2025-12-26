@@ -16,18 +16,21 @@
                         <h3 class="mb-3">Change basic information regarding restaurant</h3>
                     </div>
 
-
                     <div class="row">
                         <div class="col-md-6 mb-3 h-100">
                             <label for="name" class="form-label">
                                 Restaurant name <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control"
+                                   class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.Name) ? "is-invalid" : "")"
                                    id="name"
                                    @bind="modifiedRestaurant.Name"
-                                   @bind:after="() => changesMade = true"
+                                   @bind:after="OnFieldChanged"
                                    required/>
+                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.Name))
+                            {
+                                <div class="invalid-feedback">Restaurant name is required</div>
+                            }
 
                             <label for="description" class="form-label">
                                 Restaurant description: <span class="text-danger">*</span>
@@ -37,31 +40,36 @@
                                 id="description"
                                 rows="8"
                                 @bind="modifiedRestaurant.Description"
-                                @bind:after="() => changesMade = true">
-                        </textarea>
-
-
+                                @bind:after="OnFieldChanged">
+                            </textarea>
                         </div>
 
                         <div class="col-md-6 mb-3">
-
                             <label for="street" class="form-label">
                                 Street and number: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street) ? "is-invalid" : "")"
                                    id="street"
                                    @bind="modifiedRestaurant.StructuredAddress.Street"
-                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   @bind:after="OnAddressFieldChanged"
                                    required/>
+                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street))
+                            {
+                                <div class="invalid-feedback">Street is required</div>
+                            }
 
                             <label for="city" class="form-label">
                                 City: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City) ? "is-invalid" : "")"
                                    id="city"
                                    @bind="modifiedRestaurant.StructuredAddress.City"
-                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   @bind:after="OnAddressFieldChanged"
                                    required/>
+                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City))
+                            {
+                                <div class="invalid-feedback">City is required</div>
+                            }
 
                             <label for="postal-code" class="form-label">
                                 Postal code: <span class="text-danger">*</span>
@@ -69,30 +77,28 @@
                             <input class="form-control"
                                    id="postal-code"
                                    @bind="modifiedRestaurant.StructuredAddress.PostalCode"
-                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   @bind:after="OnAddressFieldChanged"
                                    required/>
 
                             <label for="country" class="form-label">
                                 Country: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country) ? "is-invalid" : "")"
                                    id="country"
                                    @bind="modifiedRestaurant.StructuredAddress.Country"
-                                   @bind:after="() => {changesMade = true; addressModified = true; }"
+                                   @bind:after="OnAddressFieldChanged"
                                    required/>
+                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country))
+                            {
+                                <div class="invalid-feedback">Country is required</div>
+                            }
                         </div>
-
-
                     </div>
-
-
                 </div>
 
-                <div class="col mb-3">
-                   
-                </div>
+                <div class="col mb-3"></div>
 
-                @if (changesMade)
+                @if (changesMade && IsFormValid)
                 {
                     <div class="row justify-content-center mb-3">
                         <div class="d-flex justify-content-center gap-3">
@@ -101,18 +107,12 @@
                         </div>
                     </div>
                 }
-                
+
                 <h4 class="mb-3 text-center">Opening hours</h4>
-
                 <OpeningHoursTab Id=@Id restaurant=@restaurant/>
-
-
-                
             </div>
         </div>
     </div>
-
-    
 }
 else
 {
@@ -129,25 +129,57 @@ else
     private bool changesMade = false;
     private bool addressModified = false;
 
+    private bool IsFormValid => 
+        !string.IsNullOrWhiteSpace(modifiedRestaurant.Name) &&
+        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street) &&
+        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City) &&
+        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country);
+
     protected override void OnParametersSet()
     {
         if (restaurant != null)
         {
-            modifiedRestaurant = restaurant;
-            if (restaurant.StructuredAddress == null)
+            modifiedRestaurant = new RestaurantDto
             {
-                modifiedRestaurant.StructuredAddress = new StructuresAddressDto();
-            }
+                Name = restaurant.Name,
+                Description = restaurant.Description,
+                Address = restaurant.Address,
+                StructuredAddress = restaurant.StructuredAddress != null
+                    ? new StructuresAddressDto
+                    {
+                        Street = restaurant.StructuredAddress.Street,
+                        City = restaurant.StructuredAddress.City,
+                        PostalCode = restaurant.StructuredAddress.PostalCode,
+                        Country = restaurant.StructuredAddress.Country
+                    }
+                    : new StructuresAddressDto()
+            };
         }
+    }
+
+    private void OnFieldChanged()
+    {
+        changesMade = true;
+    }
+
+    private void OnAddressFieldChanged()
+    {
+        changesMade = true;
+        addressModified = true;
     }
 
     private void CancelChanges()
     {
-        modifiedRestaurant = restaurant;
+        OnParametersSet();
+        changesMade = false;
+        addressModified = false;
     }
 
     private async Task SaveChanges()
     {
+        if (!IsFormValid)
+            return;
+
         try
         {
             RestaurantBasicInfoDto dto = new RestaurantBasicInfoDto
@@ -171,5 +203,4 @@ else
             Console.WriteLine($"Error saving data: {e.Message}");
         }
     }
-
 }
