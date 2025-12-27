@@ -1,8 +1,4 @@
-﻿@using RestaurantApp.Blazor.Extensions
-@using RestaurantApp.Blazor.Models.DTO
-@using RestaurantApp.Shared.Models
-@using Microsoft.AspNetCore.Components.Forms
-@inject HttpClient Http
+﻿@inject HttpClient Http
 
 <div class="container-fluid py-4">
     @if (restaurant != null)
@@ -33,14 +29,16 @@
                                            style="display: none;"/>
                             </div>
 
-                            <button button
-                                    class="base-button  d-flex align-items-center justify-content-center"
-                                    @onclick="DeleteProfilePhoto"
-                                    disabled="@isDeletingProfile"
-                                    title="Delete photo"
-                                    style="width: 32px; height: 32px; padding: 0;">
-                                X
-                            </button>
+                            @if (!string.IsNullOrEmpty(restaurant?.ProfileThumbnailUrl))
+                            {
+                                <button class="base-button d-flex align-items-center justify-content-center"
+                                        @onclick="DeleteProfilePhoto"
+                                        disabled="@isDeletingProfile"
+                                        title="Delete photo"
+                                        style="width: 32px; height: 32px; padding: 0;">
+                                    X
+                                </button>
+                            }
                         </div>
 
                     </div>
