@@ -1,11 +1,9 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
-using RestaurantApp.Shared.Common;
 using RestaurantApp.Shared.DTOs.Restaurant;
 using RestaurantApp.Shared.DTOs.Settings;
-using RestaurantApp.Shared.DTOs.Users;
-using RestaurantApp.Shared.Models;
+
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
@@ -19,8 +17,8 @@ public partial class RestaurantSettingsTab
     [Inject] private MessageService MessageService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
-    private SettingsDto settings;
-    private SettingsDto originalSettings;
+    private SettingsDto settings = new();
+    private SettingsDto originalSettings = new();
     private bool isLoading = false;
     private bool showDeleteModal = false;
     private bool isDeleting = false;
@@ -41,14 +39,14 @@ public partial class RestaurantSettingsTab
             var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
             if (response.IsSuccessStatusCode)
             {
-                settings = await HttpContentJsonExtensions.ReadFromJsonAsync<SettingsDto>(response.Content);
+                settings = await response.Content.ReadFromJsonAsync<SettingsDto>() ?? new SettingsDto { RestaurantId = Id };
                 originalSettings = CloneSettings(settings);
             }
             else
             {
                 settings = new SettingsDto { RestaurantId = Id };
                 originalSettings = CloneSettings(settings);
-                await HttpClientJsonExtensions.PostAsJsonAsync(Http, $"api/RestaurantSettings", settings);
+                await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
             }
         }
         catch (Exception ex)
@@ -98,6 +96,70 @@ public partial class RestaurantSettingsTab
                a.ReservationsPerUserLimit == b.ReservationsPerUserLimit;
     }
 
+    // Event handlers for duration settings
+    private void OnMinDurationChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MinReservationDuration = TimeSpan.FromMinutes(value);
+            MarkAsChanged();
+        }
+    }
+
+    private void OnMaxDurationChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MaxReservationDuration = TimeSpan.FromMinutes(value);
+            MarkAsChanged();
+        }
+    }
+    
+    private void OnMinAdvanceChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MinAdvanceBookingTime = TimeSpan.FromHours(value);
+            MarkAsChanged();
+        }
+    }
+
+    private void OnMaxAdvanceChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MaxAdvanceBookingTime = TimeSpan.FromDays(value);
+            MarkAsChanged();
+        }
+    }
+    
+    private void OnMinGuestsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MinGuestsPerReservation = value;
+            MarkAsChanged();
+        }
+    }
+
+    private void OnMaxGuestsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.MaxGuestsPerReservation = value;
+            MarkAsChanged();
+        }
+    }
+
+    private void OnReservationsPerUserChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            settings.ReservationsPerUserLimit = value;
+            MarkAsChanged();
+        }
+    }
+
     private async Task ResetChanges()
     {
         settings = CloneSettings(originalSettings);
@@ -125,7 +187,7 @@ public partial class RestaurantSettingsTab
             if (response.IsSuccessStatusCode)
             {
                 StateHasChanged();
-                MessageService.AddInfo("Info","Restaurant has been deleted. You will be logged out.");
+                MessageService.AddInfo("Info", "Restaurant has been deleted. You will be logged out.");
                 await AuthService.LogoutAsync();
                 Nav.NavigateTo($"/login");
             }
@@ -151,7 +213,6 @@ public partial class RestaurantSettingsTab
     {
         isSaving = true;
 
-
         try
         {
             var dto = new UpdateRestaurantSettingsDto
@@ -167,7 +228,7 @@ public partial class RestaurantSettingsTab
                 ReservationsPerUserLimit = settings.ReservationsPerUserLimit
             };
 
-            var response = await HttpClientJsonExtensions.PutAsJsonAsync(Http, $"api/RestaurantSettings/{settings.Id}", dto);
+            var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
             if (response.IsSuccessStatusCode)
             {
                 originalSettings = CloneSettings(settings);

@@ -7,56 +7,64 @@ public class SettingsTab
     private readonly IPage _page;
 
     public SettingsTab(IPage page) => _page = page;
-
-    // Locators - Reservation Confirmation
+    
     private ILocator NeedConfirmationToggle => _page.Locator("#needConfirmationCheckbox");
+    
+    private ILocator MinDurationInput => _page.Locator(".col-md-6:has-text('Minimum Duration') input[type='number']");
+    private ILocator MaxDurationInput => _page.Locator(".col-md-6:has-text('Maximum Duration') input[type='number']");
+    
+    private ILocator MinAdvanceInput => _page.Locator(".col-md-6:has-text('Minimum Advance Time') input[type='number']");
+    private ILocator MaxAdvanceInput => _page.Locator(".col-md-6:has-text('Maximum Advance Time') input[type='number']");
+    
+    private ILocator MinGuestsInput => _page.Locator(".col-md-6:has-text('Minimum Guests') input[type='number']");
+    private ILocator MaxGuestsInput => _page.Locator(".col-md-6:has-text('Maximum Guests') input[type='number']");
+    private ILocator ReservationsPerUserInput => _page.Locator(".col-md-6:has-text('Reservations per User') input[type='number']");
 
-    // Locators - Duration
-    private ILocator MinDurationInput => _page.Locator(".card:has-text('Reservation Duration') input").First;
-    private ILocator MaxDurationInput => _page.Locator(".card:has-text('Reservation Duration') input").Last;
 
-    // Locators - Booking Window
-    private ILocator MinAdvanceInput => _page.Locator(".card:has-text('Booking Window') input").First;
-    private ILocator MaxAdvanceInput => _page.Locator(".card:has-text('Booking Window') input").Last;
-
-    // Locators - Guest Limits
-    private ILocator MinGuestsInput => _page.Locator("input").Filter(new() { Has = _page.Locator("xpath=../following-sibling::span[contains(text(),'guests')]") }).First;
-    private ILocator MaxGuestsInput => _page.Locator(".col-md-6:has-text('Maximum Guests') input");
-    private ILocator ReservationsPerUserInput => _page.Locator(".col-md-6:has-text('Reservations per User') input");
-
-    // Locators - Actions
     private ILocator SaveButton => _page.Locator("button:has-text('Save Changes')");
     private ILocator CancelButton => _page.Locator(".save-changes-card button:has-text('Cancel')");
     private ILocator UnsavedChangesCard => _page.Locator(".save-changes-card");
     private ILocator DeleteButton => _page.Locator(".card.border-danger button:has-text('Delete')");
     private ILocator DeleteConfirmModal => _page.Locator(".modal:has-text('Confirm Restaurant Deletion')");
     private ILocator LoadingSpinner => _page.Locator("text=Loading settings...");
+    
+    private async Task FillInputAndTriggerChangeAsync(ILocator input, string value)
+    {
+        await input.ClearAsync();
+        await input.FillAsync(value);
 
-    // Actions - Settings
+        await input.DispatchEventAsync("change");
+
+        await _page.WaitForTimeoutAsync(100);
+    }
+    
     public async Task SetReservationConfirmationAsync(bool required)
     {
         var isChecked = await NeedConfirmationToggle.IsCheckedAsync();
         if (isChecked != required)
+        {
             await NeedConfirmationToggle.ClickAsync();
+            await _page.WaitForTimeoutAsync(100);
+        }
     }
 
     public async Task SetDurationRangeAsync(int minMinutes, int maxMinutes)
     {
-        await MinDurationInput.FillAsync(minMinutes.ToString());
-        await MaxDurationInput.FillAsync(maxMinutes.ToString());
+        await FillInputAndTriggerChangeAsync(MinDurationInput, minMinutes.ToString());
+        await FillInputAndTriggerChangeAsync(MaxDurationInput, maxMinutes.ToString());
     }
 
     public async Task SetBookingWindowAsync(int minHours, int maxDays)
     {
-        await MinAdvanceInput.FillAsync(minHours.ToString());
-        await MaxAdvanceInput.FillAsync(maxDays.ToString());
+        await FillInputAndTriggerChangeAsync(MinAdvanceInput, minHours.ToString());
+        await FillInputAndTriggerChangeAsync(MaxAdvanceInput, maxDays.ToString());
     }
 
     public async Task SetGuestLimitsAsync(int min, int max, int perUser)
     {
-        await MinGuestsInput.FillAsync(min.ToString());
-        await MaxGuestsInput.FillAsync(max.ToString());
-        await ReservationsPerUserInput.FillAsync(perUser.ToString());
+        await FillInputAndTriggerChangeAsync(MinGuestsInput, min.ToString());
+        await FillInputAndTriggerChangeAsync(MaxGuestsInput, max.ToString());
+        await FillInputAndTriggerChangeAsync(ReservationsPerUserInput, perUser.ToString());
     }
 
     public async Task FillAllSettingsAsync(RestaurantSettingsFormData data)
@@ -67,24 +75,27 @@ public class SettingsTab
         await SetGuestLimitsAsync(data.MinGuests, data.MaxGuests, data.ReservationsPerUser);
     }
 
-    // Actions - Save/Cancel
+
     public async Task SaveAsync()
     {
         await SaveButton.ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("settings") && r.Status == 200);
-        await _page.WaitForSelectorAsync(".save-changes-card", new() { State = WaitForSelectorState.Hidden });
+        await _page.WaitForResponseAsync(r => 
+            r.Url.Contains("RestaurantSettings", StringComparison.OrdinalIgnoreCase) && 
+            r.Request.Method == "PUT" &&
+            r.Status == 200);
+        await _page.WaitForSelectorAsync(".save-changes-card", new() { State = WaitForSelectorState.Hidden, Timeout = 5000 });
     }
 
     public async Task CancelAsync()
     {
         await CancelButton.ClickAsync();
+        await _page.WaitForSelectorAsync(".save-changes-card", new() { State = WaitForSelectorState.Hidden, Timeout = 5000 });
     }
-
-    // Actions - Delete Restaurant
+    
     public async Task OpenDeleteModalAsync()
     {
         await DeleteButton.ClickAsync();
-        await _page.WaitForSelectorAsync(".modal.show");
+        await _page.WaitForSelectorAsync(".modal.show", new() { Timeout = 5000 });
     }
 
     public async Task ConfirmDeleteRestaurantAsync()
@@ -96,10 +107,12 @@ public class SettingsTab
     {
         await DeleteConfirmModal.Locator("button:has-text('Cancel')").ClickAsync();
     }
-
-    // State checks
-    public async Task<bool> HasUnsavedChangesAsync() 
-        => await UnsavedChangesCard.IsVisibleAsync();
+    
+    public async Task<bool> HasUnsavedChangesAsync()
+    {
+        await _page.WaitForTimeoutAsync(200);
+        return await UnsavedChangesCard.IsVisibleAsync();
+    }
 
     public async Task<bool> IsLoadingAsync() 
         => await LoadingSpinner.IsVisibleAsync();
@@ -124,8 +137,44 @@ public class SettingsTab
 
     public async Task WaitForLoadAsync()
     {
-        await _page.WaitForSelectorAsync("text=Loading settings...", new() { State = WaitForSelectorState.Hidden });
+        try
+        {
+            await _page.WaitForSelectorAsync("text=Loading settings...", new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
+        }
+        catch (TimeoutException)
+        {
+        }
+        
+        await _page.WaitForSelectorAsync("text=Loading settings...", new() { State = WaitForSelectorState.Hidden, Timeout = 10000 });
+        
+        await _page.WaitForSelectorAsync("#needConfirmationCheckbox", new() { State = WaitForSelectorState.Visible, Timeout = 5000 });
     }
+
+    public async Task<bool> GetReservationConfirmationAsync()
+    {
+        return await NeedConfirmationToggle.IsCheckedAsync();
+    }
+    
+    public async Task<int> GetMinDurationAsync()
+        => int.Parse(await MinDurationInput.InputValueAsync());
+
+    public async Task<int> GetMaxDurationAsync()
+        => int.Parse(await MaxDurationInput.InputValueAsync());
+
+    public async Task<int> GetMinAdvanceHoursAsync()
+        => int.Parse(await MinAdvanceInput.InputValueAsync());
+
+    public async Task<int> GetMaxAdvanceDaysAsync()
+        => int.Parse(await MaxAdvanceInput.InputValueAsync());
+
+    public async Task<int> GetMinGuestsAsync()
+        => int.Parse(await MinGuestsInput.InputValueAsync());
+
+    public async Task<int> GetMaxGuestsAsync()
+        => int.Parse(await MaxGuestsInput.InputValueAsync());
+
+    public async Task<int> GetReservationsPerUserAsync()
+        => int.Parse(await ReservationsPerUserInput.InputValueAsync());
 }
 
 public record RestaurantSettingsFormData

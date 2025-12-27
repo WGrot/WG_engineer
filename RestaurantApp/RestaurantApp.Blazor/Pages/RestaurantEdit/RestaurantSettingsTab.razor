@@ -10,7 +10,7 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            
+
             <h3 class="text-center mb-4">
                 <i class="bi bi-gear-fill me-2"></i>
                 Restaurant Settings
@@ -27,12 +27,12 @@
                     </div>
                     <div class="card-body">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" 
+                            <input class="form-check-input"
                                    style="cursor: pointer;"
                                    type="checkbox"
                                    id="needConfirmationCheckbox"
-                                   checked="@settings.ReservationsNeedConfirmation"
-                                   @onchange="@(() => { settings.ReservationsNeedConfirmation = !settings.ReservationsNeedConfirmation; MarkAsChanged(); })">
+                                   @bind="settings.ReservationsNeedConfirmation"
+                                   @bind:after="MarkAsChanged">
                             <label class="form-check-label" style="cursor: pointer;" for="needConfirmationCheckbox">
                                 Require confirmation for reservations
                             </label>
@@ -43,7 +43,7 @@
                         </small>
                     </div>
                 </div>
-                
+
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -56,12 +56,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Minimum Duration</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="15" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="15"
                                            max="480"
                                            value="@((int)settings.MinReservationDuration.TotalMinutes)"
-                                           @onchange="@(e => { settings.MinReservationDuration = TimeSpan.FromMinutes(int.Parse(e.Value?.ToString() ?? "30")); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMinDurationChanged(e))">
                                     <span class="input-group-text">minutes</span>
                                 </div>
                                 <small class="text-muted">Shortest allowed reservation</small>
@@ -69,12 +69,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Maximum Duration</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="30" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="30"
                                            max="480"
                                            value="@((int)settings.MaxReservationDuration.TotalMinutes)"
-                                           @onchange="@(e => { settings.MaxReservationDuration = TimeSpan.FromMinutes(int.Parse(e.Value?.ToString() ?? "180")); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMaxDurationChanged(e))">
                                     <span class="input-group-text">minutes</span>
                                 </div>
                                 <small class="text-muted">Longest allowed reservation</small>
@@ -82,7 +82,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -95,12 +95,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Minimum Advance Time</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="0" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="0"
                                            max="168"
                                            value="@((int)settings.MinAdvanceBookingTime.TotalHours)"
-                                           @onchange="@(e => { settings.MinAdvanceBookingTime = TimeSpan.FromHours(int.Parse(e.Value?.ToString() ?? "1")); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMinAdvanceChanged(e))">
                                     <span class="input-group-text">hours</span>
                                 </div>
                                 <small class="text-muted">How early before the visit can guests book</small>
@@ -108,12 +108,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Maximum Advance Time</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="1" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="1"
                                            max="365"
                                            value="@((int)settings.MaxAdvanceBookingTime.TotalDays)"
-                                           @onchange="@(e => { settings.MaxAdvanceBookingTime = TimeSpan.FromDays(int.Parse(e.Value?.ToString() ?? "30")); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMaxAdvanceChanged(e))">
                                     <span class="input-group-text">days</span>
                                 </div>
                                 <small class="text-muted">How far in advance guests can book</small>
@@ -121,7 +121,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -134,12 +134,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Minimum Guests</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="1" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="1"
                                            max="100"
                                            value="@settings.MinGuestsPerReservation"
-                                           @onchange="@(e => { settings.MinGuestsPerReservation = int.Parse(e.Value?.ToString() ?? "1"); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMinGuestsChanged(e))">
                                     <span class="input-group-text">guests</span>
                                 </div>
                                 <small class="text-muted">Minimum party size</small>
@@ -147,12 +147,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Maximum Guests</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="1" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="1"
                                            max="500"
                                            value="@settings.MaxGuestsPerReservation"
-                                           @onchange="@(e => { settings.MaxGuestsPerReservation = int.Parse(e.Value?.ToString() ?? "10"); MarkAsChanged(); })">
+                                           @onchange="@(e => OnMaxGuestsChanged(e))">
                                     <span class="input-group-text">guests</span>
                                 </div>
                                 <small class="text-muted">Maximum party size</small>
@@ -160,12 +160,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Reservations per User</label>
                                 <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           min="1" 
+                                    <input type="number"
+                                           class="form-control"
+                                           min="1"
                                            max="50"
                                            value="@settings.ReservationsPerUserLimit"
-                                           @onchange="@(e => { settings.ReservationsPerUserLimit = int.Parse(e.Value?.ToString() ?? "5"); MarkAsChanged(); })">
+                                           @onchange="@(e => OnReservationsPerUserChanged(e))">
                                     <span class="input-group-text">limit</span>
                                 </div>
                                 <small class="text-muted">Max active reservations per user</small>
@@ -173,7 +173,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 @if (hasChanges)
                 {
                     <div class="card shadow-sm mb-4 border-success save-changes-card">
@@ -202,7 +202,7 @@
                         </div>
                     </div>
                 }
-                
+
                 <div class="card shadow-sm border-danger">
                     <div class="card-header bg-danger text-white">
                         <h5 class="mb-0">
@@ -230,53 +230,53 @@
             {
                 <LoadingSpinner Title="Loading settings..."/>
             }
-            
+
         </div>
     </div>
 </div>
 
 <ConfirmationModal @bind-IsVisible="showDeleteModal"
-                    Title="Confirm Restaurant Deletion"
-                    Message="Are you sure you want to permanently delete this restaurant? All reservations, menus, and settings will be lost."
-                    IsProcessing="isDeleting"
-                    ConfirmButtonText="Yes, Delete Restaurant"
-                    cancelButtonText="Cancel"
-                    OnConfirm="DeleteRestaurant"
-                    OnCancel="HideDeleteModal" />
+                   Title="Confirm Restaurant Deletion"
+                   Message="Are you sure you want to permanently delete this restaurant? All reservations, menus, and settings will be lost."
+                   IsProcessing="isDeleting"
+                   ConfirmButtonText="Yes, Delete Restaurant"
+                   cancelButtonText="Cancel"
+                   OnConfirm="DeleteRestaurant"
+                   OnCancel="HideDeleteModal" />
 
 <style>
     .card {
         border-radius: 10px;
         transition: transform 0.2s, box-shadow 0.2s;
     }
-    
+
     .card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
     }
-    
+
     .form-check-input:checked {
         background-color: var(--primary-color);
         border-color: var(--primary-color);
     }
-    
+
     .form-check-input {
         width: 3em;
         height: 1.5em;
     }
-    
+
     .card-header {
         border-radius: 10px 10px 0 0 !important;
     }
-    
+
     .btn {
         transition: all 0.2s;
     }
-    
+
     .btn:hover {
         transform: translateY(-1px);
     }
-    
+
     .save-changes-card {
         position: sticky;
         bottom: 1rem;
@@ -285,7 +285,7 @@
         border: 2px solid var(--primary-color) !important;
         animation: slideUp 0.3s ease-out;
     }
-    
+
     @@keyframes slideUp {
         from {
             opacity: 0;
@@ -296,7 +296,7 @@
             transform: translateY(0);
         }
     }
-    
+
     .input-group-text {
         min-width: 80px;
         justify-content: center;
