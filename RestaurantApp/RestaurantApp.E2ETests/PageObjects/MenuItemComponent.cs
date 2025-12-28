@@ -1,139 +1,240 @@
 ﻿using Microsoft.Playwright;
+using System.Globalization;
 
 namespace RestaurantApp.E2ETests.PageObjects;
 
 public class MenuItemComponent
 {
     private readonly IPage _page;
-    private readonly ILocator _item;
+    private readonly string _itemName;
+    
+    // Locator for VIEW mode (when h3 is visible)
+    private ILocator ViewModeCard => _page.Locator($".card.shadow-sm:has(h3:has-text('{_itemName}'))");
+    
+    // Locator for EDIT mode (when input contains item name)
+    // Note: After clicking edit, the h3 disappears and input appears
+    private ILocator EditModeCard => _page.Locator($".card.shadow-sm:has(input[placeholder='Name'])").Filter(new() { Has = _page.Locator($"input[value='{_itemName}']") });
 
     public MenuItemComponent(IPage page, string itemName)
     {
         _page = page;
-        _item = page.Locator($".card.shadow-sm:has(h3:has-text('{itemName}'))");
+        _itemName = itemName;
     }
 
-    // Locators
-    private ILocator EditButton => _item.Locator("button:has-text('Edit')");
-    private ILocator MoveButton => _item.Locator("button:has-text('Move')");
-    private ILocator VariantsButton => _item.Locator("button:has-text('Variants')");
-    private ILocator DeleteButton => _item.Locator("button:has(.bi-trash)").First;
-    private ILocator SaveButton => _item.Locator("button:has-text('Save')");
-    private ILocator CancelButton => _item.Locator("button:has-text('Cancel')");
-    
-    // Edit form
-    private ILocator NameInput => _item.Locator("input[placeholder='Name']");
-    private ILocator DescriptionInput => _item.Locator("textarea[placeholder='Description']");
-    private ILocator PriceInput => _item.Locator("input[placeholder='Price']");
-    private ILocator CurrencyInput => _item.Locator("input[placeholder='Currency']");
+    // === VIEW MODE BUTTONS (use ViewModeCard) ===
+    private ILocator EditButton => ViewModeCard.Locator("button.button--primary:has-text('Edit')");
+    private ILocator MoveButton => ViewModeCard.Locator("button:has-text('Move')");
+    private ILocator VariantsButton => ViewModeCard.Locator("button:has-text('Variants')");
+    private ILocator DeleteButton => ViewModeCard.Locator("button.button--red:has(.bi-trash)");
 
-    // Image
-    private ILocator ImageUploadInput => _item.Locator("input[type='file']");
-    private ILocator ImageDeleteButton => _item.Locator(".card-header button:has(.bi-trash)");
-    private ILocator ItemImage => _item.Locator(".card-body img");
-    private ILocator ImagePlaceholder => _item.Locator(".bi-image");
-    private ILocator ImageUploadSpinner => _item.Locator(".card-header .spinner-border");
+    // === EDIT MODE ELEMENTS ===
+    // These need to work when h3 is gone, so we search more broadly
+    private ILocator EditForm => _page.Locator(".card.shadow-sm .mb-3:has(input[placeholder='Name'])");
+    private ILocator NameInput => EditForm.Locator("input[placeholder='Name']");
+    private ILocator DescriptionTextarea => EditForm.Locator("textarea[placeholder='Description']");
+    private ILocator PriceInput => EditForm.Locator("input[placeholder='Price']");
+    private ILocator CurrencyInput => EditForm.Locator("input[placeholder='Currency']");
+    private ILocator SaveButton => EditForm.Locator("..").Locator("button.base-button:has-text('Save')");
+    private ILocator CancelButton => EditForm.Locator("..").Locator("button.grey-button:has-text('Cancel')");
 
-    // Move dropdown
-    private ILocator MoveDropdown => _item.Locator("select.form-select");
+    // === IMAGE SECTION (use ViewModeCard) ===
+    private ILocator ImageCard => ViewModeCard.Locator(".card.shadow-sm").First;
+    private ILocator ImageUploadInput => ViewModeCard.Locator("input[type='file'][id^='itemImageInput']");
+    private ILocator ImageUploadLabel => ViewModeCard.Locator("label[for^='itemImageInput']");
+    private ILocator ImageDeleteButton => ImageCard.Locator(".card-header button:has(.bi-trash)");
+    private ILocator ItemImage => ImageCard.Locator(".card-body img");
+    private ILocator ImagePlaceholder => ImageCard.Locator(".bi-image");
+    private ILocator ImageUploadSpinner => ImageCard.Locator(".spinner-border");
 
-    // Tags
-    private ILocator TagBadges => _item.Locator(".badge:not(:has(.bi-plus-lg))");
-    private ILocator AddTagButton => _item.Locator(".badge:has(.bi-plus-lg)");
-    private ILocator TagDropdown => _item.Locator("select:has(option:has-text('Select tag'))");
+    // === MOVE DROPDOWN (use ViewModeCard) ===
+    private ILocator MoveSection => ViewModeCard.Locator(".mt-2:has(label:has-text('Move item'))");
+    private ILocator MoveDropdown => MoveSection.Locator("select.form-select");
 
-    // Variants section
-    private ILocator VariantsSection => _item.Locator("div:has(h6:has-text('Variants'))");
-    private ILocator VariantItems => VariantsSection.Locator(".border.rounded");
+    // === TAGS SECTION (use ViewModeCard) ===
+    private ILocator TagBadges => ViewModeCard.Locator(".badge:not(:has(.bi-plus-lg)):not(.base-button)");
+    private ILocator AddTagButton => ViewModeCard.Locator(".badge.base-button:has(.bi-plus-lg)");
+    private ILocator TagSection => ViewModeCard.Locator(".mt-2:has(label:has-text('Add tags'))");
+    private ILocator TagDropdown => TagSection.Locator("select.form-select");
+    private ILocator CancelTagButton => TagSection.Locator("button.grey-button");
+
+    // === VARIANTS SECTION (use ViewModeCard) ===
+    private ILocator VariantsSection => ViewModeCard.Locator("div:has(> h6:has-text('Variants'))");
+    private ILocator VariantItems => VariantsSection.Locator(".border.rounded.p-2");
     private ILocator AddVariantButton => VariantsSection.Locator("button:has-text('Add new variant')");
+    private ILocator NewVariantForm => VariantsSection.Locator(".border.rounded:has(h6:has-text('New Variant'))");
+
+    // === ITEM INFO (view mode) ===
+    private ILocator ItemName => ViewModeCard.Locator("h3");
+    private ILocator ItemPrice => ViewModeCard.Locator("small.text-muted");
+    private ILocator ItemDescription => ViewModeCard.Locator("p.mb-2.small");
 
     // ==================== BASIC ACTIONS ====================
 
-    public async Task EditAsync()
+    public async Task<bool> IsVisibleAsync()
+        => await ViewModeCard.IsVisibleAsync();
+
+    public async Task<bool> IsInEditModeAsync()
+        => await NameInput.IsVisibleAsync();
+
+    public async Task<string> GetNameAsync()
+        => (await ItemName.InnerTextAsync()).Trim();
+
+    public async Task<string> GetPriceDisplayAsync()
+        => (await ItemPrice.InnerTextAsync()).Trim();
+
+    public async Task<string?> GetDescriptionAsync()
     {
+        if (await ItemDescription.IsVisibleAsync())
+            return (await ItemDescription.InnerTextAsync()).Trim();
+        return null;
+    }
+
+    // ==================== EDIT ACTIONS ====================
+
+    public async Task StartEditAsync()
+    {
+        // Ensure item is visible in view mode first
+        await ViewModeCard.WaitForAsync(new() { Timeout = 5000 });
+        
+        // Click the Edit button
         await EditButton.ClickAsync();
-        await NameInput.WaitForAsync();
+        
+        // Wait for edit form to appear (h3 disappears, input appears)
+        await NameInput.WaitForAsync(new() { Timeout = 5000 });
     }
 
     public async Task SaveEditAsync()
     {
         await SaveButton.ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("item"));
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("MenuItem") && r.Request.Method == "PUT" && r.Status == 200,
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
     public async Task CancelEditAsync()
     {
         await CancelButton.ClickAsync();
+        // Wait for view mode to return (h3 reappears)
+        await ViewModeCard.WaitForAsync(new() { Timeout = 5000 });
     }
+
+    public async Task FillEditFormAsync(string? name = null, string? description = null, decimal? price = null, string? currency = null)
+    {
+        if (name != null)
+        {
+            await NameInput.ClearAsync();
+            await NameInput.FillAsync(name);
+        }
+
+        if (description != null)
+        {
+            await DescriptionTextarea.ClearAsync();
+            await DescriptionTextarea.FillAsync(description);
+        }
+
+        if (price.HasValue)
+        {
+            await PriceInput.ClearAsync();
+            await PriceInput.FillAsync(price.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (currency != null)
+        {
+            await CurrencyInput.ClearAsync();
+            await CurrencyInput.FillAsync(currency);
+        }
+    }
+
+    public async Task EditAsync(string? name = null, string? description = null, decimal? price = null, string? currency = null)
+    {
+        await StartEditAsync();
+        await FillEditFormAsync(name, description, price, currency);
+        await SaveEditAsync();
+    }
+
+    // ==================== DELETE ACTION ====================
 
     public async Task DeleteAsync()
     {
+        await ViewModeCard.WaitForAsync(new() { Timeout = 5000 });
         await DeleteButton.ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("item") && r.Request.Method == "DELETE");
-    }
-
-    public async Task FillEditFormAsync(MenuItemFormData data)
-    {
-        await NameInput.FillAsync(data.Name);
-        
-        if (!string.IsNullOrEmpty(data.Description))
-            await DescriptionInput.FillAsync(data.Description);
-        
-        if (data.Price.HasValue)
-            await PriceInput.FillAsync(data.Price.Value.ToString());
-        
-        if (!string.IsNullOrEmpty(data.Currency))
-            await CurrencyInput.FillAsync(data.Currency);
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("MenuItem") && r.Request.Method == "DELETE" && r.Status == 200,
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
     // ==================== IMAGE ACTIONS ====================
 
     public async Task UploadImageAsync(string filePath)
     {
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Test file not found: {filePath}");
+
         await ImageUploadInput.SetInputFilesAsync(filePath);
-        await WaitForImageUploadAsync();
+
+        try
+        {
+            await ImageUploadSpinner.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
+        }
+        catch (TimeoutException) { }
+
+        await ImageUploadSpinner.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 30000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
     public async Task DeleteImageAsync()
     {
         await ImageDeleteButton.ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Request.Method == "DELETE");
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("delete-image") && r.Request.Method == "DELETE",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
-    public async Task<bool> HasImageAsync() 
+    public async Task<bool> HasImageAsync()
         => await ItemImage.IsVisibleAsync();
 
-    private async Task WaitForImageUploadAsync()
-    {
-        try
-        {
-            await ImageUploadSpinner.WaitForAsync(new() { Timeout = 1000 });
-        }
-        catch { }
-        await ImageUploadSpinner.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
-    }
+    public async Task<bool> HasImagePlaceholderAsync()
+        => await ImagePlaceholder.IsVisibleAsync();
 
     // ==================== MOVE ACTIONS ====================
 
     public async Task OpenMoveDropdownAsync()
     {
         await MoveButton.ClickAsync();
-        await MoveDropdown.WaitForAsync();
+        await MoveDropdown.WaitForAsync(new() { Timeout = 5000 });
+    }
+
+    public async Task CloseMoveDropdownAsync()
+    {
+        await MoveButton.ClickAsync();
+        await MoveSection.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 3000 });
     }
 
     public async Task MoveToCategoryAsync(string categoryName)
     {
         await OpenMoveDropdownAsync();
         await MoveDropdown.SelectOptionAsync(new SelectOptionValue { Label = categoryName });
-        await _page.WaitForResponseAsync(r => r.Url.Contains("item"));
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("move") && r.Request.Method == "PATCH",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(500);
     }
 
     public async Task MoveToUncategorizedAsync()
     {
         await OpenMoveDropdownAsync();
-        await MoveDropdown.SelectOptionAsync("uncategorized");
-        await _page.WaitForResponseAsync(r => r.Url.Contains("item"));
+        await MoveDropdown.SelectOptionAsync(new SelectOptionValue { Value = "uncategorized" });
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("move") && r.Request.Method == "PATCH",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(500);
     }
+
+    public async Task<bool> IsMoveDropdownVisibleAsync()
+        => await MoveSection.IsVisibleAsync();
 
     // ==================== TAG ACTIONS ====================
 
@@ -144,42 +245,78 @@ public class MenuItemComponent
 
         for (int i = 0; i < count; i++)
         {
-            tags.Add(await TagBadges.Nth(i).InnerTextAsync());
+            var text = await TagBadges.Nth(i).InnerTextAsync();
+            tags.Add(text.Trim());
         }
 
         return tags;
     }
 
-    public async Task AddTagAsync(string tagName)
+    public async Task<int> GetTagCountAsync()
+        => await TagBadges.CountAsync();
+
+    public async Task OpenAddTagDropdownAsync()
     {
         await AddTagButton.ClickAsync();
-        await TagDropdown.WaitForAsync();
+        await TagDropdown.WaitForAsync(new() { Timeout = 5000 });
+    }
+
+    public async Task AddTagAsync(string tagName)
+    {
+        await OpenAddTagDropdownAsync();
         await TagDropdown.SelectOptionAsync(new SelectOptionValue { Label = tagName });
-        await _page.WaitForResponseAsync(r => r.Url.Contains("tag"));
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("tags") && r.Request.Method == "POST",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
     public async Task RemoveTagAsync(string tagName)
     {
-        var tagBadge = _item.Locator($".badge:has-text('{tagName}')");
+        var tagBadge = ViewModeCard.Locator($".badge:has-text('{tagName}')");
         await tagBadge.Locator(".btn-close").ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("tag") && r.Request.Method == "DELETE");
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("tags") && r.Request.Method == "DELETE",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
-    // ==================== VARIANTS ACTIONS ====================
+    public async Task<bool> HasTagAsync(string tagName)
+    {
+        var tags = await GetTagsAsync();
+        return tags.Contains(tagName);
+    }
+
+    public async Task CancelAddTagAsync()
+    {
+        await CancelTagButton.ClickAsync();
+        await TagSection.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 3000 });
+    }
+
+    // ==================== VARIANT ACTIONS ====================
 
     public async Task ShowVariantsAsync()
     {
         var buttonText = await VariantsButton.InnerTextAsync();
         if (buttonText.Contains("Show"))
+        {
             await VariantsButton.ClickAsync();
+            await VariantsSection.WaitForAsync(new() { Timeout = 5000 });
+        }
     }
 
     public async Task HideVariantsAsync()
     {
         var buttonText = await VariantsButton.InnerTextAsync();
         if (buttonText.Contains("Hide"))
+        {
             await VariantsButton.ClickAsync();
+            await VariantsSection.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 3000 });
+        }
     }
+
+    public async Task<bool> AreVariantsVisibleAsync()
+        => await VariantsSection.IsVisibleAsync();
 
     public async Task<int> GetVariantCountAsync()
     {
@@ -187,40 +324,87 @@ public class MenuItemComponent
         return await VariantItems.CountAsync();
     }
 
-    public async Task AddVariantAsync(VariantFormData data)
+    public async Task<List<string>> GetVariantNamesAsync()
+    {
+        await ShowVariantsAsync();
+        var names = new List<string>();
+        var count = await VariantItems.CountAsync();
+
+        for (int i = 0; i < count; i++)
+        {
+            var strong = VariantItems.Nth(i).Locator("strong");
+            if (await strong.IsVisibleAsync())
+            {
+                names.Add((await strong.InnerTextAsync()).Trim());
+            }
+        }
+
+        return names;
+    }
+
+    public async Task OpenAddVariantFormAsync()
     {
         await ShowVariantsAsync();
         await AddVariantButton.ClickAsync();
-
-        var newVariantForm = VariantsSection.Locator(".border.rounded:has(h6:has-text('New Variant'))");
-        await newVariantForm.Locator("input[placeholder='Name']").FillAsync(data.Name);
-        
-        if (data.Price.HasValue)
-            await newVariantForm.Locator("input[placeholder='Price']").FillAsync(data.Price.Value.ToString());
-        
-        if (!string.IsNullOrEmpty(data.Description))
-            await newVariantForm.Locator("textarea[placeholder='Description']").FillAsync(data.Description);
-
-        await newVariantForm.Locator("button:has-text('Add')").ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("variant") && r.Request.Method == "POST");
+        await NewVariantForm.WaitForAsync(new() { Timeout = 5000 });
     }
 
-    public async Task EditVariantAsync(string variantName, VariantFormData newData)
+    public async Task AddVariantAsync(string name, decimal? price = null, string? description = null)
+    {
+        await OpenAddVariantFormAsync();
+
+        await NewVariantForm.Locator("input[placeholder='Name']").FillAsync(name);
+
+        if (price.HasValue)
+        {
+            await NewVariantForm.Locator("input[placeholder='Price']").FillAsync(price.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (!string.IsNullOrEmpty(description))
+        {
+            await NewVariantForm.Locator("textarea[placeholder='Description']").FillAsync(description);
+        }
+
+        await NewVariantForm.Locator("button:has-text('Add')").ClickAsync();
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("Variant") && r.Request.Method == "POST",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
+    }
+
+    public async Task EditVariantAsync(string variantName, string? newName = null, decimal? newPrice = null, string? newDescription = null)
     {
         await ShowVariantsAsync();
         var variant = VariantsSection.Locator($".border.rounded:has(strong:has-text('{variantName}'))");
+
         await variant.Locator("button:has-text('Edit')").ClickAsync();
 
-        await variant.Locator("input[placeholder='Name']").FillAsync(newData.Name);
-        
-        if (newData.Price.HasValue)
-            await variant.Locator("input[placeholder='Price']").FillAsync(newData.Price.Value.ToString());
-        
-        if (!string.IsNullOrEmpty(newData.Description))
-            await variant.Locator("textarea[placeholder='Description']").FillAsync(newData.Description);
+        if (newName != null)
+        {
+            var nameInput = variant.Locator("input[placeholder='Name']");
+            await nameInput.ClearAsync();
+            await nameInput.FillAsync(newName);
+        }
+
+        if (newPrice.HasValue)
+        {
+            var priceInput = variant.Locator("input[placeholder='Price']");
+            await priceInput.ClearAsync();
+            await priceInput.FillAsync(newPrice.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (newDescription != null)
+        {
+            var descInput = variant.Locator("textarea[placeholder='Description']");
+            await descInput.ClearAsync();
+            await descInput.FillAsync(newDescription);
+        }
 
         await variant.Locator("button:has-text('Save')").ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("variant"));
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("Variant") && r.Request.Method == "PUT",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
     public async Task DeleteVariantAsync(string variantName)
@@ -228,22 +412,17 @@ public class MenuItemComponent
         await ShowVariantsAsync();
         var variant = VariantsSection.Locator($".border.rounded:has(strong:has-text('{variantName}'))");
         await variant.Locator("button:has-text('Delete')").ClickAsync();
-        await _page.WaitForResponseAsync(r => r.Url.Contains("variant") && r.Request.Method == "DELETE");
+        await _page.WaitForResponseAsync(
+            r => r.Url.Contains("Variant") && r.Request.Method == "DELETE",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
     }
 
-    // ==================== STATE CHECKS ====================
-
-    public async Task<bool> IsVisibleAsync() 
-        => await _item.IsVisibleAsync();
-
-    public async Task<bool> IsInEditModeAsync() 
-        => await NameInput.IsVisibleAsync();
-
-    public async Task<string> GetNameAsync() 
-        => await _item.Locator("h3").InnerTextAsync();
-
-    public async Task<string> GetPriceDisplayAsync() 
-        => await _item.Locator("small.text-muted").InnerTextAsync();
+    public async Task<bool> VariantExistsAsync(string variantName)
+    {
+        var names = await GetVariantNamesAsync();
+        return names.Contains(variantName);
+    }
 }
 
 public record VariantFormData

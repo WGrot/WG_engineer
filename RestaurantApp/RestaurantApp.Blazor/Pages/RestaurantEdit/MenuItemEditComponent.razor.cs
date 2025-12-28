@@ -35,10 +35,37 @@ public partial class MenuItemEditComponent : ComponentBase
     private int? editingVariantId = null;
     private MenuItemVariantDto newVariant = new MenuItemVariantDto();
     private MenuItemVariantDto editVariant = new MenuItemVariantDto();
-    private void OnEditClicked() => Editing = true;
-    private void OnCancelClicked() => Editing = false;
-    private void OnMoveClicked() => ShowMoveDropdown = !ShowMoveDropdown;
+    
+    // Copy of the item for editing - changes are only applied on save
+    private MenuItemDto editingItem = default!;
 
+    private void OnEditClicked()
+    {
+        // Create a deep copy for editing
+        editingItem = new MenuItemDto
+        {
+            Id = Item.Id,
+            Name = Item.Name,
+            Description = Item.Description,
+            Price = new PriceDto()
+            {
+                Amount = Item.Price.Amount,
+                CurrencyCode = Item.Price.CurrencyCode
+            },
+            Tags = Item.Tags,
+            ThumbnailUrl = Item.ThumbnailUrl
+        };
+        Editing = true;
+    }
+
+    private void OnCancelClicked()
+    {
+        // Simply discard the copy - original Item remains unchanged
+        editingItem = default!;
+        Editing = false;
+    }
+
+    private void OnMoveClicked() => ShowMoveDropdown = !ShowMoveDropdown;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -47,7 +74,16 @@ public partial class MenuItemEditComponent : ComponentBase
 
     private async Task OnSaveClicked()
     {
+        // Apply changes from the copy to the original item
+        Item.Name = editingItem.Name;
+        Item.Description = editingItem.Description;
+        Item.Price.Amount = editingItem.Price.Amount;
+        Item.Price.CurrencyCode = editingItem.Price.CurrencyCode;
+        
         await OnSave.InvokeAsync(Item);
+        
+        // Clean up
+        editingItem = default!;
         Editing = false;
     }
 

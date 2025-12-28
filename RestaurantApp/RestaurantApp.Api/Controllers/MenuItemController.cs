@@ -90,7 +90,7 @@ public class MenuItemController : ControllerBase
     }
 
     [HttpPatch("item/{itemId}/move")]
-    public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int categoryId)
+    public async Task<IActionResult> MoveMenuItem(int itemId, [FromBody] int? categoryId)
     {
         return (await _menuItemService.MoveMenuItemToCategoryAsync(itemId, categoryId)).ToActionResult();
     }

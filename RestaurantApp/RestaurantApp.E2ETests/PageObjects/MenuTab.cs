@@ -8,12 +8,14 @@ public class MenuTab
 
     public MenuTab(IPage page) => _page = page;
 
+    // === MAIN SECTIONS ===
     private ILocator TagsSection => _page.Locator(".card:has(.card-header:has-text('Tags Management'))");
     private ILocator CategoriesSection => _page.Locator(".card:has(.card-header:has-text('Categories'))");
     private ILocator UncategorizedSection => _page.Locator(".card:has(.card-header:has-text('Uncategorized Items'))");
     private ILocator LoadingSpinner => _page.Locator(".spinner");
     private ILocator LoadingContainer => _page.Locator(".loading-container");
 
+    // === TAGS SECTION ===
     private ILocator AddTagButton => TagsSection.Locator(".card-header button:has-text('Add New Tag')");
     private ILocator TagsList => TagsSection.Locator(".list-group .list-group-item");
     private ILocator TagForm => TagsSection.Locator(".card-body .mb-3.justify-content-center");
@@ -22,6 +24,7 @@ public class MenuTab
     private ILocator AddTagSubmitButton => TagsSection.Locator(".card-body .d-flex.justify-content-center button:has-text('Add')");
     private ILocator CancelTagButton => TagsSection.Locator(".card-body button:has-text('Cancel')");
 
+    // === CATEGORIES SECTION ===
     private ILocator AddCategoryButton => CategoriesSection.Locator(".card-header button:has-text('Add New Category')");
     private ILocator CategoryList => CategoriesSection.Locator(".card-body > .list-group > .list-group-item");
     private ILocator CategoryForm => CategoriesSection.Locator(".card-body > .mb-3");
@@ -31,6 +34,7 @@ public class MenuTab
     private ILocator AddCategorySubmitButton => CategoriesSection.Locator(".card-body > .mb-3 button:has-text('Add')");
     private ILocator CancelCategoryButton => CategoriesSection.Locator(".card-body > .mb-3 button:has-text('Cancel')");
 
+    // === CATEGORY EDIT FORM ===
     private ILocator CategoryEditForm => CategoriesSection.Locator(".card.shadow-sm:has(h6:has-text('Edit Category'))");
     private ILocator CategoryEditNameInput => CategoryEditForm.Locator("input[placeholder='Category Name']");
     private ILocator CategoryEditDescriptionInput => CategoryEditForm.Locator("input[placeholder='Description']");
@@ -38,27 +42,24 @@ public class MenuTab
     private ILocator CategoryEditActiveCheckbox => CategoryEditForm.Locator("input[type='checkbox']");
     private ILocator CategoryEditSaveButton => CategoryEditForm.Locator("button:has-text('Save')");
     private ILocator CategoryEditCancelButton => CategoryEditForm.Locator("button:has-text('Cancel')");
-    
+
+    // === CREATE MENU (when no menu exists) ===
     private ILocator MenuNameInput => _page.Locator("#menuName");
     private ILocator MenuDescriptionInput => _page.Locator("#MenuDescription");
     private ILocator CreateMenuButton => _page.Locator("button:has-text('Add Menu')");
+
+    // ==================== WAIT HELPERS ====================
     
-    private async Task WaitForApiAndRefreshAsync(string urlContains, string method = "POST")
+    private async Task ClickAndWaitForApiAsync(ILocator button, string urlContains, string method = "POST")
     {
-        // Wait for the API call
-        await _page.WaitForResponseAsync(
+        await _page.RunAndWaitForResponseAsync(
+            async () => await button.ClickAsync(),
             r => r.Url.Contains(urlContains, StringComparison.OrdinalIgnoreCase) && 
                  r.Request.Method == method && 
                  r.Status == 200,
             new() { Timeout = 10000 });
-        
-        // Wait for subsequent GET (data refresh)
-        await _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Status == 200,
-            new() { Timeout = 5000 });
-        
-        // Allow Blazor to re-render
-        await _page.WaitForTimeoutAsync(300);
+
+        await _page.WaitForTimeoutAsync(500);
     }
 
     // ==================== TAGS ACTIONS ====================
@@ -67,6 +68,16 @@ public class MenuTab
     {
         await AddTagButton.ClickAsync();
         await NewTagNameInput.WaitForAsync(new() { Timeout = 5000 });
+    }
+
+    public async Task AddTagAsync(string name, string colorHex = "#FF0000")
+    {
+        await OpenAddTagFormAsync();
+        await NewTagNameInput.FillAsync(name);
+        
+        await NewTagColorInput.EvaluateAsync($"el => {{ el.value = '{colorHex.ToLowerInvariant()}'; el.dispatchEvent(new Event('input', {{ bubbles: true }})); }}");
+        
+        await ClickAndWaitForApiAsync(AddTagSubmitButton, "MenuItemTag", "POST");
     }
 
     public async Task CancelAddTagAsync()
@@ -78,8 +89,8 @@ public class MenuTab
     public async Task DeleteTagAsync(string tagName)
     {
         var tagItem = TagsSection.Locator($".list-group-item:has(.badge:has-text('{tagName}'))");
-        await tagItem.Locator("button:has(.bi-trash)").ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuItemTag", "DELETE");
+        var deleteButton = tagItem.Locator("button:has(.bi-trash)");
+        await ClickAndWaitForApiAsync(deleteButton, "MenuItemTag", "DELETE");
     }
 
     public async Task<int> GetTagCountAsync()
@@ -113,7 +124,8 @@ public class MenuTab
         var names = await GetAllTagNamesAsync();
         return names.Contains(tagName);
     }
-    
+
+    // ==================== CATEGORIES ACTIONS ====================
 
     public async Task OpenAddCategoryFormAsync()
     {
@@ -136,8 +148,7 @@ public class MenuTab
             await NewCategoryOrderInput.FillAsync(displayOrder.Value.ToString());
         }
 
-        await AddCategorySubmitButton.ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuCategory", "POST");
+        await ClickAndWaitForApiAsync(AddCategorySubmitButton, "MenuCategory", "POST");
     }
 
     public async Task CancelAddCategoryAsync()
@@ -216,8 +227,7 @@ public class MenuTab
             }
         }
 
-        await CategoryEditSaveButton.ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuCategory", "PUT");
+        await ClickAndWaitForApiAsync(CategoryEditSaveButton, "MenuCategory", "PUT");
     }
 
     public async Task CancelEditCategoryAsync()
@@ -229,8 +239,8 @@ public class MenuTab
     public async Task DeleteCategoryAsync(string categoryName)
     {
         var category = GetCategoryLocator(categoryName);
-        await category.Locator("button:has(.bi-trash)").ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuCategory", "DELETE");
+        var deleteButton = category.Locator("button:has(.bi-trash)");
+        await ClickAndWaitForApiAsync(deleteButton, "MenuCategory", "DELETE");
     }
 
     public async Task<int> GetCategoryCountAsync()
@@ -281,6 +291,8 @@ public class MenuTab
         return null;
     }
 
+    // ==================== MENU ITEMS ACTIONS ====================
+
     public async Task OpenAddItemFormAsync(string? categoryName = null)
     {
         if (string.IsNullOrEmpty(categoryName))
@@ -312,7 +324,8 @@ public class MenuTab
         
         if (data.Price.HasValue)
         {
-            await form.Locator("input[placeholder='Price']").FillAsync(data.Price.Value.ToString());
+            await form.Locator("input[placeholder='Price']").FillAsync(
+                data.Price.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
         
         if (!string.IsNullOrEmpty(data.Currency))
@@ -320,8 +333,8 @@ public class MenuTab
             await form.Locator("input[placeholder*='Currency']").FillAsync(data.Currency);
         }
 
-        await form.Locator("button:has-text('Add')").ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuItem", "POST");
+        var addButton = form.Locator("button:has-text('Add')");
+        await ClickAndWaitForApiAsync(addButton, "MenuItem", "POST");
     }
 
     public async Task<int> GetItemCountInCategoryAsync(string categoryName)
@@ -331,6 +344,8 @@ public class MenuTab
         // Menu items are wrapped in MenuItemEditComponent
         return await category.Locator(".mt-2.ps-3 > .d-flex.flex-column > div").CountAsync();
     }
+
+    // ==================== UNCATEGORIZED SECTION ====================
 
     public async Task ExpandUncategorizedAsync()
     {
@@ -368,6 +383,8 @@ public class MenuTab
         return await UncategorizedSection.Locator(".list-group .list-group-item").CountAsync();
     }
 
+    // ==================== MENU CREATION ====================
+
     public async Task<bool> NeedsMenuCreationAsync()
         => await MenuNameInput.IsVisibleAsync();
 
@@ -380,21 +397,23 @@ public class MenuTab
             await MenuDescriptionInput.FillAsync(description);
         }
 
-        await CreateMenuButton.ClickAsync();
-        await WaitForApiAndRefreshAsync("Menu", "POST");
+        await ClickAndWaitForApiAsync(CreateMenuButton, "Menu", "POST");
     }
+
+    // ==================== LOADING STATE ====================
 
     public async Task<bool> IsLoadingAsync()
         => await LoadingContainer.IsVisibleAsync() || await LoadingSpinner.IsVisibleAsync();
 
     public async Task WaitForLoadAsync()
     {
+
         try
         {
             await LoadingContainer.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
         }
         catch (TimeoutException) { }
-        
+
         await LoadingContainer.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 15000 });
         
         try
@@ -405,28 +424,27 @@ public class MenuTab
         catch (TimeoutException) { }
     }
     
-    private async Task SetColorInputAsync(ILocator colorInput, string colorHex)
-    {
-        var normalizedColor = colorHex.ToLowerInvariant();
-        await colorInput.EvaluateAsync($@"el => {{ 
-        el.value = '{normalizedColor}'; 
-        el.dispatchEvent(new Event('input', {{ bubbles: true }})); 
-        el.dispatchEvent(new Event('change', {{ bubbles: true }})); 
-    }}");
-    }
-
-    public async Task AddTagAsync(string name, string colorHex = "#ff0000")
-    {
-        await OpenAddTagFormAsync();
-        await NewTagNameInput.FillAsync(name);
-        await SetColorInputAsync(NewTagColorInput, colorHex);
-        await AddTagSubmitButton.ClickAsync();
-        await WaitForApiAndRefreshAsync("MenuItemTag", "POST");
-    }
 
     private ILocator GetCategoryLocator(string categoryName)
         => CategoriesSection.Locator($".list-group-item:has(h4:has-text('{categoryName}'))");
+
+    // ==================== MENU ITEM ACCESS ====================
+    public MenuItemComponent GetMenuItem(string itemName)
+        => new MenuItemComponent(_page, itemName);
+    public async Task<bool> ItemExistsInCategoryAsync(string itemName, string categoryName)
+    {
+        await ExpandCategoryAsync(categoryName);
+        var item = GetMenuItem(itemName);
+        return await item.IsVisibleAsync();
+    }
+    public async Task<bool> ItemExistsInUncategorizedAsync(string itemName)
+    {
+        await ExpandUncategorizedAsync();
+        var item = GetMenuItem(itemName);
+        return await item.IsVisibleAsync();
+    }
 }
+
 
 public record MenuItemFormData
 {

@@ -60,6 +60,10 @@ public partial class MenuTab : ComponentBase
         try
         {
             menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+        
+            // Clear the list before repopulating
+            uncategorizedItems.Clear();
+        
             foreach (var item in menu.Items)
             {
                 if (item.CategoryId == null)
