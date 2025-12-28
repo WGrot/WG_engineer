@@ -145,6 +145,8 @@ public class ManageReservationsPage
         await ClearFiltersButton.ClickAsync();
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
+    
+    public async Task<bool> IsNoReservationsMessageVisibleAsync() => await NoReservationsText.IsVisibleAsync();
 
     // Page size actions
     public async Task SetPageSizeAsync(int size)

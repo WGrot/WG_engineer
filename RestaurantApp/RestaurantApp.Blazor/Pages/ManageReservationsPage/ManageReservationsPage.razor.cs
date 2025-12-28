@@ -166,9 +166,10 @@ partial class ManageReservationsPage
         }
     }
 
-    private void ClearParams()
+    private async Task ClearParams()
     {
         searchParameters = new ReservationSearchParameters();
+        await LoadInitialReservations();
     }
     
     private void HandleReservationDeleted(TableReservationDto deletedReservation)
