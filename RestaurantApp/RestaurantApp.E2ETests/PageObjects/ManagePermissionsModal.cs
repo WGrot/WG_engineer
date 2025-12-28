@@ -8,20 +8,21 @@ public class ManagePermissionsModal
 
     public ManagePermissionsModal(IPage page) => _page = page;
 
-    private ILocator Modal => _page.Locator(".modal:has-text('Manage permissions')");
+    // Fixed: Use .modal.show to target visible modal
+    private ILocator Modal => _page.Locator(".modal.show:has-text('Manage permissions')");
     private ILocator RoleSelect => Modal.Locator("select");
     private ILocator SaveButton => Modal.Locator("button:has-text('Save changes')");
     private ILocator CancelButton => Modal.Locator("button:has-text('Cancel')");
     private ILocator CloseButton => Modal.Locator(".btn-close");
     private ILocator Spinner => Modal.Locator(".spinner-border");
-    private ILocator LoadingSpinner => Modal.Locator(".spinner-border:has-text('Loading permissions')");
+    private ILocator LoadingSpinner => Modal.Locator(".spinner-border");
     private ILocator IsActiveCheckbox => Modal.Locator("#isActive");
 
     // Employee info card
     private ILocator EmployeeInfoCard => Modal.Locator(".card").First;
     private ILocator CurrentRoleBadge => Modal.Locator(".badge.bg-primary");
 
-    // Permission checkboxes
+    // Permission checkboxes - match the actual IDs from Blazor component
     private ILocator GetPermissionCheckbox(PermissionType permission) 
         => Modal.Locator($"#permission-{permission}");
 
@@ -29,18 +30,47 @@ public class ManagePermissionsModal
         => Modal.Locator(".form-check-input[id^='permission-']");
 
     // Actions
-    public async Task SelectRoleAsync(RestaurantRole role)
+    public async Task WaitForVisibleAsync()
     {
-        await RoleSelect.SelectOptionAsync(role.ToString());
+        await Modal.WaitForAsync(new() { Timeout = 5000 });
+    }
+
+    public async Task WaitForLoadAsync()
+    {
+        // Wait for loading spinner to appear and then disappear
+        try
+        {
+            await LoadingSpinner.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
+        }
+        catch (TimeoutException) { }
+        
+        await LoadingSpinner.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(300);
+    }
+
+    public async Task SelectRoleAsync(string role)
+    {
+        await RoleSelect.SelectOptionAsync(role);
     }
 
     public async Task SetPermissionAsync(PermissionType permission, bool enabled)
     {
         var checkbox = GetPermissionCheckbox(permission);
+        await checkbox.WaitForAsync(new() { Timeout = 5000 });
         var isChecked = await checkbox.IsCheckedAsync();
 
         if (isChecked != enabled)
             await checkbox.ClickAsync();
+    }
+
+    public async Task EnablePermissionAsync(PermissionType permission)
+    {
+        await SetPermissionAsync(permission, true);
+    }
+
+    public async Task DisablePermissionAsync(PermissionType permission)
+    {
+        await SetPermissionAsync(permission, false);
     }
 
     public async Task SetPermissionsAsync(params PermissionType[] permissionsToEnable)
@@ -73,25 +103,27 @@ public class ManagePermissionsModal
     public async Task SaveAsync()
     {
         await SaveButton.ClickAsync();
-        // Wait for both API calls (permissions + role/details)
-        await _page.WaitForResponseAsync(r => r.Url.Contains("Permissions"));
+    }
+
+    public async Task SaveAndWaitForResponseAsync()
+    {
+        await _page.RunAndWaitForResponseAsync(
+            async () => await SaveButton.ClickAsync(),
+            r => r.Url.Contains("Permissions") && r.Status == 200,
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(500);
     }
 
     public async Task SaveAndCloseAsync()
     {
-        await SaveAsync();
-        await Modal.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        await SaveAndWaitForResponseAsync();
+        await Modal.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 5000 });
     }
 
     public async Task CloseAsync()
     {
         await CancelButton.ClickAsync();
         await Modal.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
-    }
-
-    public async Task WaitForLoadAsync()
-    {
-        await LoadingSpinner.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
     }
 
     // State checks
@@ -108,18 +140,34 @@ public class ManagePermissionsModal
         => await IsActiveCheckbox.IsCheckedAsync();
 
     public async Task<string> GetCurrentRoleAsync() 
-        => await CurrentRoleBadge.InnerTextAsync();
+        => (await CurrentRoleBadge.InnerTextAsync()).Trim();
 
     public async Task<string> GetSelectedRoleAsync() 
         => await RoleSelect.InputValueAsync();
 
+    public async Task<string> GetEmployeeNameFromTitleAsync()
+    {
+        var title = await Modal.Locator(".modal-title").InnerTextAsync();
+        // Title format: "Manage permissions - FirstName LastName"
+        return title.Replace("Manage permissions -", "").Trim();
+    }
+
     public async Task<EmployeeInfoData> GetEmployeeInfoAsync()
     {
-        var cardText = await EmployeeInfoCard.InnerTextAsync();
-        // Parse from card - simplified
+        var card = EmployeeInfoCard;
+        var fullNameElement = card.Locator("p:has-text('Full name:')");
+        var emailElement = card.Locator("p:has-text('Email:')");
+        var phoneElement = card.Locator("p:has-text('Phone:')");
+        
         return new EmployeeInfoData
         {
-            FullName = await Modal.Locator(".modal-title").InnerTextAsync(),
+            FullName = await GetEmployeeNameFromTitleAsync(),
+            Email = await emailElement.IsVisibleAsync() 
+                ? (await emailElement.InnerTextAsync()).Replace("Email:", "").Trim() 
+                : null,
+            Phone = await phoneElement.IsVisibleAsync() 
+                ? (await phoneElement.InnerTextAsync()).Replace("Phone:", "").Trim() 
+                : null,
             CurrentRole = await GetCurrentRoleAsync()
         };
     }
@@ -145,8 +193,14 @@ public class ManagePermissionsModal
         var checkbox = GetPermissionCheckbox(permission);
         return await checkbox.IsCheckedAsync();
     }
+
+    public async Task<bool> IsSaveButtonEnabledAsync()
+    {
+        return await SaveButton.IsEnabledAsync();
+    }
 }
 
+// Must match PermissionTypeEnumDto from backend
 public enum PermissionType
 {
     ManageRestaurant,
