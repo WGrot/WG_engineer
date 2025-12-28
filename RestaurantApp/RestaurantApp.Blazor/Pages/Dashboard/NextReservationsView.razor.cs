@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Blazor.Helpers;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.SearchParameters;
@@ -12,6 +13,8 @@ namespace RestaurantApp.Blazor.Pages.Dashboard;
 public partial class NextReservationsView : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
+    
+    [Inject] private MessageService MessageService { get; set; } = null!;
 
     [Parameter] public string Title { get; set; } = "Next Reservations";
     [Parameter] public int RestaurantId { get; set; }
@@ -111,6 +114,10 @@ public partial class NextReservationsView : ComponentBase
         var response = await Http.RequestWithHeaderAsync(HttpMethod.Put,
             $"api/reservation/manage/{reservationId}/change-status", ReservationStatusEnumDto.Confirmed, "X-Restaurant-Id",
             restaurantId.ToString());
+        if (response.IsSuccessStatusCode)
+        {
+            MessageService.AddSuccess("Success", "Reservation approved");
+        }
         await LoadReservations();
     }
     

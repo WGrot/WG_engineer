@@ -71,14 +71,11 @@ public class NextReservationsSection
         await WaitForLoadAsync();
         var card = ReservationCards.Nth(index);
         var approveButton = card.Locator(".badge:has-text('Approve')");
-        
+    
         if (await approveButton.IsVisibleAsync())
         {
-            await _page.RunAndWaitForResponseAsync(
-                async () => await approveButton.ClickAsync(),
-                r => r.Url.Contains("Reservation") && (r.Request.Method == "PUT" || r.Request.Method == "PATCH"),
-                new() { Timeout = 10000 });
-            await _page.WaitForTimeoutAsync(500);
+            await approveButton.ClickAsync();
+            await _page.WaitForTimeoutAsync(1000);
         }
     }
 
