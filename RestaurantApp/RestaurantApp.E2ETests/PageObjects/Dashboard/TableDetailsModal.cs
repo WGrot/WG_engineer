@@ -25,10 +25,22 @@ public class TableDetailsModal
     private ILocator DayNameText => Modal.Locator(".d-flex.flex-column strong");
     
     // Availability map
-    private ILocator AvailabilityMap => Modal.Locator("app-availability-map, .availability-map");
+    private ILocator AvailabilityMap => Modal.Locator("app-availability-map, [class*='availability']");
+    private ILocator AvailableSlots => Modal.Locator(".segment-zero, [class*='available']");
     
-    // Reservation section (appears after selecting time slot)
-    private ILocator ReservationSection => Modal.Locator("app-table-reservation-section");
+    // Reservation section (TableReservationSection)
+    private ILocator ReservationSection => Modal.Locator(".container.mt-4:has(h3:has-text('Book Table'))");
+    private ILocator StartTimeInput => Modal.Locator("#startTime");
+    private ILocator EndTimeInput => Modal.Locator("#endTime");
+    private ILocator GuestsInput => Modal.Locator("#guests");
+    private ILocator CustomerNameInput => Modal.Locator("#name");
+    private ILocator CustomerPhoneInput => Modal.Locator("#phone");
+    private ILocator CustomerEmailInput => Modal.Locator("#email");
+    private ILocator SpecialRequestsInput => Modal.Locator("#notes");
+    private ILocator ConfirmReservationButton => Modal.Locator("button:has-text('Confirm Reservation')");
+    private ILocator ProcessingSpinner => Modal.Locator(".spinner-border");
+    private ILocator TimeWarningAlert => Modal.Locator(".alert-warning:has-text('end time is after the start time')");
+    private ILocator MaxCapacityText => Modal.Locator("small:has-text('Max capacity')");
 
     public async Task WaitForVisibleAsync()
     {
@@ -54,7 +66,6 @@ public class TableDetailsModal
     public async Task<int> GetTableNumberFromTitleAsync()
     {
         var title = await GetTitleAsync();
-        // Title format: "Table X details"
         var match = System.Text.RegularExpressions.Regex.Match(title, @"Table (\d+)");
         return match.Success ? int.Parse(match.Groups[1].Value) : 0;
     }
@@ -113,14 +124,137 @@ public class TableDetailsModal
     // Availability map interaction
     public async Task ClickAvailableSlotAsync(int slotIndex)
     {
-        var slots = Modal.Locator(".availability-slot, .segment-zero");
+        var slots = AvailableSlots;
+        var count = await slots.CountAsync();
+        
+        if (slotIndex >= count)
+        {
+            throw new InvalidOperationException($"Slot index {slotIndex} is out of range. Available slots: {count}");
+        }
+        
         await slots.Nth(slotIndex).ClickAsync();
         await _page.WaitForTimeoutAsync(300);
     }
 
+    public async Task<int> GetAvailableSlotsCountAsync()
+    {
+        return await AvailableSlots.CountAsync();
+    }
+
+    // Reservation section checks
     public async Task<bool> IsReservationSectionVisibleAsync()
     {
         return await ReservationSection.IsVisibleAsync();
+    }
+
+    public async Task<bool> IsConfirmButtonVisibleAsync()
+    {
+        return await ConfirmReservationButton.IsVisibleAsync();
+    }
+
+    public async Task<bool> IsTimeWarningVisibleAsync()
+    {
+        return await TimeWarningAlert.IsVisibleAsync();
+    }
+
+    public async Task<bool> IsProcessingAsync()
+    {
+        return await ProcessingSpinner.IsVisibleAsync();
+    }
+
+    // Reservation form - time and guests
+    public async Task SetStartTimeAsync(string time)
+    {
+        await StartTimeInput.FillAsync(time);
+    }
+
+    public async Task SetEndTimeAsync(string time)
+    {
+        await EndTimeInput.FillAsync(time);
+    }
+
+    public async Task SetGuestsAsync(int guests)
+    {
+        await GuestsInput.FillAsync(guests.ToString());
+    }
+
+    public async Task<string> GetStartTimeAsync()
+    {
+        return await StartTimeInput.InputValueAsync();
+    }
+
+    public async Task<string> GetEndTimeAsync()
+    {
+        return await EndTimeInput.InputValueAsync();
+    }
+
+    public async Task<int> GetMaxCapacityAsync()
+    {
+        var text = await MaxCapacityText.InnerTextAsync();
+        var match = System.Text.RegularExpressions.Regex.Match(text, @"(\d+)");
+        return match.Success ? int.Parse(match.Groups[1].Value) : 0;
+    }
+
+    // Reservation form - customer info
+    public async Task FillCustomerInfoAsync(TableReservationCustomerData data)
+    {
+        if (!string.IsNullOrEmpty(data.Name))
+            await CustomerNameInput.FillAsync(data.Name);
+        
+        if (!string.IsNullOrEmpty(data.Phone))
+            await CustomerPhoneInput.FillAsync(data.Phone);
+        
+        if (!string.IsNullOrEmpty(data.Email))
+            await CustomerEmailInput.FillAsync(data.Email);
+        
+        if (!string.IsNullOrEmpty(data.SpecialRequests))
+            await SpecialRequestsInput.FillAsync(data.SpecialRequests);
+    }
+
+    public async Task<bool> IsCustomerFormVisibleAsync()
+    {
+        return await CustomerNameInput.IsVisibleAsync();
+    }
+
+    // Confirm reservation
+    public async Task ConfirmReservationAsync()
+    {
+        await ConfirmReservationButton.ClickAsync();
+    }
+
+    public async Task ConfirmReservationAndWaitAsync()
+    {
+        await _page.RunAndWaitForResponseAsync(
+            async () => await ConfirmReservationButton.ClickAsync(),
+            r => r.Url.Contains("api/Reservation") && r.Request.Method == "POST",
+            new() { Timeout = 10000 });
+        await _page.WaitForTimeoutAsync(500);
+    }
+
+    // Full flow helper for creating reservation via table details
+    public async Task CreateReservationAsync(TableReservationFormData data)
+    {
+        // Set time
+        if (!string.IsNullOrEmpty(data.StartTime))
+            await SetStartTimeAsync(data.StartTime);
+        
+        if (!string.IsNullOrEmpty(data.EndTime))
+            await SetEndTimeAsync(data.EndTime);
+        
+        if (data.Guests.HasValue)
+            await SetGuestsAsync(data.Guests.Value);
+        
+        // Fill customer info
+        await FillCustomerInfoAsync(new TableReservationCustomerData
+        {
+            Name = data.CustomerName,
+            Phone = data.CustomerPhone,
+            Email = data.CustomerEmail,
+            SpecialRequests = data.SpecialRequests
+        });
+        
+        // Confirm
+        await ConfirmReservationAndWaitAsync();
     }
 }
 
@@ -129,4 +263,23 @@ public record TableDetailsData
     public int TableNumber { get; set; }
     public int Seats { get; set; }
     public string? Location { get; set; }
+}
+
+public record TableReservationCustomerData
+{
+    public string? Name { get; init; }
+    public string? Phone { get; init; }
+    public string? Email { get; init; }
+    public string? SpecialRequests { get; init; }
+}
+
+public record TableReservationFormData
+{
+    public string? StartTime { get; init; }
+    public string? EndTime { get; init; }
+    public int? Guests { get; init; }
+    public string? CustomerName { get; init; }
+    public string? CustomerPhone { get; init; }
+    public string? CustomerEmail { get; init; }
+    public string? SpecialRequests { get; init; }
 }
