@@ -5,6 +5,7 @@ using RestaurantApp.E2ETests.TestSetup;
 
 namespace RestaurantApp.E2ETests.UseCaseTests.EmployeeReservations;
 
+[TestFixture]
 public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
 {
     private LoginPage _loginPage = null!;
