@@ -1,14 +1,14 @@
-﻿// PageObjects/Modals/AddEmployeeModal.cs
+﻿using Microsoft.Playwright;
 
-using Microsoft.Playwright;
+namespace RestaurantApp.E2ETests.PageObjects;
 
 public class AddEmployeeModal
 {
     private readonly IPage _page;
 
     public AddEmployeeModal(IPage page) => _page = page;
-
-    private ILocator Modal => _page.Locator(".modal:has-text('Add new employee')");
+    
+    private ILocator Modal => _page.Locator(".modal.show:has(.modal-title:has-text('Add new employee'))");
     private ILocator FirstNameInput => Modal.Locator("input").First;
     private ILocator LastNameInput => Modal.Locator("input").Nth(1);
     private ILocator EmailInput => Modal.Locator("input[type='email']");
@@ -22,27 +22,38 @@ public class AddEmployeeModal
     // Actions
     public async Task FillFormAsync(AddEmployeeFormData data)
     {
-        await FirstNameInput.FillAsync(data.FirstName);
-        await LastNameInput.FillAsync(data.LastName);
-        await EmailInput.FillAsync(data.Email);
+        if (!string.IsNullOrEmpty(data.FirstName))
+            await FirstNameInput.FillAsync(data.FirstName);
+        
+        if (!string.IsNullOrEmpty(data.LastName))
+            await LastNameInput.FillAsync(data.LastName);
+        
+        if (!string.IsNullOrEmpty(data.Email))
+            await EmailInput.FillAsync(data.Email);
         
         if (!string.IsNullOrEmpty(data.PhoneNumber))
             await PhoneInput.FillAsync(data.PhoneNumber);
         
-        if (data.Role.HasValue)
-            await RoleSelect.SelectOptionAsync(data.Role.Value.ToString());
+        if (!string.IsNullOrEmpty(data.Role))
+            await RoleSelect.SelectOptionAsync(data.Role);
     }
 
     public async Task SaveAsync()
     {
         await SaveButton.ClickAsync();
-        await _page.WaitForResponseAsync(r => 
-            r.Url.Contains("api/User") && r.Request.Method == "POST");
+    }
+
+    public async Task SaveAndWaitForResponseAsync()
+    {
+        await _page.RunAndWaitForResponseAsync(
+            async () => await SaveButton.ClickAsync(),
+            r => r.Url.Contains("api/User") && r.Request.Method == "POST",
+            new() { Timeout = 10000 });
     }
 
     public async Task SaveAndWaitForSuccessAsync()
     {
-        await SaveAsync();
+        await SaveAndWaitForResponseAsync();
         // Modal closes after 2 second delay on success
         await Modal.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 5000 });
     }
@@ -55,6 +66,11 @@ public class AddEmployeeModal
             await CloseButton.ClickAsync();
 
         await Modal.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+    }
+
+    public async Task WaitForVisibleAsync()
+    {
+        await Modal.WaitForAsync(new() { Timeout = 5000 });
     }
 
     // State checks
@@ -77,5 +93,5 @@ public record AddEmployeeFormData
     public string LastName { get; init; } = "";
     public string Email { get; init; } = "";
     public string? PhoneNumber { get; init; }
-    public RestaurantRole? Role { get; init; }
+    public string? Role { get; init; }  
 }

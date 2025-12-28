@@ -120,6 +120,20 @@ public class EmployeesTab
         var badge = card.Locator(".badge");
         return await badge.IsVisibleAsync() ? await badge.InnerTextAsync() : null;
     }
+    public async Task<bool> IsSuccessModalVisibleAsync()
+        => await SuccessModal.IsVisibleAsync();
+
+    public async Task<string?> GetSuccessModalEmailAsync()
+    {
+        if (!await SuccessModal.IsVisibleAsync())
+            return null;
+    
+        var emailElement = SuccessModal.Locator("strong");
+        if (await emailElement.IsVisibleAsync())
+            return await emailElement.InnerTextAsync();
+    
+        return null;
+    }
 }
 
 public record EmployeeCardData
