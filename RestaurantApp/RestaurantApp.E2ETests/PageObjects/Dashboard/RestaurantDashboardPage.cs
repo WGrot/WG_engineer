@@ -40,6 +40,21 @@ public class RestaurantDashboardPage
     private ILocator AvailableTablesCard => _page.Locator(".card:has(h6:has-text('Available Tables'))");
     private ILocator AvailableSeatsCard => _page.Locator(".card:has(h6:has-text('Available Seats'))");
     private ILocator LastWeekReservationsCard => _page.Locator(".card:has(h6:has-text('Reservations in last week'))");
+    
+    private ILocator SuccessToast => _page.Locator(".toast.show.border-success");
+
+
+    public async Task<bool> IsSuccessToastVisibleAsync()
+    {
+        return await SuccessToast.IsVisibleAsync();
+    }
+    
+
+    public async Task WaitForSuccessToastAsync(int timeoutMs = 5000)
+    {
+        await SuccessToast.WaitForAsync(new() { Timeout = timeoutMs });
+    }
+    
 
     // Navigation
     public async Task NavigateAsync()

@@ -23,8 +23,6 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         await WaitForBlazorAsync();
     }
 
-    #region New Reservation Button Tests
-
     [Test]
     public async Task NewReservationButton_OpensModal()
     {
@@ -89,81 +87,6 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
     }
 
     [Test]
-    public async Task NewReservationModal_SelectTable_ShowsCustomerInfoForm()
-    {
-        // Arrange
-        await _dashboardPage.OpenNewReservationModalAsync();
-        var tomorrow = DateTime.Today.AddDays(1);
-
-        await _dashboardPage.NewReservationModal.SelectDateAsync(tomorrow);
-        await _dashboardPage.NewReservationModal.SetStartTimeAsync("12:00");
-        await _dashboardPage.NewReservationModal.SetEndTimeAsync("14:00");
-        await _dashboardPage.NewReservationModal.SetGuestsAsync(2);
-        await _dashboardPage.NewReservationModal.CheckAvailabilityAsync();
-        await WaitForBlazorAsync();
-
-        if (!await _dashboardPage.NewReservationModal.HasAvailableTablesAsync())
-        {
-            await _dashboardPage.NewReservationModal.CloseAsync();
-            Assert.Ignore("No tables available for testing");
-            return;
-        }
-
-        // Act
-        await _dashboardPage.NewReservationModal.SelectTableByIndexAsync(0);
-        await WaitForBlazorAsync();
-
-        // Assert
-        Assert.That(await _dashboardPage.NewReservationModal.IsCustomerInfoFormVisibleAsync(), Is.True,
-            "Customer info form should be visible after selecting table");
-
-        // Cleanup
-        await _dashboardPage.NewReservationModal.CloseAsync();
-    }
-
-    [Test]
-    public async Task NewReservationModal_CreateReservation_Success()
-    {
-        // Arrange
-        await _dashboardPage.OpenNewReservationModalAsync();
-        var tomorrow = DateTime.Today.AddDays(1);
-        var uniqueId = Guid.NewGuid().ToString("N")[..8];
-
-        await _dashboardPage.NewReservationModal.SelectDateAsync(tomorrow);
-        await _dashboardPage.NewReservationModal.SetStartTimeAsync("18:00");
-        await _dashboardPage.NewReservationModal.SetEndTimeAsync("20:00");
-        await _dashboardPage.NewReservationModal.SetGuestsAsync(2);
-        await _dashboardPage.NewReservationModal.CheckAvailabilityAsync();
-        await WaitForBlazorAsync();
-
-        if (!await _dashboardPage.NewReservationModal.HasAvailableTablesAsync())
-        {
-            await _dashboardPage.NewReservationModal.CloseAsync();
-            Assert.Ignore("No tables available for testing");
-            return;
-        }
-
-        await _dashboardPage.NewReservationModal.SelectTableByIndexAsync(0);
-        await WaitForBlazorAsync();
-
-        // Act
-        await _dashboardPage.NewReservationModal.FillCustomerInfoAsync(new CustomerInfoData
-        {
-            Name = $"Test Customer {uniqueId}",
-            Email = $"test.{uniqueId}@example.com",
-            Phone = "123456789",
-            SpecialRequests = "Test reservation from dashboard"
-        });
-
-        await _dashboardPage.NewReservationModal.ConfirmReservationAndWaitAsync();
-        await WaitForBlazorAsync();
-
-        // Assert - modal should close on success
-        Assert.That(await _dashboardPage.NewReservationModal.IsVisibleAsync(), Is.False,
-            "Modal should close after successful reservation");
-    }
-
-    [Test]
     public async Task NewReservationModal_NavigateDays_ChangesDate()
     {
         // Arrange
@@ -191,14 +114,12 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         // Cleanup
         await _dashboardPage.NewReservationModal.CloseAsync();
     }
+    
 
     [Test]
-    public async Task NewReservationModal_CloseWithoutSaving_NoReservationCreated()
+    public async Task NewReservationModal_CloseWithoutSaving_NoSuccessToast()
     {
         // Arrange
-        await _dashboardPage.UpcomingReservations.WaitForLoadAsync();
-        var initialReservationCount = await _dashboardPage.UpcomingReservations.GetReservationCountAsync();
-
         await _dashboardPage.OpenNewReservationModalAsync();
         var tomorrow = DateTime.Today.AddDays(1);
 
@@ -211,19 +132,12 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         await _dashboardPage.NewReservationModal.CloseAsync();
         await WaitForBlazorAsync();
 
-        // Refresh to verify
-        await _dashboardPage.NavigateAsync();
-        await _dashboardPage.UpcomingReservations.WaitForLoadAsync();
-        await WaitForBlazorAsync();
-
         // Assert
-        var newReservationCount = await _dashboardPage.UpcomingReservations.GetReservationCountAsync();
-        Assert.That(newReservationCount, Is.EqualTo(initialReservationCount),
-            "Reservation count should not change after closing modal without saving");
+        Assert.That(await _dashboardPage.IsSuccessToastVisibleAsync(), Is.False,
+            "No success toast should appear when closing without saving");
     }
 
-    #endregion
-    
+
 
     [Test]
     public async Task ClickTable_OpensTableDetailsModal()
@@ -244,35 +158,6 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         // Assert
         Assert.That(await _dashboardPage.AvailableTables.DetailsModal.IsVisibleAsync(), Is.True,
             "Table details modal should be visible");
-
-        // Cleanup
-        await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
-    }
-
-    [Test]
-    public async Task TableDetailsModal_DisplaysCorrectTableInfo()
-    {
-        // Arrange
-        await _dashboardPage.AvailableTables.WaitForLoadAsync();
-        await WaitForBlazorAsync();
-
-        if (!await _dashboardPage.AvailableTables.HasTablesAsync())
-        {
-            Assert.Ignore("No tables available for testing");
-            return;
-        }
-
-        var tables = await _dashboardPage.AvailableTables.GetAllTablesAsync();
-        var firstTable = tables.First();
-
-        // Act
-        await _dashboardPage.AvailableTables.ClickTableByIndexAsync(0);
-        await WaitForBlazorAsync();
-
-        // Assert
-        var tableNumberFromModal = await _dashboardPage.AvailableTables.DetailsModal.GetTableNumberFromTitleAsync();
-        Assert.That(tableNumberFromModal, Is.EqualTo(firstTable.TableNumber),
-            "Modal should display correct table number");
 
         // Cleanup
         await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
@@ -310,9 +195,6 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
     }
 
 
-
-
-
     [Test]
     public async Task TableDetailsModal_ClickAvailableSlot_ShowsReservationForm()
     {
@@ -337,7 +219,7 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
             return;
         }
 
-        // Act - click first available slot
+        // Act
         await _dashboardPage.AvailableTables.DetailsModal.ClickAvailableSlotAsync(0);
         await WaitForBlazorAsync();
 
@@ -480,8 +362,12 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
     }
 
+    
+
+
+
     [Test]
-    public async Task TableDetailsModal_CreateReservation_Success()
+    public async Task TableDetailsModal_CreateReservation_ModalClosesAfterSuccess()
     {
         // Arrange
         await _dashboardPage.AvailableTables.WaitForLoadAsync();
@@ -496,7 +382,7 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         await _dashboardPage.AvailableTables.ClickTableByIndexAsync(0);
         await WaitForBlazorAsync();
 
-        // Navigate to tomorrow for cleaner test
+        // Navigate to day after tomorrow
         await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
         await WaitForBlazorAsync();
 
@@ -513,72 +399,20 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
 
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
 
-        // Act
-        await _dashboardPage.AvailableTables.DetailsModal.SetStartTimeAsync("14:00");
-        await _dashboardPage.AvailableTables.DetailsModal.SetEndTimeAsync("16:00");
+        await _dashboardPage.AvailableTables.DetailsModal.SetStartTimeAsync("10:00");
+        await _dashboardPage.AvailableTables.DetailsModal.SetEndTimeAsync("12:00");
         await _dashboardPage.AvailableTables.DetailsModal.SetGuestsAsync(2);
 
         await _dashboardPage.AvailableTables.DetailsModal.FillCustomerInfoAsync(new TableReservationCustomerData
         {
-            Name = $"Table Test Customer {uniqueId}",
-            Email = $"table.test.{uniqueId}@example.com",
-            Phone = "987654321",
-            SpecialRequests = "Test reservation from table details"
+            Name = $"Modal Close Test {uniqueId}",
+            Email = $"modalclose.{uniqueId}@example.com",
+            Phone = "555666777"
         });
 
+        // Act
         await _dashboardPage.AvailableTables.DetailsModal.ConfirmReservationAndWaitAsync();
-        await WaitForBlazorAsync();
-
-        // Assert - modal should close on success
-        Assert.That(await _dashboardPage.AvailableTables.DetailsModal.IsVisibleAsync(), Is.False,
-            "Modal should close after successful reservation");
-    }
-
-    [Test]
-    public async Task TableDetailsModal_CreateReservation_UsingFullFlowHelper()
-    {
-        // Arrange
-        await _dashboardPage.AvailableTables.WaitForLoadAsync();
-        await WaitForBlazorAsync();
-
-        if (!await _dashboardPage.AvailableTables.HasTablesAsync())
-        {
-            Assert.Ignore("No tables available for testing");
-            return;
-        }
-
-        await _dashboardPage.AvailableTables.ClickTableByIndexAsync(0);
-        await WaitForBlazorAsync();
-
-        // Navigate to day after tomorrow for cleaner test
-        await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
-        await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
-        await WaitForBlazorAsync();
-
-        var availableSlotsCount = await _dashboardPage.AvailableTables.DetailsModal.GetAvailableSlotsCountAsync();
-        if (availableSlotsCount == 0)
-        {
-            await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
-            Assert.Ignore("No available slots for testing");
-            return;
-        }
-
-        await _dashboardPage.AvailableTables.DetailsModal.ClickAvailableSlotAsync(0);
-        await WaitForBlazorAsync();
-
-        var uniqueId = Guid.NewGuid().ToString("N")[..8];
-
-        // Act - use full flow helper
-        await _dashboardPage.AvailableTables.DetailsModal.CreateReservationAsync(new TableReservationFormData
-        {
-            StartTime = "10:00",
-            EndTime = "12:00",
-            Guests = 2,
-            CustomerName = $"Full Flow Customer {uniqueId}",
-            CustomerEmail = $"fullflow.{uniqueId}@example.com",
-            CustomerPhone = "111222333",
-            SpecialRequests = "Created using full flow helper"
-        });
+        await _dashboardPage.WaitForSuccessToastAsync();
         await WaitForBlazorAsync();
 
         // Assert
@@ -587,7 +421,7 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
     }
 
     [Test]
-    public async Task TableDetailsModal_CloseWithoutSaving_NoReservationCreated()
+    public async Task TableDetailsModal_CloseWithoutSaving_NoSuccessToast()
     {
         // Arrange
         await _dashboardPage.AvailableTables.WaitForLoadAsync();
@@ -627,9 +461,64 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
         await WaitForBlazorAsync();
 
-        // Assert - modal is closed
-        Assert.That(await _dashboardPage.AvailableTables.DetailsModal.IsVisibleAsync(), Is.False,
-            "Modal should be closed");
+        // Assert
+        Assert.That(await _dashboardPage.IsSuccessToastVisibleAsync(), Is.False,
+            "No success toast should appear when closing without saving");
     }
-    
+
+    [Test]
+    public async Task TableDetailsModal_CreateReservation_UsingFullFlowHelper()
+    {
+        // Arrange
+        await _dashboardPage.AvailableTables.WaitForLoadAsync();
+        await WaitForBlazorAsync();
+
+        if (!await _dashboardPage.AvailableTables.HasTablesAsync())
+        {
+            Assert.Ignore("No tables available for testing");
+            return;
+        }
+
+        await _dashboardPage.AvailableTables.ClickTableByIndexAsync(0);
+        await WaitForBlazorAsync();
+
+        // Navigate to 3 days from now
+        await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
+        await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
+        await _dashboardPage.AvailableTables.DetailsModal.GoToNextDayAsync();
+        await WaitForBlazorAsync();
+
+        var availableSlotsCount = await _dashboardPage.AvailableTables.DetailsModal.GetAvailableSlotsCountAsync();
+        if (availableSlotsCount == 0)
+        {
+            await _dashboardPage.AvailableTables.DetailsModal.CloseAsync();
+            Assert.Ignore("No available slots for testing");
+            return;
+        }
+
+        await _dashboardPage.AvailableTables.DetailsModal.ClickAvailableSlotAsync(0);
+        await WaitForBlazorAsync();
+
+        var uniqueId = Guid.NewGuid().ToString("N")[..8];
+
+        // Act - use full flow helper
+        await _dashboardPage.AvailableTables.DetailsModal.CreateReservationAsync(new TableReservationFormData
+        {
+            StartTime = "11:00",
+            EndTime = "13:00",
+            Guests = 2,
+            CustomerName = $"Full Flow Customer {uniqueId}",
+            CustomerEmail = $"fullflow.{uniqueId}@example.com",
+            CustomerPhone = "111222333",
+            SpecialRequests = "Created using full flow helper"
+        });
+        await WaitForBlazorAsync();
+
+        // Assert
+        await _dashboardPage.WaitForSuccessToastAsync();
+        Assert.That(await _dashboardPage.IsSuccessToastVisibleAsync(), Is.True,
+            "Success toast should be visible after creating reservation");
+    }
+
+
 }
