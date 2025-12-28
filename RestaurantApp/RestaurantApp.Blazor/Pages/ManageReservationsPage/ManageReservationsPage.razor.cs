@@ -171,6 +171,12 @@ partial class ManageReservationsPage
         searchParameters = new ReservationSearchParameters();
     }
     
+    private void HandleReservationDeleted(TableReservationDto deletedReservation)
+    {
+        reservations.Remove(deletedReservation);
+        StateHasChanged();
+    }
+    
     private void OpenReservationModal(TableReservationDto reservation)
     {
         selectedReservation = reservation;

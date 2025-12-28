@@ -16,6 +16,8 @@ public partial class ReservationDetailsModal : ComponentBase
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
 
     [Parameter] public TableReservationDto? Reservation { get; set; }
+    
+    [Parameter] public EventCallback<TableReservationDto> OnDeleted { get; set; }
 
     private ReservationStatusEnumDto? SelectedStatus;
     private bool IsProcessing;
@@ -66,6 +68,7 @@ public partial class ReservationDetailsModal : ComponentBase
         if (success)
         {
             MessageService.AddSuccess("Success", "Reservation deleted successfully");
+            await OnDeleted.InvokeAsync(Reservation);
         }
         else
         {
@@ -74,7 +77,7 @@ public partial class ReservationDetailsModal : ComponentBase
 
         IsProcessing = false;
         ShowConfirmDelete = false;
-        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
     }
 
     private async Task Close()
