@@ -7,13 +7,14 @@ public class MenuItemComponent
 {
     private readonly IPage _page;
     private readonly string _itemName;
-    
+
     // Locator for VIEW mode (when h3 is visible)
     private ILocator ViewModeCard => _page.Locator($".card.shadow-sm:has(h3:has-text('{_itemName}'))");
-    
+
     // Locator for EDIT mode (when input contains item name)
     // Note: After clicking edit, the h3 disappears and input appears
-    private ILocator EditModeCard => _page.Locator($".card.shadow-sm:has(input[placeholder='Name'])").Filter(new() { Has = _page.Locator($"input[value='{_itemName}']") });
+    private ILocator EditModeCard => _page.Locator($".card.shadow-sm:has(input[placeholder='Name'])")
+        .Filter(new() { Has = _page.Locator($"input[value='{_itemName}']") });
 
     public MenuItemComponent(IPage page, string itemName)
     {
@@ -95,10 +96,10 @@ public class MenuItemComponent
     {
         // Ensure item is visible in view mode first
         await ViewModeCard.WaitForAsync(new() { Timeout = 5000 });
-        
+
         // Click the Edit button
         await EditButton.ClickAsync();
-        
+
         // Wait for edit form to appear (h3 disappears, input appears)
         await NameInput.WaitForAsync(new() { Timeout = 5000 });
     }
@@ -119,7 +120,8 @@ public class MenuItemComponent
         await ViewModeCard.WaitForAsync(new() { Timeout = 5000 });
     }
 
-    public async Task FillEditFormAsync(string? name = null, string? description = null, decimal? price = null, string? currency = null)
+    public async Task FillEditFormAsync(string? name = null, string? description = null, decimal? price = null,
+        string? currency = null)
     {
         if (name != null)
         {
@@ -146,7 +148,8 @@ public class MenuItemComponent
         }
     }
 
-    public async Task EditAsync(string? name = null, string? description = null, decimal? price = null, string? currency = null)
+    public async Task EditAsync(string? name = null, string? description = null, decimal? price = null,
+        string? currency = null)
     {
         await StartEditAsync();
         await FillEditFormAsync(name, description, price, currency);
@@ -178,7 +181,9 @@ public class MenuItemComponent
         {
             await ImageUploadSpinner.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 1000 });
         }
-        catch (TimeoutException) { }
+        catch (TimeoutException)
+        {
+        }
 
         await ImageUploadSpinner.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 30000 });
         await _page.WaitForTimeoutAsync(300);
@@ -357,7 +362,8 @@ public class MenuItemComponent
 
         if (price.HasValue)
         {
-            await NewVariantForm.Locator("input[placeholder='Price']").FillAsync(price.Value.ToString(CultureInfo.InvariantCulture));
+            await NewVariantForm.Locator("input[placeholder='Price']")
+                .FillAsync(price.Value.ToString(CultureInfo.InvariantCulture));
         }
 
         if (!string.IsNullOrEmpty(description))
@@ -372,39 +378,89 @@ public class MenuItemComponent
         await _page.WaitForTimeoutAsync(300);
     }
 
-    public async Task EditVariantAsync(string variantName, string? newName = null, decimal? newPrice = null, string? newDescription = null)
+    public async Task EditVariantAsync(string variantName, string? newName = null, decimal? newPrice = null,
+        string? newDescription = null)
     {
         await ShowVariantsAsync();
+        await _page.WaitForTimeoutAsync(300);
+
+        // Find the variant by name BEFORE clicking edit
         var variant = VariantsSection.Locator($".border.rounded:has(strong:has-text('{variantName}'))");
 
+        // Wait for variant to be visible
+        await variant.WaitForAsync(new() { Timeout = 5000 });
+
+        // Get the index of this variant so we can find it after edit button is clicked
+        var allVariants = VariantsSection.Locator(".border.rounded.p-2");
+        var count = await allVariants.CountAsync();
+        int variantIndex = -1;
+
+        for (int i = 0; i < count; i++)
+        {
+            var strong = allVariants.Nth(i).Locator("strong");
+            if (await strong.IsVisibleAsync())
+            {
+                var text = await strong.InnerTextAsync();
+                if (text.Trim() == variantName)
+                {
+                    variantIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (variantIndex == -1)
+        {
+            throw new Exception($"Variant '{variantName}' not found");
+        }
+
+        // Click edit button on the found variant
         await variant.Locator("button:has-text('Edit')").ClickAsync();
+        await _page.WaitForTimeoutAsync(500);
+
+        // Now find the variant by index (since the strong text is gone, replaced by input)
+        var editingVariant = allVariants.Nth(variantIndex);
+
+        // Wait for edit mode - the input fields should appear
+        var nameInput = editingVariant.Locator("input[placeholder='Name']");
+        await nameInput.WaitForAsync(new() { Timeout = 5000 });
 
         if (newName != null)
         {
-            var nameInput = variant.Locator("input[placeholder='Name']");
             await nameInput.ClearAsync();
             await nameInput.FillAsync(newName);
         }
 
         if (newPrice.HasValue)
         {
-            var priceInput = variant.Locator("input[placeholder='Price']");
+            var priceInput = editingVariant.Locator("input[placeholder='Price']");
             await priceInput.ClearAsync();
             await priceInput.FillAsync(newPrice.Value.ToString(CultureInfo.InvariantCulture));
         }
 
         if (newDescription != null)
         {
-            var descInput = variant.Locator("textarea[placeholder='Description']");
-            await descInput.ClearAsync();
-            await descInput.FillAsync(newDescription);
+            // Try textarea first, then input if textarea doesn't exist
+            var descTextarea = editingVariant.Locator("textarea[placeholder='Description']");
+            var descInput = editingVariant.Locator("input[placeholder='Description']");
+
+            if (await descTextarea.IsVisibleAsync())
+            {
+                await descTextarea.ClearAsync();
+                await descTextarea.FillAsync(newDescription);
+            }
+            else if (await descInput.IsVisibleAsync())
+            {
+                await descInput.ClearAsync();
+                await descInput.FillAsync(newDescription);
+            }
         }
 
-        await variant.Locator("button:has-text('Save')").ClickAsync();
+        await editingVariant.Locator("button:has-text('Save')").ClickAsync();
         await _page.WaitForResponseAsync(
             r => r.Url.Contains("Variant") && r.Request.Method == "PUT",
             new() { Timeout = 10000 });
-        await _page.WaitForTimeoutAsync(300);
+        await _page.WaitForTimeoutAsync(500);
     }
 
     public async Task DeleteVariantAsync(string variantName)
