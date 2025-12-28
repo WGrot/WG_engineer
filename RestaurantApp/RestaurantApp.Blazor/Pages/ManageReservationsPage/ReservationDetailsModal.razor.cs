@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Services;
 using RestaurantApp.Blazor.Services.Interfaces;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.Models;
@@ -8,6 +9,8 @@ namespace RestaurantApp.Blazor.Pages.ManageReservationsPage;
 public partial class ReservationDetailsModal : ComponentBase
 {
     [Inject] private IReservationService ReservationService { get; set; } = default!;
+    
+    [Inject] private MessageService MessageService { get; set; } = default!;
 
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
@@ -16,8 +19,6 @@ public partial class ReservationDetailsModal : ComponentBase
 
     private ReservationStatusEnumDto? SelectedStatus;
     private bool IsProcessing;
-    private string? Error;
-    private string? Success;
     private bool ShowConfirmDelete;
 
     protected override void OnParametersSet()
@@ -34,22 +35,18 @@ public partial class ReservationDetailsModal : ComponentBase
             return;
 
         IsProcessing = true;
-        Error = null;
-        Success = null;
 
         var (success, message) = await ReservationService.UpdateReservationStatusAsync(Reservation, SelectedStatus.Value);
 
         if (success)
         {
-            Success = "StatusEnumDto updated successfully!";
             Reservation.Status = SelectedStatus.Value;
-
-            await Task.Delay(1500);
+            MessageService.AddSuccess("Success", "Reservation updated successfully");
             await Close();
         }
         else
         {
-            Error = message;
+            MessageService.AddError("Error", message);
         }
 
         IsProcessing = false;
@@ -63,28 +60,26 @@ public partial class ReservationDetailsModal : ComponentBase
             return;
 
         IsProcessing = true;
-        Error = null;
 
         var (success, message) = await ReservationService.DeleteReservationAsync(Reservation);
 
         if (success)
         {
-            await Close();
+            MessageService.AddSuccess("Success", "Reservation deleted successfully");
         }
         else
         {
-            Error = message;
+            MessageService.AddError("Error", message);
         }
 
         IsProcessing = false;
         ShowConfirmDelete = false;
+        IsVisible = false;
     }
 
     private async Task Close()
     {
         await IsVisibleChanged.InvokeAsync(false);
-        Success = null;
-        Error = null;
         ShowConfirmDelete = false;
     }
 }

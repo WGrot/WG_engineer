@@ -32,16 +32,16 @@ public class MessageService : IDisposable
         StartAutoRemoveTimer(message);
     }
 
-    public void AddSuccess(string title, string content) 
+    public void AddSuccess(string title, string content = "") 
         => AddMessage(title, content, FrontendMessageType.Success);
 
-    public void AddError(string title, string content) 
+    public void AddError(string title, string content = "") 
         => AddMessage(title, content, FrontendMessageType.Error);
 
-    public void AddWarning(string title, string content) 
+    public void AddWarning(string title, string content = "") 
         => AddMessage(title, content, FrontendMessageType.Warning);
 
-    public void AddInfo(string title, string content) 
+    public void AddInfo(string title, string content = "") 
         => AddMessage(title, content, FrontendMessageType.Info);
 
     public Task RemoveNotificationAsync(FrontendMessage message)

@@ -103,7 +103,7 @@ public class ReservationDetailsModal
         await SelectStatusAsync(newStatus);
         await _page.RunAndWaitForResponseAsync(
             async () => await UpdateStatusButton.ClickAsync(),
-            r => r.Url.Contains("Reservation") && (r.Request.Method == "PUT" || r.Request.Method == "PATCH"),
+            r => r.Url.Contains("change-status") && r.Request.Method == "PUT",
             new() { Timeout = 10000 });
         await _page.WaitForTimeoutAsync(500);
     }

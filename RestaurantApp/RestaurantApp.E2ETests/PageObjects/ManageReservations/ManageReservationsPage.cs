@@ -88,8 +88,14 @@ public class ManageReservationsPage
     public async Task<int> GetReservationCountAsync() => await ReservationCards.CountAsync();
     public async Task<bool> HasReservationsAsync() => await ReservationCards.CountAsync() > 0;
     public async Task<bool> IsLoadMoreButtonVisibleAsync() => await LoadMoreButton.IsVisibleAsync();
-    public async Task<bool> IsAllReservationsLoadedMessageVisibleAsync() => await AllLoadedText.IsVisibleAsync();
-    public async Task<bool> IsNoReservationsMessageVisibleAsync() => await NoReservationsText.IsVisibleAsync();
+    
+    public ILocator SuccessToast => _page.Locator(".toast.border-success");
+    
+    public ILocator ErrorToast => _page.Locator(".toast.border-danger");
+    
+    public ILocator SuccessToastBody => _page.Locator(".toast.border-success .toast-body");
+    
+    public ILocator ErrorToastBody => _page.Locator(".toast.border-danger .toast-body");
 
     // Filter actions
     public async Task FillCustomerNameFilterAsync(string name)
