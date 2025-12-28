@@ -61,6 +61,40 @@ public static class TestDataFactory
         };
     }
     
+    public static UserCredentials GetMultiRestaurantEmployeeCredentials()
+    {
+        var email = "jan@kowalski.com";
+        var password = "123123123";
+
+        if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+        {
+            return new UserCredentials { Email = email, Password = password };
+        }
+        
+        return new UserCredentials
+        {
+            Email = email,
+            Password = password
+        };
+    }
+    
+    
+    public static UserCredentials GetSingleRestaurantEmployeeCredentials()
+    {
+        var email = "jan@nowak.com";
+        var password = "123123123";
+
+        if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+        {
+            return new UserCredentials { Email = email, Password = password };
+        }
+        
+        return new UserCredentials
+        {
+            Email = email,
+            Password = password
+        };
+    }
 
 
     #endregion

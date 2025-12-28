@@ -22,13 +22,17 @@ public class RestaurantDashboardPage
         NewReservationModal = new NewReservationModal(page);
     }
 
-    // Locators - use more specific selectors
-    // Main loading container is direct child before .container.mt-4
-    private ILocator MainLoadingContainer => _page.Locator("body > app > main .loading-container").First;
+    // Locators
     private ILocator MainContent => _page.Locator(".container.mt-4");
     private ILocator RestaurantNameHeader => _page.Locator(".restaurant-dropdown h4");
-    private ILocator RestaurantDropdownButton => _page.Locator(".restaurant-dropdown .dropdown button");
+    
+    // Fixed: More specific selector for dropdown toggle button (has chevron icon)
+    private ILocator RestaurantDropdownButton => _page.Locator(".restaurant-dropdown .dropdown button:has(.bi-chevron-down)");
+    
+    // Fixed: Target dropdown menu items specifically
     private ILocator RestaurantDropdownMenu => _page.Locator(".restaurant-dropdown .dropdown-menu");
+    private ILocator RestaurantDropdownItems => RestaurantDropdownMenu.Locator("button.dropdown-item");
+    
     private ILocator NewReservationButton => _page.Locator("button:has-text('New Reservation')");
     
     // Statistics cards
@@ -46,37 +50,12 @@ public class RestaurantDashboardPage
 
     public async Task WaitForLoadAsync()
     {
-        // Wait for main content to appear (this means main loading is done)
         await MainContent.WaitForAsync(new() { Timeout = 15000 });
         await _page.WaitForTimeoutAsync(300);
     }
 
-    public async Task WaitForAllSectionsToLoadAsync()
-    {
-        // Wait for main content
-        await WaitForLoadAsync();
-        
-        // Wait for all loading containers to disappear
-        var allLoadingContainers = _page.Locator(".loading-container");
-        var count = await allLoadingContainers.CountAsync();
-        
-        for (int i = 0; i < count; i++)
-        {
-            try
-            {
-                await allLoadingContainers.Nth(i).WaitForAsync(
-                    new() { State = WaitForSelectorState.Hidden, Timeout = 10000 });
-            }
-            catch (TimeoutException) { }
-        }
-        
-        await _page.WaitForTimeoutAsync(300);
-    }
-
-    // Alternative approach - check if main page is loading
     public async Task<bool> IsLoadingAsync()
     {
-        // Main page is loading if content container is not visible
         return !await MainContent.IsVisibleAsync();
     }
 
@@ -94,8 +73,12 @@ public class RestaurantDashboardPage
     public async Task SwitchRestaurantAsync(string restaurantName)
     {
         await RestaurantDropdownButton.ClickAsync();
-        await RestaurantDropdownMenu.WaitForAsync(new() { Timeout = 3000 });
-        await RestaurantDropdownMenu.Locator($"button:has-text('{restaurantName}')").ClickAsync();
+        await RestaurantDropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 3000 });
+        
+        // Find and click the specific restaurant item
+        var restaurantItem = RestaurantDropdownMenu.Locator($"button.dropdown-item:has-text('{restaurantName}')");
+        await restaurantItem.ClickAsync();
+        
         await WaitForLoadAsync();
     }
 
@@ -107,18 +90,19 @@ public class RestaurantDashboardPage
             return restaurants;
 
         await RestaurantDropdownButton.ClickAsync();
-        await RestaurantDropdownMenu.WaitForAsync(new() { Timeout = 3000 });
+        await RestaurantDropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 3000 });
 
-        var items = RestaurantDropdownMenu.Locator("button.dropdown-item");
-        var count = await items.CountAsync();
+        var count = await RestaurantDropdownItems.CountAsync();
 
         for (int i = 0; i < count; i++)
         {
-            restaurants.Add((await items.Nth(i).InnerTextAsync()).Trim());
+            restaurants.Add((await RestaurantDropdownItems.Nth(i).InnerTextAsync()).Trim());
         }
 
-        // Close dropdown
+        // Close dropdown by pressing Escape
         await _page.Keyboard.PressAsync("Escape");
+        await _page.WaitForTimeoutAsync(200);
+        
         return restaurants;
     }
 
@@ -132,8 +116,9 @@ public class RestaurantDashboardPage
     // Statistics
     public async Task<string> GetTodayReservationsCountAsync()
     {
-        var valueElement = TodayReservationsCard.Locator("h2 div");
-        return (await valueElement.InnerTextAsync()).Trim();
+        var valueElement = TodayReservationsCard.Locator("h2");
+        var text = await valueElement.InnerTextAsync();
+        return text.Trim();
     }
 
     public async Task<string> GetAvailableTablesCountAsync()
@@ -150,8 +135,9 @@ public class RestaurantDashboardPage
 
     public async Task<string> GetLastWeekReservationsCountAsync()
     {
-        var valueElement = LastWeekReservationsCard.Locator("h2 div");
-        return (await valueElement.InnerTextAsync()).Trim();
+        var valueElement = LastWeekReservationsCard.Locator("h2");
+        var text = await valueElement.InnerTextAsync();
+        return text.Trim();
     }
 
     public async Task<DashboardStatistics> GetAllStatisticsAsync()
