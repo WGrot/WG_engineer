@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
-using RestaurantApp.E2ETests.PageObjects;
+
+namespace RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 
 public class RestaurantEditPage
 {

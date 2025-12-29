@@ -45,14 +45,8 @@ public static class TestDataFactory
     
     public static UserCredentials GetValidUserCredentials()
     {
-
         var email = "jan@kowalski.com";
         var password = "123123123";
-
-        if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
-        {
-            return new UserCredentials { Email = email, Password = password };
-        }
         
         return new UserCredentials
         {
@@ -65,11 +59,19 @@ public static class TestDataFactory
     {
         var email = "jan@kowalski.com";
         var password = "123123123";
-
-        if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+        
+        return new UserCredentials
         {
-            return new UserCredentials { Email = email, Password = password };
-        }
+            Email = email,
+            Password = password
+        };
+    }
+    
+    
+    public static UserCredentials GetClientCredentials()
+    {
+        var email = "client.user@example.com";
+        var password = "123123123";
         
         return new UserCredentials
         {

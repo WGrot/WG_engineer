@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using RestaurantApp.E2ETests.PageObjects;
+using RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 using RestaurantApp.E2ETests.TestSetup;
 
 namespace RestaurantApp.E2ETests.UseCaseTests.RestaurantConfiguration;

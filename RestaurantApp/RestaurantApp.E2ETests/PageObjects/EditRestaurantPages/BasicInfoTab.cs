@@ -1,7 +1,8 @@
 ﻿// PageObjects/BasicInfoTab.cs
+
 using Microsoft.Playwright;
 
-namespace RestaurantApp.E2ETests.PageObjects;
+namespace RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 
 public class BasicInfoTab
 {

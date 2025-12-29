@@ -2,6 +2,8 @@
 
 using Microsoft.Playwright;
 
+namespace RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
+
 public class InviteEmployeeModal
 {
     private readonly IPage _page;
