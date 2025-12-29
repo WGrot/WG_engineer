@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using RestaurantApp.E2ETests.PageObjects.RestaurantDetails;
 using RestaurantApp.E2ETests.PageObjects.RestaurantSearch;
 using RestaurantApp.E2ETests.TestSetup;
 
@@ -10,6 +11,7 @@ public class RestaurantSearchUseCaseTEsts: PlaywrightTestBase
     private HomePage _homePage = null!;
     private RestaurantsListPage _restaurantsListPage = null!;
     private RestaurantMapPage _restaurantMapPage = null!;
+    private RestaurantDetailsPage _restaurantDetailsPage = null!;
 
     [SetUp]
     public async Task SetUp()
@@ -17,6 +19,7 @@ public class RestaurantSearchUseCaseTEsts: PlaywrightTestBase
         _homePage = new HomePage(Page);
         _restaurantsListPage = new RestaurantsListPage(Page);
         _restaurantMapPage = new RestaurantMapPage(Page);
+        _restaurantDetailsPage = new RestaurantDetailsPage(Page);
     }
 
     #region Navigation Tests
@@ -36,6 +39,25 @@ public class RestaurantSearchUseCaseTEsts: PlaywrightTestBase
         // Assert
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Restaurant_Map", RegexOptions.IgnoreCase));
         await _restaurantMapPage.AssertPageHeaderVisibleAsync();
+    }
+    
+    [Test]
+    public async Task ClickViewDetails_OnList_NavigatesToCorrectRestaurant()
+    {
+        // Arrange
+        await _restaurantsListPage.GotoAsync();
+        await _restaurantsListPage.WaitForRestaurantsLoadedAsync();
+
+        var expectedName = (await _restaurantsListPage.GetAllRestaurantNamesAsync()).First();
+
+        // Act
+        await _restaurantsListPage.ClickViewDetailsAsync(0);
+        await _restaurantsListPage.WaitForRestaurantDetailNavigationAsync();
+        await _restaurantDetailsPage.WaitForPageLoadAsync();
+
+        // Assert
+        var actualName = await _restaurantDetailsPage.GetRestaurantNameAsync();
+        Assert.That(actualName, Is.EqualTo(expectedName), "Restaurant name should match");
     }
     
     [Test]
@@ -84,6 +106,7 @@ public class RestaurantSearchUseCaseTEsts: PlaywrightTestBase
     }
 
     #endregion
+    
     
     [Test]
     public async Task SearchByName_WithValidName_ReturnsMatchingRestaurants()
