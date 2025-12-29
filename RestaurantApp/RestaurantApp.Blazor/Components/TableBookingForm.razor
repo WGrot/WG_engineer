@@ -50,8 +50,8 @@
                                         <strong>@selectedDate.ToString("dddd")</strong>
                                         <input type="date" class="form-control text-center"
                                                style="max-width: 200px;"
-                                               value="@selectedDate.ToString("yyyy-MM-dd")"
-                                               @onchange="OnDateTimeChanged"/>
+                                               @bind="selectedDate"
+                                               @bind:after="OnDateTimeChanged"/>
                                     </div>
 
                                     <button class="arrow-btn ms-3" @onclick="NextDay">
@@ -356,7 +356,7 @@
 
             if (endTime <= startTime)
             {
-                MessageService.AddWarning("Incorrect data", "End time must be after start time.");
+                MessageService.AddError("Incorrect data", "End time must be after start time.");
 
                 availableTables = new List<TableDto>();
                 return;
@@ -469,13 +469,13 @@
                 }
                 else
                 {
-                    Navigation.NavigateTo($"/restaurant/{Id}");
+                    //Navigation.NavigateTo($"/restaurant/{Id}");
                 }
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                MessageService.AddError("Error", "failed to make reservation.");
+                MessageService.AddError("Error", error);
             }
         }
         catch (Exception ex)
