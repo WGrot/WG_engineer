@@ -1,6 +1,4 @@
-﻿using RestaurantApp.E2ETests.Helpers;
-using RestaurantApp.E2ETests.PageObjects;
-using RestaurantApp.E2ETests.PageObjects.RestaurantDetails;
+﻿using RestaurantApp.E2ETests.PageObjects.RestaurantDetails;
 using RestaurantApp.E2ETests.PageObjects.RestaurantSearch;
 using RestaurantApp.E2ETests.TestSetup;
 

@@ -165,9 +165,13 @@
         await LoadInitialReservations();
     }
     
-    private void ClearParams()
+    private async Task ClearParams()
     {
-        searchParameters = new ReservationSearchParameters();
+        searchParameters = new ReservationSearchParameters
+        {
+            PageSize = 10
+        };
+        await LoadInitialReservations();
     }
     
     private async Task SortReservations(string option)

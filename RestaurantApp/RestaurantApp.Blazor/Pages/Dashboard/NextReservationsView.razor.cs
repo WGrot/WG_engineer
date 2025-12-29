@@ -71,7 +71,7 @@ public partial class NextReservationsView : ComponentBase
                 PageSize = 4,
                 ReservationDate = DateTime.Today,
                 Status = ReservationStatusEnumDto.Confirmed,
-                SortBy = "next",
+                SortBy = "next_today",
                 RestaurantId = RestaurantId,
             };
         }
