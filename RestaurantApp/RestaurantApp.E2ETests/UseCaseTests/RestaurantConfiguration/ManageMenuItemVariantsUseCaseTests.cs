@@ -1,4 +1,5 @@
-﻿using RestaurantApp.E2ETests.PageObjects;
+﻿using RestaurantApp.E2ETests.Helpers;
+using RestaurantApp.E2ETests.PageObjects;
 using RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 using RestaurantApp.E2ETests.TestSetup;
 
@@ -14,8 +15,9 @@ public class ManageMenuItemVariantsUseCaseTests: PlaywrightTestBase
     public async Task Setup()
     {
         _editPage = new RestaurantEditPage(Page);
-        await LoginAsVerifiedUserAsync();
-        await _editPage.NavigateAsync(1);
+        var credentials = TestDataFactory.GetTestUserCredentials(2);
+        await LoginAsUserAsync(credentials.Email, credentials.Password);
+        await _editPage.NavigateAsync(5);
         await _editPage.SwitchToMenuAsync();
         await _editPage.Menu.WaitForLoadAsync();
         await WaitForBlazorAsync();

@@ -90,8 +90,6 @@ public class ChangeReservationStatusUseCaseTests: PlaywrightTestBase
         await _dashboardPage.UpcomingReservations.DetailsModal.UpdateStatusAsync("Completed");
         await WaitForBlazorAsync();
         
-        // Close modal
-        await _dashboardPage.UpcomingReservations.DetailsModal.CloseAsync();
         await WaitForBlazorAsync();
 
         // Assert

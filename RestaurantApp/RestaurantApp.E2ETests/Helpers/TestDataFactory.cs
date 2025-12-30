@@ -80,6 +80,18 @@ public static class TestDataFactory
         };
     }
     
+    public static UserCredentials GetTestUserCredentials(int number)
+    {
+        var email = $"test@user{number}.com";
+        var password = "123123123";
+        
+        return new UserCredentials
+        {
+            Email = email,
+            Password = password
+        };
+    }
+    
     
     public static UserCredentials GetSingleRestaurantEmployeeCredentials()
     {
@@ -107,7 +119,7 @@ public static class TestDataFactory
     {
         var email = "2fa@2fa.com";
         var password = "123123123";
-        var totpSecret = "2JNP4PTFM6IL2HNDCEJEXHSA2WHWWQKC";
+        var totpSecret = "ODRTHE2JVAJEALSAK3FFGNKWZ5DQ7JUV";
 
         if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
         {

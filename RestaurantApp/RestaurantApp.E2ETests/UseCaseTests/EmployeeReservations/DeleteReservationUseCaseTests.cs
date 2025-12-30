@@ -1,4 +1,5 @@
-﻿using RestaurantApp.E2ETests.PageObjects;
+﻿using RestaurantApp.E2ETests.Helpers;
+using RestaurantApp.E2ETests.PageObjects;
 using RestaurantApp.E2ETests.PageObjects.Dashboard;
 using RestaurantApp.E2ETests.TestSetup;
 
@@ -16,7 +17,8 @@ public class DeleteReservationUseCaseTests : PlaywrightTestBase
         _manageReservationsPage = new ManageReservationsPage(Page);
         _reservationDetailsModal = new ReservationDetailsModal(Page);
 
-        await LoginAsVerifiedUserAsync();
+        var credentials = TestDataFactory.GetTestUserCredentials(6);
+        await LoginAsUserAsync(credentials.Email, credentials.Password);
         await _manageReservationsPage.GotoAsync();
         await _manageReservationsPage.WaitForReservationsLoadedAsync();
         await WaitForBlazorAsync();

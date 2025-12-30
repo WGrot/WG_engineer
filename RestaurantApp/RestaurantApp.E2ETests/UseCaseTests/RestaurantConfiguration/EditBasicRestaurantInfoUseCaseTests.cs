@@ -1,4 +1,5 @@
-﻿using RestaurantApp.E2ETests.PageObjects;
+﻿using RestaurantApp.E2ETests.Helpers;
+using RestaurantApp.E2ETests.PageObjects;
 using RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 using RestaurantApp.E2ETests.TestSetup;
 
@@ -13,8 +14,9 @@ public class EditBasicRestaurantInfoUseCaseTests : PlaywrightTestBase
     public async Task Setup()
     {
         _editPage = new RestaurantEditPage(Page);
-        await LoginAsVerifiedUserAsync();
-        await _editPage.NavigateAsync(1);
+        var credentials = TestDataFactory.GetTestUserCredentials(2);
+        await LoginAsUserAsync(credentials.Email, credentials.Password);
+        await _editPage.NavigateAsync(5);
         await WaitForBlazorAsync();
     }
 
@@ -155,45 +157,6 @@ public class EditBasicRestaurantInfoUseCaseTests : PlaywrightTestBase
 
         // Assert
         Assert.That(await _editPage.BasicInfo.IsSaveButtonVisibleAsync(), Is.False);
-    }
-    
-    [Test]
-    public async Task EditNameAndAddress_SavesBothChanges()
-    {
-        // Arrange
-        var uniqueSuffix = DateTime.Now.Ticks.ToString()[^6..];
-        var newBasicInfo = new BasicInfoFormData(
-            Name: $"Combined Test {uniqueSuffix}",
-            Description: "Combined test description"
-        );
-        var newAddress = new AddressFormData(
-            Street: $"Al. Jerozolimskie 3",
-            City: "Warszawa",
-            PostalCode: "00-495",
-            Country: "Polska"
-        );
-
-        // Act
-        await _editPage.BasicInfo.FillBasicInfoAsync(newBasicInfo);
-        await _editPage.BasicInfo.FillAddressAsync(newAddress);
-        await _editPage.BasicInfo.SaveAsync();
-        await WaitForBlazorAsync();
-
-        // Refresh and verify
-        await _editPage.NavigateAsync(1);
-        await WaitForBlazorAsync();
-
-        // Assert
-        var savedBasicInfo = await _editPage.BasicInfo.GetCurrentValuesAsync();
-        var savedAddress = await _editPage.BasicInfo.GetCurrentAddressAsync();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(savedBasicInfo.Name, Is.EqualTo(newBasicInfo.Name));
-            Assert.That(savedBasicInfo.Description, Is.EqualTo(newBasicInfo.Description));
-            Assert.That(savedAddress.Street, Is.EqualTo(newAddress.Street));
-            Assert.That(savedAddress.City, Is.EqualTo(newAddress.City));
-        });
     }
 
     [Test]

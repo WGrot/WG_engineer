@@ -14,7 +14,7 @@ public class ManageAccountDataUseCaseTests : PlaywrightTestBase
     {
         _userSettingsPage = new UserSettingsPage(Page);
 
-        var credentials = TestDataFactory.GetClientCredentials();
+        var credentials = TestDataFactory.GetTestUserCredentials(4);
         await _loginPage.GotoAsync();
         await _loginPage.LoginAsync(credentials.Email, credentials.Password);
         await WaitForBlazorAsync();

@@ -16,7 +16,7 @@ public class ApproveReservationUseCaseTests: PlaywrightTestBase
         _loginPage = new LoginPage(Page);
         _dashboardPage = new RestaurantDashboardPage(Page);
 
-        var credentials = TestDataFactory.GetValidUserCredentials();
+        var credentials = TestDataFactory.GetMultiRestaurantEmployeeCredentials();
         await _loginPage.GotoAsync();
         await _loginPage.LoginAsync(credentials.Email, credentials.Password);
         await _dashboardPage.WaitForLoadAsync();
@@ -31,12 +31,14 @@ public class ApproveReservationUseCaseTests: PlaywrightTestBase
         await WaitForBlazorAsync();
 
         var initialCount = await _dashboardPage.PendingReservations.GetReservationCountAsync();
-        
+    
         if (initialCount == 0)
         {
             Assert.Ignore("No pending reservations available for testing");
             return;
         }
+
+        var reservationToApprove = await _dashboardPage.PendingReservations.GetReservationDetailsAsync(0);
 
         // Act
         await _dashboardPage.PendingReservations.ApproveReservationAsync(0);
@@ -44,13 +46,19 @@ public class ApproveReservationUseCaseTests: PlaywrightTestBase
 
         // Assert
         await _dashboardPage.WaitForSuccessToastAsync();
-        
-        var newCount = await _dashboardPage.PendingReservations.GetReservationCountAsync();
-        
+    
+        var remainingReservations = await _dashboardPage.PendingReservations.GetAllReservationsAsync();
+    
+        var isReservationStillPresent = remainingReservations.Any(r => 
+            r.CustomerName == reservationToApprove.CustomerName &&
+            r.CustomerEmail == reservationToApprove.CustomerEmail &&
+            r.Date == reservationToApprove.Date &&
+            r.Time == reservationToApprove.Time);
+    
         Assert.Multiple(async () =>
         {
-            Assert.That(newCount, Is.EqualTo(initialCount - 1),
-                "Pending reservations count should decrease by 1 after approval");
+            Assert.That(isReservationStillPresent, Is.False,
+                $"Reservation for '{reservationToApprove.CustomerName}' on {reservationToApprove.Date} at {reservationToApprove.Time} should no longer be in the pending list after approval");
             Assert.That(await _dashboardPage.IsSuccessToastVisibleAsync(), Is.True,
                 "Success toast should be visible after approving reservation");
         });

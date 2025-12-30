@@ -28,7 +28,7 @@
       - restaurantapp.api
 
   db:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:17-3.4
     container_name: restaurant-db
     restart: always
     environment:

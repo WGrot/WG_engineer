@@ -17,7 +17,7 @@ public class CreateReservationsAsEmployeeUseCaseTests: PlaywrightTestBase
         _loginPage = new LoginPage(Page);
         _dashboardPage = new RestaurantDashboardPage(Page);
 
-        var credentials = TestDataFactory.GetValidUserCredentials();
+        var credentials = TestDataFactory.GetTestUserCredentials(6);
         await _loginPage.GotoAsync();
         await _loginPage.LoginAsync(credentials.Email, credentials.Password);
         await _dashboardPage.WaitForLoadAsync();

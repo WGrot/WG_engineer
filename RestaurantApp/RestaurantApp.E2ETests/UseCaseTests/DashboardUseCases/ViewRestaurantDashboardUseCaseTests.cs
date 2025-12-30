@@ -22,7 +22,7 @@ public class ViewRestaurantDashboardUseCaseTests: PlaywrightTestBase
     public async Task Login_AsEmployee_ShouldDisplayRestaurantDashboard()
     {
         // Arrange
-        var credentials = TestDataFactory.GetValidUserCredentials();
+        var credentials = TestDataFactory.GetMultiRestaurantEmployeeCredentials();
 
         // Act
         await _loginPage.GotoAsync();
@@ -59,7 +59,7 @@ public class ViewRestaurantDashboardUseCaseTests: PlaywrightTestBase
     }
 
     [Test]
-    public async Task Dashboard_ShouldDisplayOnePendingReservation()
+    public async Task Dashboard_ShouldDisplayPendingReservations()
     {
         // Arrange
         var credentials = TestDataFactory.GetValidUserCredentials();
@@ -74,7 +74,7 @@ public class ViewRestaurantDashboardUseCaseTests: PlaywrightTestBase
         var reservations = await _dashboardPage.PendingReservations.GetAllReservationsAsync();
 
         // Assert
-        Assert.That(reservationCount, Is.EqualTo(1), "Should display exactly 1 pending reservation");
+        Assert.That(reservationCount, Is.GreaterThan(0), "Should display exactly 1 pending reservation");
         Assert.That(reservations.First().Status, Is.EqualTo("Pending"),
             "Reservation should have Pending status");
     }

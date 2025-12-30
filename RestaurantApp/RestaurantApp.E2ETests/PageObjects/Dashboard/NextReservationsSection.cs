@@ -58,6 +58,13 @@ public class NextReservationsSection
 
         return reservations;
     }
+    
+    public async Task<ReservationCardData> GetReservationDetailsAsync(int index)
+    {
+        await WaitForLoadAsync();
+        var card = ReservationCards.Nth(index);
+        return await ParseReservationCardAsync(card);
+    }
 
     public async Task ClickReservationAsync(int index)
     {

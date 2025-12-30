@@ -168,7 +168,10 @@ partial class ManageReservationsPage
 
     private async Task ClearParams()
     {
-        searchParameters = new ReservationSearchParameters();
+        searchParameters = new ReservationSearchParameters
+        {
+            PageSize = 10
+        };
         await LoadInitialReservations();
     }
     

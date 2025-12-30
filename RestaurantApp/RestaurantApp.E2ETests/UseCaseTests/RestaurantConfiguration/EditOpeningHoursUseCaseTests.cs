@@ -1,4 +1,5 @@
-﻿using RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
+﻿using RestaurantApp.E2ETests.Helpers;
+using RestaurantApp.E2ETests.PageObjects.EditRestaurantPages;
 using RestaurantApp.E2ETests.TestSetup;
 
 namespace RestaurantApp.E2ETests.UseCaseTests.RestaurantConfiguration;
@@ -13,8 +14,9 @@ public class EditOpeningHoursUseCaseTests : PlaywrightTestBase
     {
         _editPage = new RestaurantEditPage(Page);
         
-        await LoginAsVerifiedUserAsync();
-        await _editPage.NavigateAsync(1);
+        var credentials = TestDataFactory.GetTestUserCredentials(2);
+        await LoginAsUserAsync(credentials.Email, credentials.Password);
+        await _editPage.NavigateAsync(5);
         await WaitForBlazorAsync();
     }
 

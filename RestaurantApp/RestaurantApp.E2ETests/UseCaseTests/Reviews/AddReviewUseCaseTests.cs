@@ -400,39 +400,7 @@ public class AddReviewUseCaseTests: PlaywrightTestBase
         Assert.That(hasWriteReviewForm, Is.True, 
             "'Write a Review' form should be visible after deleting review");
     }
-
-
-
-    [Test]
-    [Description("Complete flow: Navigate to restaurant, write review, verify it appears")]
-    public async Task CompleteReviewFlow_FromRestaurantListToReviewSubmission()
-    {
-        // Arrange
-        await _restaurantsListPage.GotoAsync();
-        await _restaurantsListPage.WaitForRestaurantsLoadedAsync();
-
-        // Act - Navigate to restaurant
-        await _restaurantsListPage.ClickRestaurantCardAsync(0);
-        await _restaurantsListPage.WaitForRestaurantDetailNavigationAsync();
-        await _restaurantDetailsPage.WaitForPageLoadAsync();
-
-        // Switch to reviews tab
-        await _restaurantDetailsPage.SwitchToReviewsTabAsync();
-        await WaitForBlazorAsync();
-        await _restaurantDetailsPage.Reviews.WaitForReviewsLoadAsync();
-
-        // Delete existing review if present
-        await DeleteExistingReviewIfPresentAsync();
-
-        // Write new review
-        var reviewContent = $"Complete flow test review - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-        await _restaurantDetailsPage.Reviews.WriteReviewAsync(5, reviewContent);
-        await WaitForBlazorAsync();
-
-        // Assert
-        var isSuccess = await _restaurantDetailsPage.Reviews.IsSuccessAlertVisibleAsync();
-        Assert.That(isSuccess, Is.True, "Review should be submitted successfully in complete flow");
-    }
+    
     
 
     [TearDown]

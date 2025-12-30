@@ -72,4 +72,14 @@ public class PlaywrightTestBase: PageTest
         await Page.WaitForTimeoutAsync(500);
     }
     
+    public async Task LoginAsUserAsync(string name, string password)
+    {
+        await _loginPage.GotoAsync();
+        await _loginPage.LoginAsync(name, password);
+        
+        
+        await WaitForBlazorAsync();
+        await Page.WaitForTimeoutAsync(500);
+    }
+    
 }
