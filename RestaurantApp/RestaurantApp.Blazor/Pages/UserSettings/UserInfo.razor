@@ -11,66 +11,100 @@
 {
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class=" col-12">
-            <div>
-                <div class="text-center w-100">
-                    <h3 class="mb-3 fw-bold">User Information</h3>
-                    <p class="text-muted">Change basic info regarding your account</p>
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>User Information
+                    </h5>
+                    @if (!isEditing)
+                    {
+                        <button class="button button--white button--outline" @onclick="StartEditing">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </button>
+                    }
                 </div>
+                
+                <div class="card-body">
+                    <p class="text-muted mb-4">Change basic info regarding your account</p>
 
-                <div class="row justify-content-center">
-                    <div class="col-sm-12 col-lg-8 mb-3">
-                        <label for="firstName" class="form-label">
-                            First Name <span class="text-danger">*</span>
-                        </label>
-                        <input type="text"
-                               class="form-control"
-                               id="firstName"
-                               @bind="modifiedUser.FirstName"
-                               @bind:after="() => changesMade = true"
-                               required/>
+                    <div class="row">
+                        <div class="col-sm-12 col-md-6 mb-3">
+                            <label class="form-label">
+                                First Name <span class="text-danger">*</span>
+                            </label>
+                            @if (isEditing)
+                            {
+                                <input type="text"
+                                       class="form-control"
+                                       @bind="modifiedUser.FirstName"
+                                       @bind:event="oninput"
+                                       required/>
+                            }
+                            else
+                            {
+                                <p class="form-control-plaintext">@modifiedUser.FirstName</p>
+                            }
+                        </div>
+                        <div class="col-md-6 col-sm-12 mb-3">
+                            <label class="form-label">
+                                Last Name <span class="text-danger">*</span>
+                            </label>
+                            @if (isEditing)
+                            {
+                                <input type="text"
+                                       class="form-control"
+                                       @bind="modifiedUser.LastName"
+                                       @bind:event="oninput"
+                                       required/>
+                            }
+                            else
+                            {
+                                <p class="form-control-plaintext">@modifiedUser.LastName</p>
+                            }
+                        </div>
                     </div>
-                </div>
 
-                <div class="row justify-content-center">
-                    <div class="col-lg-8 col-sm-12 mb-3">
-                        <label for="lastName" class="form-label">
-                            Last Name <span class="text-danger">*</span>
-                        </label>
-                        <input type="text"
-                               class="form-control"
-                               id="lastName"
-                               @bind="modifiedUser.LastName"
-                               @bind:after="() => changesMade = true"
-                               required/>
+                    <div class="row">
+                        <div class="col-sm-12 col-md-6 mb-3">
+                            <label class="form-label">
+                                Phone Number <span class="text-danger">*</span>
+                            </label>
+                            @if (isEditing)
+                            {
+                                <input type="tel"
+                                       class="form-control"
+                                       @bind="modifiedUser.PhoneNumber"
+                                       @bind:event="oninput"
+                                       required/>
+                            }
+                            else
+                            {
+                                <p class="form-control-plaintext">
+                                    @(string.IsNullOrEmpty(modifiedUser.PhoneNumber) ? "—" : modifiedUser.PhoneNumber)
+                                </p>
+                            }
+                        </div>
+                        <div class="col-md-6 col-sm-12 mb-3">
+                            <label class="form-label">
+                                Email Address <i class="bi bi-lock-fill text-muted small"></i>
+                            </label>
+                            <p class="form-control-plaintext text-muted">@modifiedUser.Email</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="row justify-content-center">
-                    <div class="col-lg-8 col-sm-12 mb-3">
-                        <label for="phone" class="form-label">
-                            Phone Number <span class="text-danger">*</span>
-                        </label>
-                        <input type="tel"
-                               class="form-control"
-                               id="phone"
-                               @bind="modifiedUser.PhoneNumber"
-                               @bind:after="() => changesMade = true"
-                               required/>
-                    </div>
+                    @if (isEditing)
+                    {
+                        <hr/>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="button button--grey button--outline" @onclick="CancelChanges">Cancel</button>
+                            <button class="button button--primary" @onclick="SaveChanges" disabled="@(!HasChanges)">
+                                Save Changes
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
-
-            @if (changesMade)
-            {
-                <div class="row justify-content-center mb-3">
-                    <div class="d-flex justify-content-center gap-3">
-                        <button class="base-button" @onclick="SaveChanges">Save Changes</button>
-                        <button class="grey-button" @onclick="CancelChanges">Cancel</button>
-                    </div>
-                </div>
-            }
-
         </div>
     </div>
 </div>
@@ -81,44 +115,79 @@ else
 }
 
 @code {
-    [Parameter] public required ResponseUserDto? user { get; set; }
+    [Parameter] public ResponseUserDto? user { get; set; }
+    [Parameter] public EventCallback<ResponseUserDto> UserChanged { get; set; }
+    
     private ResponseUserDto modifiedUser = new();
-    private bool changesMade = false;
+    private ResponseUserDto originalUser = new();
+    private bool isEditing = false;
+
+    private bool HasChanges => 
+        modifiedUser.FirstName != originalUser.FirstName ||
+        modifiedUser.LastName != originalUser.LastName ||
+        modifiedUser.PhoneNumber != originalUser.PhoneNumber;
 
     protected override void OnParametersSet()
     {
-        if (user != null)
+        if (user != null && !isEditing)
         {
-            modifiedUser = new ResponseUserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber
-            };
+            CopyUserToLocal();
         }
+    }
+
+    private void CopyUserToLocal()
+    {
+        if (user == null) return;
+        
+        modifiedUser = new ResponseUserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber
+        };
+        
+        originalUser = new ResponseUserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber
+        };
+    }
+
+    private void StartEditing()
+    {
+        originalUser = new ResponseUserDto
+        {
+            Id = modifiedUser.Id,
+            Email = modifiedUser.Email,
+            FirstName = modifiedUser.FirstName,
+            LastName = modifiedUser.LastName,
+            PhoneNumber = modifiedUser.PhoneNumber
+        };
+        isEditing = true;
     }
 
     private void CancelChanges()
     {
-        if (user != null)
+        modifiedUser = new ResponseUserDto
         {
-            modifiedUser = new ResponseUserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber
-            };
-        }
-
-        changesMade = false;
+            Id = originalUser.Id,
+            Email = originalUser.Email,
+            FirstName = originalUser.FirstName,
+            LastName = originalUser.LastName,
+            PhoneNumber = originalUser.PhoneNumber
+        };
+        isEditing = false;
     }
 
     private async Task SaveChanges()
     {
+        if (!HasChanges) return;
+        
         try
         {
             var dto = new UpdateUserDto()
@@ -132,12 +201,22 @@ else
             var result = await Http.PatchAsJsonAsync($"api/User/{modifiedUser.Id}", dto);
             if (result.IsSuccessStatusCode)
             {
-                changesMade = false;
+                originalUser = new ResponseUserDto
+                {
+                    Id = modifiedUser.Id,
+                    Email = modifiedUser.Email,
+                    FirstName = modifiedUser.FirstName,
+                    LastName = modifiedUser.LastName,
+                    PhoneNumber = modifiedUser.PhoneNumber
+                };
+                
+                isEditing = false;
+                await UserChanged.InvokeAsync(modifiedUser);
                 MessageService.AddSuccess("Success", "User data has been updated successfully.");
             }
             else
             {
-                MessageService.AddError("Error", $"Error updating user try again later or contact support");
+                MessageService.AddError("Error", "Error updating user, try again later or contact support");
             }
         }
         catch (Exception e)
@@ -145,5 +224,4 @@ else
             Console.WriteLine($"Error saving data: {e.Message}");
         }
     }
-
 }

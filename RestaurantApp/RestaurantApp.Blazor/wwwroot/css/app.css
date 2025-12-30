@@ -218,8 +218,13 @@ code {
 .button--grey {
     background: #707070;
 }
+
 .button--grey:hover {
     background: #5a5a5a;
+}
+
+.white {
+    background: #FFFFFF;
 }
 
 .button--red {
@@ -254,6 +259,15 @@ code {
 .button--outline.button--primary:hover {
     background: #667eea;
     color: white;
+}
+
+.button--outline.button--white {
+    color: white;
+    border-color: white;
+}
+.button--outline.button--white:hover {
+    background: white;
+    color: #667eea;
 }
 
 .button--outline.button--grey {
