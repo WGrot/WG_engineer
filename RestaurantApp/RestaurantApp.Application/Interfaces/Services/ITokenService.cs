@@ -6,18 +6,23 @@ public interface ITokenService
 {
     Task<(bool Success, string? NewAccessToken, string? NewRefreshToken)> ValidateAndRotateRefreshTokenAsync(
         string presentedRefreshToken, 
-        string ipAddress);
+        string ipAddress
+        , CancellationToken ct = default);
 
     Task<(string RefreshToken, DateTime ExpiresAt)> GenerateRefreshTokenAsync(
         ApplicationUser user,
-        string createdByIp);
+        string createdByIp
+        , CancellationToken ct = default);
 
     Task<string> GenerateAccessTokenAsync(
         ApplicationUser user,
-        bool is2FaVerified);
+        bool is2FaVerified
+        , CancellationToken ct = default);
     
     Task RevokeRefreshTokenAsync(
         string presentedRefreshToken, 
         string ipAddress, 
-        string? reason = null);
+        CancellationToken ct = default,
+        string? reason = null
+ );
 }

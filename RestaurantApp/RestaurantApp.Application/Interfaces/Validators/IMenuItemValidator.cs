@@ -4,9 +4,9 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IMenuItemValidator
 {
-    Task<Result> ValidateMenuItemExistsAsync(int itemId);
-    Task<Result> ValidateMenuExistsAsync(int menuId);
-    Task<Result> ValidateCategoryExistsAsync(int categoryId);
-    Task<Result> ValidateTagExistsAsync(int tagId);
-    Task<Result> ValidateMoveToCategory(int itemId, int? categoryId);
+    Task<Result> ValidateMenuItemExistsAsync(int itemId, CancellationToken ct);
+    Task<Result> ValidateMenuExistsAsync(int menuId, CancellationToken ct);
+    Task<Result> ValidateCategoryExistsAsync(int categoryId, CancellationToken ct);
+    Task<Result> ValidateTagExistsAsync(int tagId, CancellationToken ct);
+    Task<Result> ValidateMoveToCategory(int itemId, int? categoryId, CancellationToken ct);
 }

@@ -5,11 +5,11 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IImageLinkRepository
 {
-    Task<ImageLink?> GetByIdAsync(int id);
-    Task<IEnumerable<ImageLink>> GetByRestaurantAndTypeAsync(int restaurantId, ImageType type);
-    Task<IEnumerable<ImageLink>> GetByRestaurantIdAsync(int restaurantId);
-    Task<int> GetMaxSortOrderAsync(int restaurantId, ImageType type);
-    Task AddAsync(ImageLink image);
-    Task Remove(ImageLink image);
-    Task SaveChangesAsync();
+    Task<ImageLink?> GetByIdAsync(int id, CancellationToken ct);
+    Task<IEnumerable<ImageLink>> GetByRestaurantAndTypeAsync(int restaurantId, ImageType type, CancellationToken ct);
+    Task<IEnumerable<ImageLink>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct);
+    Task<int> GetMaxSortOrderAsync(int restaurantId, ImageType type, CancellationToken ct);
+    Task AddAsync(ImageLink image, CancellationToken ct);
+    Task Remove(ImageLink image, CancellationToken ct);
+    Task SaveChangesAsync(CancellationToken ct);
 }

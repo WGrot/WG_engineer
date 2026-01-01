@@ -20,72 +20,72 @@ public class AuthorizedReviewService : IReviewService
 
     }
 
-    public async Task<Result<ReviewDto>> GetByIdAsync(int id)
+    public async Task<Result<ReviewDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<List<ReviewDto>>> GetAllAsync()
+    public async Task<Result<List<ReviewDto>>> GetAllAsync(CancellationToken ct)
     {
-        return await _inner.GetAllAsync();
+        return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<List<ReviewDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<List<ReviewDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetByRestaurantIdAsync(restaurantId);
+        return await _inner.GetByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<List<ReviewDto>>> GetByUserIdAsync(string userId)
+    public async Task<Result<List<ReviewDto>>> GetByUserIdAsync(string userId, CancellationToken ct)
     {
         if (_currentUser.UserId != userId)
         {
             return Result<List<ReviewDto>>.Forbidden("You don't have permission to view reviews of other users.");
         }
         
-        return await _inner.GetByUserIdAsync(userId);
+        return await _inner.GetByUserIdAsync(userId, ct);
     }
 
-    public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto)
+    public async Task<Result<ReviewDto>> CreateAsync(string userId, CreateReviewDto dto, CancellationToken ct)
     {
         if (_currentUser.UserId != userId)
         {
             return Result<ReviewDto>.Forbidden("You don't have create reviews of other users.");
         }
-        return await _inner.CreateAsync(userId, dto);
+        return await _inner.CreateAsync(userId, dto, ct);
     }
 
-    public async Task<Result<ReviewDto>> UpdateAsync(string userId, int id, UpdateReviewDto dto)
+    public async Task<Result<ReviewDto>> UpdateAsync(string userId, int id, UpdateReviewDto dto, CancellationToken ct)
     {
         if (_currentUser.UserId != userId)
         {
             return Result<ReviewDto>.Forbidden("You don't have permission to edit reviews of other users.");
         }
-        return await _inner.UpdateAsync(userId, id, dto);
+        return await _inner.UpdateAsync(userId, id, dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(string userId, int id)
+    public async Task<Result> DeleteAsync(string userId, int id, CancellationToken ct)
     {
         if (_currentUser.UserId != userId)
         {
             return Result<ReviewDto>.Forbidden("You don't have permission to delete reviews of other users.");
         }
-        return await _inner.DeleteAsync(userId, id);
+        return await _inner.DeleteAsync(userId, id, ct);
     }
 
-    public Task<Result> ToggleActiveStatusAsync(int id)
+    public Task<Result> ToggleActiveStatusAsync(int id, CancellationToken ct)
     {
-        return _inner.ToggleActiveStatusAsync(id);
+        return _inner.ToggleActiveStatusAsync(id, ct);
     }
 
-    public Task<Result> VerifyReviewAsync(int id)
+    public Task<Result> VerifyReviewAsync(int id, CancellationToken ct)
     {
-        return _inner.VerifyReviewAsync(id);
+        return _inner.VerifyReviewAsync(id, ct);
     }
 
     public Task<Result<PaginatedReviewsDto>> GetByRestaurantIdPaginatedAsync(int restaurantId, int page, int pageSize,
-        string? sortBy)
+        string? sortBy, CancellationToken ct)
     {
-        return _inner.GetByRestaurantIdPaginatedAsync(restaurantId, page, pageSize, sortBy);
+        return _inner.GetByRestaurantIdPaginatedAsync(restaurantId, page, pageSize, sortBy, ct);
     }
     
 }

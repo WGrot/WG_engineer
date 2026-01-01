@@ -19,33 +19,33 @@ public class MenuCategoryController: ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetCategories([FromQuery] int? menuId)
+    public async Task<IActionResult> GetCategories([FromQuery] int? menuId, CancellationToken ct)
     {
-        return (await _menuCategoryService.GetCategoriesAsync(menuId)).ToActionResult();
+        return (await _menuCategoryService.GetCategoriesAsync(menuId, ct)).ToActionResult();
     }
 
     [HttpGet("{categoryId}")]
-    public async Task<IActionResult> GetCategory(int categoryId)
+    public async Task<IActionResult> GetCategory(int categoryId, CancellationToken ct)
     {
-        return (await _menuCategoryService.GetCategoryByIdAsync(categoryId)).ToActionResult();
+        return (await _menuCategoryService.GetCategoryByIdAsync(categoryId, ct)).ToActionResult();
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateCategory(int menuId, [FromBody] CreateMenuCategoryDto categoryDto)
+    public async Task<IActionResult> CreateCategory(int menuId, [FromBody] CreateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        return (await _menuCategoryService.CreateCategoryAsync(categoryDto)).ToActionResult();
+        return (await _menuCategoryService.CreateCategoryAsync(categoryDto, ct)).ToActionResult();
     }
 
     [HttpPut("{categoryId}")]
-    public async Task<IActionResult> UpdateCategory( [FromBody] UpdateMenuCategoryDto categoryDto)
+    public async Task<IActionResult> UpdateCategory( [FromBody] UpdateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        return (await _menuCategoryService.UpdateCategoryAsync(categoryDto)).ToActionResult();
+        return (await _menuCategoryService.UpdateCategoryAsync(categoryDto, ct)).ToActionResult();
     }
 
     [HttpDelete("{categoryId}")]
-    public async Task<IActionResult> DeleteCategory(int categoryId)
+    public async Task<IActionResult> DeleteCategory(int categoryId, CancellationToken ct)
     {
-        return (await _menuCategoryService.DeleteCategoryAsync(categoryId)).ToActionResult();
+        return (await _menuCategoryService.DeleteCategoryAsync(categoryId, ct)).ToActionResult();
     }
     
 }

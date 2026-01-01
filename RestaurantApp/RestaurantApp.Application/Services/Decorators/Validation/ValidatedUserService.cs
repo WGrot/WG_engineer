@@ -26,61 +26,62 @@ public class ValidatedUserService : IUserService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
+    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateUserExistsAsync(id);
+        var businessResult = await _businessValidator.ValidateUserExistsAsync(id, ct);
         if (!businessResult.IsSuccess)
             return Result<ResponseUserDto>.From(businessResult);
 
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
     public async Task<Result<IEnumerable<ResponseUserDto>>> SearchAsync(string? firstName,
         string? lastName,
         string? phoneNumber,
         string? email,
-        int? amount)
+        int? amount
+        , CancellationToken ct)
     {
-        return await _inner.SearchAsync(firstName, lastName, phoneNumber, email, amount);
+        return await _inner.SearchAsync(firstName, lastName, phoneNumber, email, amount, ct);
     }
 
-    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
+    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto, CancellationToken ct)
     {
         var fluentResult = await _createValidator.ValidateAsync(userDto);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<CreateUserDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(userDto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(userDto, ct);
         if (!businessResult.IsSuccess)
             return Result<CreateUserDto>.From(businessResult);
 
-        return await _inner.CreateAsync(userDto);
+        return await _inner.CreateAsync(userDto, ct);
     }
 
-    public async Task<Result> UpdateUserAsync(UpdateUserDto dto)
+    public async Task<Result> UpdateUserAsync(UpdateUserDto dto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(dto);
+        var fluentResult = await _updateValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateUserAsync(dto);
+        return await _inner.UpdateUserAsync(dto, ct);
     }
 
-    public async Task<Result> DeleteUserAsync(string userId)
+    public async Task<Result> DeleteUserAsync(string userId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForDeleteAsync(userId);
+        var businessResult = await _businessValidator.ValidateForDeleteAsync(userId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteUserAsync(userId);
+        return await _inner.DeleteUserAsync(userId, ct);
     }
 
-    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
+    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync(CancellationToken ct)
     {
-        return await _inner.GetMyDetailsAsync();
+        return await _inner.GetMyDetailsAsync(ct);
     }
 }

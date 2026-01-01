@@ -12,43 +12,43 @@ public class RestaurantSettingsRepository: IRestaurantSettingsRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<RestaurantSettings>> GetAllAsync()
+    public async Task<IEnumerable<RestaurantSettings>> GetAllAsync(CancellationToken ct)
     {
-        return await _context.RestaurantSettings.ToListAsync();
+        return await _context.RestaurantSettings.ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<RestaurantSettings?> GetByIdAsync(int id)
+    public async Task<RestaurantSettings?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _context.RestaurantSettings.FindAsync(id);
+        return await _context.RestaurantSettings.FindAsync(id, ct);
     }
 
-    public async Task<RestaurantSettings?> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<RestaurantSettings?> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
         return await _context.RestaurantSettings
-            .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId);
+            .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId, cancellationToken: ct);
     }
 
-    public async Task<RestaurantSettings> AddAsync(RestaurantSettings settings)
+    public async Task<RestaurantSettings> AddAsync(RestaurantSettings settings, CancellationToken ct)
     {
         _context.RestaurantSettings.Add(settings);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
         return settings;
     }
 
-    public async Task UpdateAsync(RestaurantSettings settings)
+    public async Task UpdateAsync(RestaurantSettings settings, CancellationToken ct)
     {
         _context.RestaurantSettings.Update(settings);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(RestaurantSettings settings)
+    public async Task DeleteAsync(RestaurantSettings settings, CancellationToken ct)
     {
         _context.RestaurantSettings.Remove(settings);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task<bool> ExistsAsync(int id)
+    public async Task<bool> ExistsAsync(int id, CancellationToken ct)
     {
-        return await _context.RestaurantSettings.AnyAsync(rs => rs.Id == id);
+        return await _context.RestaurantSettings.AnyAsync(rs => rs.Id == id, cancellationToken: ct);
     }
 }

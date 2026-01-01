@@ -13,22 +13,22 @@ public class MenuRepository : IMenuRepository
         _context = context;
     }
 
-    public async Task<Menu?> GetByIdAsync(int menuId)
+    public async Task<Menu?> GetByIdAsync(int menuId, CancellationToken ct)
     {
-        return await _context.Menus.FindAsync([menuId]);
+        return await _context.Menus.FindAsync([menuId], ct);
     }
 
-    public async Task<Menu?> GetByIdWithDetailsAsync(int menuId)
+    public async Task<Menu?> GetByIdWithDetailsAsync(int menuId, CancellationToken ct)
     {
         return await _context.Menus
             .Include(m => m.Categories)
                 .ThenInclude(c => c.Items)
                     .ThenInclude(mi => mi.ImageLink)
             .Include(m => m.Items!.Where(i => i.CategoryId == null))
-            .FirstOrDefaultAsync(m => m.Id == menuId);
+            .FirstOrDefaultAsync(m => m.Id == menuId, cancellationToken: ct);
     }
 
-    public async Task<Menu?> GetByRestaurantIdAsync(int restaurantId, bool? isActive = null)
+    public async Task<Menu?> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct, bool? isActive = null)
     {
         var query = _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
@@ -48,10 +48,10 @@ public class MenuRepository : IMenuRepository
             query = query.Where(m => m.IsActive == isActive.Value);
         }
 
-        return await query.FirstOrDefaultAsync();
+        return await query.FirstOrDefaultAsync(cancellationToken: ct);
     }
 
-    public async Task<Menu?> GetActiveByRestaurantIdAsync(int restaurantId)
+    public async Task<Menu?> GetActiveByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
         return await _context.Menus
             .Include(m => m.Categories.OrderBy(c => c.DisplayOrder))
@@ -65,33 +65,33 @@ public class MenuRepository : IMenuRepository
             .Include(m => m.Items!.Where(i => i.CategoryId == null))
                 .ThenInclude(i => i.Tags)
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: ct);
     }
 
-    public async Task<List<Menu>> GetActiveMenusForRestaurantAsync(int restaurantId)
+    public async Task<List<Menu>> GetActiveMenusForRestaurantAsync(int restaurantId, CancellationToken ct)
     {
         return await _context.Menus
             .Where(m => m.RestaurantId == restaurantId && m.IsActive)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<bool> ExistsAsync(int menuId)
+    public async Task<bool> ExistsAsync(int menuId, CancellationToken ct)
     {
-        return await _context.Menus.AnyAsync(m => m.Id == menuId);
+        return await _context.Menus.AnyAsync(m => m.Id == menuId, cancellationToken: ct);
     }
 
-    public void Add(Menu menu)
+    public void Add(Menu menu, CancellationToken ct)
     {
         _context.Menus.Add(menu);
     }
 
-    public void Remove(Menu menu)
+    public void Remove(Menu menu, CancellationToken ct)
     {
         _context.Menus.Remove(menu);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken ct)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }

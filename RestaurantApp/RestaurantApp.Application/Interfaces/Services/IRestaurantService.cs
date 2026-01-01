@@ -6,13 +6,13 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IRestaurantService
 {
-    Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync();
-    Task<Result<RestaurantDto>> GetByIdAsync(int id);
-    Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto);
-    Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto);
-    Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto);
-    Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto);
-    Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto);
-    Task<Result> DeleteAsync(int id);
-    Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids);
+    Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync(CancellationToken ct = default);
+    Task<Result<RestaurantDto>> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto, CancellationToken ct = default);
+    Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto, CancellationToken ct = default);
+    Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto, CancellationToken ct = default);
+    Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto, CancellationToken ct = default);
+    Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto, CancellationToken ct = default);
+    Task<Result> DeleteAsync(int id, CancellationToken ct = default);
+    Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids, CancellationToken ct = default);
 }

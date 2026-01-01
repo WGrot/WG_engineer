@@ -24,86 +24,86 @@ public class AuthorizedReservationService : IReservationService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
+    public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
     {
-        if (!await AuthorizeReservationOperation(reservationId, false))
+        if (!await AuthorizeReservationOperation(reservationId, false, ct))
             return Result<ReservationDto>.Forbidden("You dont have permission to see this reservation.");
 
-        return await _inner.GetByIdAsync(reservationId);
+        return await _inner.GetByIdAsync(reservationId, ct);
     }
 
-    public async Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        if (!await AuthorizeInRestaurant(restaurantId))
+        if (!await AuthorizeInRestaurant(restaurantId, ct))
             return Result<List<ReservationDto>>.Forbidden("You dont have permission to see those reservations.");
 
-        return await _inner.GetByRestaurantIdAsync(restaurantId);
+        return await _inner.GetByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto)
+    public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto, CancellationToken ct)
     {
-        if (!await AuthorizeInRestaurant(reservationDto.RestaurantId))
+        if (!await AuthorizeInRestaurant(reservationDto.RestaurantId, ct))
             return Result<ReservationDto>.Forbidden("You dont have permission to create reservations.");
         
         
-        return await _inner.CreateAsync(reservationDto);
+        return await _inner.CreateAsync(reservationDto, ct);
     }
 
-    public async Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto)
+    public async Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto, CancellationToken ct)
     {
-        if (!await AuthorizeReservationOperation(reservationId, true))
+        if (!await AuthorizeReservationOperation(reservationId, true, ct))
             return Result.Forbidden("You dont have permission to edit this reservation.");
 
-        return await _inner.UpdateAsync(reservationId, reservationDto);
+        return await _inner.UpdateAsync(reservationId, reservationDto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int reservationId)
+    public async Task<Result> DeleteAsync(int reservationId, CancellationToken ct)
     {
-        if (!await AuthorizeReservationOperation(reservationId, true))
+        if (!await AuthorizeReservationOperation(reservationId, true, ct))
             return Result.Forbidden("You dont have permission to delete this reservation.");
 
-        return await _inner.DeleteAsync(reservationId);
+        return await _inner.DeleteAsync(reservationId, ct);
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
-        ReservationSearchParameters searchParams)
+        ReservationSearchParameters searchParams, CancellationToken ct)
     {
         if(!_currentUser.IsAuthenticated)
             return Result<PaginatedReservationsDto>.Forbidden("User can not see reservations without being logged in");
         
-        return await _inner.GetUserReservationsAsync(searchParams);
+        return await _inner.GetUserReservationsAsync(searchParams, ct);
     }
 
-    public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)
+    public async Task<Result> CancelUserReservationAsync(string userId, int reservationId, CancellationToken ct)
     {
-        if (!await AuthorizeReservationOperation(reservationId, false))
+        if (!await AuthorizeReservationOperation(reservationId, false, ct))
             return Result.Forbidden("You dont have permission to cancel this reservation.");
         
-        return await _inner.CancelUserReservationAsync(userId, reservationId);
+        return await _inner.CancelUserReservationAsync(userId, reservationId, ct);
     }
 
-    public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(string userId, ReservationSearchParameters searchParams)
+    public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(string userId, ReservationSearchParameters searchParams, CancellationToken ct)
     {
         if(_currentUser.UserId != userId)
             return Result<PaginatedReservationsDto>.Forbidden("You dont have see this content.");  
         
-        return await _inner.GetManagedReservationsAsync(userId, searchParams);
+        return await _inner.GetManagedReservationsAsync(userId, searchParams, ct);
     }
 
-    public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status)
+    public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status, CancellationToken ct)
     {
-        if (!await AuthorizeReservationOperation(reservationId, false))
+        if (!await AuthorizeReservationOperation(reservationId, false, ct))
             return Result.Forbidden("You dont have permission to edit this reserwation.");
         
-        return await _inner.UpdateStatusAsync(reservationId, status);
+        return await _inner.UpdateStatusAsync(reservationId, status, ct);
     }
 
-    public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams)
+    public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams, CancellationToken ct)
     {
-        return await _inner.SearchAsync(searchParams);
+        return await _inner.SearchAsync(searchParams, ct);
     }
     
-    private async Task<bool> AuthorizeReservationOperation(int reservationId, bool needToBeEmployee)
+    private async Task<bool> AuthorizeReservationOperation(int reservationId, bool needToBeEmployee, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -111,7 +111,7 @@ public class AuthorizedReservationService : IReservationService
         return await _authorizationChecker.CanManageReservationAsync(_currentUser.UserId!, reservationId, needToBeEmployee);
     }
     
-    private async Task<bool> AuthorizeInRestaurant(int restaurantId)
+    private async Task<bool> AuthorizeInRestaurant(int restaurantId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

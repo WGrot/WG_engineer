@@ -8,18 +8,22 @@ public interface IRestaurantImageService
     Task<Result<ImageUploadResult>> UploadProfilePhotoAsync(
         int restaurantId, 
         Stream fileStream, 
-        string fileName);
+        string fileName
+        , CancellationToken ct = default);
     
     Task<Result<List<ImageUploadResult>>> UploadGalleryPhotosAsync(
         int restaurantId, 
-        IEnumerable<ImageFileDto> images);
+        IEnumerable<ImageFileDto> images
+        , CancellationToken ct = default);
     
     Task<Result> DeleteProfilePhotoAsync(
-        int restaurantId);
+        int restaurantId
+        , CancellationToken ct = default);
     
     Task<Result> DeleteGalleryPhotoAsync(
         int restaurantId, 
-        int photoIndex);
+        int photoIndex
+        , CancellationToken ct = default);
 }
 
 public record ImageFileDto(Stream Stream, string FileName);

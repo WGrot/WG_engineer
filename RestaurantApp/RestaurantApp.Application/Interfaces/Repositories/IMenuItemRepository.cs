@@ -4,16 +4,16 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IMenuItemRepository
 {
-    Task<MenuItem?> GetByIdAsync(int itemId, bool includeRelations = false);
-    Task<IEnumerable<MenuItem>> GetByMenuIdAsync(int menuId);
-    Task<IEnumerable<MenuItem>> GetByCategoryIdAsync(int categoryId);
-    Task<IEnumerable<MenuItem>> GetUncategorizedAsync(int menuId);
-    Task AddAsync(MenuItem item);
-    void Remove(MenuItem item);
+    Task<MenuItem?> GetByIdAsync(int itemId, CancellationToken ct, bool includeRelations = false);
+    Task<IEnumerable<MenuItem>> GetByMenuIdAsync(int menuId, CancellationToken ct);
+    Task<IEnumerable<MenuItem>> GetByCategoryIdAsync(int categoryId, CancellationToken ct);
+    Task<IEnumerable<MenuItem>> GetUncategorizedAsync(int menuId, CancellationToken ct);
+    Task AddAsync(MenuItem item, CancellationToken ct);
+    void Remove(MenuItem item, CancellationToken ct);
     
-    Task<Menu?> GetMenuByIdAsync(int menuId);
-    Task<MenuCategory?> GetCategoryByIdAsync(int categoryId, bool includeMenu = false);
-    Task<MenuItemTag?> GetTagByIdAsync(int tagId);
+    Task<Menu?> GetMenuByIdAsync(int menuId, CancellationToken ct);
+    Task<MenuCategory?> GetCategoryByIdAsync(int categoryId, CancellationToken ct, bool includeMenu = false);
+    Task<MenuItemTag?> GetTagByIdAsync(int tagId, CancellationToken ct);
     
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(CancellationToken ct);
 }

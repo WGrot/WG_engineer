@@ -14,9 +14,9 @@ public class RestaurantValidator: IRestaurantValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
@@ -24,32 +24,32 @@ public class RestaurantValidator: IRestaurantValidator
     }
 
     public async Task<Result> ValidateUniqueNameAndAddressAsync(string name,
-        string address,
+        string address, CancellationToken ct,
         int? excludeId = null)
     {
-        var exists = await _restaurantRepository.ExistsWithNameAndAddressAsync(name, address, excludeId);
+        var exists = await _restaurantRepository.ExistsWithNameAndAddressAsync(name, address, ct, excludeId);
         if (exists)
             return Result.Failure("A restaurant with the same name and address already exists.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(RestaurantDto dto)
+    public async Task<Result> ValidateForCreateAsync(RestaurantDto dto, CancellationToken ct)
     {
-        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address);
+        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address, ct);
     }
 
-    public async Task<Result> ValidateForCreateAsUserAsync(CreateRestaurantDto dto)
+    public async Task<Result> ValidateForCreateAsUserAsync(CreateRestaurantDto dto, CancellationToken ct)
     {
-        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address);
+        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address, ct);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int id, RestaurantDto dto)
+    public async Task<Result> ValidateForUpdateAsync(int id, RestaurantDto dto, CancellationToken ct)
     {
-        var existsResult = await ValidateRestaurantExistsAsync(id);
+        var existsResult = await ValidateRestaurantExistsAsync(id, ct);
         if (!existsResult.IsSuccess)
             return existsResult;
 
-        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address, excludeId: id);
+        return await ValidateUniqueNameAndAddressAsync(dto.Name, dto.Address, ct, excludeId: id);
     }
 }

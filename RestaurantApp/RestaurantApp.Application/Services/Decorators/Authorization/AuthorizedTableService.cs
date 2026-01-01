@@ -22,59 +22,59 @@ public class AuthorizedTableService : ITableService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto)
+    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeForRestaurant(dto.RestaurantId))
+        if (!await AuthorizeForRestaurant(dto.RestaurantId, ct))
             return Result<TableDto>.Forbidden("You dont have permission to create tables for this restaurant.");
         
-        return await _inner.CreateTableAsync(dto);
+        return await _inner.CreateTableAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto)
+    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeForTable(id))
+        if (!await AuthorizeForTable(id, ct))
             return Result.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.UpdateTableAsync(id, dto);
+        return await _inner.UpdateTableAsync(id, dto, ct);
     }
 
-    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity)
+    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity, CancellationToken ct)
     {
-        if (!await AuthorizeForTable(id))
+        if (!await AuthorizeForTable(id, ct))
             return Result.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.UpdateTableCapacityAsync(id, capacity);
+        return await _inner.UpdateTableCapacityAsync(id, capacity, ct);
     }
 
-    public async Task<Result> DeleteTableAsync(int id)
+    public async Task<Result> DeleteTableAsync(int id, CancellationToken ct)
     {
-        if (!await AuthorizeForTable(id))
+        if (!await AuthorizeForTable(id, ct))
             return Result.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.DeleteTableAsync(id);
+        return await _inner.DeleteTableAsync(id, ct);
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync()
+    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync(CancellationToken ct)
     {
-        return await _inner.GetAllTablesAsync();
+        return await _inner.GetAllTablesAsync(ct);
     }
 
-    public async Task<Result<TableDto>> GetTableByIdAsync(int id)
+    public async Task<Result<TableDto>> GetTableByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetTableByIdAsync(id);
+        return await _inner.GetTableByIdAsync(id, ct);
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId)
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetTablesByRestaurantAsync(restaurantId);
+        return await _inner.GetTablesByRestaurantAsync(restaurantId, ct);
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity)
+    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity, CancellationToken ct)
     {
-        return await _inner.GetAvailableTablesAsync(minCapacity);
+        return await _inner.GetAvailableTablesAsync(minCapacity, ct);
     }
     
-    private async Task<bool> AuthorizeForTable(int tableId)
+    private async Task<bool> AuthorizeForTable(int tableId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -82,7 +82,7 @@ public class AuthorizedTableService : ITableService
         return await _authorizationChecker.CanManageTableAsync(_currentUser.UserId!, tableId);
     }
     
-    private async Task<bool> AuthorizeForRestaurant(int tableId)
+    private async Task<bool> AuthorizeForRestaurant(int tableId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

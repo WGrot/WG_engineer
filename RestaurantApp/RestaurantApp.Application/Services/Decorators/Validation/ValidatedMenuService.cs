@@ -26,71 +26,71 @@ public class ValidatedMenuService : IMenuService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId)
+    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId, CancellationToken ct)
     {
-        return await _inner.GetMenuByIdAsync(menuId);
+        return await _inner.GetMenuByIdAsync(menuId, ct);
     }
 
-    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, bool? isActive = null)
+    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, CancellationToken ct, bool? isActive = null)
     {
-        return await _inner.GetMenusAsync(restaurantId, isActive);
+        return await _inner.GetMenusAsync(restaurantId,ct,  isActive);
     }
 
-    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetActiveMenuByRestaurantIdAsync(restaurantId);
+        return await _inner.GetActiveMenuByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto)
+    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto, CancellationToken ct)
     {
-        var fluentResult = await _createValidator.ValidateAsync(dto);
+        var fluentResult = await _createValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<MenuDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<MenuDto>.From(businessResult);
 
-        return await _inner.CreateMenuAsync(dto);
+        return await _inner.CreateMenuAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto)
+    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(dto);
+        var fluentResult = await _updateValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(menuId);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(menuId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateMenuAsync(menuId, dto);
+        return await _inner.UpdateMenuAsync(menuId, dto, ct);
     }
 
-    public async Task<Result> DeleteMenuAsync(int menuId)
+    public async Task<Result> DeleteMenuAsync(int menuId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForDeleteAsync(menuId);
+        var businessResult = await _businessValidator.ValidateForDeleteAsync(menuId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteMenuAsync(menuId);
+        return await _inner.DeleteMenuAsync(menuId, ct);
     }
 
-    public async Task<Result> ActivateMenuAsync(int menuId)
+    public async Task<Result> ActivateMenuAsync(int menuId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateMenuExistsAsync(menuId);
+        var businessResult = await _businessValidator.ValidateMenuExistsAsync(menuId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.ActivateMenuAsync(menuId);
+        return await _inner.ActivateMenuAsync(menuId, ct);
     }
 
-    public async Task<Result> DeactivateMenuAsync(int menuId)
+    public async Task<Result> DeactivateMenuAsync(int menuId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateMenuExistsAsync(menuId);
+        var businessResult = await _businessValidator.ValidateMenuExistsAsync(menuId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeactivateMenuAsync(menuId);
+        return await _inner.DeactivateMenuAsync(menuId, ct);
     }
 }

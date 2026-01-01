@@ -21,46 +21,46 @@ public class AuthorizedMenuItemTagService : IMenuItemTagService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(int? restaurantId = null)
+    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(CancellationToken ct, int? restaurantId = null)
     {
-        return await _inner.GetTagsAsync(restaurantId);
+        return await _inner.GetTagsAsync(ct, restaurantId);
     }
 
-    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id)
+    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetTagByIdAsync(id);
+        return await _inner.GetTagByIdAsync(id, ct);
     }
 
-    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto tag)
+    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto tag, CancellationToken ct)
     {
-        if (!await AuthorizeForRestaurant(tag.RestaurantId))
+        if (!await AuthorizeForRestaurant(tag.RestaurantId, ct))
             return Result<MenuItemTagDto>.Forbidden("You dont have permission to create tags for this restaurant.");
         
-        return await _inner.CreateTagAsync(tag);
+        return await _inner.CreateTagAsync(tag, ct);
     }
 
-    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto tag)
+    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto tag, CancellationToken ct)
     {
-        if (!await AuthorizeForRestaurant(tag.RestaurantId))
+        if (!await AuthorizeForRestaurant(tag.RestaurantId, ct))
             return Result<MenuItemTagDto>.Forbidden("You dont have permission to edit tags for this restaurant.");
         
-        return await _inner.UpdateTagAsync(id, tag);
+        return await _inner.UpdateTagAsync(id, tag, ct);
     }
 
-    public async Task<Result> DeleteTagAsync(int id)
+    public async Task<Result> DeleteTagAsync(int id, CancellationToken ct)
     {
-        if (!await AuthorizeForTag(id))
+        if (!await AuthorizeForTag(id, ct))
             return Result<MenuItemTagDto>.Forbidden("You dont have permission to delete tags for this restaurant.");
         
-        return await _inner.DeleteTagAsync(id);
+        return await _inner.DeleteTagAsync(id, ct);
     }
 
-    public async Task<Result<bool>> TagExistsAsync(int id)
+    public async Task<Result<bool>> TagExistsAsync(int id, CancellationToken ct)
     {
-        return await _inner.TagExistsAsync(id);
+        return await _inner.TagExistsAsync(id, ct);
     }
     
-    private async Task<bool> AuthorizeForRestaurant(int restaurantId)
+    private async Task<bool> AuthorizeForRestaurant(int restaurantId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -68,7 +68,7 @@ public class AuthorizedMenuItemTagService : IMenuItemTagService
         return await _authorizationChecker.CanManageMenuAsync(_currentUser.UserId!, restaurantId);
     }
     
-    private async Task<bool> AuthorizeForTag(int tagId)
+    private async Task<bool> AuthorizeForTag(int tagId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

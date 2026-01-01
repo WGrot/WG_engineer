@@ -20,25 +20,25 @@ public class PasswordController : ControllerBase
     }
     
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken ct)
     {
-        var result = await _passwordService.ChangePasswordAsync(request);
+        var result = await _passwordService.ChangePasswordAsync(request, ct);
         return result.ToActionResult();
     }
     
     [HttpPost("forgot-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
     {
-        var result = await _passwordService.ForgotPasswordAsync(request.Email);
+        var result = await _passwordService.ForgotPasswordAsync(request.Email, ct);
         return result.ToActionResult();
     }
     
     [HttpPost("reset-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
     {
-        var result = await _passwordService.ResetPasswordAsync(request);
+        var result = await _passwordService.ResetPasswordAsync(request, ct);
         return result.ToActionResult();
     }
 

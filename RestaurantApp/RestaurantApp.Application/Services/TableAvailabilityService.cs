@@ -28,9 +28,9 @@ public class TableAvailabilityService: ITableAvailabilityService
         int tableId,
         DateTime date,
         TimeOnly startTime,
-        TimeOnly endTime)
+        TimeOnly endTime, CancellationToken ct)
     {
-        var tableExists = await _tableRepository.ExistsAsync(tableId);
+        var tableExists = await _tableRepository.ExistsAsync(tableId, ct);
         if (!tableExists)
             return Result<TableAvailabilityResultDto>.NotFound($"Table with ID {tableId} not found.");
 
@@ -38,7 +38,7 @@ public class TableAvailabilityService: ITableAvailabilityService
             return Result<TableAvailabilityResultDto>.ValidationError("End time must be after start time.");
 
         var hasConflict = await _reservationRepository.HasConflictingTableReservationAsync(
-            tableId, date, startTime, endTime);
+            tableId, date, startTime, endTime, ct);
 
         var result = new TableAvailabilityResultDto
         {
@@ -51,15 +51,15 @@ public class TableAvailabilityService: ITableAvailabilityService
         return Result<TableAvailabilityResultDto>.Success(result);
     }
 
-    public async Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date)
+    public async Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date, CancellationToken ct)
     {
-        var table = await _tableRepository.GetByIdAsync(tableId);
+        var table = await _tableRepository.GetByIdAsync(tableId, ct);
         if (table is null)
             return Result<TableAvailability>.NotFound($"Table with ID {tableId} not found.");
 
-        var reservations = await _reservationRepository.GetTableReservationsForDateAsync(tableId, date);
+        var reservations = await _reservationRepository.GetTableReservationsForDateAsync(tableId, date, ct);
         var openingHours = await _openingHoursRepository.GetByRestaurantAndDayAsync(
-            table.RestaurantId, date.DayOfWeek);
+            table.RestaurantId, date.DayOfWeek, ct);
 
         var timeSlots = BuildAvailabilityMap(reservations, openingHours);
 

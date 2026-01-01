@@ -24,14 +24,14 @@ public class TokenService: ITokenService
     
     public async Task<string> GenerateAccessTokenAsync(
         ApplicationUser user, 
-        bool is2FaVerified)
+        bool is2FaVerified, CancellationToken ct)
     {
         return await _jwtService.GenerateJwtTokenAsync(user, is2FaVerified);
     }
     
     public async Task<(string RefreshToken, DateTime ExpiresAt)> GenerateRefreshTokenAsync(
         ApplicationUser user, 
-        string createdByIp)
+        string createdByIp, CancellationToken ct)
     {
         var refreshToken = TokenHelper.GenerateRefreshToken();
         var refreshHash = TokenHelper.HashToken(refreshToken);
@@ -47,19 +47,19 @@ public class TokenService: ITokenService
             UserId = user.Id
         };
 
-        await _refreshTokenRepository.AddAsync(rt);
-        await _refreshTokenRepository.SaveChangesAsync();
+        await _refreshTokenRepository.AddAsync(rt, ct);
+        await _refreshTokenRepository.SaveChangesAsync(ct);
 
         return (refreshToken, expiresAt);
     }
 
     public async Task<(bool Success, string? NewAccessToken, string? NewRefreshToken)> ValidateAndRotateRefreshTokenAsync(
         string presentedRefreshToken, 
-        string ipAddress)
+        string ipAddress, CancellationToken ct)
     {
         var presentedHash = TokenHelper.HashToken(presentedRefreshToken);
 
-        var tokenDto = await _refreshTokenRepository.GetByTokenHashWithUserAsync(presentedHash);
+        var tokenDto = await _refreshTokenRepository.GetByTokenHashWithUserAsync(presentedHash, ct);
 
         if (tokenDto == null)
         {
@@ -71,7 +71,7 @@ public class TokenService: ITokenService
             return (false, null, null);
         }
         
-        var tokenEntity = await _refreshTokenRepository.GetByTokenHashAsync(presentedHash);
+        var tokenEntity = await _refreshTokenRepository.GetByTokenHashAsync(presentedHash, ct);
         if (tokenEntity == null)
         {
             return (false, null, null);
@@ -97,9 +97,9 @@ public class TokenService: ITokenService
 
         tokenEntity.ReplacedByTokenHash = newHash;
 
-        await _refreshTokenRepository.UpdateAsync(tokenEntity);
-        await _refreshTokenRepository.AddAsync(newEntity);
-        await _refreshTokenRepository.SaveChangesAsync();
+        await _refreshTokenRepository.UpdateAsync(tokenEntity, ct);
+        await _refreshTokenRepository.AddAsync(newEntity, ct);
+        await _refreshTokenRepository.SaveChangesAsync(ct);
 
         var newAccess = await _jwtService.GenerateJwtTokenAsync(tokenDto.User, tokenDto.User.TwoFactorEnabled);
 
@@ -108,11 +108,12 @@ public class TokenService: ITokenService
 
     public async Task RevokeRefreshTokenAsync(
         string presentedRefreshToken, 
-        string ipAddress, 
+        string ipAddress,
+        CancellationToken ct,
         string? reason = null)
     {
         var hash = TokenHelper.HashToken(presentedRefreshToken);
-        var token = await _refreshTokenRepository.GetByTokenHashAsync(hash);
+        var token = await _refreshTokenRepository.GetByTokenHashAsync(hash, ct);
         
         if (token == null) return;
 
@@ -121,7 +122,7 @@ public class TokenService: ITokenService
         token.RevokedByIp = ipAddress;
         token.ReasonRevoked = reason;
         
-        await _refreshTokenRepository.UpdateAsync(token);
-        await _refreshTokenRepository.SaveChangesAsync();
+        await _refreshTokenRepository.UpdateAsync(token, ct);
+        await _refreshTokenRepository.SaveChangesAsync(ct);
     }
 }

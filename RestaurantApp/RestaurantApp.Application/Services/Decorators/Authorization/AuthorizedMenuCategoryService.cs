@@ -21,49 +21,49 @@ public class AuthorizedMenuCategoryService: IMenuCategoryService
         _authorizationChecker = authorizationChecker;
     }
     
-    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId)
+    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId, CancellationToken ct)
     {
-        return await _inner.GetCategoryByIdAsync(categoryId);
+        return await _inner.GetCategoryByIdAsync(categoryId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId)
+    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId, CancellationToken ct)
     {
-        return await _inner.GetCategoriesAsync(menuId);
+        return await _inner.GetCategoriesAsync(menuId, ct);
     }
 
-    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto)
+    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuAsync(categoryDto.MenuId))
+        if (!await AuthorizeForMenuAsync(categoryDto.MenuId, ct))
             return Result<MenuCategoryDto>.Forbidden("You dont have permission to create categories for this restaurant.");
         
-        return await _inner.CreateCategoryAsync(categoryDto);
+        return await _inner.CreateCategoryAsync(categoryDto, ct);
     }
 
-    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto)
+    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        if (!await AuthorizeForCategoryAsync(categoryDto.Id))
+        if (!await AuthorizeForCategoryAsync(categoryDto.Id, ct))
             return Result.Forbidden("You don't have permission to manage this category");
 
-        return await _inner.UpdateCategoryAsync(categoryDto);
+        return await _inner.UpdateCategoryAsync(categoryDto, ct);
     }
 
-    public async Task<Result> DeleteCategoryAsync(int categoryId)
+    public async Task<Result> DeleteCategoryAsync(int categoryId, CancellationToken ct)
     {
-        if (!await AuthorizeForCategoryAsync(categoryId))
+        if (!await AuthorizeForCategoryAsync(categoryId, ct))
             return Result.Forbidden("You don't have permission to manage this category");
 
-        return await _inner.DeleteCategoryAsync(categoryId);
+        return await _inner.DeleteCategoryAsync(categoryId, ct);
     }
 
-    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder)
+    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder, CancellationToken ct)
     {
-        if (!await AuthorizeForCategoryAsync(categoryId))
+        if (!await AuthorizeForCategoryAsync(categoryId, ct))
             return Result.Forbidden("You don't have permission to manage this category");
 
-        return await _inner.DeleteCategoryAsync(categoryId);
+        return await _inner.DeleteCategoryAsync(categoryId, ct);
     }
     
-    private async Task<bool> AuthorizeForCategoryAsync(int categoryId)
+    private async Task<bool> AuthorizeForCategoryAsync(int categoryId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -71,7 +71,7 @@ public class AuthorizedMenuCategoryService: IMenuCategoryService
         return await _authorizationChecker.CanManageCategoryAsync(_currentUser.UserId!, categoryId);
     }
     
-    private async Task<bool> AuthorizeForMenuAsync(int menuId)
+    private async Task<bool> AuthorizeForMenuAsync(int menuId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

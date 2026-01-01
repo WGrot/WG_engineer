@@ -58,7 +58,7 @@ public class PasswordService: IPasswordService
         return new string(password.OrderBy(_ => Guid.NewGuid()).ToArray());
     }
 
-    public async Task<Result> ForgotPasswordAsync(string email)
+    public async Task<Result> ForgotPasswordAsync(string email, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -86,7 +86,7 @@ public class PasswordService: IPasswordService
         return Result.Success();
     }
 
-    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct)
     {
         var validationResult = ValidateResetPasswordRequest(request);
         if (!validationResult.IsSuccess)
@@ -115,7 +115,7 @@ public class PasswordService: IPasswordService
         return Result.Success();
     }
 
-    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest request)
+    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken ct)
     {
         if (!_currentUserService.IsAuthenticated)
         {

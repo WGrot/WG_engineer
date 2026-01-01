@@ -33,9 +33,9 @@ public class TableReservationService : ITableReservationService
         _realtimeSender = realtimeSender;
     }
 
-    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
+    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
     {
-        var reservation = await _reservationRepository.GetTableReservationByIdWithDetailsAsync(reservationId);
+        var reservation = await _reservationRepository.GetTableReservationByIdWithDetailsAsync(reservationId, ct);
 
         if (reservation == null)
             return Result<TableReservationDto>.NotFound("Table reservation not found");
@@ -43,15 +43,15 @@ public class TableReservationService : ITableReservationService
         return Result<TableReservationDto>.Success(reservation.ToTableReservationDto());
     }
 
-    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId)
+    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId, CancellationToken ct)
     {
-        var reservations = await _reservationRepository.GetTableReservationsByTableIdAsync(tableId);
+        var reservations = await _reservationRepository.GetTableReservationsByTableIdAsync(tableId, ct);
         return Result<IEnumerable<ReservationDto>>.Success(reservations.ToDtoList());
     }
 
-    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
+    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto, CancellationToken ct)
     {
-        var restaurantSettings = await _restaurantSettingsRepository.GetByRestaurantIdAsync(dto.RestaurantId);
+        var restaurantSettings = await _restaurantSettingsRepository.GetByRestaurantIdAsync(dto.RestaurantId, ct);
         bool needsConfirmation = restaurantSettings!.ReservationsNeedConfirmation;
         var initialStatus = needsConfirmation
             ? ReservationStatusEnumDto.Pending
@@ -65,7 +65,7 @@ public class TableReservationService : ITableReservationService
 
         var reservation = CreateReservation(dto, userId, initialStatus, needsConfirmation);
 
-        var created = await _reservationRepository.AddTableReservationAsync(reservation);
+        var created = await _reservationRepository.AddTableReservationAsync(reservation, ct);
 
         await SendReservationNotificationAsync(created, needsConfirmation);
         if (dto.ReservationDate == DateTime.Today)
@@ -77,13 +77,13 @@ public class TableReservationService : ITableReservationService
         return Result<TableReservationDto>.Success(created.ToTableReservationDto());
     }
 
-    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto)
+    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto, CancellationToken ct)
     {
-        var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
+        var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId, ct);
 
         UpdateReservationFromDto(existing!, dto);
 
-        await _reservationRepository.UpdateTableReservationAsync(existing!);
+        await _reservationRepository.UpdateTableReservationAsync(existing!, ct);
         if (dto.ReservationDate == DateTime.Today)
         {
             await _realtimeSender.SendTableAvailabilityChangedAsync(dto.RestaurantId, dto.TableId); 
@@ -91,16 +91,16 @@ public class TableReservationService : ITableReservationService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(int reservationId)
+    public async Task<Result> DeleteAsync(int reservationId, CancellationToken ct)
     {
-        var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId);
+        var existing = await _reservationRepository.GetTableReservationByIdAsync(reservationId, ct);
 
         if (existing!.ReservationDate == DateTime.Today)
         {
             await _realtimeSender.SendTableAvailabilityChangedAsync(existing.RestaurantId, existing.TableId); 
         }
         
-        await _reservationRepository.DeleteAsync(existing);
+        await _reservationRepository.DeleteAsync(existing, ct);
 
         return Result.Success();
     }

@@ -46,6 +46,7 @@ public class S3StorageService : IStorageService
         Stream imageStream,
         string fileName,
         ImageType imageType,
+        CancellationToken ct,
         int? entityId = null,
         bool generateThumbnail = true)
     {
@@ -118,8 +119,8 @@ public class S3StorageService : IStorageService
                     break;
             }
 
-            await _imageLinkRepository.AddAsync(imageLink);
-            await _imageLinkRepository.SaveChangesAsync();
+            await _imageLinkRepository.AddAsync(imageLink, ct);
+            await _imageLinkRepository.SaveChangesAsync(ct);
 
             var result = new ImageUploadResult
             {
@@ -147,7 +148,7 @@ public class S3StorageService : IStorageService
 
                 result.ThumbnailUrl = _urlBuilder.GetPublicUrl(thumbnailPath, bucketName);
                 imageLink.ThumbnailUrl = result.ThumbnailUrl;
-                await _imageLinkRepository.SaveChangesAsync();
+                await _imageLinkRepository.SaveChangesAsync(ct);
             }
 
             _logger.LogInformation(

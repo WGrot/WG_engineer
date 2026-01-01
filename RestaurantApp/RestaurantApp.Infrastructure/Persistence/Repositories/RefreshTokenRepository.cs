@@ -14,7 +14,7 @@ public class RefreshTokenRepository: IRefreshTokenRepository
         _context = context;
     }
 
-    public async Task<RefreshTokenDto?> GetByTokenHashWithUserAsync(string tokenHash)
+    public async Task<RefreshTokenDto?> GetByTokenHashWithUserAsync(string tokenHash, CancellationToken ct)
     {
         return await _context.RefreshTokens
             .Include(t => t.User)
@@ -28,28 +28,28 @@ public class RefreshTokenRepository: IRefreshTokenRepository
                 UserId = t.UserId,
                 User = t.User
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: ct);
     }
 
-    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct)
     {
         return await _context.RefreshTokens
-            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken: ct);
     }
 
-    public async Task AddAsync(RefreshToken refreshToken)
+    public async Task AddAsync(RefreshToken refreshToken, CancellationToken ct)
     {
-        await _context.RefreshTokens.AddAsync(refreshToken);
+        await _context.RefreshTokens.AddAsync(refreshToken, ct);
     }
 
-    public async Task UpdateAsync(RefreshToken refreshToken)
+    public async Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct)
     {
         _context.RefreshTokens.Update(refreshToken);
         await Task.CompletedTask;
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken ct)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }

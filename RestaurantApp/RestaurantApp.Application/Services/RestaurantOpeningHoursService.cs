@@ -21,10 +21,11 @@ public class RestaurantOpeningHoursService : IRestaurantOpeningHoursService
 
     public async Task<Result<OpenStatusDto>> CheckIfOpenAsync(
         int restaurantId,
+        CancellationToken ct,
         TimeOnly? time = null,
         DayOfWeek? dayOfWeek = null)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(restaurantId);
+        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(restaurantId, ct);
 
         if (restaurant == null)
             return Result<OpenStatusDto>.NotFound($"Restaurant with ID {restaurantId} not found.");
@@ -56,22 +57,22 @@ public class RestaurantOpeningHoursService : IRestaurantOpeningHoursService
         });
     }
 
-    public async Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours)
+    public async Task<Result> UpdateOpeningHoursAsync(int id, List<OpeningHoursDto> openingHours, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id);
+        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id, ct);
 
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {id} not found.");
 
         if (restaurant.OpeningHours != null)
         {
-            _openingHoursRepository.RemoveRange(restaurant.OpeningHours);
+            _openingHoursRepository.RemoveRange(restaurant.OpeningHours, ct);
         }
 
         restaurant.OpeningHours = openingHours.ToEntityList();
         
-        _restaurantRepository.Update(restaurant);
-        await _restaurantRepository.SaveChangesAsync();
+        _restaurantRepository.Update(restaurant, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }

@@ -5,12 +5,12 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IRestaurantSettingsService
 {
-    Task<Result<IEnumerable<SettingsDto>>> GetAllAsync();
-    Task<Result<SettingsDto>> GetByIdAsync(int id);
-    Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId);
-    Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto);
-    Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto);
-    Task<Result> DeleteAsync(int id);
-    Task<Result<bool>> ExistsAsync(int id);
-    Task<Result<bool>> NeedConfirmationAsync(int restaurantId);
+    Task<Result<IEnumerable<SettingsDto>>> GetAllAsync(CancellationToken ct = default);
+    Task<Result<SettingsDto>> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct = default);
+    Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto, CancellationToken ct = default);
+    Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto, CancellationToken ct = default);
+    Task<Result> DeleteAsync(int id, CancellationToken ct = default);
+    Task<Result<bool>> ExistsAsync(int id, CancellationToken ct = default);
+    Task<Result<bool>> NeedConfirmationAsync(int restaurantId, CancellationToken ct = default);
 }

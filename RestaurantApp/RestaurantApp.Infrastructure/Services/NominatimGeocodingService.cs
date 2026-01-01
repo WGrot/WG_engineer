@@ -35,7 +35,7 @@ public class NominatimGeocodingService : IGeocodingService
     
     public async Task<(double? lat, double? lon)> GeocodeStructuredAsync(
         string street, 
-        string city, 
+        string city,
         string postalCode = null, 
         string country = "Polska")
     {

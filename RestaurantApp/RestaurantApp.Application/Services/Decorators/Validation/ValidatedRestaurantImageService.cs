@@ -21,41 +21,41 @@ public class ValidatedRestaurantImageService: IRestaurantImageService
     public async Task<Result<ImageUploadResult>> UploadProfilePhotoAsync(
         int restaurantId,
         Stream fileStream,
-        string fileName)
+        string fileName, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateRestaurantExistsAsync(restaurantId);
+        var validationResult = await _validator.ValidateRestaurantExistsAsync(restaurantId, ct);
         if (!validationResult.IsSuccess)
             return Result<ImageUploadResult>.From(validationResult);
 
-        return await _inner.UploadProfilePhotoAsync(restaurantId, fileStream, fileName);
+        return await _inner.UploadProfilePhotoAsync(restaurantId, fileStream, fileName, ct);
     }
 
     public async Task<Result<List<ImageUploadResult>>> UploadGalleryPhotosAsync(
         int restaurantId,
-        IEnumerable<ImageFileDto> images)
+        IEnumerable<ImageFileDto> images, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateRestaurantExistsAsync(restaurantId);
+        var validationResult = await _validator.ValidateRestaurantExistsAsync(restaurantId, ct);
         if (!validationResult.IsSuccess)
             return Result<List<ImageUploadResult>>.From(validationResult);
 
-        return await _inner.UploadGalleryPhotosAsync(restaurantId, images);
+        return await _inner.UploadGalleryPhotosAsync(restaurantId, images, ct);
     }
 
-    public async Task<Result> DeleteProfilePhotoAsync(int restaurantId)
+    public async Task<Result> DeleteProfilePhotoAsync(int restaurantId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateProfilePhotoExistsAsync(restaurantId);
+        var validationResult = await _validator.ValidateProfilePhotoExistsAsync(restaurantId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.DeleteProfilePhotoAsync(restaurantId);
+        return await _inner.DeleteProfilePhotoAsync(restaurantId, ct);
     }
 
-    public async Task<Result> DeleteGalleryPhotoAsync(int restaurantId, int imageId)
+    public async Task<Result> DeleteGalleryPhotoAsync(int restaurantId, int imageId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateGalleryPhotoExistsAsync(restaurantId, imageId);
+        var validationResult = await _validator.ValidateGalleryPhotoExistsAsync(restaurantId, imageId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.DeleteGalleryPhotoAsync(restaurantId, imageId);
+        return await _inner.DeleteGalleryPhotoAsync(restaurantId, imageId, ct);
     }
 }

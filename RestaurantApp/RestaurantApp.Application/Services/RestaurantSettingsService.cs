@@ -16,15 +16,15 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         _repository = repository;
     }
 
-    public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync(CancellationToken ct)
     {
-        var settings = await _repository.GetAllAsync();
+        var settings = await _repository.GetAllAsync(ct);
         return Result<IEnumerable<SettingsDto>>.Success(settings.ToDtoList());
     }
 
-    public async Task<Result<SettingsDto>> GetByIdAsync(int id)
+    public async Task<Result<SettingsDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        var settings = await _repository.GetByIdAsync(id);
+        var settings = await _repository.GetByIdAsync(id, ct);
 
         if (settings is null)
             return Result<SettingsDto>.NotFound($"Restaurant settings with ID {id} not found.");
@@ -32,9 +32,9 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<SettingsDto>.Success(settings.ToDto());
     }
 
-    public async Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        var settings = await _repository.GetByRestaurantIdAsync(restaurantId);
+        var settings = await _repository.GetByRestaurantIdAsync(restaurantId, ct);
 
         if (settings is null)
             return Result<SettingsDto>.NotFound($"Restaurant settings for restaurant {restaurantId} not found.");
@@ -42,7 +42,7 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<SettingsDto>.Success(settings.ToDto());
     }
 
-    public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto)
+    public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto, CancellationToken ct)
     {
         var settings = new RestaurantSettings
         {
@@ -57,31 +57,31 @@ public class RestaurantSettingsService : IRestaurantSettingsService
             ReservationsPerUserLimit = dto.ReservationsPerUserLimit
         };
 
-        var created = await _repository.AddAsync(settings);
+        var created = await _repository.AddAsync(settings, ct);
         return Result<SettingsDto>.Success(created.ToDto());
     }
 
-    public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto)
+    public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto, CancellationToken ct)
     {
-        var existingSettings = await _repository.GetByIdAsync(id);
+        var existingSettings = await _repository.GetByIdAsync(id, ct);
 
         existingSettings!.UpdateFromDto(dto);
 
-        await _repository.UpdateAsync(existingSettings!);
+        await _repository.UpdateAsync(existingSettings!, ct);
         return Result<SettingsDto>.Success(existingSettings!.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        var settings = await _repository.GetByIdAsync(id);
+        var settings = await _repository.GetByIdAsync(id, ct);
 
-        await _repository.DeleteAsync(settings!);
+        await _repository.DeleteAsync(settings!, ct);
         return Result.Success();
     }
 
-    public async Task<Result<bool>> ExistsAsync(int id)
+    public async Task<Result<bool>> ExistsAsync(int id, CancellationToken ct)
     {
-        var exists = await _repository.ExistsAsync(id);
+        var exists = await _repository.ExistsAsync(id, ct);
 
         if (!exists)
             return Result<bool>.NotFound($"Restaurant settings with ID {id} not found.");
@@ -89,9 +89,9 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         return Result<bool>.Success(true);
     }
 
-    public async Task<Result<bool>> NeedConfirmationAsync(int restaurantId)
+    public async Task<Result<bool>> NeedConfirmationAsync(int restaurantId, CancellationToken ct)
     {
-        var settings = await _repository.GetByRestaurantIdAsync(restaurantId);
+        var settings = await _repository.GetByRestaurantIdAsync(restaurantId, ct);
 
         if (settings is null)
             return Result<bool>.NotFound($"Restaurant settings for restaurant {restaurantId} not found.");

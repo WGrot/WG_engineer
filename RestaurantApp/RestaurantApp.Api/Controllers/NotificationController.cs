@@ -22,67 +22,60 @@ public class NotificationsController : ControllerBase
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await _notificationService.GetByUserIdAsync(UserId);
+        var result = await _notificationService.GetByUserIdAsync(UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("unread")]
-    public async Task<IActionResult> GetUnread()
+    public async Task<IActionResult> GetUnread(CancellationToken ct)
     {
-        var result = await _notificationService.GetUnreadByUserIdAsync(UserId);
+        var result = await _notificationService.GetUnreadByUserIdAsync(UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("unread/count")]
-    public async Task<IActionResult> GetUnreadCount()
+    public async Task<IActionResult> GetUnreadCount(CancellationToken ct)
     {
-        var result = await _notificationService.GetUnreadCountAsync(UserId);
+        var result = await _notificationService.GetUnreadCountAsync(UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _notificationService.GetByIdAsync(id, UserId);
+        var result = await _notificationService.GetByIdAsync(id, UserId, ct);
 
         return result.ToActionResult();
     }
 
     [HttpPatch("{id}/read")]
-    public async Task<IActionResult> MarkAsRead(int id)
+    public async Task<IActionResult> MarkAsRead(int id, CancellationToken ct)
     {
-        var result = await _notificationService.MarkAsReadAsync(id, UserId);
+        var result = await _notificationService.MarkAsReadAsync(id, UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpPatch("read-all")]
-    public async Task<IActionResult> MarkAllAsRead()
+    public async Task<IActionResult> MarkAllAsRead(CancellationToken ct)
     {
-        var result = await _notificationService.MarkAllAsReadAsync(UserId);
+        var result = await _notificationService.MarkAllAsReadAsync(UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _notificationService.DeleteAsync(id, UserId);
+        var result = await _notificationService.DeleteAsync(id, UserId, ct);
         return result.ToActionResult();
     }
 
     [HttpDelete("read")]
-    public async Task<IActionResult> DeleteAllRead()
+    public async Task<IActionResult> DeleteAllRead(CancellationToken ct)
     {
-        await _notificationService.DeleteAllReadAsync(UserId);
+        await _notificationService.DeleteAllReadAsync(UserId, ct);
         return NoContent();
     }
     
-    // [HttpPost]
-    // public async Task<IActionResult> Create(CreateNotificationDto dto)
-    // {
-    //     dto.UserId = UserId;
-    //     var result = await _notificationService.CreateAsync(dto);
-    //     return result.ToActionResult();
-    // }
 }

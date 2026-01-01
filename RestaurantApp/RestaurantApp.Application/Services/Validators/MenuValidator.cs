@@ -18,37 +18,37 @@ public class MenuValidator : IMenuValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateMenuExistsAsync(int menuId)
+    public async Task<Result> ValidateMenuExistsAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdAsync(menuId);
+        var menu = await _menuRepository.GetByIdAsync(menuId, ct);
         if (menu == null)
             return Result.NotFound($"Menu with ID {menuId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuDto dto)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuDto dto, CancellationToken ct)
     {
-        return await ValidateRestaurantExistsAsync(dto.RestaurantId);
+        return await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int menuId)
+    public async Task<Result> ValidateForUpdateAsync(int menuId, CancellationToken ct)
     {
-        return await ValidateMenuExistsAsync(menuId);
+        return await ValidateMenuExistsAsync(menuId, ct);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(int menuId)
+    public async Task<Result> ValidateForDeleteAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId);
+        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId, ct);
         if (menu == null)
             return Result.NotFound($"Menu with ID {menuId} not found.");
 

@@ -21,46 +21,46 @@ public class AuthorizedMenuItemVariantService : IMenuItemVariantService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<IEnumerable<MenuItemVariantDto>>> GetAllVariantsAsync()
+    public async Task<Result<IEnumerable<MenuItemVariantDto>>> GetAllVariantsAsync(CancellationToken ct)
     {
-        return await _inner.GetAllVariantsAsync();
+        return await _inner.GetAllVariantsAsync(ct);
     }
 
-    public async Task<Result<IEnumerable<MenuItemVariantDto>>> GetMenuItemVariantsAsync(int menuItemId)
+    public async Task<Result<IEnumerable<MenuItemVariantDto>>> GetMenuItemVariantsAsync(int menuItemId, CancellationToken ct)
     {
-        return await _inner.GetMenuItemVariantsAsync(menuItemId);
+        return await _inner.GetMenuItemVariantsAsync(menuItemId, ct);
     }
 
-    public async Task<Result<MenuItemVariantDto>> GetVariantByIdAsync(int id)
+    public async Task<Result<MenuItemVariantDto>> GetVariantByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetVariantByIdAsync(id);
+        return await _inner.GetVariantByIdAsync(id, ct);
     }
 
-    public async Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant)
+    public async Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuItem(variant.MenuItemId))
+        if (!await AuthorizeForMenuItem(variant.MenuItemId, ct))
             return Result<MenuItemVariantDto>.Forbidden("You dont have permission to create menu item variants for this restaurant.");
         
-        return await _inner.CreateVariantAsync(variant);
+        return await _inner.CreateVariantAsync(variant, ct);
     }
 
-    public async Task<Result<MenuItemVariantDto>> UpdateVariantAsync(int id, MenuItemVariantDto variantDto)
+    public async Task<Result<MenuItemVariantDto>> UpdateVariantAsync(int id, MenuItemVariantDto variantDto, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuItem(variantDto.MenuItemId))
+        if (!await AuthorizeForMenuItem(variantDto.MenuItemId, ct))
             return Result<MenuItemVariantDto>.Forbidden("You dont have permission to edit menu item variants for this restaurant.");
         
-        return await _inner.UpdateVariantAsync(id, variantDto);
+        return await _inner.UpdateVariantAsync(id, variantDto, ct);
     }
 
-    public async Task<Result> DeleteVariantAsync(int id)
+    public async Task<Result> DeleteVariantAsync(int id, CancellationToken ct)
     {
-        if (!await AuthorizeForVariant(id))
+        if (!await AuthorizeForVariant(id, ct))
             return Result<MenuItemVariantDto>.Forbidden("You dont have permission to delete menu item variants for this restaurant.");
         
-        return await _inner.DeleteVariantAsync(id);
+        return await _inner.DeleteVariantAsync(id, ct);
     }
     
-    private async Task<bool> AuthorizeForMenuItem(int menuItemId)
+    private async Task<bool> AuthorizeForMenuItem(int menuItemId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -68,7 +68,7 @@ public class AuthorizedMenuItemVariantService : IMenuItemVariantService
         return await _authorizationChecker.CanManageMenuItemAsync(_currentUser.UserId!, menuItemId);
     }
     
-    private async Task<bool> AuthorizeForVariant(int variantId)
+    private async Task<bool> AuthorizeForVariant(int variantId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

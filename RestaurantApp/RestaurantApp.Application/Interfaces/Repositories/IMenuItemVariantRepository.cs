@@ -4,11 +4,11 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IMenuItemVariantRepository
 {
-    Task<IEnumerable<MenuItemVariant>> GetAllAsync();
-    Task<IEnumerable<MenuItemVariant>> GetByMenuItemIdAsync(int menuItemId);
-    Task<MenuItemVariant?> GetByIdAsync(int id);
-    Task<bool> MenuItemExistsAsync(int menuItemId);
-    Task<MenuItemVariant> AddAsync(MenuItemVariant variant);
-    Task UpdateAsync(MenuItemVariant variant);
-    Task DeleteAsync(MenuItemVariant variant);
+    Task<IEnumerable<MenuItemVariant>> GetAllAsync(CancellationToken ct);
+    Task<IEnumerable<MenuItemVariant>> GetByMenuItemIdAsync(int menuItemId, CancellationToken ct);
+    Task<MenuItemVariant?> GetByIdAsync(int id, CancellationToken ct);
+    Task<bool> MenuItemExistsAsync(int menuItemId, CancellationToken ct);
+    Task<MenuItemVariant> AddAsync(MenuItemVariant variant, CancellationToken ct);
+    Task UpdateAsync(MenuItemVariant variant, CancellationToken ct);
+    Task DeleteAsync(MenuItemVariant variant, CancellationToken ct);
 }

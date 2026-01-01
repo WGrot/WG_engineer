@@ -5,9 +5,9 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IRestaurantValidator
 {
-    Task<Result> ValidateRestaurantExistsAsync(int restaurantId);
-    Task<Result> ValidateUniqueNameAndAddressAsync(string name, string address, int? excludeId = null);
-    Task<Result> ValidateForCreateAsync(RestaurantDto dto);
-    Task<Result> ValidateForCreateAsUserAsync(CreateRestaurantDto dto);
-    Task<Result> ValidateForUpdateAsync(int id, RestaurantDto dto);
+    Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct);
+    Task<Result> ValidateUniqueNameAndAddressAsync(string name, string address, CancellationToken ct, int? excludeId = null);
+    Task<Result> ValidateForCreateAsync(RestaurantDto dto, CancellationToken ct);
+    Task<Result> ValidateForCreateAsUserAsync(CreateRestaurantDto dto, CancellationToken ct);
+    Task<Result> ValidateForUpdateAsync(int id, RestaurantDto dto, CancellationToken ct);
 }

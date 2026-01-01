@@ -8,8 +8,8 @@ namespace RestaurantApp.Application.Interfaces.Services;
 public interface IEmployeeInvitationService
 {
 
-    Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto);
-    Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token);
-    Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token);
-    Task<EmployeeInvitation?> ValidateTokenAsync(string token);
+    Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto, CancellationToken ct = default);
+    Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token, CancellationToken ct = default);
+    Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token, CancellationToken ct = default);
+    Task<EmployeeInvitation?> ValidateTokenAsync(string token, CancellationToken ct = default);
 }

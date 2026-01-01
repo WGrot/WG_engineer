@@ -19,31 +19,31 @@ public class ValidatedInvitationService : IEmployeeInvitationService
         _inner = inner;
         _businessValidator = businessValidator;
     }
-    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto)
+    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<EmployeeInvitationDto>.From(businessResult);
         
-        return await _inner.CreateInvitationAsync(dto);
+        return await _inner.CreateInvitationAsync(dto, ct);
     }
 
-    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForAccept(token);
+        var businessResult = await _businessValidator.ValidateForAccept(token, ct);
         if (!businessResult.IsSuccess)
             return Result<EmployeeInvitationDto>.From(businessResult);
         
-        return await _inner.AcceptInvitationAsync(token);
+        return await _inner.AcceptInvitationAsync(token, ct);
     }
 
-    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token, CancellationToken ct)
     {
-        return await _inner.RejectInvitationAsync(token);
+        return await _inner.RejectInvitationAsync(token, ct);
     }
 
-    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token)
+    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token, CancellationToken ct)
     {
-        return await _inner.ValidateTokenAsync(token);
+        return await _inner.ValidateTokenAsync(token, ct);
     }
 }

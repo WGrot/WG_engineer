@@ -17,33 +17,34 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id)
+    public async Task<IActionResult> GetById(string id, CancellationToken ct)
     {
-        var result = await _userService.GetByIdAsync(id);
+        var result = await _userService.GetByIdAsync(id, ct);
         return result.ToActionResult();
     }
     
     [HttpGet("search")]
     public async Task<IActionResult> Search(
+        CancellationToken ct,
         [FromQuery] string? firstName = null, 
         [FromQuery] string? lastName = null, 
         [FromQuery] string? email = null, 
         [FromQuery] string? phoneNumber = null,
         [FromQuery] int? amount = null)
     {
-        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email, amount);
+        var result = await _userService.SearchAsync(firstName, lastName, phoneNumber, email, amount, ct);
         return result.ToActionResult();
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
         
-        var result = await _userService.CreateAsync(dto);
+        var result = await _userService.CreateAsync(dto, ct);
         
         if (result.IsSuccess && result.StatusCode == 201)
         {
@@ -65,23 +66,23 @@ public class UserController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateUserAsync(UpdateUserDto dto)
+    public async Task<IActionResult> UpdateUserAsync(UpdateUserDto dto, CancellationToken ct)
     {
-        var result = await _userService.UpdateUserAsync(dto);
+        var result = await _userService.UpdateUserAsync(dto, ct);
         return result.ToActionResult();
     }
     
     [HttpDelete("{userId}")]
-    public async Task<IActionResult> DeleteUser(string userId)
+    public async Task<IActionResult> DeleteUser(string userId, CancellationToken ct)
     {
-        var result = await _userService.DeleteUserAsync(userId);
+        var result = await _userService.DeleteUserAsync(userId, ct);
         return result.ToActionResult();
     }
     
     [HttpGet("my-details")]
-    public async Task<IActionResult> GetMyDetails()
+    public async Task<IActionResult> GetMyDetails(CancellationToken ct)
     {
-        var result = await _userService.GetMyDetailsAsync();
+        var result = await _userService.GetMyDetailsAsync(ct);
         return result.ToActionResult();
     }
 }

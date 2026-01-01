@@ -8,21 +8,22 @@ namespace RestaurantApp.Application.Interfaces.Services;
 public interface IReservationService
 {
 
-    Task<Result<ReservationDto>> GetByIdAsync(int reservationId);
-    Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId);
-    Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto);
-    Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto);
-    Task<Result> DeleteAsync(int reservationId);
+    Task<Result<ReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct = default);
+    Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct = default);
+    Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto, CancellationToken ct = default);
+    Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto, CancellationToken ct = default);
+    Task<Result> DeleteAsync(int reservationId, CancellationToken ct = default);
     
-    Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(ReservationSearchParameters searchParams);
+    Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(ReservationSearchParameters searchParams, CancellationToken ct = default);
     
-    Task<Result> CancelUserReservationAsync(string userId, int reservationId);
+    Task<Result> CancelUserReservationAsync(string userId, int reservationId, CancellationToken ct = default);
     
     Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(
         string userId,
-        ReservationSearchParameters searchParams);
+        ReservationSearchParameters searchParams
+        , CancellationToken ct = default);
     
-    Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status);
+    Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status, CancellationToken ct = default);
     
-    Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams);
+    Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams, CancellationToken ct = default);
 }

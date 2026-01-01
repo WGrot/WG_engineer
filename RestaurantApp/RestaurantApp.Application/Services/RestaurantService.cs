@@ -45,19 +45,19 @@ public class RestaurantService : IRestaurantService
         _restaurantSettingsRepository = restaurantSettingsRepository;
     }
 
-    public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync(CancellationToken ct)
     {
-        var restaurants = await _restaurantRepository.GetAllWithDetailsAsync();
+        var restaurants = await _restaurantRepository.GetAllWithDetailsAsync(ct);
         return Result<IEnumerable<RestaurantDto>>.Success(restaurants.ToDtoList());
     }
 
-    public async Task<Result<RestaurantDto>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(id);
+        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(id, ct);
         return Result<RestaurantDto>.Success(restaurant!.ToDto());
     }
 
-    public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto)
+    public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto, CancellationToken ct)
     {
         _logger.LogInformation("Creating new restaurant: {RestaurantName}", restaurantDto.Name);
 
@@ -74,17 +74,17 @@ public class RestaurantService : IRestaurantService
             restaurant.OpeningHours = restaurantDto.OpeningHours.ToEntityList();
         }
 
-        await _restaurantRepository.AddAsync(restaurant);
-        await _restaurantRepository.SaveChangesAsync();
+        await _restaurantRepository.AddAsync(restaurant, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result<RestaurantDto>.Success(restaurant.ToDto());
     }
 
-    public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto)
+    public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto, CancellationToken ct)
     {
         _logger.LogInformation("Creating new restaurant with owner: {RestaurantName}", dto.Name);
 
-        await _restaurantRepository.BeginTransactionAsync();
+        await _restaurantRepository.BeginTransactionAsync(ct);
 
         try
         {
@@ -97,8 +97,8 @@ public class RestaurantService : IRestaurantService
             }
 
             restaurant.InitializeOpeningHours();
-            await _restaurantRepository.AddAsync(restaurant);
-            await _restaurantRepository.SaveChangesAsync();
+            await _restaurantRepository.AddAsync(restaurant, ct);
+            await _restaurantRepository.SaveChangesAsync(ct);
 
             var ownerEmployee = new RestaurantEmployee
             {
@@ -109,18 +109,18 @@ public class RestaurantService : IRestaurantService
                 IsActive = true,
             };
 
-            await _employeeRepository.AddAsync(ownerEmployee);
-            await _employeeRepository.SaveChangesAsync();
+            await _employeeRepository.AddAsync(ownerEmployee, ct);
+            await _employeeRepository.SaveChangesAsync(ct);
 
             var allPermissions = Enum.GetValues(typeof(PermissionTypeEnumDto)).Cast<PermissionTypeEnumDto>();
-            await _employeeRepository.AddPermissionsAsync(ownerEmployee.Id, allPermissions);
-            await _employeeRepository.SaveChangesAsync();
+            await _employeeRepository.AddPermissionsAsync(ownerEmployee.Id, allPermissions, ct);
+            await _employeeRepository.SaveChangesAsync(ct);
 
             await _restaurantSettingsRepository.AddAsync(new RestaurantSettings
             {
                 RestaurantId = restaurant.Id,
                 ReservationsNeedConfirmation = true
-            });
+            }, ct);
             var geocodeResult = await GeocodeRestaurantAsync(restaurant);
             
             if (geocodeResult.IsFailure)
@@ -128,38 +128,38 @@ public class RestaurantService : IRestaurantService
                 return Result<RestaurantDto>.Failure(geocodeResult.Error!, geocodeResult.StatusCode);
             }
             
-            await _restaurantRepository.SaveChangesAsync();
+            await _restaurantRepository.SaveChangesAsync(ct);
 
-            await _restaurantRepository.CommitTransactionAsync();
+            await _restaurantRepository.CommitTransactionAsync(ct);
 
-            await SendRestaurantCreatedEmailAsync(dto);
+            await SendRestaurantCreatedEmailAsync(dto, ct);
 
             return Result<RestaurantDto>.Success(restaurant.ToDto());
         }
         catch (Exception ex)
         {
-            await _restaurantRepository.RollbackTransactionAsync();
+            await _restaurantRepository.RollbackTransactionAsync(ct);
             _logger.LogError(ex, "Failed to create restaurant as user");
             return Result<RestaurantDto>.Failure("Could not create restaurant due to an internal error.");
         }
     }
 
-    public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)
+    public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto, CancellationToken ct)
     {
-        var existingRestaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id);
+        var existingRestaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id, ct);
 
         existingRestaurant!.Name = restaurantDto.Name;
         existingRestaurant.Address = restaurantDto.Address;
 
-        _restaurantRepository.Update(existingRestaurant);
-        await _restaurantRepository.SaveChangesAsync();
+        _restaurantRepository.Update(existingRestaurant, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto)
+    public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(id);
+        var restaurant = await _restaurantRepository.GetByIdAsync(id, ct);
 
         restaurant!.Name = dto.Name;
         restaurant.Address = dto.Address;
@@ -167,15 +167,15 @@ public class RestaurantService : IRestaurantService
         if (dto.Description != null)
             restaurant.Description = dto.Description;
 
-        _restaurantRepository.Update(restaurant);
-        await _restaurantRepository.SaveChangesAsync();
+        _restaurantRepository.Update(restaurant, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto)
+    public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(id);
+        var restaurant = await _restaurantRepository.GetByIdAsync(id, ct);
 
         restaurant!.StructuredAddress = dto.ToEntity();
         restaurant.Address = restaurant.StructuredAddress.ToCombinedString();
@@ -187,25 +187,25 @@ public class RestaurantService : IRestaurantService
             return result;
         }
         
-        _restaurantRepository.Update(restaurant);
-        await _restaurantRepository.SaveChangesAsync();
+        _restaurantRepository.Update(restaurant, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id);
+        var restaurant = await _restaurantRepository.GetByIdWithDetailsAsync(id, ct);
 
-        _restaurantRepository.Delete(restaurant!);
-        await _restaurantRepository.SaveChangesAsync();
+        _restaurantRepository.Delete(restaurant!, ct);
+        await _restaurantRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids)
+    public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids, CancellationToken ct)
     {
-        var restaurants = await _restaurantRepository.GetByIdsAsync(ids);
+        var restaurants = await _restaurantRepository.GetByIdsAsync(ids, ct);
 
         var result = restaurants.Select(r => new RestaurantDto
         {
@@ -252,9 +252,9 @@ public class RestaurantService : IRestaurantService
         return Result.Success();
     }
 
-    private async Task SendRestaurantCreatedEmailAsync(CreateRestaurantDto dto)
+    private async Task SendRestaurantCreatedEmailAsync(CreateRestaurantDto dto, CancellationToken ct)
     {
-        var user = await _userRepository.GetByIdAsync(_currentUserService.UserId!);
+        var user = await _userRepository.GetByIdAsync(_currentUserService.UserId!, ct);
         if (user != null)
         {
             var emailBody = new RestaurantCreatedEmail(user.FirstName!, dto);

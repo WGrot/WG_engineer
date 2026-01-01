@@ -26,57 +26,57 @@ public class ValidatedMenuCategoryService: IMenuCategoryService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId)
+    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId, CancellationToken ct)
     {
-        return await _inner.GetCategoryByIdAsync(categoryId);
+        return await _inner.GetCategoryByIdAsync(categoryId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId)
+    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId, CancellationToken ct)
     {
-        return await _inner.GetCategoriesAsync(menuId);
+        return await _inner.GetCategoriesAsync(menuId, ct);
     }
 
-    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto)
+    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        var fluentResult = await _createValidator.ValidateAsync(categoryDto);
+        var fluentResult = await _createValidator.ValidateAsync(categoryDto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<MenuCategoryDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(categoryDto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(categoryDto, ct);
         if (!businessResult.IsSuccess)
             return Result<MenuCategoryDto>.From(businessResult);
 
-        return await _inner.CreateCategoryAsync(categoryDto);
+        return await _inner.CreateCategoryAsync(categoryDto, ct);
     }
 
-    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto)
+    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(categoryDto);
+        var fluentResult = await _updateValidator.ValidateAsync(categoryDto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(categoryDto);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(categoryDto, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateCategoryAsync(categoryDto);
+        return await _inner.UpdateCategoryAsync(categoryDto, ct);
     }
 
-    public async Task<Result> DeleteCategoryAsync(int categoryId)
+    public async Task<Result> DeleteCategoryAsync(int categoryId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateCategoryExistsAsync(categoryId);
+        var businessResult = await _businessValidator.ValidateCategoryExistsAsync(categoryId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteCategoryAsync(categoryId);
+        return await _inner.DeleteCategoryAsync(categoryId, ct);
     }
 
-    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder)
+    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateCategoryExistsAsync(categoryId);
+        var businessResult = await _businessValidator.ValidateCategoryExistsAsync(categoryId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateCategoryOrderAsync(categoryId, displayOrder);
+        return await _inner.UpdateCategoryOrderAsync(categoryId, displayOrder, ct);
     }
 }

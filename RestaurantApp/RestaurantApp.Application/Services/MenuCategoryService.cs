@@ -15,18 +15,18 @@ public class MenuCategoryService : IMenuCategoryService
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId)
+    public async Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId, CancellationToken ct)
     {
-        var category = await _categoryRepository.GetByIdAsync(categoryId, includeItems: true);
+        var category = await _categoryRepository.GetByIdAsync(categoryId, ct, includeItems: true);
 
         return category == null
             ? Result<MenuCategoryDto>.NotFound($"Category with ID {categoryId} not found.")
             : Result<MenuCategoryDto>.Success(category.ToDto());
     }
 
-    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId)
+    public async Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId, CancellationToken ct)
     {
-        var categories = await _categoryRepository.GetActiveByMenuIdAsync(menuId);
+        var categories = await _categoryRepository.GetActiveByMenuIdAsync(menuId, ct);
 
         var menuCategories = categories.ToList();
         return menuCategories.Any()
@@ -37,36 +37,36 @@ public class MenuCategoryService : IMenuCategoryService
                     : "No active categories found.");
     }
 
-    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto)
+    public async Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto, CancellationToken ct)
     {
         if (categoryDto.DisplayOrder == 0)
         {
-            var maxOrder = await _categoryRepository.GetMaxDisplayOrderAsync(categoryDto.MenuId);
+            var maxOrder = await _categoryRepository.GetMaxDisplayOrderAsync(categoryDto.MenuId, ct);
             categoryDto.DisplayOrder = maxOrder + 1;
         }
 
         var category = categoryDto.ToEntity();
         category.MenuId = categoryDto.MenuId;
 
-        await _categoryRepository.AddAsync(category);
-        await _categoryRepository.SaveChangesAsync();
+        await _categoryRepository.AddAsync(category, ct);
+        await _categoryRepository.SaveChangesAsync(ct);
 
         return Result<MenuCategoryDto>.Success(category.ToDto());
     }
 
-    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto)
+    public async Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto, CancellationToken ct)
     {
-        var existingCategory = await _categoryRepository.GetByIdAsync(categoryDto.Id);
+        var existingCategory = await _categoryRepository.GetByIdAsync(categoryDto.Id, ct);
         
         existingCategory!.UpdateFromDto(categoryDto);
-        await _categoryRepository.SaveChangesAsync();
+        await _categoryRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteCategoryAsync(int categoryId)
+    public async Task<Result> DeleteCategoryAsync(int categoryId, CancellationToken ct)
     {
-        var category = await _categoryRepository.GetByIdAsync(categoryId, includeItems: true);
+        var category = await _categoryRepository.GetByIdAsync(categoryId, ct, includeItems: true);
 
         if (category!.Items.Any())
         {
@@ -77,18 +77,18 @@ public class MenuCategoryService : IMenuCategoryService
             }
         }
 
-        _categoryRepository.Remove(category);
-        await _categoryRepository.SaveChangesAsync();
+        _categoryRepository.Remove(category, ct);
+        await _categoryRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder)
+    public async Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder, CancellationToken ct)
     {
-        var category = await _categoryRepository.GetByIdAsync(categoryId);
+        var category = await _categoryRepository.GetByIdAsync(categoryId, ct);
         
         category!.DisplayOrder = displayOrder;
-        await _categoryRepository.SaveChangesAsync();
+        await _categoryRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }

@@ -30,11 +30,11 @@ public class RestaurantImageService: IRestaurantImageService
     public async Task<Result<ImageUploadResult>> UploadProfilePhotoAsync(
         int restaurantId,
         Stream fileStream,
-        string fileName)
+        string fileName, CancellationToken ct)
     {
         try
         {
-            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId, ct);
 
             var existingProfile = restaurant!.ImageLinks
                 .FirstOrDefault(il => il.Type == ImageType.RestaurantProfile);
@@ -42,17 +42,17 @@ public class RestaurantImageService: IRestaurantImageService
             if (existingProfile != null)
             {
                 await _storageService.DeleteByImageLink(existingProfile);
-                await _imageLinkRepository.Remove(existingProfile);
+                await _imageLinkRepository.Remove(existingProfile, ct);
             }
 
             var uploadResult = await _storageService.UploadImageAsync(
                 fileStream,
                 fileName,
                 ImageType.RestaurantProfile,
-                restaurantId,
+                ct, restaurantId,
                 generateThumbnail: true);
 
-            await _restaurantRepository.SaveChangesAsync();
+            await _restaurantRepository.SaveChangesAsync(ct);
 
             return Result<ImageUploadResult>.Success(uploadResult);
         }
@@ -69,7 +69,7 @@ public class RestaurantImageService: IRestaurantImageService
 
     public async Task<Result<List<ImageUploadResult>>> UploadGalleryPhotosAsync(
         int restaurantId,
-        IEnumerable<ImageFileDto> images)
+        IEnumerable<ImageFileDto> images, CancellationToken ct)
     {
         try
         {
@@ -81,13 +81,13 @@ public class RestaurantImageService: IRestaurantImageService
                     image.Stream,
                     image.FileName,
                     ImageType.RestaurantPhotos,
-                    restaurantId,
+                    ct, restaurantId,
                     generateThumbnail: true);
 
                 uploadResults.Add(uploadResult);
             }
 
-            await _restaurantRepository.SaveChangesAsync();
+            await _restaurantRepository.SaveChangesAsync(ct);
 
             _logger.LogInformation(
                 "Gallery photos ({Count}) uploaded successfully for restaurant {RestaurantId}",
@@ -107,18 +107,18 @@ public class RestaurantImageService: IRestaurantImageService
         }
     }
 
-    public async Task<Result> DeleteProfilePhotoAsync(int restaurantId)
+    public async Task<Result> DeleteProfilePhotoAsync(int restaurantId, CancellationToken ct)
     {
         try
         {
-            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId, ct);
 
             var profileImage = restaurant!.ImageLinks
                 .First(il => il.Type == ImageType.RestaurantProfile);
 
             await _storageService.DeleteByImageLink(profileImage);
-            await _imageLinkRepository.Remove(profileImage);
-            await _imageLinkRepository.SaveChangesAsync();
+            await _imageLinkRepository.Remove(profileImage, ct);
+            await _imageLinkRepository.SaveChangesAsync(ct);
 
             return Result.Success();
         }
@@ -132,18 +132,18 @@ public class RestaurantImageService: IRestaurantImageService
         }
     }
 
-    public async Task<Result> DeleteGalleryPhotoAsync(int restaurantId, int imageId)
+    public async Task<Result> DeleteGalleryPhotoAsync(int restaurantId, int imageId, CancellationToken ct)
     {
         try
         {
-            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
+            var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId, ct);
 
             var galleryImage = restaurant!.ImageLinks
                 .First(il => il.Id == imageId && il.Type == ImageType.RestaurantPhotos);
 
             await _storageService.DeleteByImageLink(galleryImage);
-            await _imageLinkRepository.Remove(galleryImage);
-            await _imageLinkRepository.SaveChangesAsync();
+            await _imageLinkRepository.Remove(galleryImage, ct);
+            await _imageLinkRepository.SaveChangesAsync(ct);
 
             return Result.Success();
         }

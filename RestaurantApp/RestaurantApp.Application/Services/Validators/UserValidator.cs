@@ -15,7 +15,7 @@ public class UserValidator : IUserValidator
         _userManager = userManager;
     }
 
-    public Task<Result> ValidateUserIdNotEmptyAsync(string userId)
+    public Task<Result> ValidateUserIdNotEmptyAsync(string userId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(userId))
             return Task.FromResult(Result.ValidationError("User ID cannot be null or empty."));
@@ -23,9 +23,9 @@ public class UserValidator : IUserValidator
         return Task.FromResult(Result.Success());
     }
 
-    public async Task<Result> ValidateUserExistsAsync(string userId)
+    public async Task<Result> ValidateUserExistsAsync(string userId, CancellationToken ct)
     {
-        var idResult = await ValidateUserIdNotEmptyAsync(userId);
+        var idResult = await ValidateUserIdNotEmptyAsync(userId, ct);
         if (!idResult.IsSuccess)
             return idResult;
 
@@ -36,7 +36,7 @@ public class UserValidator : IUserValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateEmailUniqueAsync(string email)
+    public async Task<Result> ValidateEmailUniqueAsync(string email, CancellationToken ct)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -45,18 +45,18 @@ public class UserValidator : IUserValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateUserDto dto)
+    public async Task<Result> ValidateForCreateAsync(CreateUserDto dto, CancellationToken ct)
     {
-        return await ValidateEmailUniqueAsync(dto.Email);
+        return await ValidateEmailUniqueAsync(dto.Email, ct);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(UpdateUserDto dto)
+    public async Task<Result> ValidateForUpdateAsync(UpdateUserDto dto, CancellationToken ct)
     {
-        return await ValidateUserExistsAsync(dto.Id);
+        return await ValidateUserExistsAsync(dto.Id, ct);
     }
 
-    public async Task<Result> ValidateForDeleteAsync(string userId)
+    public async Task<Result> ValidateForDeleteAsync(string userId, CancellationToken ct)
     {
-        return await ValidateUserExistsAsync(userId);
+        return await ValidateUserExistsAsync(userId, ct);
     }
 }

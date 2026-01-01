@@ -6,7 +6,7 @@ namespace RestaurantApp.Application.Interfaces.Services;
 public interface IPasswordService
 {
     string GenerateSecurePassword(int length = 16);
-    Task<Result> ForgotPasswordAsync(string email);
-    Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
-    Task<Result> ChangePasswordAsync(ChangePasswordRequest request);
+    Task<Result> ForgotPasswordAsync(string email, CancellationToken ct = default);
+    Task<Result> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default);
+    Task<Result> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken ct = default);
 }

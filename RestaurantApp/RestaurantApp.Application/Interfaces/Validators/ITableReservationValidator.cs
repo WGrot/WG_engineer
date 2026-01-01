@@ -6,13 +6,13 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface ITableReservationValidator
 {
-    Task<Result> ValidateReservationExistsAsync(int reservationId);
-    Task<Result> ValidateTableExistsAsync(int tableId, int restaurantId);
-    Task<Result> ValidateRestaurantExistsAsync(int restaurantId);
-    Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime, RestaurantSettings restaurantSettings);
-    Task<Result> ValidateNoConflictAsync(int tableId, DateOnly date, TimeOnly startTime, TimeOnly endTime,
+    Task<Result> ValidateReservationExistsAsync(int reservationId, CancellationToken ct);
+    Task<Result> ValidateTableExistsAsync(int tableId, int restaurantId, CancellationToken ct);
+    Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct);
+    Task<Result> ValidateTimeRangeAsync(TimeOnly startTime, TimeOnly endTime, RestaurantSettings restaurantSettings, CancellationToken ct);
+    Task<Result> ValidateNoConflictAsync(int tableId, DateOnly date, TimeOnly startTime, TimeOnly endTime, CancellationToken ct,
         int? excludeReservationId = null);
-    Task<Result> ValidateForCreateAsync(CreateTableReservationDto dto);
-    Task<Result> ValidateForUpdateAsync(int reservationId, TableReservationDto dto);
-    Task<Result> ValidateForDeleteAsync(int reservationId);
+    Task<Result> ValidateForCreateAsync(CreateTableReservationDto dto, CancellationToken ct);
+    Task<Result> ValidateForUpdateAsync(int reservationId, TableReservationDto dto, CancellationToken ct);
+    Task<Result> ValidateForDeleteAsync(int reservationId, CancellationToken ct);
 }

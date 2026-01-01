@@ -20,99 +20,99 @@ public class MenuService : IMenuService
         _logger = logger;
     }
 
-    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId)
+    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId);
+        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId, ct);
 
         return menu == null
             ? Result<MenuDto>.NotFound($"Menu with ID {menuId} not found.")
             : Result.Success(menu.ToDto());
     }
 
-    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, bool? isActive = null)
+    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, CancellationToken ct, bool? isActive = null)
     {
-        var menu = await _menuRepository.GetByRestaurantIdAsync(restaurantId, isActive);
+        var menu = await _menuRepository.GetByRestaurantIdAsync(restaurantId, ct, isActive);
 
         return menu == null
             ? Result<MenuDto>.NotFound($"Menu for restaurant ID {restaurantId} not found.")
             : Result.Success(menu.ToDto());
     }
 
-    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetActiveByRestaurantIdAsync(restaurantId);
+        var menu = await _menuRepository.GetActiveByRestaurantIdAsync(restaurantId, ct);
 
         return menu == null
             ? Result<MenuDto>.NotFound($"Active menu for restaurant ID {restaurantId} not found.")
             : Result.Success(menu.ToDto());
     }
 
-    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto)
+    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto, CancellationToken ct)
     {
         if (dto.IsActive)
         {
-            await DeactivateAllMenusForRestaurantAsync(dto.RestaurantId);
+            await DeactivateAllMenusForRestaurantAsync(dto.RestaurantId, ct);
         }
 
         var menu = dto.ToEntity();
 
-        _menuRepository.Add(menu);
-        await _menuRepository.SaveChangesAsync();
+        _menuRepository.Add(menu, ct);
+        await _menuRepository.SaveChangesAsync(ct);
 
         return Result<MenuDto>.Success(menu.ToDto());
     }
 
-    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto)
+    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto, CancellationToken ct)
     {
-        var existingMenu = await _menuRepository.GetByIdAsync(menuId);
+        var existingMenu = await _menuRepository.GetByIdAsync(menuId, ct);
 
         if (dto.IsActive && !existingMenu!.IsActive)
         {
-            await DeactivateAllMenusForRestaurantAsync(existingMenu.RestaurantId);
+            await DeactivateAllMenusForRestaurantAsync(existingMenu.RestaurantId, ct);
         }
 
         existingMenu!.UpdateFromDto(dto);
-        await _menuRepository.SaveChangesAsync();
+        await _menuRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteMenuAsync(int menuId)
+    public async Task<Result> DeleteMenuAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId);
+        var menu = await _menuRepository.GetByIdWithDetailsAsync(menuId, ct);
 
-        _menuRepository.Remove(menu!);
-        await _menuRepository.SaveChangesAsync();
+        _menuRepository.Remove(menu!, ct);
+        await _menuRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> ActivateMenuAsync(int menuId)
+    public async Task<Result> ActivateMenuAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdAsync(menuId);
+        var menu = await _menuRepository.GetByIdAsync(menuId, ct);
 
-        await DeactivateAllMenusForRestaurantAsync(menu!.RestaurantId);
+        await DeactivateAllMenusForRestaurantAsync(menu!.RestaurantId, ct);
 
         menu.IsActive = true;
-        await _menuRepository.SaveChangesAsync();
+        await _menuRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeactivateMenuAsync(int menuId)
+    public async Task<Result> DeactivateMenuAsync(int menuId, CancellationToken ct)
     {
-        var menu = await _menuRepository.GetByIdAsync(menuId);
+        var menu = await _menuRepository.GetByIdAsync(menuId, ct);
 
         menu!.IsActive = false;
-        await _menuRepository.SaveChangesAsync();
+        await _menuRepository.SaveChangesAsync(ct);
 
         _logger.LogInformation("Deactivated menu {MenuId}", menuId);
         return Result.Success();
     }
 
-    private async Task DeactivateAllMenusForRestaurantAsync(int restaurantId)
+    private async Task DeactivateAllMenusForRestaurantAsync(int restaurantId, CancellationToken ct)
     {
-        var activeMenus = await _menuRepository.GetActiveMenusForRestaurantAsync(restaurantId);
+        var activeMenus = await _menuRepository.GetActiveMenusForRestaurantAsync(restaurantId, ct);
 
         foreach (var menu in activeMenus)
         {
@@ -121,7 +121,7 @@ public class MenuService : IMenuService
 
         if (activeMenus.Count > 0)
         {
-            await _menuRepository.SaveChangesAsync();
+            await _menuRepository.SaveChangesAsync(ct);
             _logger.LogInformation(
                 "Deactivated {Count} menus for restaurant {RestaurantId}",
                 activeMenus.Count,

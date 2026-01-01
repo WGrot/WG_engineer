@@ -5,8 +5,8 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IEmployeeInvitationValidator
 {
-    Task<Result> ValidateForCreateAsync(CreateInvitationDto dto);
+    Task<Result> ValidateForCreateAsync(CreateInvitationDto dto, CancellationToken ct);
     
-    Task<Result> ValidateForAccept(string token);
+    Task<Result> ValidateForAccept(string token, CancellationToken ct);
     
 }

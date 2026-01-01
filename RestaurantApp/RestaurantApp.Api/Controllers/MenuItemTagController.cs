@@ -17,37 +17,37 @@ public class MenuItemTagController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetTags([FromQuery] int? restaurantId)
+    public async Task<IActionResult> GetTags([FromQuery] int? restaurantId, CancellationToken ct)
     {
-        var result = await _tagService.GetTagsAsync(restaurantId);
+        var result = await _tagService.GetTagsAsync(ct, restaurantId);
         return result.ToActionResult();
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTag(int id)
+    public async Task<IActionResult> GetTag(int id, CancellationToken ct)
     {
-        var result = await _tagService.GetTagByIdAsync(id);
+        var result = await _tagService.GetTagByIdAsync(id, ct);
         return result.ToActionResult();
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateTag([FromBody] CreateMenuItemTagDto tag)
+    public async Task<IActionResult> CreateTag([FromBody] CreateMenuItemTagDto tag, CancellationToken ct)
     {
-        var result = await _tagService.CreateTagAsync(tag);
+        var result = await _tagService.CreateTagAsync(tag, ct);
         return result.ToActionResult();
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTag(int id, [FromBody] MenuItemTagDto tag)
+    public async Task<IActionResult> UpdateTag(int id, [FromBody] MenuItemTagDto tag, CancellationToken ct)
     {
-        var result = await _tagService.UpdateTagAsync(id, tag);
+        var result = await _tagService.UpdateTagAsync(id, tag, ct);
         return result.ToActionResult();
     }
     
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTag(int id)
+    public async Task<IActionResult> DeleteTag(int id, CancellationToken ct)
     {
-        var result = await _tagService.DeleteTagAsync(id);
+        var result = await _tagService.DeleteTagAsync(id, ct);
         return result.ToActionResult();
     }
 }

@@ -4,8 +4,8 @@ namespace RestaurantApp.Application.Interfaces.Validators;
 
 public interface IRestaurantSettingsValidator
 {
-    Task<Result> ValidateSettingsExistsAsync(int settingsId);
-    Task<Result> ValidateSettingsExistsByRestaurantIdAsync(int restaurantId);
-    Task<Result> ValidateForUpdateAsync(int settingsId);
-    Task<Result> ValidateForDeleteAsync(int settingsId);
+    Task<Result> ValidateSettingsExistsAsync(int settingsId, CancellationToken ct);
+    Task<Result> ValidateSettingsExistsByRestaurantIdAsync(int restaurantId, CancellationToken ct);
+    Task<Result> ValidateForUpdateAsync(int settingsId, CancellationToken ct);
+    Task<Result> ValidateForDeleteAsync(int settingsId, CancellationToken ct);
 }

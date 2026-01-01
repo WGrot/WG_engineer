@@ -13,20 +13,20 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<ApplicationUser?> GetByIdAsync(string userId)
+    public async Task<ApplicationUser?> GetByIdAsync(string userId, CancellationToken ct)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: ct);
     }
 
-    public async Task<string?> GetUserNameByIdAsync(string userId)
+    public async Task<string?> GetUserNameByIdAsync(string userId, CancellationToken ct)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: ct);
         return user?.FirstName;
     }
 
-    public async Task<ApplicationUser?> GetByEmailAsync(string email)
+    public async Task<ApplicationUser?> GetByEmailAsync(string email, CancellationToken ct)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken: ct);
     }
 
     public async Task<IEnumerable<ApplicationUser>> SearchAsync(string? firstName,
@@ -34,7 +34,7 @@ public class UserRepository : IUserRepository
         string? phoneNumber,
         string? email,
         int? amount, 
-        bool? asAdmin)
+        bool? asAdmin, CancellationToken ct)
     {
         var query = _context.Users.AsQueryable();
         if (asAdmin is false)
@@ -64,16 +64,16 @@ public class UserRepository : IUserRepository
 
         var takeAmount = amount is > 0 ? amount.Value : 50;
         
-        return await query.Take(takeAmount).ToListAsync();
+        return await query.Take(takeAmount).ToListAsync(cancellationToken: ct);
     }
 
-    public async Task UpdateAsync(ApplicationUser user)
+    public async Task UpdateAsync(ApplicationUser user, CancellationToken ct)
     {
         _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
     
-    public async Task<IEnumerable<ApplicationUser>> GetByIdsAsync(IEnumerable<string> userIds)
+    public async Task<IEnumerable<ApplicationUser>> GetByIdsAsync(IEnumerable<string> userIds, CancellationToken ct)
     {
         var idsList = userIds.ToList();
     
@@ -82,6 +82,6 @@ public class UserRepository : IUserRepository
 
         return await _context.Users
             .Where(u => idsList.Contains(u.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 }

@@ -5,18 +5,18 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IRestaurantPermissionRepository
 {
-    Task<IEnumerable<RestaurantPermission>> GetAllAsync();
-    Task<RestaurantPermission?> GetByIdAsync(int id);
-    Task<IEnumerable<RestaurantPermission>> GetByEmployeeIdAsync(int employeeId);
-    Task<IEnumerable<RestaurantPermission>> GetByRestaurantIdAsync(int restaurantId);
-    Task<RestaurantPermission?> GetByEmployeeAndPermissionAsync(int employeeId, PermissionType permission);
-    Task<bool> ExistsAsync(int employeeId, PermissionType permission);
-    Task<bool> ExistsExceptAsync(int employeeId, PermissionType permission, int excludeId);
-    Task<bool> EmployeeExistsAsync(int employeeId);
-    Task<RestaurantPermission> AddAsync(RestaurantPermission permission);
-    Task<RestaurantPermission> UpdateAsync(RestaurantPermission permission);
-    Task DeleteAsync(RestaurantPermission permission);
-    Task<int?> GetPermissionIdAsync(int employeeId, PermissionType permission);
+    Task<IEnumerable<RestaurantPermission>> GetAllAsync(CancellationToken ct);
+    Task<RestaurantPermission?> GetByIdAsync(int id, CancellationToken ct);
+    Task<IEnumerable<RestaurantPermission>> GetByEmployeeIdAsync(int employeeId, CancellationToken ct);
+    Task<IEnumerable<RestaurantPermission>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct);
+    Task<RestaurantPermission?> GetByEmployeeAndPermissionAsync(int employeeId, PermissionType permission, CancellationToken ct);
+    Task<bool> ExistsAsync(int employeeId, PermissionType permission, CancellationToken ct);
+    Task<bool> ExistsExceptAsync(int employeeId, PermissionType permission, int excludeId, CancellationToken ct);
+    Task<bool> EmployeeExistsAsync(int employeeId, CancellationToken ct);
+    Task<RestaurantPermission> AddAsync(RestaurantPermission permission, CancellationToken ct);
+    Task<RestaurantPermission> UpdateAsync(RestaurantPermission permission, CancellationToken ct);
+    Task DeleteAsync(RestaurantPermission permission, CancellationToken ct);
+    Task<int?> GetPermissionIdAsync(int employeeId, PermissionType permission, CancellationToken ct);
     
-    Task AddRangeAsync(List<RestaurantPermission> permissions);
+    Task AddRangeAsync(List<RestaurantPermission> permissions, CancellationToken ct);
 }

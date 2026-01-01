@@ -23,13 +23,13 @@ public class RestaurantSearchService : IRestaurantSearchService
         string? address,
         int page,
         int pageSize,
-        string sortBy)
+        string sortBy, CancellationToken ct)
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
         var (restaurants, totalCount) = await _restaurantRepository.SearchAsync(
-            name, address, page, pageSize, sortBy);
+            name, address, page, pageSize, sortBy, ct);
 
         var result = new PaginatedRestaurantsDto
         {
@@ -44,18 +44,19 @@ public class RestaurantSearchService : IRestaurantSearchService
         return Result<PaginatedRestaurantsDto>.Success(result);
     }
 
-    public async Task<Result<IEnumerable<RestaurantDto>>> GetOpenNowAsync()
+    public async Task<Result<IEnumerable<RestaurantDto>>> GetOpenNowAsync(CancellationToken ct)
     {
         var now = TimeOnly.FromDateTime(DateTime.Now);
         var currentDay = DateTime.Now.DayOfWeek;
 
-        var openRestaurants = await _restaurantRepository.GetOpenNowAsync(currentDay, now);
+        var openRestaurants = await _restaurantRepository.GetOpenNowAsync(currentDay, now, ct);
         return Result<IEnumerable<RestaurantDto>>.Success(openRestaurants.ToDtoList());
     }
     
     public async Task<Result<IEnumerable<NearbyRestaurantDto>>> GetNearbyRestaurantsAsync(
         double userLatitude,
         double userLongitude,
+        CancellationToken ct,
         double radiusKm = 10)
     {
         
@@ -77,7 +78,7 @@ public class RestaurantSearchService : IRestaurantSearchService
         var nearbyRestaurants = await _restaurantRepository.GetNearbyAsync(
             userLatitude, 
             userLongitude, 
-            radiusKm);
+            radiusKm, ct);
 
         var result = nearbyRestaurants.Select(x => new NearbyRestaurantDto
         {

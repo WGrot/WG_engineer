@@ -5,10 +5,10 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IMenuItemVariantService
 {
-    Task<Result<IEnumerable<MenuItemVariantDto>>> GetAllVariantsAsync();
-    Task<Result<IEnumerable<MenuItemVariantDto>>> GetMenuItemVariantsAsync(int menuItemId);
-    Task<Result<MenuItemVariantDto>> GetVariantByIdAsync(int id);
-    Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant);
-    Task<Result<MenuItemVariantDto>> UpdateVariantAsync(int id, MenuItemVariantDto variantDto);
-    Task<Result> DeleteVariantAsync(int id);
+    Task<Result<IEnumerable<MenuItemVariantDto>>> GetAllVariantsAsync(CancellationToken ct = default);
+    Task<Result<IEnumerable<MenuItemVariantDto>>> GetMenuItemVariantsAsync(int menuItemId, CancellationToken ct = default);
+    Task<Result<MenuItemVariantDto>> GetVariantByIdAsync(int id, CancellationToken ct = default);
+    Task<Result<MenuItemVariantDto>> CreateVariantAsync(MenuItemVariantDto variant, CancellationToken ct = default);
+    Task<Result<MenuItemVariantDto>> UpdateVariantAsync(int id, MenuItemVariantDto variantDto, CancellationToken ct = default);
+    Task<Result> DeleteVariantAsync(int id, CancellationToken ct = default);
 }

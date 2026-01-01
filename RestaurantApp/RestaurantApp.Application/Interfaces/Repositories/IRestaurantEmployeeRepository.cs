@@ -6,16 +6,16 @@ namespace RestaurantApp.Application.Interfaces.Repositories;
 
 public interface IRestaurantEmployeeRepository
 {
-    Task<IEnumerable<RestaurantEmployee>> GetAllWithDetailsAsync();
-    Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id);
-    Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId);
-    Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId);
+    Task<IEnumerable<RestaurantEmployee>> GetAllWithDetailsAsync(CancellationToken ct);
+    Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id, CancellationToken ct);
+    Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId, CancellationToken ct);
+    Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId, CancellationToken ct);
     
-    Task<RestaurantEmployee?> GetByIdAsync(int id);
-    Task AddAsync(RestaurantEmployee employee);
-    void Update(RestaurantEmployee employee);
-    void Remove(RestaurantEmployee employee);
-    Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions);
-    Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId);
-    Task SaveChangesAsync();
+    Task<RestaurantEmployee?> GetByIdAsync(int id, CancellationToken ct);
+    Task AddAsync(RestaurantEmployee employee, CancellationToken ct);
+    void Update(RestaurantEmployee employee, CancellationToken ct);
+    void Remove(RestaurantEmployee employee, CancellationToken ct);
+    Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions, CancellationToken ct);
+    Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId, CancellationToken ct);
+    Task SaveChangesAsync(CancellationToken ct);
 }

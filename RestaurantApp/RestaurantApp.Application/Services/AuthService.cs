@@ -42,7 +42,7 @@ public class AuthService: IAuthService
         _encryptionService = encryptionService;
     }
 
-    public async Task<Result> RegisterAsync(RegisterRequest request)
+    public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken ct)
     {
         var user = new ApplicationUser
         {
@@ -68,10 +68,10 @@ public class AuthService: IAuthService
         return Result.Success();
     }
 
-    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress)
+    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress, CancellationToken ct)
     {
 
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        var user = await _userRepository.GetByEmailAsync(request.Email, ct);
         if (user == null)
             return Result<LoginResponse>.Unauthorized("Incorrect email or password");
 
@@ -103,25 +103,23 @@ public class AuthService: IAuthService
     
     
 
-    public async Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress)
+    public async Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress, CancellationToken ct)
     {
-        // Blacklist access token
         if (!string.IsNullOrEmpty(accessToken))
         {
-            await BlacklistAccessTokenAsync(accessToken);
+            await BlacklistAccessTokenAsync(accessToken, ct);
         }
-
-        // Revoke refresh token
+        
         if (!string.IsNullOrEmpty(refreshToken))
         {
-            await _tokenService.RevokeRefreshTokenAsync(refreshToken, ipAddress, "logout");
+            await _tokenService.RevokeRefreshTokenAsync(refreshToken, ipAddress, ct, "logout");
         }
 
         return Result.Success();
     }
     
     
-    private async Task BlacklistAccessTokenAsync(string accessToken)
+    private async Task BlacklistAccessTokenAsync(string accessToken, CancellationToken ct)
     {
         try
         {
@@ -148,31 +146,31 @@ public class AuthService: IAuthService
         }
     }
 
-    public async Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId)
+    public async Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(userId))
             return Result<ResponseUserDto>.Failure("User ID is required");
         
-        var user = await _userRepository.GetByIdAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId, ct);
         if (user == null)
             return Result<ResponseUserDto>.Failure("User not found", 404);
 
         return Result.Success(MapToDto(user));
     }
 
-    public async Task<Result<List<ResponseUserDto>>> GetAllUsersAsync()
+    public async Task<Result<List<ResponseUserDto>>> GetAllUsersAsync(CancellationToken ct)
     {
-        var users = await _userRepository.SearchAsync(null, null, null, null, null, true);
+        var users = await _userRepository.SearchAsync(null, null, null, null, null, true, ct);
         var userDtos = users.Select(MapToDto).ToList();
         return Result<List<ResponseUserDto>>.Success(userDtos);
     }
 
-    public async Task<Result> ConfirmEmailAsync(string userId, string token)
+    public async Task<Result> ConfirmEmailAsync(string userId, string token, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
             return Result.Failure("Incorrect verification data");
 
-        var user = await _userRepository.GetByIdAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId, ct);
         if (user == null)
             return Result.Failure("User does not exist", 404);
 
@@ -182,12 +180,12 @@ public class AuthService: IAuthService
         return await _identityService.ConfirmEmailAsync(user, token);
     }
 
-    public async Task<Result> ResendEmailConfirmationAsync(string email)
+    public async Task<Result> ResendEmailConfirmationAsync(string email, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(email))
             return Result.Failure("Email is required");
 
-        var user = await _userRepository.GetByEmailAsync(email);
+        var user = await _userRepository.GetByEmailAsync(email, ct);
         if (user == null)
             return Result.Success();
 

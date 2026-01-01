@@ -23,53 +23,53 @@ public class ValidatedMenuItemTagService : IMenuItemTagService
         _createValidator = createValidator;
     }
 
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(int? restaurantId = null)
+    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(CancellationToken ct, int? restaurantId = null)
     {
-        return await _inner.GetTagsAsync(restaurantId);
+        return await _inner.GetTagsAsync(ct, restaurantId);
     }
 
-    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id)
+    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id, CancellationToken ct)
     {
-        var validationResult = await _businessValidator.ValidateTagExistsAsync(id);
+        var validationResult = await _businessValidator.ValidateTagExistsAsync(id, ct);
         if (!validationResult.IsSuccess)
             return Result<MenuItemTagDto?>.From(validationResult);
 
-        return await _inner.GetTagByIdAsync(id);
+        return await _inner.GetTagByIdAsync(id, ct);
     }
 
-    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto dto)
+    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto dto, CancellationToken ct)
     {
         var fluentResult = await _createValidator.ValidateAsync(dto);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<MenuItemTagDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<MenuItemTagDto>.From(businessResult);
 
-        return await _inner.CreateTagAsync(dto);
+        return await _inner.CreateTagAsync(dto, ct);
     }
 
-    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto dto)
+    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto dto, CancellationToken ct)
     {
-        var validationResult = await _businessValidator.ValidateForUpdateAsync(id, dto);
+        var validationResult = await _businessValidator.ValidateForUpdateAsync(id, dto, ct);
         if (!validationResult.IsSuccess)
             return Result<MenuItemTagDto>.From(validationResult);
 
-        return await _inner.UpdateTagAsync(id, dto);
+        return await _inner.UpdateTagAsync(id, dto, ct);
     }
 
-    public async Task<Result> DeleteTagAsync(int id)
+    public async Task<Result> DeleteTagAsync(int id, CancellationToken ct)
     {
-        var validationResult = await _businessValidator.ValidateTagExistsAsync(id);
+        var validationResult = await _businessValidator.ValidateTagExistsAsync(id, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.DeleteTagAsync(id);
+        return await _inner.DeleteTagAsync(id, ct);
     }
 
-    public async Task<Result<bool>> TagExistsAsync(int id)
+    public async Task<Result<bool>> TagExistsAsync(int id, CancellationToken ct)
     {
-        return await _inner.TagExistsAsync(id);
+        return await _inner.TagExistsAsync(id, ct);
     }
 }

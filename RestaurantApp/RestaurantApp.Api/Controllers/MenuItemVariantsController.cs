@@ -17,44 +17,44 @@ public class MenuItemVariantsController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetAllVariants()
+    public async Task<IActionResult> GetAllVariants(CancellationToken ct)
     {
-        var result = await _menuItemVariantService.GetAllVariantsAsync();
+        var result = await _menuItemVariantService.GetAllVariantsAsync(ct);
         return result.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetVariantById(int id)
+    public async Task<IActionResult> GetVariantById(int id, CancellationToken ct)
     {
-        var result = await _menuItemVariantService.GetVariantByIdAsync(id);
+        var result = await _menuItemVariantService.GetVariantByIdAsync(id, ct);
         return result.ToActionResult();
     }
     
     [HttpGet("get-all-item-variants/{id}")]
-    public async Task<IActionResult> GetManuItemVariantsById(int id)
+    public async Task<IActionResult> GetManuItemVariantsById(int id, CancellationToken ct)
     {
-        var result = await _menuItemVariantService.GetMenuItemVariantsAsync(id);
+        var result = await _menuItemVariantService.GetMenuItemVariantsAsync(id, ct);
         return result.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateVariant([FromBody] MenuItemVariantDto variantDto)
+    public async Task<IActionResult> CreateVariant([FromBody] MenuItemVariantDto variantDto, CancellationToken ct)
     {
-        var result = await _menuItemVariantService.CreateVariantAsync(variantDto);
+        var result = await _menuItemVariantService.CreateVariantAsync(variantDto, ct);
         return result.ToActionResult();
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateVariant(int id, [FromBody] MenuItemVariantDto variantDto)
+    public async Task<IActionResult> UpdateVariant(int id, [FromBody] MenuItemVariantDto variantDto, CancellationToken ct)
     {
-        var result = await _menuItemVariantService.UpdateVariantAsync(id, variantDto);
+        var result = await _menuItemVariantService.UpdateVariantAsync(id, variantDto, ct);
         return result.ToActionResult();
     }
     
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteVariant(int id)
+    public async Task<IActionResult> DeleteVariant(int id, CancellationToken ct)
     {
-        var result = await _menuItemVariantService.DeleteVariantAsync(id);
+        var result = await _menuItemVariantService.DeleteVariantAsync(id, ct);
         return result.ToActionResult();
     }
 }

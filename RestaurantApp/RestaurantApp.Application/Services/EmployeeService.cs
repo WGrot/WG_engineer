@@ -26,39 +26,39 @@ public class EmployeeService : IEmployeeService
         _restaurantPermissionRepository = restaurantPermissionRepository;
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync(CancellationToken ct)
     {
-        var employees = await _employeeRepository.GetAllWithDetailsAsync();
+        var employees = await _employeeRepository.GetAllWithDetailsAsync(ct);
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        var employee = await _employeeRepository.GetByIdWithDetailsAsync(id);
+        var employee = await _employeeRepository.GetByIdWithDetailsAsync(id, ct);
 
         return employee == null
             ? Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {id} not found.")
             : Result<RestaurantEmployeeDto>.Success(employee.ToDto());
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        var employees = await _employeeRepository.GetByRestaurantIdWithDetailsAsync(restaurantId);
+        var employees = await _employeeRepository.GetByRestaurantIdWithDetailsAsync(restaurantId, ct);
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId, CancellationToken ct)
     {
-        var employees = await _employeeRepository.GetByUserIdWithDetailsAsync(userId);
+        var employees = await _employeeRepository.GetByUserIdWithDetailsAsync(userId, ct);
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId, CancellationToken ct)
     {
-        var employees = await _employeeRepository.GetByRestaurantIdWithDetailsAsync(restaurantId);
+        var employees = await _employeeRepository.GetByRestaurantIdWithDetailsAsync(restaurantId, ct);
 
         var userIds = employees.Select(e => e.UserId).Distinct();
-        var users = await _userRepository.GetByIdsAsync(userIds);
+        var users = await _userRepository.GetByIdsAsync(userIds, ct);
         var usersDict = users.ToDictionary(u => u.Id);
 
         var dtoList = employees
@@ -69,19 +69,19 @@ public class EmployeeService : IEmployeeService
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(dtoList);
     }
 
-    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRoleEnumDto newRoleEnumDto)
+    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRoleEnumDto newRoleEnumDto, CancellationToken ct)
     {
-        var employee = await _employeeRepository.GetByIdAsync(employeeId);
+        var employee = await _employeeRepository.GetByIdAsync(employeeId, ct);
         if (employee == null)
             return Result.NotFound($"Employee with ID {employeeId} not found.");
 
         employee.Role = newRoleEnumDto.ToDomain();
-        await _employeeRepository.SaveChangesAsync();
+        await _employeeRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto, CancellationToken ct)
     {
         var employee = new RestaurantEmployee
         {
@@ -93,10 +93,10 @@ public class EmployeeService : IEmployeeService
             IsActive = true
         };
         
-        await _employeeRepository.AddAsync(employee);
-        await _employeeRepository.SaveChangesAsync();
+        await _employeeRepository.AddAsync(employee, ct);
+        await _employeeRepository.SaveChangesAsync(ct);
 
-        var createdEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id);
+        var createdEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id, ct);
         if (createdEmployee == null)
         {
             return Result<RestaurantEmployeeDto>.Failure("Failed to retrieve the created employee.");
@@ -111,43 +111,43 @@ public class EmployeeService : IEmployeeService
             });
         }
         
-        await _restaurantPermissionRepository.AddRangeAsync(createdEmployee.Permissions);
+        await _restaurantPermissionRepository.AddRangeAsync(createdEmployee.Permissions, ct);
         return Result<RestaurantEmployeeDto>.Success(createdEmployee.ToDto());
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto, CancellationToken ct)
     {
-        var employee = await _employeeRepository.GetByIdAsync(dto.Id);
+        var employee = await _employeeRepository.GetByIdAsync(dto.Id, ct);
         
         employee!.Role = dto.RoleEnumDto.ToDomain();
         employee.IsActive = dto.IsActive;
 
-        await _employeeRepository.SaveChangesAsync();
+        await _employeeRepository.SaveChangesAsync(ct);
 
-        var updatedEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id);
+        var updatedEmployee = await _employeeRepository.GetByIdWithDetailsAsync(employee.Id, ct);
         return Result<RestaurantEmployeeDto>.Success(updatedEmployee!.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        var employee = await _employeeRepository.GetByIdAsync(id);
+        var employee = await _employeeRepository.GetByIdAsync(id, ct);
         if (employee == null)
             return Result.NotFound($"Employee with ID {id} not found.");
 
-        _employeeRepository.Remove(employee);
-        await _employeeRepository.SaveChangesAsync();
+        _employeeRepository.Remove(employee, ct);
+        await _employeeRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive)
+    public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive, CancellationToken ct)
     {
-        var employee = await _employeeRepository.GetByIdAsync(id);
+        var employee = await _employeeRepository.GetByIdAsync(id, ct);
         if (employee == null)
             return Result.NotFound($"Employee with ID {id} not found.");
 
         employee.IsActive = isActive;
-        await _employeeRepository.SaveChangesAsync();
+        await _employeeRepository.SaveChangesAsync(ct);
 
         return Result.Success();
     }

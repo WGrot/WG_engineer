@@ -26,70 +26,70 @@ public class ValidatedTableService : ITableService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync()
+    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync(CancellationToken ct)
     {
-        return await _inner.GetAllTablesAsync();
+        return await _inner.GetAllTablesAsync(ct);
     }
 
-    public async Task<Result<TableDto>> GetTableByIdAsync(int id)
+    public async Task<Result<TableDto>> GetTableByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetTableByIdAsync(id);
+        return await _inner.GetTableByIdAsync(id, ct);
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId)
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetTablesByRestaurantAsync(restaurantId);
+        return await _inner.GetTablesByRestaurantAsync(restaurantId, ct);
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity)
+    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity, CancellationToken ct)
     {
-        return await _inner.GetAvailableTablesAsync(minCapacity);
+        return await _inner.GetAvailableTablesAsync(minCapacity, ct);
     }
 
-    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto)
+    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto, CancellationToken ct)
     {
-        var fluentResult = await _createValidator.ValidateAsync(dto);
+        var fluentResult = await _createValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<TableDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<TableDto>.From(businessResult);
 
-        return await _inner.CreateTableAsync(dto);
+        return await _inner.CreateTableAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto)
+    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(dto);
+        var fluentResult = await _updateValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(id, dto);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(id, dto, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateTableAsync(id, dto);
+        return await _inner.UpdateTableAsync(id, dto, ct);
     }
 
-    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity)
+    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity, CancellationToken ct)
     {
         if (capacity <= 0)
             return Result.ValidationError("Capacity must be greater than 0.");
 
-        var businessResult = await _businessValidator.ValidateForUpdateCapacityAsync(id);
+        var businessResult = await _businessValidator.ValidateForUpdateCapacityAsync(id, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateTableCapacityAsync(id, capacity);
+        return await _inner.UpdateTableCapacityAsync(id, capacity, ct);
     }
 
-    public async Task<Result> DeleteTableAsync(int id)
+    public async Task<Result> DeleteTableAsync(int id, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForDeleteAsync(id);
+        var businessResult = await _businessValidator.ValidateForDeleteAsync(id, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteTableAsync(id);
+        return await _inner.DeleteTableAsync(id, ct);
     }
 }

@@ -16,61 +16,61 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetAllWithDetailsAsync()
+    public async Task<IEnumerable<RestaurantEmployee>> GetAllWithDetailsAsync(CancellationToken ct)
     {
         return await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id)
+    public async Task<RestaurantEmployee?> GetByIdWithDetailsAsync(int id, CancellationToken ct)
     {
         return await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId)
+    public async Task<IEnumerable<RestaurantEmployee>> GetByRestaurantIdWithDetailsAsync(int restaurantId, CancellationToken ct)
     {
         return await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .Where(e => e.RestaurantId == restaurantId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId)
+    public async Task<IEnumerable<RestaurantEmployee>> GetByUserIdWithDetailsAsync(string userId, CancellationToken ct)
     {
         return await _context.RestaurantEmployees
             .Include(e => e.Restaurant)
             .Include(e => e.Permissions)
             .Where(e => e.UserId == userId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<RestaurantEmployee?> GetByIdAsync(int id)
+    public async Task<RestaurantEmployee?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _context.RestaurantEmployees.FindAsync(id);
+        return await _context.RestaurantEmployees.FindAsync(id, ct);
     }
 
-    public async Task AddAsync(RestaurantEmployee employee)
+    public async Task AddAsync(RestaurantEmployee employee, CancellationToken ct)
     {
-        await _context.RestaurantEmployees.AddAsync(employee);
+        await _context.RestaurantEmployees.AddAsync(employee, ct);
     }
 
-    public void Update(RestaurantEmployee employee)
+    public void Update(RestaurantEmployee employee, CancellationToken ct)
     {
         _context.RestaurantEmployees.Update(employee);
     }
 
-    public void Remove(RestaurantEmployee employee)
+    public void Remove(RestaurantEmployee employee, CancellationToken ct)
     {
         _context.RestaurantEmployees.Remove(employee);
     }
 
-    public async Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions)
+    public async Task AddPermissionsAsync(int employeeId, IEnumerable<PermissionTypeEnumDto> permissions, CancellationToken ct)
     {
         var permissionEntities = permissions.Select(p => new RestaurantPermission
         {
@@ -78,10 +78,10 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
             Permission = p.ToDomain()
         });
 
-        await _context.RestaurantPermissions.AddRangeAsync(permissionEntities);
+        await _context.RestaurantPermissions.AddRangeAsync(permissionEntities, ct);
     }
     
-    public async Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId)
+    public async Task<List<EmployeeClaimsDto>> GetEmployeeClaimsDataAsync(string userId, CancellationToken ct)
     {
         return await _context.RestaurantEmployees
             .Where(e => e.UserId == userId)
@@ -95,11 +95,11 @@ public class RestaurantEmployeeRepository : IRestaurantEmployeeRepository
                     .Select(p => p.Permission.ToString())
                     .ToList()
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken ct)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }

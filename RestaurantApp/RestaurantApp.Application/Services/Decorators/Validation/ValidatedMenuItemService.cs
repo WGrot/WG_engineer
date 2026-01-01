@@ -20,126 +20,126 @@ public class ValidatedMenuItemService : IMenuItemService
         _validator = validator;
     }
 
-    public async Task<Result<MenuItemDto>> GetMenuItemByIdAsync(int itemId)
+    public async Task<Result<MenuItemDto>> GetMenuItemByIdAsync(int itemId, CancellationToken ct)
     {
-        return await _inner.GetMenuItemByIdAsync(itemId);
+        return await _inner.GetMenuItemByIdAsync(itemId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsAsync(int menuId, CancellationToken ct)
     {
-        return await _inner.GetMenuItemsAsync(menuId);
+        return await _inner.GetMenuItemsAsync(menuId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsByCategoryAsync(int categoryId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetMenuItemsByCategoryAsync(int categoryId, CancellationToken ct)
     {
-        return await _inner.GetMenuItemsByCategoryAsync(categoryId);
+        return await _inner.GetMenuItemsByCategoryAsync(categoryId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuItemDto>>> GetUncategorizedMenuItemsAsync(int menuId)
+    public async Task<Result<IEnumerable<MenuItemDto>>> GetUncategorizedMenuItemsAsync(int menuId, CancellationToken ct)
     {
-        return await _inner.GetUncategorizedMenuItemsAsync(menuId);
+        return await _inner.GetUncategorizedMenuItemsAsync(menuId, ct);
     }
 
-    public async Task<Result<MenuItemDto>> AddMenuItemAsync(int menuId, MenuItemDto itemDto)
+    public async Task<Result<MenuItemDto>> AddMenuItemAsync(int menuId, MenuItemDto itemDto, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuExistsAsync(menuId);
+        var validationResult = await _validator.ValidateMenuExistsAsync(menuId, ct);
         if (!validationResult.IsSuccess)
             return Result<MenuItemDto>.From(validationResult);
 
-        return await _inner.AddMenuItemAsync(menuId, itemDto);
+        return await _inner.AddMenuItemAsync(menuId, itemDto, ct);
     }
 
-    public async Task<Result<MenuItemDto>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto)
+    public async Task<Result<MenuItemDto>> AddMenuItemToCategoryAsync(int categoryId, MenuItemDto itemDto, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateCategoryExistsAsync(categoryId);
+        var validationResult = await _validator.ValidateCategoryExistsAsync(categoryId, ct);
         if (!validationResult.IsSuccess)
             return Result<MenuItemDto>.From(validationResult);
 
-        return await _inner.AddMenuItemToCategoryAsync(categoryId, itemDto);
+        return await _inner.AddMenuItemToCategoryAsync(categoryId, itemDto, ct);
     }
 
-    public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto)
+    public async Task<Result> UpdateMenuItemAsync(int itemId, MenuItemDto itemDto, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.UpdateMenuItemAsync(itemId, itemDto);
+        return await _inner.UpdateMenuItemAsync(itemId, itemDto, ct);
     }
 
-    public async Task<Result> DeleteMenuItemAsync(int itemId)
+    public async Task<Result> DeleteMenuItemAsync(int itemId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.DeleteMenuItemAsync(itemId);
+        return await _inner.DeleteMenuItemAsync(itemId, ct);
     }
 
-    public async Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, string? currencyCode = null)
+    public async Task<Result> UpdateMenuItemPriceAsync(int itemId, decimal price, CancellationToken ct, string? currencyCode = null)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.UpdateMenuItemPriceAsync(itemId, price, currencyCode);
+        return await _inner.UpdateMenuItemPriceAsync(itemId, price, ct, currencyCode);
     }
 
-    public async Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId)
+    public async Task<Result> MoveMenuItemToCategoryAsync(int itemId, int? categoryId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMoveToCategory(itemId, categoryId);
+        var validationResult = await _validator.ValidateMoveToCategory(itemId, categoryId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.MoveMenuItemToCategoryAsync(itemId, categoryId);
+        return await _inner.MoveMenuItemToCategoryAsync(itemId, categoryId, ct);
     }
 
-    public async Task<Result<MenuItemDto>> AddTagToMenuItemAsync(int menuItemId, int tagId)
+    public async Task<Result<MenuItemDto>> AddTagToMenuItemAsync(int menuItemId, int tagId, CancellationToken ct)
     {
-        var itemResult = await _validator.ValidateMenuItemExistsAsync(menuItemId);
+        var itemResult = await _validator.ValidateMenuItemExistsAsync(menuItemId, ct);
         if (!itemResult.IsSuccess)
             return Result<MenuItemDto>.From(itemResult);
 
-        var tagResult = await _validator.ValidateTagExistsAsync(tagId);
+        var tagResult = await _validator.ValidateTagExistsAsync(tagId, ct);
         if (!tagResult.IsSuccess)
             return Result<MenuItemDto>.From(tagResult);
 
-        return await _inner.AddTagToMenuItemAsync(menuItemId, tagId);
+        return await _inner.AddTagToMenuItemAsync(menuItemId, tagId, ct);
     }
 
-    public async Task<Result<MenuItemDto>> RemoveTagFromMenuItemAsync(int menuItemId, int tagId)
+    public async Task<Result<MenuItemDto>> RemoveTagFromMenuItemAsync(int menuItemId, int tagId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(menuItemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(menuItemId, ct);
         if (!validationResult.IsSuccess)
             return Result<MenuItemDto>.From(validationResult);
 
-        return await _inner.RemoveTagFromMenuItemAsync(menuItemId, tagId);
+        return await _inner.RemoveTagFromMenuItemAsync(menuItemId, tagId, ct);
     }
 
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetMenuItemTagsAsync(int menuItemId)
+    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetMenuItemTagsAsync(int menuItemId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(menuItemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(menuItemId, ct);
         if (!validationResult.IsSuccess)
             return Result<IEnumerable<MenuItemTagDto>>.From(validationResult);
 
-        return await _inner.GetMenuItemTagsAsync(menuItemId);
+        return await _inner.GetMenuItemTagsAsync(menuItemId, ct);
     }
 
-    public async Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, Stream imageStream, string fileName)
+    public async Task<Result<ImageUploadResult>> UploadMenuItemImageAsync(int itemId, Stream imageStream, string fileName, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId, ct);
         if (!validationResult.IsSuccess)
             return Result<ImageUploadResult>.From(validationResult);
 
-        return await _inner.UploadMenuItemImageAsync(itemId, imageStream, fileName);
+        return await _inner.UploadMenuItemImageAsync(itemId, imageStream, fileName, ct);
     }
 
-    public async Task<Result> DeleteMenuItemImageAsync(int itemId)
+    public async Task<Result> DeleteMenuItemImageAsync(int itemId, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId);
+        var validationResult = await _validator.ValidateMenuItemExistsAsync(itemId, ct);
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        return await _inner.DeleteMenuItemImageAsync(itemId);
+        return await _inner.DeleteMenuItemImageAsync(itemId, ct);
     }
 }

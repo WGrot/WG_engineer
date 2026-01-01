@@ -20,26 +20,26 @@ public class EmployeeInvitationsController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateInvitation([FromBody] CreateInvitationDto dto)
+    public async Task<IActionResult> CreateInvitation([FromBody] CreateInvitationDto dto, CancellationToken ct)
     {
-        var result = await _invitationService.CreateInvitationAsync(dto);
+        var result = await _invitationService.CreateInvitationAsync(dto, ct);
         return result.ToActionResult();
     }
 
 
     [HttpPost("accept")]
-    public async Task<IActionResult> AcceptInvitation([FromBody] TokenRequest request)
+    public async Task<IActionResult> AcceptInvitation([FromBody] TokenRequest request, CancellationToken ct)
     {
-        var result = await _invitationService.AcceptInvitationAsync(request.Token);
+        var result = await _invitationService.AcceptInvitationAsync(request.Token, ct);
 
         return result.ToActionResult();
     }
 
 
     [HttpPost("reject")]
-    public async Task<IActionResult> RejectInvitation([FromBody] TokenRequest request)
+    public async Task<IActionResult> RejectInvitation([FromBody] TokenRequest request, CancellationToken ct)
     {
-        var result = await _invitationService.RejectInvitationAsync(request.Token);
+        var result = await _invitationService.RejectInvitationAsync(request.Token, ct);
         return result.ToActionResult();
     }
 }

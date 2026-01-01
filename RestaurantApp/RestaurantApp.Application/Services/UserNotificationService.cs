@@ -20,7 +20,7 @@ public class UserNotificationService : IUserNotificationService
     }
     
 
-    public async Task<Result<NotificationDto?>> GetByIdAsync(int id, string userId)
+    public async Task<Result<NotificationDto?>> GetByIdAsync(int id, string userId, CancellationToken ct)
     {
         var notification = await _repository.GetByIdAsync(id);
 
@@ -30,51 +30,51 @@ public class UserNotificationService : IUserNotificationService
         return Result.Success( notification.MapToDto())!;
     }
 
-    public async Task<Result<List<NotificationDto>>> GetByUserIdAsync(string userId)
+    public async Task<Result<List<NotificationDto>>> GetByUserIdAsync(string userId, CancellationToken ct)
     {
         var notifications = await _repository.GetByUserIdAsync(userId);
         return Result.Success(notifications.ToList().ToDtoList());
     }
 
-    public async Task<Result<List<NotificationDto>>> GetUnreadByUserIdAsync(string userId)
+    public async Task<Result<List<NotificationDto>>> GetUnreadByUserIdAsync(string userId, CancellationToken ct)
     {
         var notifications = await _repository.GetUnreadByUserIdAsync(userId);
         return Result.Success( (notifications.ToList().ToDtoList()));
     }
 
-    public async Task<Result<int>> GetUnreadCountAsync(string userId)
+    public async Task<Result<int>> GetUnreadCountAsync(string userId, CancellationToken ct)
     {
         var result = await _repository.GetUnreadCountAsync(userId);
         return Result.Success(result);
     }
     
-    public async Task<UserNotification> CreateAsync(UserNotification notification)
+    public async Task<UserNotification> CreateAsync(UserNotification notification, CancellationToken ct)
     {
         await _repository.AddAsync(notification);
         await _sender.SendAsync(notification.UserId, notification.Id);
         return notification;
     }
 
-    public async Task<Result> MarkAsReadAsync(int id, string userId)
+    public async Task<Result> MarkAsReadAsync(int id, string userId, CancellationToken ct)
     {
         await _repository.MarkAsReadAsync(id, userId);
         return Result.Success();
     }
 
-    public async Task<Result> MarkAllAsReadAsync(string userId)
+    public async Task<Result> MarkAllAsReadAsync(string userId, CancellationToken ct)
     {
         await _repository.MarkAllAsReadAsync(userId);
         return Result.Success();
     }
     
 
-    public async Task<Result> DeleteAsync(int id, string userId)
+    public async Task<Result> DeleteAsync(int id, string userId, CancellationToken ct)
     {
         await _repository.DeleteAsync(id, userId);
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAllReadAsync(string userId)
+    public async Task<Result> DeleteAllReadAsync(string userId, CancellationToken ct)
     {
         await _repository.DeleteAllReadAsync(userId);
         return Result.Success();

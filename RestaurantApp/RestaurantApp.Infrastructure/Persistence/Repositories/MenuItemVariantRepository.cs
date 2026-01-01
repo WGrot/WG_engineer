@@ -13,45 +13,45 @@ public class MenuItemVariantRepository: IMenuItemVariantRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<MenuItemVariant>> GetAllAsync()
+    public async Task<IEnumerable<MenuItemVariant>> GetAllAsync(CancellationToken ct)
     {
-        return await _context.MenuItemVariants.ToListAsync();
+        return await _context.MenuItemVariants.ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<MenuItemVariant>> GetByMenuItemIdAsync(int menuItemId)
+    public async Task<IEnumerable<MenuItemVariant>> GetByMenuItemIdAsync(int menuItemId, CancellationToken ct)
     {
         return await _context.MenuItemVariants
             .Where(v => v.MenuItemId == menuItemId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<MenuItemVariant?> GetByIdAsync(int id)
+    public async Task<MenuItemVariant?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _context.MenuItemVariants
-            .FirstOrDefaultAsync(v => v.Id == id);
+            .FirstOrDefaultAsync(v => v.Id == id, cancellationToken: ct);
     }
 
-    public async Task<bool> MenuItemExistsAsync(int menuItemId)
+    public async Task<bool> MenuItemExistsAsync(int menuItemId, CancellationToken ct)
     {
-        return await _context.MenuItems.AnyAsync(i => i.Id == menuItemId);
+        return await _context.MenuItems.AnyAsync(i => i.Id == menuItemId, cancellationToken: ct);
     }
 
-    public async Task<MenuItemVariant> AddAsync(MenuItemVariant variant)
+    public async Task<MenuItemVariant> AddAsync(MenuItemVariant variant, CancellationToken ct)
     {
         _context.MenuItemVariants.Add(variant);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
         return variant;
     }
 
-    public async Task UpdateAsync(MenuItemVariant variant)
+    public async Task UpdateAsync(MenuItemVariant variant, CancellationToken ct)
     {
         _context.MenuItemVariants.Update(variant);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(MenuItemVariant variant)
+    public async Task DeleteAsync(MenuItemVariant variant, CancellationToken ct)
     {
         _context.MenuItemVariants.Remove(variant);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }

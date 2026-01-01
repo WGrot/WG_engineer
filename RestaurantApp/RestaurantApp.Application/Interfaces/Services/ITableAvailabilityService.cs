@@ -9,7 +9,8 @@ public interface ITableAvailabilityService
         int tableId,
         DateTime date,
         TimeOnly startTime,
-        TimeOnly endTime);
+        TimeOnly endTime
+        , CancellationToken ct = default);
 
-    Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date);
+    Task<Result<TableAvailability>> GetTableAvailabilityMapAsync(int tableId, DateTime date, CancellationToken ct = default);
 }

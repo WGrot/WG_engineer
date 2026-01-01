@@ -5,5 +5,5 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IRestaurantDashboardService
 {
-    Task<Result<RestaurantDashboardDataDto>> GetDashboardDataAsync(int restaurantId);
+    Task<Result<RestaurantDashboardDataDto>> GetDashboardDataAsync(int restaurantId, CancellationToken ct = default);
 }

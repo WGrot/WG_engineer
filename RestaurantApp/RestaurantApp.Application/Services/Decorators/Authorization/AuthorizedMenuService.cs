@@ -21,62 +21,62 @@ public class AuthorizedMenuService :IMenuService
         _authorizationChecker = authorizationChecker;
     }
     
-    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId)
+    public async Task<Result<MenuDto>> GetMenuByIdAsync(int menuId, CancellationToken ct)
     {
-        return await _inner.GetMenuByIdAsync(menuId);
+        return await _inner.GetMenuByIdAsync(menuId, ct);
     }
 
-    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, bool? isActive = null)
+    public async Task<Result<MenuDto>> GetMenusAsync(int restaurantId, CancellationToken ct, bool? isActive = null)
     {
-        return await _inner.GetMenusAsync(restaurantId, isActive);
+        return await _inner.GetMenusAsync(restaurantId,ct,  isActive);
     }
 
-    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<MenuDto>> GetActiveMenuByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetActiveMenuByRestaurantIdAsync(restaurantId);
+        return await _inner.GetActiveMenuByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto)
+    public async Task<Result<MenuDto>> CreateMenuAsync(CreateMenuDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeForRestaurant(dto.RestaurantId))
+        if (!await AuthorizeForRestaurant(dto.RestaurantId, ct))
             return Result<MenuDto>.Forbidden("You dont have permission to create menu for this restaurant.");
         
-        return await _inner.CreateMenuAsync(dto);
+        return await _inner.CreateMenuAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto)
+    public async Task<Result> UpdateMenuAsync(int menuId, UpdateMenuDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuAsync(menuId))
+        if (!await AuthorizeForMenuAsync(menuId, ct))
             return Result.Forbidden("You dont have permission to edit menu for this restaurant.");
         
-        return await _inner.UpdateMenuAsync(menuId, dto);
+        return await _inner.UpdateMenuAsync(menuId, dto, ct);
     }
 
-    public async Task<Result> DeleteMenuAsync(int menuId)
+    public async Task<Result> DeleteMenuAsync(int menuId, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuAsync(menuId))
+        if (!await AuthorizeForMenuAsync(menuId, ct))
             return Result.Forbidden("You dont have permission to delete menu for this restaurant.");
         
-        return await _inner.DeleteMenuAsync(menuId);
+        return await _inner.DeleteMenuAsync(menuId, ct);
     }
 
-    public async Task<Result> ActivateMenuAsync(int menuId)
+    public async Task<Result> ActivateMenuAsync(int menuId, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuAsync(menuId))
+        if (!await AuthorizeForMenuAsync(menuId, ct))
             return Result.Forbidden("You dont have permission to edit menu for this restaurant.");
         
-        return await _inner.ActivateMenuAsync(menuId);
+        return await _inner.ActivateMenuAsync(menuId, ct);
     }
 
-    public async Task<Result> DeactivateMenuAsync(int menuId)
+    public async Task<Result> DeactivateMenuAsync(int menuId, CancellationToken ct)
     {
-        if (!await AuthorizeForMenuAsync(menuId))
+        if (!await AuthorizeForMenuAsync(menuId, ct))
             return Result.Forbidden("You dont have permission to delete menu for this restaurant.");
         
-        return await _inner.DeactivateMenuAsync(menuId);
+        return await _inner.DeactivateMenuAsync(menuId, ct);
     }
     
-    private async Task<bool> AuthorizeForRestaurant(int restaurantId)
+    private async Task<bool> AuthorizeForRestaurant(int restaurantId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -84,7 +84,7 @@ public class AuthorizedMenuService :IMenuService
         return await _authorizationChecker.CanManageMenuAsync(_currentUser.UserId!, restaurantId);
     }
     
-    private async Task<bool> AuthorizeForMenuAsync(int menuId)
+    private async Task<bool> AuthorizeForMenuAsync(int menuId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

@@ -6,11 +6,11 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IAuthService
 {
-    Task<Result> RegisterAsync(RegisterRequest request);
-    Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress);
-    Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress);
-    Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId);
-    Task<Result<List<ResponseUserDto>>> GetAllUsersAsync();
-    Task<Result> ConfirmEmailAsync(string userId, string token);
-    Task<Result> ResendEmailConfirmationAsync(string email);
+    Task<Result> RegisterAsync(RegisterRequest request, CancellationToken ct = default);
+    Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress, CancellationToken ct = default);
+    Task<Result> LogoutAsync(string? refreshToken, string? accessToken, string ipAddress, CancellationToken ct = default);
+    Task<Result<ResponseUserDto>> GetCurrentUserAsync(string userId, CancellationToken ct = default);
+    Task<Result<List<ResponseUserDto>>> GetAllUsersAsync(CancellationToken ct = default);
+    Task<Result> ConfirmEmailAsync(string userId, string token, CancellationToken ct = default);
+    Task<Result> ResendEmailConfirmationAsync(string email, CancellationToken ct = default);
 }

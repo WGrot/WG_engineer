@@ -19,51 +19,51 @@ public class PermissionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await _permissionService.GetAllAsync();
+        var result = await _permissionService.GetAllAsync(ct);
         return result.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _permissionService.GetByIdAsync(id);
+        var result = await _permissionService.GetByIdAsync(id, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("employee/{employeeId}")]
-    public async Task<IActionResult> GetByEmployee(int employeeId)
+    public async Task<IActionResult> GetByEmployee(int employeeId, CancellationToken ct)
     {
-        var result = await _permissionService.GetByEmployeeIdAsync(employeeId);
+        var result = await _permissionService.GetByEmployeeIdAsync(employeeId, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<IActionResult> GetByRestaurant(int restaurantId)
+    public async Task<IActionResult> GetByRestaurant(int restaurantId, CancellationToken ct)
     {
-        var result = await _permissionService.GetByRestaurantIdAsync(restaurantId);
+        var result = await _permissionService.GetByRestaurantIdAsync(restaurantId, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("employee/{employeeId}/check/{permission}")]
-    public async Task<IActionResult> CheckPermission(int employeeId, PermissionTypeEnumDto permission)
+    public async Task<IActionResult> CheckPermission(int employeeId, PermissionTypeEnumDto permission, CancellationToken ct)
     {
-        var result = await _permissionService.HasPermissionAsync(employeeId, permission);
+        var result = await _permissionService.HasPermissionAsync(employeeId, permission, ct);
         return result.ToActionResult();
     }
 
     [HttpPut("employee/update-permissions")]
-    public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto)
+    public async Task<IActionResult> UpdateEmployeePermission(UpdateEmployeePermisionsDto dto, CancellationToken ct)
     {
-        var result = await _permissionService.UpdateEmployeePermissionsAsync(dto);
+        var result = await _permissionService.UpdateEmployeePermissionsAsync(dto, ct);
         return result.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateRestaurantPermissionDto permissionDto)
+    public async Task<IActionResult> Create(CreateRestaurantPermissionDto permissionDto, CancellationToken ct)
     {
-        var result = await _permissionService.CreateAsync(permissionDto);
+        var result = await _permissionService.CreateAsync(permissionDto, ct);
 
         if (result.IsSuccess && result.StatusCode == 201)
         {
@@ -74,16 +74,16 @@ public class PermissionsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(RestaurantPermissionDto permission)
+    public async Task<IActionResult> Update(RestaurantPermissionDto permission, CancellationToken ct)
     {
-        var result = await _permissionService.UpdateAsync(permission);
+        var result = await _permissionService.UpdateAsync(permission, ct);
         return result.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var result = await _permissionService.DeleteAsync(id);
+        var result = await _permissionService.DeleteAsync(id, ct);
 
         return result.ToActionResult();
     }

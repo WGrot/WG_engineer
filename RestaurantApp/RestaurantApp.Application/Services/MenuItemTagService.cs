@@ -16,53 +16,53 @@ public class MenuItemTagService : IMenuItemTagService
         _tagRepository = tagRepository;
     }
 
-    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(int? restaurantId = null)
+    public async Task<Result<IEnumerable<MenuItemTagDto>>> GetTagsAsync(CancellationToken ct, int? restaurantId = null)
     {
-        var tags = await _tagRepository.GetAllAsync(restaurantId);
+        var tags = await _tagRepository.GetAllAsync(ct, restaurantId);
         return Result<IEnumerable<MenuItemTagDto>>.Success(tags.ToDto());
     }
 
-    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id)
+    public async Task<Result<MenuItemTagDto?>> GetTagByIdAsync(int id, CancellationToken ct)
     {
-        var tag = await _tagRepository.GetByIdAsync(id);
+        var tag = await _tagRepository.GetByIdAsync(id, ct);
         return Result<MenuItemTagDto?>.Success(tag!.ToDto());
     }
 
-    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto dto)
+    public async Task<Result<MenuItemTagDto>> CreateTagAsync(CreateMenuItemTagDto dto, CancellationToken ct)
     {
         var newTag = dto.ToEntity();
 
-        await _tagRepository.AddAsync(newTag);
+        await _tagRepository.AddAsync(newTag, ct);
         await _tagRepository.SaveChangesAsync();
 
         return Result<MenuItemTagDto>.Success(newTag.ToDto());
     }
 
-    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto dto)
+    public async Task<Result<MenuItemTagDto>> UpdateTagAsync(int id, MenuItemTagDto dto, CancellationToken ct)
     {
-        var existingTag = await _tagRepository.GetByIdAsync(id);
+        var existingTag = await _tagRepository.GetByIdAsync(id, ct);
 
         existingTag!.UpdateFromDto(dto);
 
-        _tagRepository.Update(existingTag!);
+        _tagRepository.Update(existingTag!, ct);
         await _tagRepository.SaveChangesAsync();
 
         return Result<MenuItemTagDto>.Success(existingTag!.ToDto());
     }
 
-    public async Task<Result> DeleteTagAsync(int id)
+    public async Task<Result> DeleteTagAsync(int id, CancellationToken ct)
     {
-        var tag = await _tagRepository.GetByIdAsync(id);
+        var tag = await _tagRepository.GetByIdAsync(id, ct);
 
-        _tagRepository.Delete(tag!);
+        _tagRepository.Delete(tag!, ct);
         await _tagRepository.SaveChangesAsync();
 
         return Result.Success();
     }
 
-    public async Task<Result<bool>> TagExistsAsync(int id)
+    public async Task<Result<bool>> TagExistsAsync(int id, CancellationToken ct)
     {
-        var exists = await _tagRepository.ExistsAsync(id);
+        var exists = await _tagRepository.ExistsAsync(id, ct);
         return Result<bool>.Success(exists);
     }
 }

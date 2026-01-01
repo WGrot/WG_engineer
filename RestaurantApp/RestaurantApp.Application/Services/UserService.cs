@@ -37,9 +37,9 @@ public class UserService : IUserService
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id)
+    public async Task<Result<ResponseUserDto>> GetByIdAsync(string id, CancellationToken ct)
     {
-        var user = await _userRepository.GetByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, ct);
         return Result<ResponseUserDto>.Success(MapToResponseDto(user!));
     }
 
@@ -47,11 +47,11 @@ public class UserService : IUserService
         string? lastName,
         string? phoneNumber,
         string? email,
-        int? amount)
+        int? amount, CancellationToken ct)
     {
         try
         {
-            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount, false);
+            var users = await _userRepository.SearchAsync(firstName, lastName, phoneNumber, email, amount, false, ct);
             var responseUserDtos = users.Select(MapToResponseDto).ToList();
             return Result<IEnumerable<ResponseUserDto>>.Success(responseUserDtos);
         }
@@ -62,7 +62,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto)
+    public async Task<Result<CreateUserDto>> CreateAsync(CreateUserDto userDto, CancellationToken ct)
     {
         var generatedPassword = _passwordService.GenerateSecurePassword();
 
@@ -109,7 +109,7 @@ public class UserService : IUserService
         return Result<CreateUserDto>.Created(resultDto);
     }
 
-    public async Task<Result> UpdateUserAsync(UpdateUserDto dto)
+    public async Task<Result> UpdateUserAsync(UpdateUserDto dto, CancellationToken ct)
     {
         var user = await _userManager.FindByIdAsync(dto.Id);
 
@@ -126,7 +126,7 @@ public class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteUserAsync(string userId)
+    public async Task<Result> DeleteUserAsync(string userId, CancellationToken ct)
     {
         var user = await _userManager.FindByIdAsync(userId);
 
@@ -142,7 +142,7 @@ public class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync()
+    public async Task<Result<UserDetailsDto>> GetMyDetailsAsync(CancellationToken ct)
     {
         var user = await _userManager.FindByIdAsync(_currentUserService.UserId!);
 

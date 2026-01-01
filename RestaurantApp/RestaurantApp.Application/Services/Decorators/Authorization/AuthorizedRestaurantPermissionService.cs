@@ -23,65 +23,65 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
         _authorizationChecker = authorizationChecker;
     }
 
-    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetAllAsync(CancellationToken ct)
     {
-        return await _inner.GetAllAsync();
+        return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<RestaurantPermissionDto>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantPermissionDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetByEmployeeIdAsync(int employeeId)
+    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetByEmployeeIdAsync(int employeeId, CancellationToken ct)
     {
-        return await _inner.GetByEmployeeIdAsync(employeeId);
+        return await _inner.GetByEmployeeIdAsync(employeeId, ct);
     }
 
-    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantPermissionDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetByRestaurantIdAsync(restaurantId);
+        return await _inner.GetByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<RestaurantPermissionDto>> CreateAsync(CreateRestaurantPermissionDto dto)
+    public async Task<Result<RestaurantPermissionDto>> CreateAsync(CreateRestaurantPermissionDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeByEmployeeId(dto.RestaurantEmployeeId))
+        if (!await AuthorizeByEmployeeId(dto.RestaurantEmployeeId, ct))
             return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to create permissions for this restaurant.");
         
-        return await _inner.CreateAsync(dto);
+        return await _inner.CreateAsync(dto, ct);
     }
 
-    public async Task<Result<RestaurantPermissionDto>> UpdateAsync(RestaurantPermissionDto dto)
+    public async Task<Result<RestaurantPermissionDto>> UpdateAsync(RestaurantPermissionDto dto, CancellationToken ct)
     {
-        if (!await AuthorizePermission(dto.Id))
+        if (!await AuthorizePermission(dto.Id, ct))
             return Result<RestaurantPermissionDto>.Forbidden("You dont have permission to edit permissions for this restaurant.");
         
-        return await _inner.UpdateAsync(dto);
+        return await _inner.UpdateAsync(dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        if (!await AuthorizePermission(id))
+        if (!await AuthorizePermission(id, ct))
             return Result.Forbidden("You dont have permission to delete permissions for this restaurant.");
         
-        return await _inner.DeleteAsync(id);
+        return await _inner.DeleteAsync(id, ct);
     }
 
-    public async Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionTypeEnumDto permission)
+    public async Task<Result<int?>> HasPermissionAsync(int employeeId, PermissionTypeEnumDto permission, CancellationToken ct)
     {
-        return await _inner.HasPermissionAsync(employeeId, permission);
+        return await _inner.HasPermissionAsync(employeeId, permission, ct);
     }
 
-    public async Task<Result> UpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto)
+    public async Task<Result> UpdateEmployeePermissionsAsync(UpdateEmployeePermisionsDto dto, CancellationToken ct)
     {
-        if (!await AuthorizeInrestaurant(dto.RestaurantId, PermissionType.ManagePermissions))
+        if (!await AuthorizeInrestaurant(dto.RestaurantId, PermissionType.ManagePermissions, ct))
             return Result.Forbidden("You dont have permission to edit permissions for this restaurant.");
 
-        return await _inner.UpdateEmployeePermissionsAsync(dto);
+        return await _inner.UpdateEmployeePermissionsAsync(dto, ct);
     }
     
     
-    private async Task<bool> AuthorizePermission(int permissionId)
+    private async Task<bool> AuthorizePermission(int permissionId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -89,7 +89,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
         return await _authorizationChecker.CanManagePermissionAsync(_currentUser.UserId!, permissionId);
     }
 
-    private async Task<bool> AuthorizeInrestaurant(int restaurantId, PermissionType type)
+    private async Task<bool> AuthorizeInrestaurant(int restaurantId, PermissionType type, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;
@@ -97,7 +97,7 @@ public class AuthorizedRestaurantPermissionService :IRestaurantPermissionService
         return await _authorizationChecker.HasPermissionInRestaurantAsync(_currentUser.UserId!, restaurantId, type);
     }
     
-    private async Task<bool> AuthorizeByEmployeeId(int employeeId)
+    private async Task<bool> AuthorizeByEmployeeId(int employeeId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

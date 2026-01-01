@@ -14,19 +14,20 @@ public class JwtService: IJwtService
 {
     private readonly IRestaurantEmployeeRepository _employeeRepository;
     private readonly IJwtSettings _jwtSettings;
-    private readonly UserManager<ApplicationUser> _userManager;  // Dodaj to
+    private readonly UserManager<ApplicationUser> _userManager; 
 
     public JwtService(
         IRestaurantEmployeeRepository employeeRepository, 
         IJwtSettings jwtSettings,
-        UserManager<ApplicationUser> userManager)  // Dodaj to
+        UserManager<ApplicationUser> userManager)  
     {
         _employeeRepository = employeeRepository;
         _jwtSettings = jwtSettings;
         _userManager = userManager;
     }
 
-    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FaVerified = false)
+
+    public async Task<string> GenerateJwtTokenAsync(ApplicationUser user, bool is2FaVerified = false, CancellationToken ct = default)
     {
         var claims = new List<Claim>
         {
@@ -44,7 +45,7 @@ public class JwtService: IJwtService
         }
 
 
-        var employeeData = await _employeeRepository.GetEmployeeClaimsDataAsync(user.Id);
+        var employeeData = await _employeeRepository.GetEmployeeClaimsDataAsync(user.Id, ct);
 
         foreach (var employee in employeeData)
         {

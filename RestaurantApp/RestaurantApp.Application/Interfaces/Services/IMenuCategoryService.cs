@@ -5,10 +5,10 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IMenuCategoryService
 {
-    Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId);
-    Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId);
-    Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto);
-    Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto);
-    Task<Result> DeleteCategoryAsync(int categoryId);
-    Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder);
+    Task<Result<MenuCategoryDto>> GetCategoryByIdAsync(int categoryId, CancellationToken ct = default);
+    Task<Result<IEnumerable<MenuCategoryDto>>> GetCategoriesAsync(int? menuId, CancellationToken ct = default);
+    Task<Result<MenuCategoryDto>> CreateCategoryAsync(CreateMenuCategoryDto categoryDto, CancellationToken ct = default);
+    Task<Result> UpdateCategoryAsync(UpdateMenuCategoryDto categoryDto, CancellationToken ct = default);
+    Task<Result> DeleteCategoryAsync(int categoryId, CancellationToken ct = default);
+    Task<Result> UpdateCategoryOrderAsync(int categoryId, int displayOrder, CancellationToken ct = default);
 }

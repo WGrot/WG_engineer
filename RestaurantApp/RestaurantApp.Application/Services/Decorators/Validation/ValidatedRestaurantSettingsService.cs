@@ -18,51 +18,51 @@ public class ValidatedRestaurantSettingsService : IRestaurantSettingsService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<SettingsDto>>> GetAllAsync(CancellationToken ct)
     {
-        return await _inner.GetAllAsync();
+        return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<SettingsDto>> GetByIdAsync(int id)
+    public async Task<Result<SettingsDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<SettingsDto>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetByRestaurantIdAsync(restaurantId);
+        return await _inner.GetByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto)
+    public async Task<Result<SettingsDto>> CreateAsync(CreateRestaurantSettingsDto dto, CancellationToken ct)
     {
-        return await _inner.CreateAsync(dto);
+        return await _inner.CreateAsync(dto, ct);
     }
 
-    public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto)
+    public async Task<Result<SettingsDto>> UpdateAsync(int id, UpdateRestaurantSettingsDto dto, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(id);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(id, ct);
         if (!businessResult.IsSuccess)
             return Result<SettingsDto>.From(businessResult);
 
-        return await _inner.UpdateAsync(id, dto);
+        return await _inner.UpdateAsync(id, dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForDeleteAsync(id);
+        var businessResult = await _businessValidator.ValidateForDeleteAsync(id, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteAsync(id);
+        return await _inner.DeleteAsync(id, ct);
     }
 
-    public async Task<Result<bool>> ExistsAsync(int id)
+    public async Task<Result<bool>> ExistsAsync(int id, CancellationToken ct)
     {
-        return await _inner.ExistsAsync(id);
+        return await _inner.ExistsAsync(id, ct);
     }
 
-    public async Task<Result<bool>> NeedConfirmationAsync(int restaurantId)
+    public async Task<Result<bool>> NeedConfirmationAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.NeedConfirmationAsync(restaurantId);
+        return await _inner.NeedConfirmationAsync(restaurantId, ct);
     }
 }

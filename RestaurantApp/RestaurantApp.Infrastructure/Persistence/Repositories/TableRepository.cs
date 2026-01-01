@@ -13,28 +13,28 @@ public class TableRepository : ITableRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Table>> GetAllWithRestaurantAndSeatsAsync()
+    public async Task<IEnumerable<Table>> GetAllWithRestaurantAndSeatsAsync(CancellationToken ct)
     {
         return await _context.Tables
             .Include(t => t.Restaurant)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<Table?> GetByIdWithRestaurantAndSeatsAsync(int id)
+    public async Task<Table?> GetByIdWithRestaurantAndSeatsAsync(int id, CancellationToken ct)
     {
         return await _context.Tables
             .Include(t => t.Restaurant)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<Table>> GetByRestaurantIdWithSeatsAsync(int restaurantId)
+    public async Task<IEnumerable<Table>> GetByRestaurantIdWithSeatsAsync(int restaurantId, CancellationToken ct)
     {
         return await _context.Tables
             .Where(t => t.RestaurantId == restaurantId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<Table>> GetAvailableTablesAsync(int? minCapacity)
+    public async Task<IEnumerable<Table>> GetAvailableTablesAsync(int? minCapacity, CancellationToken ct)
     {
         var query = _context.Tables
             .Include(t => t.Restaurant)
@@ -45,22 +45,22 @@ public class TableRepository : ITableRepository
             query = query.Where(t => t.Capacity >= minCapacity.Value);
         }
 
-        return await query.ToListAsync();
+        return await query.ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<Table?> GetByIdAsync(int id)
+    public async Task<Table?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _context.Tables.FindAsync(id);
+        return await _context.Tables.FindAsync(id, ct);
     }
 
-    public async Task<bool> ExistsAsync(int id)
+    public async Task<bool> ExistsAsync(int id, CancellationToken ct)
     {
-        return await _context.Tables.AnyAsync(t => t.Id == id);
+        return await _context.Tables.AnyAsync(t => t.Id == id, cancellationToken: ct);
     }
 
     public async Task<bool> TableNumberExistsInRestaurantAsync(
         string tableNumber, 
-        int restaurantId, 
+        int restaurantId, CancellationToken ct, 
         int? excludeTableId = null)
     {
         var query = _context.Tables
@@ -71,27 +71,27 @@ public class TableRepository : ITableRepository
             query = query.Where(t => t.Id != excludeTableId.Value);
         }
 
-        return await query.AnyAsync();
+        return await query.AnyAsync(cancellationToken: ct);
     }
 
-    public async Task<Table> AddAsync(Table table)
+    public async Task<Table> AddAsync(Table table, CancellationToken ct)
     {
         _context.Tables.Add(table);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
         
-        return await GetByIdWithRestaurantAndSeatsAsync(table.Id) 
+        return await GetByIdWithRestaurantAndSeatsAsync(table.Id, ct) 
                ?? throw new InvalidOperationException("Failed to retrieve created table.");
     }
 
-    public async Task UpdateAsync(Table table)
+    public async Task UpdateAsync(Table table, CancellationToken ct)
     {
         _context.Tables.Update(table);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(Table table)
+    public async Task DeleteAsync(Table table, CancellationToken ct)
     {
         _context.Tables.Remove(table);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }

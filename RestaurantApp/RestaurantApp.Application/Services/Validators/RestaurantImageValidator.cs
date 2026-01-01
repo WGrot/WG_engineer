@@ -14,18 +14,18 @@ public class RestaurantImageValidator : IRestaurantImageValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId)
+    public async Task<Result> ValidateProfilePhotoExistsAsync(int restaurantId, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
+        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId, ct);
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
@@ -38,9 +38,9 @@ public class RestaurantImageValidator : IRestaurantImageValidator
         return Result.Success();
     }
 
-    public async Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId)
+    public async Task<Result> ValidateGalleryPhotoExistsAsync(int restaurantId, int imageId, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId);
+        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(restaurantId, ct);
         if (restaurant == null)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 

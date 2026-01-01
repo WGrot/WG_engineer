@@ -31,9 +31,9 @@ public class ReservationService : IReservationService
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId)
+    public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
     {
-        var reservation = await _reservationRepository.GetByIdWithRestaurantAsync(reservationId);
+        var reservation = await _reservationRepository.GetByIdWithRestaurantAsync(reservationId, ct);
 
         if (reservation == null)
             return Result<ReservationDto>.NotFound("Reservation not found.");
@@ -41,15 +41,15 @@ public class ReservationService : IReservationService
         return Result<ReservationDto>.Success(reservation.ToDto());
     }
 
-    public async Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<List<ReservationDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        var reservations = await _reservationRepository.GetByRestaurantIdAsync(restaurantId);
+        var reservations = await _reservationRepository.GetByRestaurantIdAsync(restaurantId, ct);
         return Result<List<ReservationDto>>.Success(reservations.ToDtoList());
     }
 
-    public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto)
+    public async Task<Result<ReservationDto>> CreateAsync(ReservationDto reservationDto, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(reservationDto.RestaurantId);
+        var restaurant = await _restaurantRepository.GetByIdWithSettingsAsync(reservationDto.RestaurantId, ct);
 
         var reservation = new ReservationBase
         {
@@ -68,56 +68,56 @@ public class ReservationService : IReservationService
             NeedsConfirmation = restaurant!.Settings?.ReservationsNeedConfirmation == true
         };
 
-        var created = await _reservationRepository.AddAsync(reservation);
+        var created = await _reservationRepository.AddAsync(reservation, ct);
         return Result<ReservationDto>.Success(created.ToDto());
     }
 
-    public async Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto)
+    public async Task<Result> UpdateAsync(int reservationId, ReservationDto reservationDto, CancellationToken ct)
     {
-        var existing = await _reservationRepository.GetByIdAsync(reservationId);
+        var existing = await _reservationRepository.GetByIdAsync(reservationId, ct);
 
         existing!.UpdateFromDto(reservationDto);
-        await _reservationRepository.UpdateAsync(existing!);
+        await _reservationRepository.UpdateAsync(existing!, ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(int reservationId)
+    public async Task<Result> DeleteAsync(int reservationId, CancellationToken ct)
     {
-        var existing = await _reservationRepository.GetByIdAsync(reservationId);
+        var existing = await _reservationRepository.GetByIdAsync(reservationId, ct);
 
-        await _reservationRepository.DeleteAsync(existing!);
+        await _reservationRepository.DeleteAsync(existing!, ct);
         return Result.Success();
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetUserReservationsAsync(
-        ReservationSearchParameters searchParams)
+        ReservationSearchParameters searchParams, CancellationToken ct)
     {
         searchParams.UserId = _currentUserService.UserId;
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
 
-        var (items, totalCount) = await _reservationRepository.SearchAsync(searchParams, page, pageSize);
+        var (items, totalCount) = await _reservationRepository.SearchAsync(searchParams, page, pageSize, ct);
 
         return Result<PaginatedReservationsDto>.Success(
             CreatePaginatedResult(items, totalCount, page, pageSize));
     }
 
-    public async Task<Result> CancelUserReservationAsync(string userId, int reservationId)
+    public async Task<Result> CancelUserReservationAsync(string userId, int reservationId, CancellationToken ct)
     {
-        var reservation = await _reservationRepository.GetByIdAndUserIdAsync(reservationId, userId);
+        var reservation = await _reservationRepository.GetByIdAndUserIdAsync(reservationId, userId, ct);
 
         reservation!.Status = ReservationStatus.Cancelled;
-        await _reservationRepository.UpdateAsync(reservation);
+        await _reservationRepository.UpdateAsync(reservation, ct);
 
         return Result.Success();
     }
 
     public async Task<Result<PaginatedReservationsDto>> GetManagedReservationsAsync(
         string userId,
-        ReservationSearchParameters searchParams)
+        ReservationSearchParameters searchParams, CancellationToken ct)
     {
-        var managedRestaurantIds = await _reservationRepository.GetManagedRestaurantIdsAsync(userId);
+        var managedRestaurantIds = await _reservationRepository.GetManagedRestaurantIdsAsync(userId, ct);
 
         if (!managedRestaurantIds.Any())
         {
@@ -128,25 +128,25 @@ public class ReservationService : IReservationService
 
         var (page, pageSize) = NormalizePagination(searchParams.Page, searchParams.PageSize);
 
-        var (items, totalCount) = await _reservationRepository.SearchAsync(searchParams, page, pageSize);
+        var (items, totalCount) = await _reservationRepository.SearchAsync(searchParams, page, pageSize, ct);
 
         return Result<PaginatedReservationsDto>.Success(
             CreatePaginatedResult(items, totalCount, page, pageSize));
     }
 
-    public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status)
+    public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status, CancellationToken ct)
     {
-        var reservation = await _reservationRepository.GetByIdAsync(reservationId);
+        var reservation = await _reservationRepository.GetByIdAsync(reservationId, ct);
 
         reservation!.Status = status.ToDomain();
-        await _reservationRepository.UpdateAsync(reservation);
+        await _reservationRepository.UpdateAsync(reservation, ct);
 
         return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams)
+    public async Task<Result<IEnumerable<ReservationDto>>> SearchAsync(ReservationSearchParameters searchParams, CancellationToken ct)
     {
-        var items = await _reservationRepository.SearchAsync(searchParams);
+        var items = await _reservationRepository.SearchAsync(searchParams, ct);
         return Result<IEnumerable<ReservationDto>>.Success(items.ToDtoList());
     }
 

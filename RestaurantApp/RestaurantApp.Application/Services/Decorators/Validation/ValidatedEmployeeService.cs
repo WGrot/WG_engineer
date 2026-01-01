@@ -27,70 +27,70 @@ public class ValidatedEmployeeService : IEmployeeService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync(CancellationToken ct)
     {
-        return await _inner.GetAllAsync();
+        return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetByRestaurantIdAsync(restaurantId);
+        return await _inner.GetByRestaurantIdAsync(restaurantId, ct);
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId, CancellationToken ct)
     {
-        return await _inner.GetByUserIdAsync(userId);
+        return await _inner.GetByUserIdAsync(userId, ct);
     }
 
-    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId)
+    public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId, CancellationToken ct)
     {
-        return await _inner.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId);
+        return await _inner.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId, ct);
     }
 
-    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRoleEnumDto newRoleEnumDto)
+    public async Task<Result> UpdateEmployeeRoleAsync(int employeeId, RestaurantRoleEnumDto newRoleEnumDto, CancellationToken ct)
     {
-        return await _inner.UpdateEmployeeRoleAsync(employeeId, newRoleEnumDto);
+        return await _inner.UpdateEmployeeRoleAsync(employeeId, newRoleEnumDto, ct);
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> CreateAsync(CreateEmployeeDto dto, CancellationToken ct)
     {
-        var fluentResult = await _createValidator.ValidateAsync(dto);
+        var fluentResult = await _createValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<RestaurantEmployeeDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<RestaurantEmployeeDto>.From(businessResult);
 
-        return await _inner.CreateAsync(dto);
+        return await _inner.CreateAsync(dto, ct);
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto)
+    public async Task<Result<RestaurantEmployeeDto>> UpdateAsync(UpdateEmployeeDto dto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(dto);
+        var fluentResult = await _updateValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<RestaurantEmployeeDto>();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<RestaurantEmployeeDto>.From(businessResult);
 
-        return await _inner.UpdateAsync(dto);
+        return await _inner.UpdateAsync(dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        return await _inner.DeleteAsync(id);
+        return await _inner.DeleteAsync(id, ct);
     }
 
-    public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive)
+    public async Task<Result> UpdateActiveStatusAsync(int id, bool isActive, CancellationToken ct)
     {
-        return await _inner.UpdateActiveStatusAsync(id, isActive);
+        return await _inner.UpdateActiveStatusAsync(id, isActive, ct);
     }
     
 }

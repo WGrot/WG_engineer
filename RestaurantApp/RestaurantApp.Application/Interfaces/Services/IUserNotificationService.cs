@@ -6,16 +6,16 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface IUserNotificationService
 {
-    Task<Result<NotificationDto?>> GetByIdAsync(int id, string userId);
-    Task<Result<List<NotificationDto>>> GetByUserIdAsync(string userId);
-    Task<Result<List<NotificationDto>>> GetUnreadByUserIdAsync(string userId);
-    Task<Result<int>> GetUnreadCountAsync(string userId);
+    Task<Result<NotificationDto?>> GetByIdAsync(int id, string userId, CancellationToken ct = default);
+    Task<Result<List<NotificationDto>>> GetByUserIdAsync(string userId, CancellationToken ct = default);
+    Task<Result<List<NotificationDto>>> GetUnreadByUserIdAsync(string userId, CancellationToken ct = default);
+    Task<Result<int>> GetUnreadCountAsync(string userId, CancellationToken ct = default);
     
-    Task<UserNotification> CreateAsync(UserNotification notification);
+    Task<UserNotification> CreateAsync(UserNotification notification, CancellationToken ct = default);
     
-    Task<Result> MarkAsReadAsync(int id, string userId);
-    Task<Result> MarkAllAsReadAsync(string userId);
+    Task<Result> MarkAsReadAsync(int id, string userId, CancellationToken ct = default);
+    Task<Result> MarkAllAsReadAsync(string userId, CancellationToken ct = default);
     
-    Task<Result> DeleteAsync(int id, string userId);
-    Task<Result> DeleteAllReadAsync(string userId);
+    Task<Result> DeleteAsync(int id, string userId, CancellationToken ct = default);
+    Task<Result> DeleteAllReadAsync(string userId, CancellationToken ct = default);
 }

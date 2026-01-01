@@ -47,10 +47,10 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _urlHelper = urlHelper;
     }
 
-    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto)
+    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto, CancellationToken ct)
     {
-        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId);
-        var user = await _userRepository.GetByEmailAsync(dto.Email);
+        var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
+        var user = await _userRepository.GetByEmailAsync(dto.Email, ct);
         
         
         var invitation = new EmployeeInvitation
@@ -81,19 +81,19 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         
         invitation.NotificationId = notification.Id;
         
-        await _invitationRepository.AddAsync(invitation);
+        await _invitationRepository.AddAsync(invitation, ct);
 
         return Result.Success(invitation.ToDto());
     }
     
-    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token, CancellationToken ct)
     {
-        var invitation = await ValidateTokenAsync(token);
+        var invitation = await ValidateTokenAsync(token,ct);
 
         invitation!.Status = InvitationStatus.Accepted;
         invitation.RespondedAt = DateTime.UtcNow;
 
-        await _invitationRepository.UpdateAsync(invitation);
+        await _invitationRepository.UpdateAsync(invitation, ct);
 
         var employee = new RestaurantEmployee
         {
@@ -106,7 +106,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             
         };
 
-        await _employeeRepository.AddAsync(employee);
+        await _employeeRepository.AddAsync(employee, ct);
         await _userNotificationService.DeleteAsync(invitation.NotificationId, invitation.UserId);
         
         await _userNotificationService.CreateAsync(new UserNotification()
@@ -129,20 +129,20 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             });
         }
         
-        await _restaurantPermissionRepository.AddRangeAsync(employee.Permissions);
+        await _restaurantPermissionRepository.AddRangeAsync(employee.Permissions, ct);
 
         return Result.Success(invitation.ToDto());
     }
 
-    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token, CancellationToken ct)
     {
-        var invitation = await ValidateTokenAsync(token);
+        var invitation = await ValidateTokenAsync(token,ct);
 
 
         invitation!.Status = InvitationStatus.Rejected;
         invitation.RespondedAt = DateTime.UtcNow;
 
-        await _invitationRepository.UpdateAsync(invitation);
+        await _invitationRepository.UpdateAsync(invitation, ct);
         
         await _userNotificationService.CreateAsync(new UserNotification()
         {
@@ -160,12 +160,12 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         return Result.Success( invitation.ToDto());
     }
 
-    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token)
+    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(token))
             return null;
 
-        var invitation = await _invitationRepository.GetByTokenAsync(token);
+        var invitation = await _invitationRepository.GetByTokenAsync(token, ct);
 
         if (invitation == null)
             return null;

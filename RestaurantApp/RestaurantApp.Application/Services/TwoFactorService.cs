@@ -22,10 +22,10 @@ public class TwoFactorService: ITwoFactorService
     }
     
 
-    public async Task<Result<Enable2FAResponse>> EnableTwoFactorAsync()
+    public async Task<Result<Enable2FAResponse>> EnableTwoFactorAsync(CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
-        var user = await _userRepository.GetByIdAsync(userId!);
+        var user = await _userRepository.GetByIdAsync(userId!, ct);
         if (user == null)
             return Result<Enable2FAResponse>.Failure("User not found");
 
@@ -35,7 +35,7 @@ public class TwoFactorService: ITwoFactorService
         var encryptedSecretKey = _encryptionService.Encrypt(secretKey);
 
         user.TwoFactorSecretKey = encryptedSecretKey;
-        await _userRepository.UpdateAsync(user);
+        await _userRepository.UpdateAsync(user, ct);
 
         return Result<Enable2FAResponse>.Success(new Enable2FAResponse
         {
@@ -45,10 +45,10 @@ public class TwoFactorService: ITwoFactorService
         });
     }
 
-    public async Task<Result> VerifyAndEnableAsync(string code)
+    public async Task<Result> VerifyAndEnableAsync(string code, CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
-        var user = await _userRepository.GetByIdAsync(userId!);
+        var user = await _userRepository.GetByIdAsync(userId!, ct);
         if (user == null)
             return Result.Failure("User not found");
 
@@ -60,15 +60,15 @@ public class TwoFactorService: ITwoFactorService
             return Result.Failure("Invalid code");
 
         user.TwoFactorEnabled = true;
-        await _userRepository.UpdateAsync(user);
+        await _userRepository.UpdateAsync(user, ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DisableTwoFactorAsync(string code)
+    public async Task<Result> DisableTwoFactorAsync(string code, CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
-        var user = await _userRepository.GetByIdAsync(userId!);
+        var user = await _userRepository.GetByIdAsync(userId!, ct);
         if (user == null)
             return Result.Failure("User not found");
 
@@ -81,7 +81,7 @@ public class TwoFactorService: ITwoFactorService
 
         user.TwoFactorEnabled = false;
         user.TwoFactorSecretKey = null;
-        await _userRepository.UpdateAsync(user);
+        await _userRepository.UpdateAsync(user, ct);
 
         return Result.Success();
     }

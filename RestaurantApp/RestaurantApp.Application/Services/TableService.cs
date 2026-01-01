@@ -16,43 +16,43 @@ public class TableService : ITableService
         _tableRepository = tableRepository;
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync()
+    public async Task<Result<IEnumerable<TableDto>>> GetAllTablesAsync(CancellationToken ct)
     {
-        var tables = await _tableRepository.GetAllWithRestaurantAndSeatsAsync();
+        var tables = await _tableRepository.GetAllWithRestaurantAndSeatsAsync( ct);
         return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<TableDto>> GetTableByIdAsync(int id)
+    public async Task<Result<TableDto>> GetTableByIdAsync(int id, CancellationToken ct)
     {
-        var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(id);
+        var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(id, ct);
 
         return table is null
             ? Result<TableDto>.NotFound($"Table with ID {id} not found.")
             : Result.Success(table.ToDto());
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId)
+    public async Task<Result<IEnumerable<TableDto>>> GetTablesByRestaurantAsync(int restaurantId, CancellationToken ct)
     {
-        var tables = await _tableRepository.GetByRestaurantIdWithSeatsAsync(restaurantId);
+        var tables = await _tableRepository.GetByRestaurantIdWithSeatsAsync(restaurantId, ct);
         return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity)
+    public async Task<Result<IEnumerable<TableDto>>> GetAvailableTablesAsync(int? minCapacity, CancellationToken ct)
     {
-        var tables = await _tableRepository.GetAvailableTablesAsync(minCapacity);
+        var tables = await _tableRepository.GetAvailableTablesAsync(minCapacity, ct);
         return Result.Success<IEnumerable<TableDto>>(tables.ToDtoList());
     }
 
-    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto)
+    public async Task<Result<TableDto>> CreateTableAsync(CreateTableDto dto, CancellationToken ct)
     {
         var table = CreateTableEntity(dto);
-        var createdTable = await _tableRepository.AddAsync(table);
+        var createdTable = await _tableRepository.AddAsync(table, ct);
         return Result<TableDto>.Created(createdTable.ToDto());
     }
 
-    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto)
+    public async Task<Result> UpdateTableAsync(int id, UpdateTableDto dto, CancellationToken ct)
     {
-        var table = await _tableRepository.GetByIdAsync(id);
+        var table = await _tableRepository.GetByIdAsync(id, ct);
 
         table!.TableNumber = dto.TableNumber;
         table.Capacity = dto.Capacity;
@@ -60,7 +60,7 @@ public class TableService : ITableService
 
         try
         {
-            await _tableRepository.UpdateAsync(table);
+            await _tableRepository.UpdateAsync(table, ct);
         }
         catch (Exception)
         {
@@ -70,21 +70,21 @@ public class TableService : ITableService
         return Result.Success();
     }
 
-    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity)
+    public async Task<Result> UpdateTableCapacityAsync(int id, int capacity, CancellationToken ct)
     {
-        var table = await _tableRepository.GetByIdAsync(id);
+        var table = await _tableRepository.GetByIdAsync(id, ct);
 
         table!.Capacity = capacity;
-        await _tableRepository.UpdateAsync(table);
+        await _tableRepository.UpdateAsync(table, ct);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteTableAsync(int id)
+    public async Task<Result> DeleteTableAsync(int id, CancellationToken ct)
     {
-        var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(id);
+        var table = await _tableRepository.GetByIdWithRestaurantAndSeatsAsync(id, ct);
 
-        await _tableRepository.DeleteAsync(table!);
+        await _tableRepository.DeleteAsync(table!, ct);
         return Result.Success();
     }
 

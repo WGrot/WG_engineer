@@ -5,9 +5,9 @@ namespace RestaurantApp.Application.Interfaces.Services;
 
 public interface ITableReservationService
 {
-    Task<Result<TableReservationDto>> GetByIdAsync(int reservationId);
-    Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId);
-    Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto);
-    Task<Result> UpdateAsync(int reservationId, TableReservationDto dto);
-    Task<Result> DeleteAsync(int reservationId);
+    Task<Result<TableReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct = default);
+    Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId, CancellationToken ct = default);
+    Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto, CancellationToken ct = default);
+    Task<Result> UpdateAsync(int reservationId, TableReservationDto dto, CancellationToken ct = default);
+    Task<Result> DeleteAsync(int reservationId, CancellationToken ct = default);
 }

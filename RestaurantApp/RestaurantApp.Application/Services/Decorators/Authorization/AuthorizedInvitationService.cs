@@ -24,30 +24,30 @@ public class AuthorizedInvitationService : IEmployeeInvitationService
     }
     
     
-    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto)
+    public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto, CancellationToken ct)
     {
-        if (!await AuthorizePermission(dto.RestaurantId))
+        if (!await AuthorizePermission(dto.RestaurantId, ct))
             return Result<EmployeeInvitationDto>.Forbidden("You dont have permission manage employees at this restaurant.");
         
-        return _inner.CreateInvitationAsync(dto).Result;
+        return _inner.CreateInvitationAsync(dto, ct).Result;
     }
 
-    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> AcceptInvitationAsync(string token, CancellationToken ct)
     {
-        return await _inner.AcceptInvitationAsync(token);
+        return await _inner.AcceptInvitationAsync(token, ct);
     }
 
-    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token)
+    public async Task<Result<EmployeeInvitationDto>> RejectInvitationAsync(string token, CancellationToken ct)
     {
-        return await _inner.RejectInvitationAsync(token);
+        return await _inner.RejectInvitationAsync(token, ct);
     }
 
-    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token)
+    public async Task<EmployeeInvitation?> ValidateTokenAsync(string token, CancellationToken ct)
     {
-        return await _inner.ValidateTokenAsync(token);
+        return await _inner.ValidateTokenAsync(token, ct);
     }
     
-    private async Task<bool> AuthorizePermission(int restaurantId)
+    private async Task<bool> AuthorizePermission(int restaurantId, CancellationToken ct)
     {
         if (!_currentUser.IsAuthenticated)
             return false;

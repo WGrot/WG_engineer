@@ -16,48 +16,48 @@ public class AuthorizedRestaurantService : IRestaurantService
 
     }
 
-    public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RestaurantDto>>> GetAllAsync(CancellationToken ct)
     {
-        return await _inner.GetAllAsync();
+        return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<RestaurantDto>> GetByIdAsync(int id)
+    public async Task<Result<RestaurantDto>> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(id);
+        return await _inner.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto)
+    public async Task<Result<RestaurantDto>> CreateAsync(RestaurantDto restaurantDto, CancellationToken ct)
     {
-        return await _inner.CreateAsync(restaurantDto);
+        return await _inner.CreateAsync(restaurantDto, ct);
     }
 
-    public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto)
+    public async Task<Result<RestaurantDto>> CreateAsUserAsync(CreateRestaurantDto dto, CancellationToken ct)
     {
-        return await _inner.CreateAsUserAsync(dto);
+        return await _inner.CreateAsUserAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto)
+    public async Task<Result> UpdateAsync(int id, RestaurantDto restaurantDto, CancellationToken ct)
     {
-        return await _inner.UpdateAsync(id, restaurantDto);
+        return await _inner.UpdateAsync(id, restaurantDto, ct);
     }
 
-    public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto)
+    public async Task<Result> UpdateBasicInfoAsync(int id, RestaurantBasicInfoDto dto, CancellationToken ct)
     {
-        return await _inner.UpdateBasicInfoAsync(id, dto);
+        return await _inner.UpdateBasicInfoAsync(id, dto, ct);
     }
 
-    public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto)
+    public async Task<Result> UpdateStructuredAddressAsync(int id, StructuresAddressDto dto, CancellationToken ct)
     {
-        return await _inner.UpdateStructuredAddressAsync(id, dto);
+        return await _inner.UpdateStructuredAddressAsync(id, dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken ct)
     {
-        return await _inner.DeleteAsync(id);
+        return await _inner.DeleteAsync(id, ct);
     }
 
-    public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids)
+    public async Task<Result<List<RestaurantDto>>> GetRestaurantNamesAsync(List<int> ids, CancellationToken ct)
     {
-        return await _inner.GetRestaurantNamesAsync(ids);
+        return await _inner.GetRestaurantNamesAsync(ids, ct);
     }
 }

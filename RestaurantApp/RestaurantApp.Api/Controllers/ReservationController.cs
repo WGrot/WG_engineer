@@ -26,68 +26,68 @@ public class ReservationController : ControllerBase
     
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetReservation(int id)
+    public async Task<IActionResult> GetReservation(int id, CancellationToken ct)
     {
-        var result = await _reservationService.GetByIdAsync(id);
+        var result = await _reservationService.GetByIdAsync(id, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("restaurant/{restaurantId}")]
-    public async Task<IActionResult> GetReservationsByRestaurant(int restaurantId)
+    public async Task<IActionResult> GetReservationsByRestaurant(int restaurantId, CancellationToken ct)
     {
-        var result = await _reservationService.GetByRestaurantIdAsync(restaurantId);
+        var result = await _reservationService.GetByRestaurantIdAsync(restaurantId, ct);
         return result.ToActionResult();
     }
 
     [Authorize]
     [HttpGet("client")]
-    public async Task<IActionResult> GetUserReservations([FromQuery] ReservationSearchParameters searchParams)
+    public async Task<IActionResult> GetUserReservations([FromQuery] ReservationSearchParameters searchParams, CancellationToken ct)
     {
         var userId = GetCurrentUserId();
         if (userId == null)
             return Unauthorized("User is not authenticated.");
 
-        var result = await _reservationService.GetUserReservationsAsync(searchParams);
+        var result = await _reservationService.GetUserReservationsAsync(searchParams, ct);
         return result.ToActionResult();
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateReservation([FromBody] ReservationDto reservationDto)
+    public async Task<IActionResult> CreateReservation([FromBody] ReservationDto reservationDto, CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _reservationService.CreateAsync(reservationDto);
+        var result = await _reservationService.CreateAsync(reservationDto, ct);
         return result.ToActionResult();
     }
 
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto)
+    public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationDto reservationDto, CancellationToken ct)
     {
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _reservationService.UpdateAsync(id, reservationDto);
+        var result = await _reservationService.UpdateAsync(id, reservationDto, ct);
         return result.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     [Authorize]
-    public async Task<IActionResult> DeleteReservation(int id)
+    public async Task<IActionResult> DeleteReservation(int id, CancellationToken ct)
     {
 
-        var result = await _reservationService.DeleteAsync(id);
+        var result = await _reservationService.DeleteAsync(id, ct);
         return result.ToActionResult();
     }
     
 
     [HttpGet("tableReservation/{id}")]
-    public async Task<IActionResult> GetTableReservation(int id)
+    public async Task<IActionResult> GetTableReservation(int id, CancellationToken ct)
     {
-        var result = await _tableReservationService.GetByIdAsync(id);
+        var result = await _tableReservationService.GetByIdAsync(id, ct);
         return result.ToActionResult();
     }
 
@@ -99,74 +99,74 @@ public class ReservationController : ControllerBase
     }
 
     [HttpPost("table")]
-    public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto dto)
+    public async Task<IActionResult> CreateTableReservation([FromBody] CreateTableReservationDto dto, CancellationToken ct)
     {
-        var result = await _tableReservationService.CreateAsync(dto);
+        var result = await _tableReservationService.CreateAsync(dto, ct);
         return result.ToActionResult();
     }
 
     [HttpPut("table/{id}")]
     [Authorize]
-    public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto dto)
+    public async Task<IActionResult> UpdateTableReservation(int id, [FromBody] TableReservationDto dto, CancellationToken ct)
     {
         
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _tableReservationService.UpdateAsync(id, dto);
+        var result = await _tableReservationService.UpdateAsync(id, dto, ct);
         return result.ToActionResult();
     }
 
     [HttpDelete("table/{id}")]
     [Authorize]
-    public async Task<IActionResult> DeleteTableReservation(int id)
+    public async Task<IActionResult> DeleteTableReservation(int id, CancellationToken ct)
     {
 
-        var result = await _tableReservationService.DeleteAsync(id);
+        var result = await _tableReservationService.DeleteAsync(id, ct);
         return result.ToActionResult();
     }
     
 
     [HttpGet("manage")]
     [Authorize]
-    public async Task<IActionResult> GetReservationsToManage([FromQuery] ReservationSearchParameters searchParams)
+    public async Task<IActionResult> GetReservationsToManage([FromQuery] ReservationSearchParameters searchParams, CancellationToken ct)
     {
         var userId = GetCurrentUserId();
         if (userId == null)
             return Unauthorized("User is not authenticated.");
 
-        var result = await _reservationService.GetManagedReservationsAsync(userId, searchParams);
+        var result = await _reservationService.GetManagedReservationsAsync(userId, searchParams, ct);
         return result.ToActionResult();
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> SearchReservations([FromQuery] ReservationSearchParameters searchParams)
+    public async Task<IActionResult> SearchReservations([FromQuery] ReservationSearchParameters searchParams, CancellationToken ct)
     {
-        var result = await _reservationService.SearchAsync(searchParams);
+        var result = await _reservationService.SearchAsync(searchParams, ct);
         return result.ToActionResult();
     }
 
     [HttpPut("manage/{id}/change-status")]
     [Authorize]
-    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status)
+    public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status, CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _reservationService.UpdateStatusAsync(id, status);
+        var result = await _reservationService.UpdateStatusAsync(id, status, ct);
         return result.ToActionResult();
     }
 
     [HttpPatch("manage/{id}/cancel-user-reservation")]
     [Authorize]
-    public async Task<IActionResult> CancelUserReservation(int id)
+    public async Task<IActionResult> CancelUserReservation(int id, CancellationToken ct)
     {
 
         var userId = GetCurrentUserId();
         if (userId == null)
             return Unauthorized("User is not authenticated.");
 
-        var result = await _reservationService.CancelUserReservationAsync(userId, id);
+        var result = await _reservationService.CancelUserReservationAsync(userId, id, ct);
         return result.ToActionResult();
     }
     

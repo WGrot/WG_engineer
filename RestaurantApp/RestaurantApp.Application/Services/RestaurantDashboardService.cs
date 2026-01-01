@@ -14,17 +14,17 @@ public class RestaurantDashboardService : IRestaurantDashboardService
         _reservationRepository = reservationRepository;
     }
 
-    public async Task<Result<RestaurantDashboardDataDto>> GetDashboardDataAsync(int restaurantId)
+    public async Task<Result<RestaurantDashboardDataDto>> GetDashboardDataAsync(int restaurantId, CancellationToken ct)
     {
         var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
         var tomorrow = DateTime.SpecifyKind(today.AddDays(1), DateTimeKind.Utc);
         var lastWeek = DateTime.SpecifyKind(today.AddDays(-7), DateTimeKind.Utc);
 
         var todayReservationsCount = await _reservationRepository
-            .CountByRestaurantAndDateRangeAsync(restaurantId, today, tomorrow);
+            .CountByRestaurantAndDateRangeAsync(restaurantId, today, tomorrow, ct);
 
         var lastWeekReservationsCount = await _reservationRepository
-            .CountByRestaurantAndDateRangeAsync(restaurantId, lastWeek, tomorrow);
+            .CountByRestaurantAndDateRangeAsync(restaurantId, lastWeek, tomorrow, ct);
 
         var dto = new RestaurantDashboardDataDto
         {

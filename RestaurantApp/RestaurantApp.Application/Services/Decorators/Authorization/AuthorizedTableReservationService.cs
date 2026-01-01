@@ -16,28 +16,28 @@ public class AuthorizedTableReservationService : ITableReservationService
 
     }
 
-    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
+    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(reservationId);
+        return await _inner.GetByIdAsync(reservationId, ct);
     }
 
-    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId)
+    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId, CancellationToken ct)
     {
-        return await _inner.GetByTableIdAsync(tableId);
+        return await _inner.GetByTableIdAsync(tableId, ct);
     }
 
-    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
+    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto, CancellationToken ct)
     {
-        return await _inner.CreateAsync(dto);
+        return await _inner.CreateAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto)
+    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto, CancellationToken ct)
     {
-        return await _inner.UpdateAsync(reservationId, dto);
+        return await _inner.UpdateAsync(reservationId, dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int reservationId)
+    public async Task<Result> DeleteAsync(int reservationId, CancellationToken ct)
     {
-        return await _inner.DeleteAsync(reservationId);
+        return await _inner.DeleteAsync(reservationId, ct);
     }
 }

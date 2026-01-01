@@ -18,39 +18,39 @@ public class MenuItemTagValidator: IMenuItemTagValidator
         _restaurantRepository = restaurantRepository;
     }
 
-    public async Task<Result> ValidateTagExistsAsync(int tagId)
+    public async Task<Result> ValidateTagExistsAsync(int tagId, CancellationToken ct)
     {
-        var exists = await _tagRepository.ExistsAsync(tagId);
+        var exists = await _tagRepository.ExistsAsync(tagId, ct);
         if (!exists)
             return Result.NotFound($"Menu item tag with ID {tagId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId)
+    public async Task<Result> ValidateRestaurantExistsAsync(int restaurantId, CancellationToken ct)
     {
-        var exists = await _restaurantRepository.ExistsAsync(restaurantId);
+        var exists = await _restaurantRepository.ExistsAsync(restaurantId, ct);
         if (!exists)
             return Result.NotFound($"Restaurant with ID {restaurantId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuItemTagDto dto)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuItemTagDto dto, CancellationToken ct)
     {
-        return await ValidateRestaurantExistsAsync(dto.RestaurantId);
+        return await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
     }
 
-    public async Task<Result> ValidateForUpdateAsync(int tagId, MenuItemTagDto dto)
+    public async Task<Result> ValidateForUpdateAsync(int tagId, MenuItemTagDto dto, CancellationToken ct)
     {
-        var tagResult = await ValidateTagExistsAsync(tagId);
+        var tagResult = await ValidateTagExistsAsync(tagId, ct);
         if (!tagResult.IsSuccess)
             return tagResult;
 
-        var tag = await _tagRepository.GetByIdAsync(tagId);
+        var tag = await _tagRepository.GetByIdAsync(tagId, ct);
         if (tag!.RestaurantId != dto.RestaurantId)
         {
-            var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId);
+            var restaurantResult = await ValidateRestaurantExistsAsync(dto.RestaurantId, ct);
             if (!restaurantResult.IsSuccess)
                 return restaurantResult;
         }

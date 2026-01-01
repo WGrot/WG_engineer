@@ -14,23 +14,23 @@ public class MenuCategoryValidator: IMenuCategoryValidator
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto)
+    public async Task<Result> ValidateForCreateAsync(CreateMenuCategoryDto dto, CancellationToken ct)
     {
-        var menu = await _categoryRepository.GetMenuByIdAsync(dto.MenuId);
+        var menu = await _categoryRepository.GetMenuByIdAsync(dto.MenuId, ct);
         if (menu == null)
             return Result.NotFound($"Menu with ID {dto.MenuId} not found.");
 
         return Result.Success();
     }
 
-    public async Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto)
+    public async Task<Result> ValidateForUpdateAsync(UpdateMenuCategoryDto dto, CancellationToken ct)
     {
-        return await ValidateCategoryExistsAsync(dto.Id);
+        return await ValidateCategoryExistsAsync(dto.Id, ct);
     }
 
-    public async Task<Result> ValidateCategoryExistsAsync(int categoryId)
+    public async Task<Result> ValidateCategoryExistsAsync(int categoryId, CancellationToken ct)
     {
-        var category = await _categoryRepository.GetByIdAsync(categoryId);
+        var category = await _categoryRepository.GetByIdAsync(categoryId, ct);
         if (category == null)
             return Result.NotFound($"Category with ID {categoryId} not found.");
 

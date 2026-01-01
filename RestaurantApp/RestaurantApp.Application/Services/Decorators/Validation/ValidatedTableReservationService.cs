@@ -26,48 +26,48 @@ public class ValidatedTableReservationService : ITableReservationService
         _businessValidator = businessValidator;
     }
 
-    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId)
+    public async Task<Result<TableReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
     {
-        return await _inner.GetByIdAsync(reservationId);
+        return await _inner.GetByIdAsync(reservationId, ct);
     }
 
-    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId)
+    public async Task<Result<IEnumerable<ReservationDto>>> GetByTableIdAsync(int tableId, CancellationToken ct)
     {
-        return await _inner.GetByTableIdAsync(tableId);
+        return await _inner.GetByTableIdAsync(tableId, ct);
     }
 
-    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto)
+    public async Task<Result<TableReservationDto>> CreateAsync(CreateTableReservationDto dto, CancellationToken ct)
     {
-        var fluentResult = await _createValidator.ValidateAsync(dto);
+        var fluentResult = await _createValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult<TableReservationDto>();
 
-        var businessResult = await _businessValidator.ValidateForCreateAsync(dto);
+        var businessResult = await _businessValidator.ValidateForCreateAsync(dto, ct);
         if (!businessResult.IsSuccess)
             return Result<TableReservationDto>.From(businessResult);
 
-        return await _inner.CreateAsync(dto);
+        return await _inner.CreateAsync(dto, ct);
     }
 
-    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto)
+    public async Task<Result> UpdateAsync(int reservationId, TableReservationDto dto, CancellationToken ct)
     {
-        var fluentResult = await _updateValidator.ValidateAsync(dto);
+        var fluentResult = await _updateValidator.ValidateAsync(dto, ct);
         if (!fluentResult.IsValid)
             return fluentResult.ToResult();
 
-        var businessResult = await _businessValidator.ValidateForUpdateAsync(reservationId, dto);
+        var businessResult = await _businessValidator.ValidateForUpdateAsync(reservationId, dto, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.UpdateAsync(reservationId, dto);
+        return await _inner.UpdateAsync(reservationId, dto, ct);
     }
 
-    public async Task<Result> DeleteAsync(int reservationId)
+    public async Task<Result> DeleteAsync(int reservationId, CancellationToken ct)
     {
-        var businessResult = await _businessValidator.ValidateForDeleteAsync(reservationId);
+        var businessResult = await _businessValidator.ValidateForDeleteAsync(reservationId, ct);
         if (!businessResult.IsSuccess)
             return businessResult;
 
-        return await _inner.DeleteAsync(reservationId);
+        return await _inner.DeleteAsync(reservationId, ct);
     }
 }

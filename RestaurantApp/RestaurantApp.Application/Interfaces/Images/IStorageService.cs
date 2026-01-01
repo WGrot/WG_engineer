@@ -10,6 +10,7 @@ public interface IStorageService
         Stream imageStream,
         string fileName,
         ImageType imageType,
+        CancellationToken ct,
         int? entityId = null,
         bool generateThumbnail = true);
     Task<bool> DeleteImageWithThumbnailAsync(string fileName, string bucketName);
