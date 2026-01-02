@@ -3,39 +3,83 @@
     padding: 12px 15px;
     border-bottom: 1px solid #f0f0f0;
     align-items: flex-start;
+    gap: 10px;
+    box-sizing: border-box;
 }
 
-.notification-item.notification-info { border-left: 4px solid #0dcaf0; }
-.notification-item.notification-success { border-left: 4px solid #198754; }
-.notification-item.notification-warning { border-left: 4px solid #ffc107; }
-.notification-item.notification-error { border-left: 4px solid #dc3545; }
+
+.notification-item.notification-info {
+    border-left: 4px solid #0dcaf0;
+}
+
+.notification-item.notification-success {
+    border-left: 4px solid #198754;
+}
+
+.notification-item.notification-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.notification-item.notification-error {
+    border-left: 4px solid #dc3545;
+}
+
 
 .notification-content {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    min-width: 0; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .notification-content strong {
     font-size: 0.95rem;
     display: block;
     margin-bottom: 2px;
+    color: inherit;
 }
 
 .notification-content p {
     font-size: 0.9rem;
     margin: 0;
     color: #555;
+    line-height: 1.4;
+}
+
+.notification-actions {
+    margin-top: 8px;
+}
+
+.notification-actions .btn {
+    font-size: 0.8rem;
 }
 
 .dismiss-btn {
+    flex: 0 0 auto; 
+    align-self: flex-start;
     background: none;
     border: none;
     font-size: 1.2rem;
+    line-height: 1;
     color: #999;
     cursor: pointer;
-    padding: 0 5px;
-    margin-left: 10px;
+    padding: 0;
+    margin: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .dismiss-btn:hover {
     color: #333;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dismiss-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }

@@ -1,6 +1,7 @@
-﻿.notification-list-container {
+﻿
+.notification-list-container {
     position: absolute;
-    top: 60px; 
+    top: 60px;
     right: 15px;
     width: 350px;
     max-width: 90vw;
@@ -8,108 +9,16 @@
     border: 1px solid #ddd;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    z-index: 1050; 
+    z-index: 1050;
     max-height: 500px;
     display: flex;
     flex-direction: column;
-}
+    box-sizing: border-box;
 
-.notification-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    border-bottom: 1px solid #eee;
-}
-
-.notification-header h4 {
-    margin: 0;
-    font-weight: 600;
-}
-
-.clear-all-btn {
-    background: none;
-    border: none;
-    color: var(--bs-primary); 
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.notification-items {
-    overflow-y: auto;
-    max-height: 420px;
-}
-
-.no-notifications {
-    padding: 20px;
-    text-align: center;
-    color: #777;
-}
-
-.notification-item {
-    display: flex;
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: flex-start;
-}
-
-.notification-items ::deep .notification-item:last-child {
-    border-bottom: none;
-}
-
-.notification-item.notification-info { border-left: 4px solid #0dcaf0; }
-.notification-item.notification-success { border-left: 4px solid #198754; }
-.notification-item.notification-warning { border-left: 4px solid #ffc107; }
-.notification-item.notification-error { border-left: 4px solid #dc3545; }
-
-
-.notification-content {
-    flex-grow: 1;
-}
-
-.notification-content strong {
-    font-size: 0.95rem;
-    display: block;
-    margin-bottom: 2px;
-}
-
-.notification-content p {
-    font-size: 0.9rem;
-    margin: 0;
-    color: #555;
-}
-
-.dismiss-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #999;
-    cursor: pointer;
-    padding: 0 5px;
-    margin-left: 10px;
-}
-
-.dismiss-btn:hover {
-    color: #333;
-}
-
-
-
-.notification-list-container {
-    position: absolute;
-    top: 60px; 
-    right: 15px;
-    width: 350px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    z-index: 1050;
     opacity: 0;
-    transform: translateY(-10px); 
-    visibility: hidden; 
-    pointer-events: none; 
-    
+    transform: translateY(-10px);
+    visibility: hidden;
+    pointer-events: none;
     transition: opacity 0.3s ease-out,
     transform 0.3s ease-out,
     visibility 0.3s ease-out;
@@ -119,5 +28,79 @@
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
-    pointer-events: auto; 
+    pointer-events: auto;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.notification-header h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.clear-all-btn {
+    background: none;
+    border: none;
+    color: var(--bs-primary, #0d6efd);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.clear-all-btn:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.notification-items {
+    overflow-y: auto;
+    max-height: 420px;
+    flex: 1 1 auto;
+}
+
+.no-notifications {
+    padding: 20px;
+    text-align: center;
+    color: #777;
+}
+
+.no-notifications p {
+    margin: 0;
+}
+
+
+.notification-items ::deep .notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.notification-items::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.notification-items::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+.notification-items {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
 }
