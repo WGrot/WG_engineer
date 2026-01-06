@@ -131,6 +131,12 @@ public class AuthController : ControllerBase
         var result = await _authService.ResendEmailConfirmationAsync(request.Email);
         return result.ToActionResult();
     }
+    
+    [HttpGet("test-exception")]
+    public IActionResult TestException()
+    {
+        throw new Exception("Test exception - middleware works!");
+    }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("make-admin/{userId}")]

@@ -153,7 +153,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddAuthorization();
 
@@ -208,6 +209,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
+app.UseExceptionHandler();
 
 app.UseCors("BlazorPolicy");
 
