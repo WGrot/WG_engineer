@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 

@@ -1,12 +1,10 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.DTOs.Users;
-using RestaurantApp.Shared.Models;
+
 
 namespace RestaurantApp.Blazor.Components;
 
@@ -21,41 +19,41 @@ public partial class TableReservationSection : ComponentBase
     public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
     [Parameter] public DateTime StartTime { get; set; }
     [Parameter] public DateTime Date { get; set; }
-    [Parameter] public TableDto Table { get; set; }
+    [Parameter] public required TableDto Table { get; set; }
     [Parameter] public DateTime EndTime { get; set; }
     
     [Parameter] public EventCallback OnReservationMade { get; set; }
-    [Parameter] public bool autoFilldata { get; set; } = true;
-    private string customerName = "";
-    private string customerEmail = "";
-    private string customerPhone = "";
-    private string specialRequests = "";
-    private string userId = "";
-    private int numberOfGuests = 2;
-    private bool isSubmitting = false;
-    ResponseUserDto? currentUser = new ResponseUserDto();
+    [Parameter] public bool AutoFilldata { get; set; } = true;
+    private string _customerName = "";
+    private string _customerEmail = "";
+    private string _customerPhone = "";
+    private string _specialRequests = "";
+    private string _userId = "";
+    private int _numberOfGuests = 2;
+    private bool _isSubmitting = false;
+    private ResponseUserDto? _currentUser = new ResponseUserDto();
 
     protected override async Task OnParametersSetAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (autoFilldata)
+        if (AutoFilldata)
         {
             if (user.Identity?.IsAuthenticated == true)
             {
-                currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
-                if (currentUser != null)
+                _currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
+                if (_currentUser != null)
                 {
-                    customerName = currentUser.FirstName + " " +currentUser.LastName;
-                    customerEmail = currentUser.Email;
-                    customerPhone = currentUser.PhoneNumber;
-                    userId = currentUser.Id;
+                    _customerName = _currentUser.FirstName + " " +_currentUser.LastName;
+                    _customerEmail = _currentUser.Email;
+                    _customerPhone = _currentUser.PhoneNumber;
+                    _userId = _currentUser.Id;
                 }
             }
             else
             {
-                currentUser = null;
+                _currentUser = null;
             }
         }
         
@@ -65,21 +63,21 @@ public partial class TableReservationSection : ComponentBase
     {
         try
         {
-            isSubmitting = true;
+            _isSubmitting = true;
             
             var reservationDto = new CreateTableReservationDto
             {
                 TableId = Table.Id,
                 RestaurantId = Table.RestaurantId,
-                CustomerName = customerName,
-                CustomerEmail = customerEmail,
-                CustomerPhone = customerPhone,
+                CustomerName = _customerName,
+                CustomerEmail = _customerEmail,
+                CustomerPhone = _customerPhone,
                 ReservationDate = DateTime.SpecifyKind(Date, DateTimeKind.Utc),
                 StartTime = TimeOnly.FromDateTime(StartTime),
                 EndTime = TimeOnly.FromDateTime(EndTime),
-                NumberOfGuests = numberOfGuests,
-                Notes = specialRequests,
-                UseUserId = autoFilldata
+                NumberOfGuests = _numberOfGuests,
+                Notes = _specialRequests,
+                UseUserId = AutoFilldata
             };
 
             var response = await Http.PostAsJsonAsync("api/Reservation/table", reservationDto);
@@ -103,7 +101,7 @@ public partial class TableReservationSection : ComponentBase
         }
         finally
         {
-            isSubmitting = false;
+            _isSubmitting = false;
         }
     }
     

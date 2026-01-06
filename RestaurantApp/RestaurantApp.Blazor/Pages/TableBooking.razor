@@ -6,14 +6,14 @@
 @inject NavigationManager Navigation
 
 <div class="booking-container">
-    @if (isLoadingRestaurant)
+    @if (_isLoadingRestaurant)
     {
         <div class="loading-container">
             <div class="spinner"></div>
             <p>Loading...</p>
         </div>
     }
-    else if (restaurant == null)
+    else if (_restaurant == null)
     {
         <div class="error">
             <h2>Restaurant not found</h2>
@@ -26,10 +26,10 @@
             <div class="container py-4">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
+                        @if (!string.IsNullOrEmpty(_restaurant.ProfileThumbnailUrl))
                         {
-                            <img src="@restaurant.ProfileThumbnailUrl"
-                                 alt="@restaurant.Name"
+                            <img src="@_restaurant.ProfileThumbnailUrl"
+                                 alt="@_restaurant.Name"
                                  class="restaurant-logo rounded shadow-sm"
                                  @onclick="GoBack">
                         }
@@ -43,11 +43,11 @@
                     </div>
                     <div class="col-auto">
                         <StarRating
-                            Restaurant="restaurant"/>
-                        <h1 class="h2 mb-1">@restaurant.Name</h1>
+                            Restaurant="_restaurant"/>
+                        <h1 class="h2 mb-1">@_restaurant.Name</h1>
                         <p class="mb-0 opacity-75">
                             <i class="bi bi-geo-alt-fill me-1"></i>
-                            @restaurant.Address
+                            @_restaurant.Address
                         </p>
                     </div>
                     <div class="col-auto ms-1">
@@ -61,7 +61,7 @@
 
         <TableBookingForm
             Id = "@RestaurantId"
-            restaurant="@restaurant"/>
+            Restaurant="@_restaurant"/>
     }
 </div>
 
@@ -69,9 +69,9 @@
 
 @code {
     [Parameter] public int RestaurantId { get; set; }
-    [Inject] public JwtAuthenticationStateProvider AuthStateProvider { get; set; } = default!;
-    private RestaurantDto? restaurant;
-    private bool isLoadingRestaurant = false;
+    [Inject] public required JwtAuthenticationStateProvider AuthStateProvider { get; set; }
+    private RestaurantDto? _restaurant;
+    private bool _isLoadingRestaurant;
 
     
     protected override async Task OnInitializedAsync()
@@ -83,17 +83,17 @@
     {
         try
         {
-            isLoadingRestaurant = true;
-            restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{RestaurantId}");
+            _isLoadingRestaurant = true;
+            _restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{RestaurantId}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading restaurant data: {ex.Message}");
-            restaurant = null;
+            _restaurant = null;
         }
         finally
         {
-            isLoadingRestaurant = false;
+            _isLoadingRestaurant = false;
         }
     }
     

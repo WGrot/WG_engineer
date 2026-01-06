@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
-using RestaurantApp.Blazor.Models;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Menu.Variants;
-using RestaurantApp.Shared.Models;
+
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 

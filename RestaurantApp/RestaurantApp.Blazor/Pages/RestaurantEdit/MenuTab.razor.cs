@@ -13,34 +13,34 @@ public partial class MenuTab : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
     [Parameter] public int Id { get; set; }
-    [Parameter] public RestaurantDto? restaurant { get; set; }
+    [Parameter] public RestaurantDto? Restaurant { get; set; }
 
-    private MenuDto? menu;
-    private List<MenuItemTagDto> tags = new();
-    private List<MenuItemDto> uncategorizedItems = new();
-    private HashSet<int> expandedCategories = new();
+    private MenuDto? _menu;
+    private List<MenuItemTagDto> _tags = new();
+    private List<MenuItemDto> _uncategorizedItems = new();
+    private HashSet<int> _expandedCategories = new();
 
-    private bool showAddCategory = false;
-    private bool showAddItem = false;
-    private bool showUncategorized = false;
-    private int? addItemToCategoryId;
-    private int? editingCategoryId;
-    private int? editingItemId;
-    private int? movingItemId;
+    private bool _showAddCategory = false;
+    private bool _showAddItem = false;
+    private bool _showUncategorized = false;
+    private int? _addItemToCategoryId;
+    private int? _editingCategoryId;
+    private int? _editingItemId;
+    private int? _movingItemId;
 
-    private bool isLoading = false;
-    private CreateMenuCategoryDto newCategory = new();
-    private MenuItemDto newItem = new();
+    private bool _isLoading = false;
+    private CreateMenuCategoryDto _newCategory = new();
+    private MenuItemDto _newItem = new();
 
-    private CreateMenuDto newMenu = new();
+    private CreateMenuDto _newMenu = new();
 
-    private CreateMenuItemTagDto newTag;
-    private bool showAddTag = false;
+    private CreateMenuItemTagDto _newTag;
+    private bool _showAddTag = false;
 
     private void ShowAddTagForm()
     {
-        showAddTag = true;
-        newTag = new CreateMenuItemTagDto
+        _showAddTag = true;
+        _newTag = new CreateMenuItemTagDto
         {
             ColorHex = "#FFFFFF",
             RestaurantId = Id
@@ -49,26 +49,25 @@ public partial class MenuTab : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
+        _isLoading = true;
         await LoadMenu();
         await LoadTags();
-        isLoading = false;
+        _isLoading = false;
     }
 
     private async Task LoadMenu()
     {
         try
         {
-            menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            _menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            
+            _uncategorizedItems.Clear();
         
-            // Clear the list before repopulating
-            uncategorizedItems.Clear();
-        
-            foreach (var item in menu.Items)
+            foreach (var item in _menu!.Items!)
             {
                 if (item.CategoryId == null)
                 {
-                    uncategorizedItems.Add(item);
+                    _uncategorizedItems.Add(item);
                 }
             }
         }
@@ -84,21 +83,21 @@ public partial class MenuTab : ComponentBase
         var response = await Http.GetFromJsonAsync<List<MenuItemTagDto>>($"api/MenuItemTag?restaurantId={Id}");
         if (response != null)
         {
-            tags = response;
+            _tags = response;
         }
     }
 
 
     private void ShowAddCategoryForm()
     {
-        showAddCategory = true;
+        _showAddCategory = true;
     }
 
     private void ShowAddItemForm(int? categoryId)
     {
-        showAddItem = true;
-        addItemToCategoryId = categoryId;
-        newItem = new MenuItemDto
+        _showAddItem = true;
+        _addItemToCategoryId = categoryId;
+        _newItem = new MenuItemDto
         {
             Description = "",
             Name = "",
@@ -110,33 +109,33 @@ public partial class MenuTab : ComponentBase
 
     private void ShowMoveItemForm(int itemId)
     {
-        movingItemId = itemId;
+        _movingItemId = itemId;
     }
 
     private void ToggleCategory(int categoryId)
     {
-        if (expandedCategories.Contains(categoryId))
-            expandedCategories.Remove(categoryId);
+        if (_expandedCategories.Contains(categoryId))
+            _expandedCategories.Remove(categoryId);
         else
-            expandedCategories.Add(categoryId);
+            _expandedCategories.Add(categoryId);
     }
 
     private void ToggleUncategorized()
     {
-        showUncategorized = !showUncategorized;
+        _showUncategorized = !_showUncategorized;
     }
 
     private async Task AddCategory()
     {
-        newCategory.MenuId = menu.Id;
-        if (string.IsNullOrEmpty(newCategory.Name)) return;
+        _newCategory.MenuId = _menu!.Id;
+        if (string.IsNullOrEmpty(_newCategory.Name)) return;
 
         try
         {
-            var response = await Http.PostAsJsonAsync($"/api/MenuCategory?menuId={menu.Id}", newCategory);
+            var response = await Http.PostAsJsonAsync($"/api/MenuCategory?menuId={_menu.Id}", _newCategory);
             if (response.IsSuccessStatusCode)
             {
-                showAddCategory = false;
+                _showAddCategory = false;
                 await LoadMenu();
             }
         }
@@ -151,9 +150,9 @@ public partial class MenuTab : ComponentBase
     {
         try
         {
-            newMenu.RestaurantId = Id;
-            newCategory.IsActive = true;
-            var response = await Http.PostAsJsonAsync($"/api/Menu", newMenu);
+            _newMenu.RestaurantId = Id;
+            _newCategory.IsActive = true;
+            var response = await Http.PostAsJsonAsync($"/api/Menu", _newMenu);
             if (response.IsSuccessStatusCode)
             {
                 await LoadMenu();
@@ -182,7 +181,7 @@ public partial class MenuTab : ComponentBase
             var response = await Http.PutAsJsonAsync($"/api/MenuCategory/{category.Id}", dto);
             if (response.IsSuccessStatusCode)
             {
-                editingCategoryId = null;
+                _editingCategoryId = null;
                 await LoadMenu();
             }
         }
@@ -210,23 +209,23 @@ public partial class MenuTab : ComponentBase
 
     private async Task AddItem(int? categoryId)
     {
-        if (string.IsNullOrEmpty(newItem.Name)) return;
+        if (string.IsNullOrEmpty(_newItem.Name)) return;
 
         try
         {
             HttpResponseMessage response;
             if (categoryId.HasValue)
             {
-                response = await Http.PostAsJsonAsync($"api/MenuItem/category/{categoryId}/items", newItem);
+                response = await Http.PostAsJsonAsync($"api/MenuItem/category/{categoryId}/items", _newItem);
             }
             else
             {
-                response = await Http.PostAsJsonAsync($"api/MenuItem/{menu.Id}/items", newItem);
+                response = await Http.PostAsJsonAsync($"api/MenuItem/{_menu!.Id}/items", _newItem);
             }
 
             if (response.IsSuccessStatusCode)
             {
-                showAddItem = false;
+                _showAddItem = false;
                 await LoadMenu();
             }
         }
@@ -252,7 +251,7 @@ public partial class MenuTab : ComponentBase
             var response = await Http.PutAsJsonAsync($"api/MenuItem/item/{item.Id}", dto);
             if (response.IsSuccessStatusCode)
             {
-                editingItemId = null;
+                _editingItemId = null;
                 await LoadMenu();
             }
         }
@@ -290,7 +289,7 @@ public partial class MenuTab : ComponentBase
 
             if (response.IsSuccessStatusCode)
             {
-                movingItemId = null;
+                _movingItemId = null;
                 await LoadMenu();
             }
         }
@@ -305,7 +304,6 @@ public partial class MenuTab : ComponentBase
         try
         {
             var file = e.File;
-            if (file is null) return;
 
             using var content = new MultipartFormDataContent();
             var streamContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)); // max 5 MB
@@ -356,12 +354,12 @@ public partial class MenuTab : ComponentBase
 
     private async Task AddTag()
     {
-        var response = await Http.PostAsJsonAsync("api/MenuItemTag", newTag);
+        var response = await Http.PostAsJsonAsync("api/MenuItemTag", _newTag);
         if (response.IsSuccessStatusCode)
         {
             await LoadTags();
-            showAddTag = false;
-            newTag = new();
+            _showAddTag = false;
+            _newTag = new();
         }
     }
 

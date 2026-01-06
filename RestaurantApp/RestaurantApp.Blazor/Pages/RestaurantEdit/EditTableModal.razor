@@ -1,6 +1,4 @@
-﻿@using RestaurantApp.Shared.DTOs
-@using RestaurantApp.Shared.DTOs.Tables
-@using RestaurantApp.Shared.Models
+﻿@using RestaurantApp.Shared.DTOs.Tables
 @inject HttpClient Http
 
 @if (IsVisible)
@@ -9,21 +7,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-primary" style="color: #FFFFFF">
-                    <h5 class="modal-title"> @(isCreatingNew ? "Create new table" : "Edit table: " + modifiedTable.TableNumber)</h5>
+                    <h5 class="modal-title"> @(_isCreatingNew ? "Create new table" : "Edit table: " + _modifiedTable.TableNumber)</h5>
                     <button type="button" class="btn-close" @onclick="Close"></button>
                 </div>
                 <div class="modal-body">
 
                     <div>
-                        <p><strong>Table Number:</strong> <input class="form-control" @bind="modifiedTable.TableNumber"></p>
-                        <p><strong>Seats:</strong> <input class="form-control" @bind="modifiedTable.Capacity"></p>
-                        <p><strong>Location:</strong> <input class="form-control" @bind="modifiedTable.Location"></p>
+                        <p><strong>Table Number:</strong> <input class="form-control" @bind="_modifiedTable.TableNumber"></p>
+                        <p><strong>Seats:</strong> <input class="form-control" @bind="_modifiedTable.Capacity"></p>
+                        <p><strong>Location:</strong> <input class="form-control" @bind="_modifiedTable.Location"></p>
                     </div>
                     <div class="d-flex flex-wrap justify-content-evenly gap-2">
                         <button class="base-button flex-grow-1" @onclick="Save">
-                            @(isCreatingNew ? "Add table" : "Save")
+                            @(_isCreatingNew ? "Add table" : "Save")
                         </button>
-                        @if (!isCreatingNew)
+                        @if (!_isCreatingNew)
                         {
                             <button class="red-button flex-grow-1" @onclick="Delete"> Delete</button>
                         }
@@ -46,26 +44,26 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public bool IsVisible { get; set; }
 
-    private TableDto modifiedTable = new TableDto();
-    private bool isCreatingNew = false;
+    private TableDto _modifiedTable = new TableDto();
+    private bool _isCreatingNew = false;
 
     protected override void OnParametersSet()
     {
         if (Table != null)
         {
-            modifiedTable = new TableDto
+            _modifiedTable = new TableDto
             {
                 Id = Table.Id,
                 TableNumber = Table.TableNumber,
                 Capacity = Table.Capacity,
                 Location = Table.Location
             };
-            isCreatingNew = false;
+            _isCreatingNew = false;
         }
         else
         {
-            modifiedTable = new TableDto();
-            isCreatingNew = true;
+            _modifiedTable = new TableDto();
+            _isCreatingNew = true;
         }
     }
 
@@ -75,7 +73,7 @@
         
         try
         {
-            var response = await Http.DeleteAsync($"api/table/{modifiedTable.Id}");
+            var response = await Http.DeleteAsync($"api/table/{_modifiedTable.Id}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -97,13 +95,13 @@
     {
         try
         {
-            if (isCreatingNew)
+            if (_isCreatingNew)
             {
                 CreateTableDto dto = new CreateTableDto
                 {
-                    TableNumber = modifiedTable.TableNumber,
-                    Capacity = modifiedTable.Capacity,
-                    Location = modifiedTable.Location,
+                    TableNumber = _modifiedTable.TableNumber,
+                    Capacity = _modifiedTable.Capacity,
+                    Location = _modifiedTable.Location,
                     RestaurantId = RestaurantId
                 };
                 
@@ -119,11 +117,11 @@
             {
                 UpdateTableDto dto = new UpdateTableDto
                 {
-                    TableNumber = modifiedTable.TableNumber,
-                    Capacity = modifiedTable.Capacity,
-                    Location = modifiedTable.Location
+                    TableNumber = _modifiedTable.TableNumber,
+                    Capacity = _modifiedTable.Capacity,
+                    Location = _modifiedTable.Location
                 };
-                var response = await Http.PutAsJsonAsync($"api/table/{modifiedTable.Id}", dto);
+                var response = await Http.PutAsJsonAsync($"api/table/{_modifiedTable.Id}", dto);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -145,7 +143,7 @@
     private async Task Close()
     {
         Table = null;
-        modifiedTable = new TableDto();
+        _modifiedTable = new TableDto();
         await IsVisibleChanged.InvokeAsync(false);
         await OnClose.InvokeAsync();
     }

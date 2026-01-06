@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Extensions;
 using RestaurantApp.Blazor.Helpers;
 using RestaurantApp.Blazor.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.SearchParameters;
 using RestaurantApp.Shared.Models;
@@ -18,43 +17,43 @@ public partial class NextReservationsView : ComponentBase
 
     [Parameter] public string Title { get; set; } = "Next Reservations";
     [Parameter] public int RestaurantId { get; set; }
-    [Parameter] public bool getPendingReservations { get; set; } = false;
-    private ReservationSearchParameters? searchParameters { get; set; } = null;
-    private bool isLoading = true;
+    [Parameter] public bool GetPendingReservations { get; set; }
+    private ReservationSearchParameters? SearchParameters { get; set; } = null;
+    private bool _isLoading = true;
 
-    private List<TableReservationDto>? reservations = new List<TableReservationDto>();
+    private List<TableReservationDto>? _reservations = new List<TableReservationDto>();
     
-    private TableReservationDto? selectedReservation;
-    private ReservationStatusEnumDto? selectedStatus;
-    private bool showReservationModal = false;
-    private bool showDeleteConfirmation = false;
-    private bool isProcessing = false;
-    private string? modalError;
-    private string? modalSuccess;
+    private TableReservationDto? _selectedReservation;
+    private ReservationStatusEnumDto? _selectedStatus;
+    private bool _showReservationModal = false;
+    private bool _showDeleteConfirmation = false;
+    private bool _isProcessing = false;
+    private string? _modalError;
+    private string? _modalSuccess;
     
     private void OpenReservationModal(TableReservationDto reservation)
     {
-        selectedReservation = reservation;
-        selectedStatus = reservation.Status;
-        modalError = null;
-        modalSuccess = null;
-        showReservationModal = true;
+        _selectedReservation = reservation;
+        _selectedStatus = reservation.Status;
+        _modalError = null;
+        _modalSuccess = null;
+        _showReservationModal = true;
     }
 
     private void CloseModal()
     {
-        showReservationModal = false;
-        selectedReservation = null;
-        selectedStatus = null;
-        modalError = null;
-        modalSuccess = null;
+        _showReservationModal = false;
+        _selectedReservation = null;
+        _selectedStatus = null;
+        _modalError = null;
+        _modalSuccess = null;
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (searchParameters == null && getPendingReservations)
+        if (SearchParameters == null && GetPendingReservations)
         {
-            searchParameters = new ReservationSearchParameters
+            SearchParameters = new ReservationSearchParameters
             {
                 Page = 1,
                 PageSize = 4,
@@ -63,9 +62,9 @@ public partial class NextReservationsView : ComponentBase
                 RestaurantId = RestaurantId,
             };
         }
-        else if (searchParameters == null && !getPendingReservations)
+        else if (SearchParameters == null && !GetPendingReservations)
         {
-            searchParameters = new ReservationSearchParameters
+            SearchParameters = new ReservationSearchParameters
             {
                 Page = 1,
                 PageSize = 4,
@@ -83,24 +82,24 @@ public partial class NextReservationsView : ComponentBase
     {
         try
         {
-            searchParameters.RestaurantId = RestaurantId;
-            var queryString = searchParameters.BuildQueryString();
-            reservations.Clear();
+            SearchParameters!.RestaurantId = RestaurantId;
+            var queryString = SearchParameters.BuildQueryString();
+            _reservations!.Clear();
             var response =
                 await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
             if (response != null)
             {
-                reservations.AddRange(response.Reservations);
+                _reservations.AddRange(response.Reservations);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            reservations = new List<TableReservationDto>();
+            _reservations = new List<TableReservationDto>();
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 

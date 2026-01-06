@@ -2,7 +2,7 @@
     <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
             type="button"
             data-bs-toggle="dropdown">
-        @title @CurrentPageSize
+        @Title @CurrentPageSize
     </button>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" @onclick="() => { OnPageSizeChanged.InvokeAsync(10); CurrentPageSize = 10; }">10</a></li>
@@ -14,5 +14,5 @@
 @code {
     [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
     private int CurrentPageSize { get; set; } = 10;
-    [Parameter] public string title { get; set; } = "Set Page Size: ";
+    [Parameter] public string Title { get; set; } = "Set Page Size: ";
 }

@@ -2,7 +2,6 @@
 @using RestaurantApp.Blazor.Services
 @using RestaurantApp.Shared.DTOs.Employees
 @using RestaurantApp.Shared.DTOs.Users
-@using RestaurantApp.Shared.Models
 @inject NotificationService NotificationService
 @inject HttpClient Http
 @implements IDisposable
@@ -65,9 +64,9 @@
     {
 
         var url = notification.ActionUrl;
-        var uri = new Uri(url);
+        var uri = new Uri(url!);
         var token = HttpUtility.ParseQueryString(uri.Query)["token"];
-        var request = new TokenRequest{ Token = token};
+        var request = new TokenRequest{ Token = token!};
         var response = await Http.PostAsJsonAsync("api/EmployeeInvitations/reject", request);
         if (response.IsSuccessStatusCode)
         {

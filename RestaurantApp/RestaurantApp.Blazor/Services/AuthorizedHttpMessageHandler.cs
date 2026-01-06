@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using RestaurantApp.Blazor.Services;
+
+namespace RestaurantApp.Blazor.Services;
 
 public class AuthorizedHttpMessageHandler : DelegatingHandler
 {

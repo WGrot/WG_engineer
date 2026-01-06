@@ -8,7 +8,7 @@
     </div>
     <div class="card-body shadow border-1">
         
-        @if (isLoading)
+        @if (_isLoading)
         {
             <div class="loading-container">
                 <div class="spinner"></div>
@@ -17,7 +17,7 @@
         }
         else
         {
-            foreach (var reservation in reservations)
+            foreach (var reservation in _reservations!)
             {
                 <ReservationCard
                     Reservation="reservation"
@@ -28,8 +28,8 @@
 
     </div>
 
-    <ReservationDetailsModal @bind-IsVisible="showReservationModal"
-                             Reservation="selectedReservation"/>
+    <ReservationDetailsModal @bind-IsVisible="_showReservationModal"
+                             Reservation="_selectedReservation"/>
     
 </div>
 

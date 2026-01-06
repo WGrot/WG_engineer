@@ -1,6 +1,6 @@
 ﻿@page "/restaurant/edit/{Id:int}"
 @implements IDisposable
-@using RestaurantApp.Blazor.Models.DTO
+
 @using RestaurantApp.Shared.Models
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
@@ -9,17 +9,15 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using RestaurantApp.Blazor.Components.Layout
 @inject HttpClient Http
-@inject NavigationManager Navigation
-@inject MemoryTokenStore TokenStorageService
 @inject PermissionService PermissionService
-@inject ICurrentUserDataService userDataService
+@inject ICurrentUserDataService UserDataService
 
 
 <AuthorizeView>
     <Authorized>
         <div class="edit-container">
 
-            @if (restaurant == null)
+            @if (_restaurant == null)
             {
                 <div class="loading-container">
                     <div class="spinner"></div>
@@ -28,73 +26,73 @@
             }
             else
             {
-                <RestaurantHeader restaurant=@restaurant/>
+                <RestaurantHeader Restaurant=@_restaurant/>
                 <div class="bg-light border-bottom sticky-top">
                     <div class="container">
                         <ul class="nav nav-tabs border-0 pt-2" role="tablist">
                             <li class="nav-item">
                                 <button
-                                    class="nav-link @(activeTab == "basic" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                    @onclick="@(() => activeTab = "basic")"
+                                    class="nav-link @(_activeTab == "basic" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                    @onclick="@(() => _activeTab = "basic")"
                                     type="button">
                                     <i class="bi bi-info-circle me-2"></i>
                                     Basic Info
                                 </button>
                             </li>
-                            @if (canManageTables)
+                            @if (_canManageTables)
                             {
                                 <li class="nav-item">
                                     <button
-                                        class="nav-link @(activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                        @onclick="@(() => activeTab = "tables")"
+                                        class="nav-link @(_activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                        @onclick="@(() => _activeTab = "tables")"
                                         type="button">
                                         <i class="bi bi-grid-3x3-gap me-2"></i>
                                         Tables
                                     </button>
                                 </li>
                             }
-                            @if (canManageSettigns)
+                            @if (_canManageSettigns)
                             {
                                 <li class="nav-item">
                                     <button
-                                        class="nav-link @(activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                        @onclick="@(() => activeTab = "settings")"
+                                        class="nav-link @(_activeTab == "settings" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                        @onclick="@(() => _activeTab = "settings")"
                                         type="button">
                                         <i class="bi bi-gear"></i>
                                         Settings
                                     </button>
                                 </li>
                             }
-                            @if (canManageEmployees)
+                            @if (_canManageEmployees)
                             {
                                 <li class="nav-item">
                                     <button
-                                        class="nav-link @(activeTab == "employees" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                        @onclick="@(() => activeTab = "employees")"
+                                        class="nav-link @(_activeTab == "employees" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                        @onclick="@(() => _activeTab = "employees")"
                                         type="button">
                                         <i class="bi bi-people"></i>
                                         Employees
                                     </button>
                                 </li>
                             }
-                            @if (canManageMenu)
+                            @if (_canManageMenu)
                             {
                                 <li class="nav-item">
                                     <button
-                                        class="nav-link @(activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                        @onclick="@(() => activeTab = "menu")"
+                                        class="nav-link @(_activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                        @onclick="@(() => _activeTab = "menu")"
                                         type="button">
                                         <i class="bi bi-book me-2"></i>
                                         Menu
                                     </button>
                                 </li>
                             }
-                            @if (canManageRestaurant)
+                            @if (_canManageRestaurant)
                             {
                                 <li class="nav-item">
                                     <button
-                                        class="nav-link @(activeTab == "appearance" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                        @onclick="@(() => activeTab = "appearance")"
+                                        class="nav-link @(_activeTab == "appearance" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                        @onclick="@(() => _activeTab = "appearance")"
                                         type="button">
                                         <i class="bi bi-stars"></i>
                                         Appearance
@@ -108,25 +106,25 @@
 
                 <div class="container my-4">
                     <div class="tab-content">
-                        @switch (activeTab)
+                        @switch (_activeTab)
                         {
                             case "basic":
-                                <BasicInfoTab Id=@Id restaurant=@restaurant/>
+                                <BasicInfoTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                             case "tables":
-                                <TablesTab Id=@Id restaurant=@restaurant/>
+                                <TablesTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                             case "settings":
-                                <RestaurantSettingsTab Id=@Id restaurant=@restaurant/>
+                                <RestaurantSettingsTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                             case "employees":
-                                <RestaurantEmployeesTab Id=@Id restaurant=@restaurant/>
+                                <RestaurantEmployeesTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                             case "menu":
-                                <MenuTab Id=@Id restaurant=@restaurant/>
+                                <MenuTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                             case "appearance":
-                                <AppearanceTab Id=@Id restaurant=@restaurant/>
+                                <AppearanceTab Id=@Id Restaurant=@_restaurant/>
                                 break;
                         }
                     </div>
@@ -142,15 +140,15 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-    private RestaurantDto? restaurant;
-    private bool isLoading = true;
-    string activeTab = "basic";
+    private RestaurantDto? _restaurant;
+    private bool _isLoading = true;
+    string _activeTab = "basic";
 
-    bool canManageMenu = false;
-    bool canManageTables = false;
-    bool canManageRestaurant = false;
-    bool canManageSettigns = false;
-    bool canManageEmployees = false;
+    bool _canManageMenu ;
+    bool _canManageTables ;
+    bool _canManageRestaurant ;
+    bool _canManageSettigns ;
+    bool _canManageEmployees ;
 
     protected override async Task OnInitializedAsync()
     {
@@ -162,8 +160,8 @@
     {
         try
         {
-            Id = int.Parse(await userDataService.GetActiveRestaurant());
-            restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{Id}");
+            Id = int.Parse((await UserDataService.GetActiveRestaurant())!);
+            _restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/restaurant/{Id}");
         }
         catch (Exception ex)
         {
@@ -171,7 +169,7 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
 
         StateHasChanged();
@@ -179,11 +177,11 @@
 
     private async Task GetUserPermissions()
     {
-        canManageMenu = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageMenu.ToString());
-        canManageRestaurant = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurant.ToString());
-        canManageSettigns = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurantSettings.ToString());
-        canManageTables = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageTables.ToString());
-        canManageEmployees = await PermissionService.HasAnyPermissionAsync(Id, new[] { PermissionTypeEnumDto.ManageEmployees.ToString(), PermissionTypeEnumDto.ManagePermissions.ToString() });
+        _canManageMenu = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageMenu.ToString());
+        _canManageRestaurant = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurant.ToString());
+        _canManageSettigns = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageRestaurantSettings.ToString());
+        _canManageTables = await PermissionService.HasPermissionAsync(Id, PermissionTypeEnumDto.ManageTables.ToString());
+        _canManageEmployees = await PermissionService.HasAnyPermissionAsync(Id, new[] { PermissionTypeEnumDto.ManageEmployees.ToString(), PermissionTypeEnumDto.ManagePermissions.ToString() });
     }
 
     public void Dispose()

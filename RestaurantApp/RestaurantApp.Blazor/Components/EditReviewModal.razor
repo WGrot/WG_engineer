@@ -1,6 +1,4 @@
-﻿@using RestaurantApp.Blazor.Models
-
-@if (IsVisible && Review != null)
+﻿@if (IsVisible && Review != null)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-lg">
@@ -32,13 +30,13 @@
                                 @for (int i = 1; i <= 5; i++)
                                 {
                                     var starValue = i;
-                                    <span class="star @(starValue <= tempRating ? "filled" : "")"
+                                    <span class="star @(starValue <= _tempRating ? "filled" : "")"
                                           @onclick="() => SetRating(starValue)"
-                                          style="cursor: pointer; font-size: 2rem; color: @(starValue <= tempRating ? "#4c63d2" : "#dee2e6")">
-                                        <i class="bi @(starValue <= tempRating ? "bi-star-fill" : "bi-star")"></i>
+                                          style="cursor: pointer; font-size: 2rem; color: @(starValue <= _tempRating ? "#4c63d2" : "#dee2e6")">
+                                        <i class="bi @(starValue <= _tempRating ? "bi-star-fill" : "bi-star")"></i>
                                     </span>
                                 }
-                                <span class="ms-2 text-muted">(@tempRating / 5.0)</span>
+                                <span class="ms-2 text-muted">(@_tempRating / 5.0)</span>
                             </div>
                         </div>
 
@@ -48,10 +46,10 @@
                             <textarea class="form-control"
                                       id="reviewContent"
                                       rows="6"
-                                      @bind="tempContent"
+                                      @bind="_tempContent"
                                       placeholder="Share your experience at this restaurant..."
                                       maxlength="1000"></textarea>
-                            <small class="text-muted">@(tempContent?.Length ?? 0) / 1000 characters</small>
+                            <small class="text-muted">@(_tempContent.Length) / 1000 characters</small>
                         </div>
                     </form>
                 </div>
@@ -60,8 +58,8 @@
                     <button
                         class="base-button"
                         @onclick="HandleUpdate"
-                        disabled="@(isSubmitting || isDeleting || tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))">
-                        @if (isSubmitting)
+                        disabled="@(_isSubmitting || _isDeleting || _tempRating == 0 || string.IsNullOrWhiteSpace(_tempContent))">
+                        @if (_isSubmitting)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                             <span>Updating...</span>
@@ -77,8 +75,8 @@
                         <button
                             class="btn btn-danger"
                             @onclick="HandleDelete"
-                            disabled="@(isSubmitting || isDeleting)">
-                            @if (isDeleting)
+                            disabled="@(_isSubmitting || _isDeleting)">
+                            @if (_isDeleting)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                 <span>Deleting...</span>
@@ -93,7 +91,7 @@
                         <button
                             class="btn btn-secondary"
                             @onclick="HandleCancel"
-                            disabled="@isSubmitting">
+                            disabled="@_isSubmitting">
                             <i class="bi bi-x-circle me-1"></i>
                             Cancel
                         </button>

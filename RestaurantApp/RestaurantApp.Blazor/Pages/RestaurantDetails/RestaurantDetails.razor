@@ -1,15 +1,10 @@
 ﻿@page "/restaurant/{id:int}"
-@using RestaurantApp.Shared.Models
-@using System.Net.Http.Json
 @using RestaurantApp.Blazor.Components
-@using RestaurantApp.Shared.DTOs.Menu
 @using RestaurantApp.Shared.DTOs.Restaurant
-@using RestaurantApp.Shared.DTOs.Tables
 @inject HttpClient Http
-@inject NavigationManager Navigation
 
 <div class="container-fluid p-0">
-    @if (restaurant == null)
+    @if (_restaurant == null)
     {
         <div class="loading-container">
             <div class="spinner"></div>
@@ -23,10 +18,10 @@
             <div class="container py-4">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
+                        @if (!string.IsNullOrEmpty(_restaurant.ProfileThumbnailUrl))
                         {
-                            <img src="@restaurant.ProfileThumbnailUrl"
-                                 alt="@restaurant.Name"
+                            <img src="@_restaurant.ProfileThumbnailUrl"
+                                 alt="@_restaurant.Name"
                                  class="restaurant-logo rounded shadow-sm">
                         }
                         else
@@ -39,15 +34,15 @@
                     </div>
                     <div class="col-auto">
                         <StarRating
-                            Restaurant="restaurant"/>
-                        <h1 class="h2 mb-1">@restaurant.Name</h1>
+                            Restaurant="_restaurant"/>
+                        <h1 class="h2 mb-1">@_restaurant.Name</h1>
                         <p class="mb-0 opacity-75">
                             <i class="bi bi-geo-alt-fill me-1"></i>
-                            @restaurant.Address
+                            @_restaurant.Address
                         </p>
                     </div>
                     <div class="col-auto ms-1">
-                        <button class="base-button lg" @onclick="@(() => activeTab = "table-availability")">
+                        <button class="base-button lg" @onclick="@(() => _activeTab = "table-availability")">
                             Book Table
                         </button>
                     </div>
@@ -60,24 +55,24 @@
             <div class="container">
                 <ul class="nav nav-tabs border-0 pt-2" role="tablist">
                     <li class="nav-item">
-                        <button class="nav-link @(activeTab == "info" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "info")"
+                        <button class="nav-link @(_activeTab == "info" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => _activeTab = "info")"
                                 type="button">
                             <i class="bi bi-info-circle me-2"></i>
                             Info
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link @(activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "menu")"
+                        <button class="nav-link @(_activeTab == "menu" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => _activeTab = "menu")"
                                 type="button">
                             <i class="bi bi-book me-2"></i>
                             Menu
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link @(activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                                @onclick="@(() => activeTab = "tables")"
+                        <button class="nav-link @(_activeTab == "tables" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                                @onclick="@(() => _activeTab = "tables")"
                                 type="button">
                             <i class="bi bi-grid-3x3-gap me-2"></i>
                             Tables
@@ -85,8 +80,8 @@
                     </li>
                     <li class="nav-item">
                         <button
-                            class="nav-link @(activeTab == "table-availability" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                            @onclick="@(() => activeTab = "table-availability")"
+                            class="nav-link @(_activeTab == "table-availability" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => _activeTab = "table-availability")"
                             type="button">
                             <i class="bi bi-calendar-check me-2"></i>
                             Table Booking
@@ -94,8 +89,8 @@
                     </li>
                     <li class="nav-item">
                         <button
-                            class="nav-link @(activeTab == "reviews" ? "active" : "") px-4 py-3 border-0 rounded-top"
-                            @onclick="@(() => activeTab = "reviews")"
+                            class="nav-link @(_activeTab == "reviews" ? "active" : "") px-4 py-3 border-0 rounded-top"
+                            @onclick="@(() => _activeTab = "reviews")"
                             type="button">
                             <i class="bi bi-star-half me-2"></i>
                             Reviews
@@ -109,31 +104,31 @@
         <!-- Tab Content -->
         <div class="container my-4">
             <div class="tab-content">
-                @switch (activeTab)
+                @switch (_activeTab)
                 {
                     case "info":
                         <div class="tab-pane fade show active">
-                            <RestaurantInfoTab Id=@Id restaurant=@restaurant/>
+                            <RestaurantInfoTab Id=@Id Restaurant=@_restaurant/>
                         </div>
                         break;
                     case "menu":
                         <div class="tab-pane fade show active">
-                            <RestaurantMenuTab Id=@Id restaurant=@restaurant/>
+                            <RestaurantMenuTab Id=@Id Restaurant=@_restaurant/>
                         </div>
                         break;
                     case "tables":
                         <div class="tab-pane fade show active">
-                            <RestaurantTablesTab Id=@Id restaurant=@restaurant/>
+                            <RestaurantTablesTab Id=@Id Restaurant=@_restaurant/>
                         </div>
                         break;
                     case "reviews":
                         <div class="tab-pane fade show active">
-                            <RestaurantReviewsTab Id=@Id restaurant=@restaurant/>
+                            <RestaurantReviewsTab Id=@Id Restaurant=@_restaurant/>
                         </div>
                         break;
                     case "table-availability":
                         <div class="tab-pane fade show active">
-                            <TableBookingForm Id=@Id restaurant=@restaurant/>
+                            <TableBookingForm Id=@Id Restaurant=@_restaurant/>
                         </div>
                         break;
                 }
@@ -146,14 +141,10 @@
 @code {
     [Parameter] public int Id { get; set; }
 
-    string activeTab = "info";
+    string _activeTab = "info";
 
-    private RestaurantDto? restaurant;
-    private List<TableDto>? tables;
-    private MenuDto? menu;
-    private bool isLoading = false;
-    private bool isLoadingTables = false;
-    private bool isLoadingMenu = false;
+    private RestaurantDto? _restaurant;
+    private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -164,17 +155,17 @@
     {
         try
         {
-            isLoading = true;
-            restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
+            _isLoading = true;
+            _restaurant = await Http.GetFromJsonAsync<RestaurantDto>($"api/Restaurant/{Id}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading restaurant: {ex.Message}");
-            restaurant = null;
+            _restaurant = null;
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
     

@@ -2,10 +2,10 @@
 <h3 class="mb-4">Tables</h3>
 
 <div class="container-fluid">
-    @if (loadedTables != null && loadedTables.Any())
+    @if (_loadedTables.Any())
     {
         <div class="row g-3">
-            @foreach (var table in loadedTables)
+            @foreach (var table in _loadedTables)
             {
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3" @onclick="() => ShowTableDetails(table)">
                     <TableComponent Table="table" />
@@ -15,9 +15,9 @@
         
         
         <TableDetailsModal
-            @bind-IsVisible="showTableDetails"
+            @bind-IsVisible="_showTableDetails"
             RestaurantId="Id"
-            Table="selectedTable"
+            Table="_selectedTable"
             />
 
     }

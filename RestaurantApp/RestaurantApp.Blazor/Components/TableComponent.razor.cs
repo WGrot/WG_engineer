@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs.Tables;
-using RestaurantApp.Shared.Models;
+
 
 namespace RestaurantApp.Blazor.Components;
 
@@ -8,10 +8,10 @@ public partial class TableComponent : ComponentBase
 {
     
     [Parameter]
-    public TableDto Table { get; set; }
+    public required TableDto Table { get; set; }
 
-    [Parameter] public bool isSelected { get; set; }
+    [Parameter] public bool IsSelected { get; set; }
     
-    private string HeaderClass => isSelected ? "bg-purple" : "bg-light";
+    private string HeaderClass => IsSelected ? "bg-purple" : "bg-light";
     
 }

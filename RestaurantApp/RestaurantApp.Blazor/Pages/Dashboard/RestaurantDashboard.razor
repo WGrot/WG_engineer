@@ -142,7 +142,7 @@ else
                     <NextReservationsView
                         RestaurantId="@loadedRestaurant.Id"
                         Title="Pending Reservations"
-                        getPendingReservations="true"/>
+                        GetPendingReservations="true"/>
                 </div>
             </div>
         </div>
@@ -163,7 +163,7 @@ else
                   Size="@GenericModal.ModalSize.Large"
     >
         <ChildContent>
-            <TableBookingForm AutoFillData="false" Id="@loadedRestaurant.Id" restaurant="@loadedRestaurant" OnReservationCreated="() => showReservationModal = false"/>
+            <TableBookingForm AutoFillData="false" Id="@loadedRestaurant.Id" Restaurant="@loadedRestaurant" OnReservationCreated="() => showReservationModal = false"/>
         </ChildContent>
         
     </GenericModal>

@@ -1,5 +1,4 @@
-﻿@using RestaurantApp.Shared.DTOs
-@using RestaurantApp.Shared.DTOs.Review
+﻿@using RestaurantApp.Shared.DTOs.Review
 <div class="card mb-3 review-card w-100 mx-auto">
     <div class="card-body " @onclick="() => InvokeAsync(HandleOnCardClicked)">
         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -11,7 +10,7 @@
                               title="@Title">
                                          @Title
                                 </span>
-                        @if (review.IsVerified)
+                        @if (Review.IsVerified)
                         {
                             <span class="badge bg-success ms-2 flex-shrink-0" title="Verified Review">
                                         <i class="bi bi-check-circle"></i> Verified
@@ -27,9 +26,9 @@
                 <div class="mb-2">
                     @for (int i = 1; i <= 5; i++)
                     {
-                        <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star") text-warning"></i>
+                        <i class="bi @(i <= Review.Rating ? "bi-star-fill" : "bi-star") text-warning"></i>
                     }
-                    <span class="ms-2 text-muted small">@review.Rating.0 / 5.0</span>
+                    <span class="ms-2 text-muted small">@Review.Rating.0 / 5.0</span>
                 </div>
             </div>
 
@@ -37,25 +36,25 @@
             <div class="text-muted small d-flex align-items-center gap-2 flex-shrink-0 ms-3">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-calendar3 me-1"></i>
-                    <span class="text-nowrap">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
-                    @if (review.UpdatedAt.HasValue)
+                    <span class="text-nowrap">@Review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                    @if (Review.UpdatedAt.HasValue)
                     {
                         <span class="badge bg-secondary ms-1">Edited</span>
                     }
                 </div>
             </div>
         </div>
-        <p class="card-text">@review.Content</p>
+        <p class="card-text">@Review.Content</p>
     </div>
 </div>
 @code {
-    [Parameter] public ReviewDto review { get; set; }
+    [Parameter] public required ReviewDto Review { get; set; }
     [Parameter] public EventCallback<ReviewDto> OnCardClicked { get; set; }
     [Parameter] public RenderFragment? Title { get; set; }
     [Parameter] public RenderFragment? Subtitle { get; set; }
     
     private async Task HandleOnCardClicked()
     {
-        await OnCardClicked.InvokeAsync(review);
+        await OnCardClicked.InvokeAsync(Review);
     }
 }

@@ -40,7 +40,7 @@
                             <input type="number"
                                    class="form-control"
                                    id="guests"
-                                   @bind="numberOfGuests"
+                                   @bind="_numberOfGuests"
                                    min="1"
                                    max="@Table.Capacity"/>
                             <small class="text-muted">Max capacity: @Table.Capacity</small>
@@ -59,7 +59,7 @@
                             <input type="text"
                                    class="form-control"
                                    id="name"
-                                   @bind="customerName"
+                                   @bind="_customerName"
                                    placeholder="Customer name"
                                    required/>
                         </div>
@@ -71,7 +71,7 @@
                             <input type="tel"
                                    class="form-control"
                                    id="phone"
-                                   @bind="customerPhone"
+                                   @bind="_customerPhone"
                                    placeholder="+48 123 456 789"
                                    required/>
                         </div>
@@ -84,7 +84,7 @@
                         <input type="email"
                                class="form-control"
                                id="email"
-                               @bind="customerEmail"
+                               @bind="_customerEmail"
                                placeholder="example.email@example.com"
                                required/>
                     </div>
@@ -95,7 +95,7 @@
                         </label>
                         <textarea class="form-control"
                                   id="notes"
-                                  @bind="specialRequests"
+                                  @bind="_specialRequests"
                                   rows="3"
                                   placeholder="Any dietary restrictions, special occasions, or other requests..."></textarea>
                     </div>
@@ -106,8 +106,8 @@
                         <div class="d-grid gap-2">
                             <button class="base-button"
                                     @onclick="MakeReservation"
-                                    disabled="@isSubmitting">
-                                @if (isSubmitting)
+                                    disabled="@_isSubmitting">
+                                @if (_isSubmitting)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                     <span>Processing...</span>

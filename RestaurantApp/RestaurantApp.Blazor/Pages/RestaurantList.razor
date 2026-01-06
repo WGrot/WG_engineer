@@ -1,9 +1,6 @@
 ﻿@page "/Restaurants"
 @page "/Restaurants/search"
-@using RestaurantApp.Shared.Models
-@using System.Net.Http.Json
 @using RestaurantApp.Blazor.Components
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.OpeningHours
 @using RestaurantApp.Shared.DTOs.Restaurant
 @inject HttpClient Http
@@ -20,7 +17,7 @@
                         <i class="bi bi-search"></i>
                         <input type="text"
                                placeholder="Search restaurants..."
-                               @bind="searchName"
+                               @bind="_searchName"
                                @bind:event="oninput"/>
                     </div>
                     
@@ -28,7 +25,7 @@
                         <i class="bi bi-geo-alt"></i>
                         <input type="text"
                                placeholder="Location..."
-                               @bind="searchLocation"
+                               @bind="_searchLocation"
                                @bind:event="oninput"/>
                     </div>
                     
@@ -42,14 +39,14 @@
 
 
     <div class="restaurants-content">
-        @if (isInitialLoading)
+        @if (IsInitialLoading)
         {
             <div class="loading-container">
                 <div class="spinner"></div>
                 <p>Loading restaurants...</p>
             </div>
         }
-        else if (displayedRestaurants == null || !displayedRestaurants.Any())
+        else if (!_displayedRestaurants.Any())
         {
             <div class="no-results">
                 <i class="bi bi-search" style="font-size: 3rem; color: #999;"></i>
@@ -62,14 +59,14 @@
         {
             <div class="d-flex flex-row justify-content-between">
                 <div class="results-info">
-                    <p>Found <strong>@displayedRestaurants.Count()</strong> restaurant(s) @(!string.IsNullOrEmpty(searchName) || !string.IsNullOrEmpty(searchLocation) ? "matching your criteria" : "")</p>
+                    <p>Found <strong>@_displayedRestaurants.Count()</strong> restaurant(s) @(!string.IsNullOrEmpty(_searchName) || !string.IsNullOrEmpty(_searchLocation) ? "matching your criteria" : "")</p>
                 </div>
                 <div class="d-flex flex-row justify-content-end">
                     <div class="dropdown me-2">
                         <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
                                 type="button"
                                 data-bs-toggle="dropdown">
-                            Restaurants per page: @pageSize
+                            Restaurants per page: @_pageSize
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" @onclick='() => SetPageSize(10)'>10</a></li>
@@ -82,7 +79,7 @@
                         <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
                                 type="button"
                                 data-bs-toggle="dropdown">
-                            <i class="bi bi-funnel me-1"></i>Sort by: @char.ToUpper(sortOption[0])@sortOption.Substring(1)
+                            <i class="bi bi-funnel me-1"></i>Sort by: @char.ToUpper(SortOption[0])@SortOption.Substring(1)
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" @onclick='() => SortRestaurants("name_ascending")'>A-z</a></li>
@@ -98,7 +95,7 @@
 
             
             <div class="restaurants-grid">
-                @foreach (var restaurant in displayedRestaurants)
+                @foreach (var restaurant in _displayedRestaurants)
                 {
                     <div class="restaurant-card" @onclick="() => NavigateToRestaurant(restaurant.Id)">
                         <div class="restaurant-image">
@@ -166,13 +163,13 @@
                 }
             </div>
             
-            @if (hasMoreRestaurants)
+            @if (_hasMoreRestaurants)
             {
                 <div class="text-center mt-3">
                     <button class="btn-outline-primary"
                             @onclick="LoadMoreRestaurants"
-                            disabled="@isLoadingMore">
-                        @if (isLoadingMore)
+                            disabled="@_isLoadingMore">
+                        @if (_isLoadingMore)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                             <span>Loading...</span>
@@ -198,15 +195,15 @@
 
 
 @code {
-    private List<RestaurantDto> displayedRestaurants = new List<RestaurantDto>();
-    private bool isLoadingMore = false;
-    private string searchName = "";
-    private string searchLocation = "";
-    private bool isInitialLoading { get; set; } = true;
-    private string sortOption { get; set; } = "best";
-    private int currentPage = 1;
-    private int pageSize = 20;
-    bool hasMoreRestaurants = true;
+    private List<RestaurantDto> _displayedRestaurants = new List<RestaurantDto>();
+    private bool _isLoadingMore;
+    private string _searchName = "";
+    private string _searchLocation = "";
+    private bool IsInitialLoading { get; set; } = true;
+    private string SortOption { get; set; } = "best";
+    private int _currentPage = 1;
+    private int _pageSize = 20;
+    bool _hasMoreRestaurants = true;
     
     
     protected override async Task OnInitializedAsync()
@@ -214,17 +211,17 @@
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         
-        searchName = query["name"] ?? "";
-        searchLocation = query["location"] ?? "";
+        _searchName = query["name"] ?? "";
+        _searchLocation = query["location"] ?? "";
         
         await LoadInitialRestaurants();
     }
 
     private async Task LoadInitialRestaurants()
     {
-        isInitialLoading = true;
-        displayedRestaurants.Clear();
-        currentPage = 1;
+        IsInitialLoading = true;
+        _displayedRestaurants.Clear();
+        _currentPage = 1;
 
         try
         {
@@ -234,11 +231,11 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            displayedRestaurants = new List<RestaurantDto>();
+            _displayedRestaurants = new List<RestaurantDto>();
         }
         finally
         {
-            isInitialLoading = false;
+            IsInitialLoading = false;
         }
     }
     
@@ -249,82 +246,82 @@
             
             var queryParams = new List<string>();
             
-            if (!string.IsNullOrWhiteSpace(searchName))
-                queryParams.Add($"name={Uri.EscapeDataString(searchName)}");
+            if (!string.IsNullOrWhiteSpace(_searchName))
+                queryParams.Add($"name={Uri.EscapeDataString(_searchName)}");
             
-            if (!string.IsNullOrWhiteSpace(searchLocation))
-                queryParams.Add($"address={Uri.EscapeDataString(searchLocation)}");
+            if (!string.IsNullOrWhiteSpace(_searchLocation))
+                queryParams.Add($"address={Uri.EscapeDataString(_searchLocation)}");
             
-            queryParams.Add($"page={currentPage}");
-            queryParams.Add($"pageSize={pageSize}");
-            queryParams.Add($"sortBy={sortOption}");
+            queryParams.Add($"page={_currentPage}");
+            queryParams.Add($"pageSize={_pageSize}");
+            queryParams.Add($"sortBy={SortOption}");
             
             var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
             
             var response = await Http.GetFromJsonAsync<PaginatedRestaurantsDto>($"api/Restaurant/search{queryString}");
             if (response!= null)
             {
-                displayedRestaurants.AddRange(response.Restaurants);
-                hasMoreRestaurants = response.HasMore;
+                _displayedRestaurants.AddRange(response.Restaurants);
+                _hasMoreRestaurants = response.HasMore;
             }
             
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
-            displayedRestaurants = new List<RestaurantDto>();
+            _displayedRestaurants = new List<RestaurantDto>();
         }
         finally
         {
-            isLoadingMore = false;
+            _isLoadingMore = false;
         }
     }
     
     private async Task LoadMoreRestaurants()
     {
-        if (isLoadingMore || !hasMoreRestaurants) return;
+        if (_isLoadingMore || !_hasMoreRestaurants) return;
 
-        isLoadingMore = true;
-        currentPage++;
+        _isLoadingMore = true;
+        _currentPage++;
 
         try
         {
             await LoadRestaurantsPage();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            currentPage--;
+            _currentPage--;
         }
         finally
         {
-            isLoadingMore = false;
+            _isLoadingMore = false;
         }
     }
     
     private async Task SortRestaurants(string option)
     {
-        if (sortOption == option) return;
+        if (SortOption == option) return;
 
-        sortOption = option.ToLower();
+        SortOption = option.ToLower();
         await LoadInitialRestaurants();
     }
     
     private async Task SetPageSize(int size)
     {
-        pageSize = size;
+        _pageSize = size;
         await LoadInitialRestaurants();
     }
 
     private async Task PerformSearch()
     {
-        displayedRestaurants.Clear();
+        _displayedRestaurants.Clear();
         var queryParams = new List<string>();
         
-        if (!string.IsNullOrWhiteSpace(searchName))
-            queryParams.Add($"name={Uri.EscapeDataString(searchName)}");
+        if (!string.IsNullOrWhiteSpace(_searchName))
+            queryParams.Add($"name={Uri.EscapeDataString(_searchName)}");
         
-        if (!string.IsNullOrWhiteSpace(searchLocation))
-            queryParams.Add($"location={Uri.EscapeDataString(searchLocation)}");
+        if (!string.IsNullOrWhiteSpace(_searchLocation))
+            queryParams.Add($"location={Uri.EscapeDataString(_searchLocation)}");
         
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
         
@@ -334,8 +331,8 @@
 
     private async Task ClearSearch()
     {
-        searchName = "";
-        searchLocation = "";
+        _searchName = "";
+        _searchLocation = "";
         await LoadRestaurantsPage();
     }
 

@@ -4,7 +4,6 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
-@inject NotificationService NotificationService
 
 <div class="verification-page">
     <div class="verification-container">
@@ -102,7 +101,7 @@
             {
                 var returnUrl = Uri.EscapeDataString($"/invitations/accept?token={Token}");
                 Navigation.NavigateTo($"/login?returnUrl={returnUrl}");
-                return;
+                
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {

@@ -1,11 +1,8 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Menu;
-using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Restaurant;
-using RestaurantApp.Shared.Models;
 
 namespace RestaurantApp.Blazor.Pages.RestaurantDetails;
 
@@ -13,15 +10,15 @@ public partial class RestaurantMenuTab : ComponentBase
 {
     [Inject] private HttpClient Http { get; set; } = null!;
     [Parameter] public int Id { get; set; }
-    [Parameter] public RestaurantDto? restaurant { get; set; }
-    private List<MenuItemDto> uncategorizedItems = new();
-    private HashSet<int> expandedCategories = new();
-    private bool showUncategorized = false;
-    private bool isLoading = false;
+    [Parameter] public RestaurantDto? Restaurant { get; set; }
+    private List<MenuItemDto> _uncategorizedItems = new();
+    private HashSet<int> _expandedCategories = new();
+    private bool _showUncategorized = false;
+    private bool _isLoading = false;
     
-    private bool showItemDetailsModal = false;
-    private MenuItemDto selectedMenuItem = null!;
-    private MenuDto? menu { get; set; }
+    private bool _showItemDetailsModal = false;
+    private MenuItemDto _selectedMenuItem = null!;
+    private MenuDto? Menu { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,27 +27,27 @@ public partial class RestaurantMenuTab : ComponentBase
 
     private void ToggleCategory(int categoryId)
     {
-        if (expandedCategories.Contains(categoryId))
-            expandedCategories.Remove(categoryId);
+        if (_expandedCategories.Contains(categoryId))
+            _expandedCategories.Remove(categoryId);
         else
-            expandedCategories.Add(categoryId);
+            _expandedCategories.Add(categoryId);
     }
 
     private void ToggleUncategorized()
     {
-        showUncategorized = !showUncategorized;
+        _showUncategorized = !_showUncategorized;
     }
     private async Task LoadMenu()
     {
-        isLoading = true;
+        _isLoading = true;
         try
         {
-            menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
-            foreach (var item in menu.Items)
+            Menu = await Http.GetFromJsonAsync<MenuDto>($"api/Menu/?restaurantId={Id}&isActive=true");
+            foreach (var item in Menu.Items)
             {
                 if (item.CategoryId == null)
                 {
-                    uncategorizedItems.Add(item);
+                    _uncategorizedItems.Add(item);
                 }
             }
             
@@ -60,14 +57,15 @@ public partial class RestaurantMenuTab : ComponentBase
             Console.WriteLine($"Error loading menu: {ex.Message}");
         }finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
     
-    private async Task HandleMenuItemClick(MenuItemDto clickedItem)
+    private Task HandleMenuItemClick(MenuItemDto clickedItem)
     {
-        selectedMenuItem = clickedItem;
-        showItemDetailsModal = true;
+        _selectedMenuItem = clickedItem;
+        _showItemDetailsModal = true;
+        return Task.CompletedTask;
     }
     
 }

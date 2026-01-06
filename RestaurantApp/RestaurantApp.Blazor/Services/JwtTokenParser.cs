@@ -52,7 +52,7 @@ public class JwtTokenParser
                 }
                 else
                 {
-                    claims.Add(new Claim(claimType, value?.ToString() ?? ""));
+                    claims.Add(new Claim(claimType, value.ToString() ?? ""));
                 }
             }
         }
@@ -95,14 +95,14 @@ public class JwtTokenParser
         }
     }
     
-    public async Task< List<string>> GetAllUserRestaurantIds()
+    public Task< List<string>> GetAllUserRestaurantIds()
     {
         try
         {
             var token = _memoryTokenStore.GetAccessToken();
             if (token == null)
             {
-                return new List<string>();
+                return Task.FromResult(new List<string>());
             }
             var claims = ParseClaimsFromJwt(token);
             
@@ -111,11 +111,11 @@ public class JwtTokenParser
                 .Select(c => c.Value)
                 .ToList();
 
-            return restaurantClaims;
+            return Task.FromResult(restaurantClaims);
         }
         catch
         {
-            return new List<string>();
+            return Task.FromResult(new List<string>());
         }
     }
 

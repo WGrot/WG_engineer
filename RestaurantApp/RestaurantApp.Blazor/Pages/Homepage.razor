@@ -1,7 +1,5 @@
 ﻿@page "/homepage"
-@using RestaurantApp.Blazor.Components
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <div class="homepage-container">
     <div class="hero-section">
@@ -142,7 +140,7 @@
     private string _locationQuery = "";
     private bool _isLoadingLocation = false;
 
-    private async Task SearchRestaurants()
+    private Task SearchRestaurants()
     {
         var queryParams = new List<string>();
 
@@ -159,6 +157,7 @@
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
 
         Navigation.NavigateTo($"/restaurants{queryString}");
+        return Task.CompletedTask;
     }
 
     private void GoToRestaurantMap()

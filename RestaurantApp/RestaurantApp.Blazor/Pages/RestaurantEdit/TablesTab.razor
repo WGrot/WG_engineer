@@ -1,7 +1,4 @@
-﻿@using RestaurantApp.Blazor.Models.DTO
-@using RestaurantApp.Shared.DTOs
-@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Components
+﻿@using RestaurantApp.Blazor.Components
 @using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.DTOs.Tables
 @inject HttpClient Http
@@ -11,13 +8,13 @@
         <h3 class="text-center mb-3">Configure tables</h3>
 
         <div class="tables-grid mb-3">
-            @if (loadedTables != null && loadedTables.Any())
+            @if (_loadedTables.Any())
             {
                 <div class="row g-3">
-                    @foreach (var table in loadedTables)
+                    @foreach (var table in _loadedTables)
                     {
                         <div class="col-12 col-sm-6 col-md-4 col-lg-3"
-                             @onclick="() => { editingTable = table; showTableModal = true; }">
+                             @onclick="() => { _editingTable = table; _showTableModal = true; }">
                             <TableComponent Table="table"/>
                         </div>
                     }
@@ -31,27 +28,27 @@
             }
         </div>
         <div class="row mb-4 justify-content-center ">
-            <button class="base-button w-25" @onclick="() => { editingTable = null; showTableModal = true; }">
+            <button class="base-button w-25" @onclick="() => { _editingTable = null; _showTableModal = true; }">
                 <i class="bi bi-plus-circle me-2"></i> Add new table
             </button>
         </div>
 
-        <EditTableModal Table="editingTable"
+        <EditTableModal Table="_editingTable"
                         RestaurantId="Id"
                         OnSave="LoadTables"
-                        @bind-IsVisible="showTableModal"/>
+                        @bind-IsVisible="_showTableModal"/>
     </div>
 </div>
 
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public RestaurantDto? restaurant { get; set; }
-    private List<TableDto> loadedTables = new();
-    private TableDto? editingTable = null;
-    private int? editingTableId = null;
-    private bool showAddTable = false;
-    private bool showTableModal = false;
+    [Parameter] public RestaurantDto? Restaurant { get; set; }
+    private List<TableDto> _loadedTables = new();
+    private TableDto? _editingTable = null;
+    private int? _editingTableId = null;
+    private bool _showAddTable = false;
+    private bool _showTableModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,11 +59,7 @@
     {
         try
         {
-            loadedTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}");
-            if (loadedTables == null)
-            {
-                loadedTables = new List<TableDto>();
-            }
+            _loadedTables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{Id}") ?? new();
         }
         catch (Exception ex)
         {

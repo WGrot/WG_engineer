@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Text.Json;
 
 namespace RestaurantApp.Blazor.Services;
 
@@ -17,19 +16,19 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         _tokenParser = tokenParser;
     }
 
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token =  _tokenStorage.GetAccessToken();
 
         if (string.IsNullOrEmpty(token))
         {
-            return CreateAnonymousState();
+            return Task.FromResult(CreateAnonymousState());
         }
 
 
         if (_tokenParser.IsTokenExpired(token))
         {
-            return CreateAnonymousState();
+            return Task.FromResult(CreateAnonymousState());
         }
 
         try
@@ -38,11 +37,11 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
             var identity = new ClaimsIdentity(claims, "jwt");
             var user = new ClaimsPrincipal(identity);
 
-            return new AuthenticationState(user);
+            return Task.FromResult(new AuthenticationState(user));
         }
         catch
         {
-            return CreateAnonymousState();
+            return Task.FromResult(CreateAnonymousState());
         }
     }
 

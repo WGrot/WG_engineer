@@ -1,7 +1,4 @@
-﻿@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Components
-@using RestaurantApp.Blazor.Models
-@using RestaurantApp.Shared.DTOs
+﻿@using RestaurantApp.Blazor.Models
 @using RestaurantApp.Shared.DTOs.Tables
 
 @inject HttpClient Http
@@ -30,10 +27,10 @@
                         </button>
 
                         <div class="d-flex flex-column align-items-center">
-                            <strong>@chosenDate.ToString("dddd")</strong>
+                            <strong>@_chosenDate.ToString("dddd")</strong>
                             <input type="date" class="form-control text-center"
                                    style="max-width: 200px;"
-                                   value="@chosenDate.ToString("yyyy-MM-dd")"
+                                   value="@_chosenDate.ToString("yyyy-MM-dd")"
                                    @onchange="OnDateChanged"/>
                         </div>
 
@@ -43,20 +40,20 @@
                     </div>
 
                     <div style="width: 100%;">
-                        <AvailabilityMap Availability="@TableAvailibilitymap"
-                                         StartTime="@chosenDate"
-                                         SelectedStartTime="@StartTime"
-                                         SelectedEndTime="@EndTime"
+                        <AvailabilityMap Availability="@_tableAvailibilitymap"
+                                         StartTime="@_chosenDate"
+                                         SelectedStartTime="@_startTime"
+                                         SelectedEndTime="@_endTime"
                                          OnSlotClicked="@HandleSlotClicked"/>
                     </div>
-                    @if (startTimeSelected)
+                    @if (_startTimeSelected)
                     {
                         <TableReservationSection
                             Table="Table"
-                            Date="chosenDate"
-                            StartTime="StartTime"
-                            EndTime="EndTime"
-                            autoFilldata="AutoFillUserData"
+                            Date="_chosenDate"
+                            StartTime="_startTime"
+                            EndTime="_endTime"
+                            AutoFilldata="AutoFillUserData"
                             OnReservationMade="Close"
                             
                         />
@@ -93,19 +90,19 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public int RestaurantId { get; set; }
-    [Parameter] public TableDto Table { get; set; }
+    [Parameter] public required TableDto Table { get; set; }
     [Parameter] public bool AutoFillUserData { get; set; } = true;
 
-    private string TableAvailibilitymap = new string('2', 96);
-    private DateTime chosenDate = DateTime.Today;
-    private DateTime StartTime;
-    private DateTime EndTime;
-    private bool startTimeSelected = false;
-    private bool firstClick = true;
+    private string _tableAvailibilitymap = new string('2', 96);
+    private DateTime _chosenDate = DateTime.Today;
+    private DateTime _startTime;
+    private DateTime _endTime;
+    private bool _startTimeSelected = false;
+    private bool _firstClick = true;
 
     protected override async Task OnParametersSetAsync()
     {
-        if (IsVisible && Table != null)
+        if (IsVisible)
         {
             await LoadTableAvailability();
         }
@@ -113,24 +110,24 @@
 
     private async Task LoadTableAvailability()
     {
-        var url = $"/api/Table/{Table.Id}/availability-map?date={chosenDate.Date.AddHours(12).ToUniversalTime():O}";
+        var url = $"/api/Table/{Table.Id}/availability-map?date={_chosenDate.Date.AddHours(12).ToUniversalTime():O}";
         var response = await Http.GetFromJsonAsync<TableAvailability>(url);
         if (response != null)
         {
-            TableAvailibilitymap = response.availabilityMap;
+            _tableAvailibilitymap = response.availabilityMap;
         }
     }
 
     private async Task PreviousDay()
     {
-        chosenDate = chosenDate.AddDays(-1);
+        _chosenDate = _chosenDate.AddDays(-1);
         ClearReservationData();
         await LoadTableAvailability();
     }
 
     private async Task NextDay()
     {
-        chosenDate = chosenDate.AddDays(1);
+        _chosenDate = _chosenDate.AddDays(1);
         ClearReservationData();
         await LoadTableAvailability();
     }
@@ -140,7 +137,7 @@
         ClearReservationData();
         if (DateTime.TryParse(e.Value?.ToString(), out var newDate))
         {
-            chosenDate = newDate;
+            _chosenDate = newDate;
             await LoadTableAvailability();
         }
     }
@@ -158,32 +155,32 @@
             return;
         }
 
-        if (firstClick)
+        if (_firstClick)
         {
-            EndTime = DateTime.MinValue;
-            StartTime = args.Time;
-            startTimeSelected = true;
-            firstClick = false;
+            _endTime = DateTime.MinValue;
+            _startTime = args.Time;
+            _startTimeSelected = true;
+            _firstClick = false;
         }
         else
         {
-            EndTime = args.Time.AddMinutes(15);
-            if (args.Time < StartTime)
+            _endTime = args.Time.AddMinutes(15);
+            if (args.Time < _startTime)
             {
-                EndTime = StartTime;
-                StartTime = args.Time.AddMinutes(15);
+                _endTime = _startTime;
+                _startTime = args.Time.AddMinutes(15);
             }
-                firstClick = true;
+                _firstClick = true;
         }
         
     }
     
     private void ClearReservationData()
     {
-        startTimeSelected = false;
-        firstClick = true;
-        StartTime = DateTime.MinValue;
-        EndTime = DateTime.MinValue;
+        _startTimeSelected = false;
+        _firstClick = true;
+        _startTime = DateTime.MinValue;
+        _endTime = DateTime.MinValue;
     }
 
 }

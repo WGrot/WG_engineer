@@ -13,10 +13,10 @@
                     <h5 class="modal-title">
                         <i class="bi bi-person-plus me-2"></i>Invite Employee
                     </h5>
-                    <button type="button" class="btn-close" @onclick="Close" disabled="@isSending"></button>
+                    <button type="button" class="btn-close" @onclick="Close" disabled="@_isSending"></button>
                 </div>
                 <div class="modal-body">
-                    @if (invitationSent)
+                    @if (_invitationSent)
                     {
                         <div class="text-center py-4">
                             <div class="mb-3">
@@ -24,7 +24,7 @@
                             </div>
                             <h5 class="text-success mb-2">Invitation Sent!</h5>
                             <p class="text-muted mb-0">
-                                An invitation email has been sent to <strong>@email</strong>
+                                An invitation email has been sent to <strong>@_email</strong>
                             </p>
                             <p class="text-muted small">
                                 The invitation will expire in 48 hours.
@@ -42,15 +42,15 @@
                                 <input type="email" 
                                        class="form-control" 
                                        placeholder="employee@example.com"
-                                       @bind="email"
+                                       @bind="_email"
                                        @bind:event="oninput"
-                                       disabled="@isSending"/>
+                                       disabled="@_isSending"/>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Role</label>
-                            <select class="form-select" @bind="selectedRole" disabled="@isSending">
+                            <select class="form-select" @bind="_selectedRole" disabled="@_isSending">
                                 <option value="">-- Select role --</option>
                                 @foreach (var role in Enum.GetValues<RestaurantRoleEnumDto>())
                                 {
@@ -69,7 +69,7 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    @if (invitationSent)
+                    @if (_invitationSent)
                     {
                         <button type="button" class="btn btn-primary" @onclick="Close">
                             <i class="bi bi-check me-1"></i>Done
@@ -77,11 +77,11 @@
                     }
                     else
                     {
-                        <button type="button" class="btn btn-secondary" @onclick="Close" disabled="@isSending">
+                        <button type="button" class="btn btn-secondary" @onclick="Close" disabled="@_isSending">
                             Cancel
                         </button>
-                        <button type="button" class="btn btn-primary" @onclick="SendInvitation" disabled="@(isSending || !IsFormValid)">
-                            @if (isSending)
+                        <button type="button" class="btn btn-primary" @onclick="SendInvitation" disabled="@(_isSending || !IsFormValid)">
+                            @if (_isSending)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 <span>Sending...</span>
@@ -105,12 +105,12 @@
     [Parameter] public int RestaurantId { get; set; }
     [Parameter] public EventCallback OnInvitationSent { get; set; }
 
-    private string email = "";
-    private RestaurantRoleEnumDto selectedRole = RestaurantRoleEnumDto.Employee;
-    private bool isSending = false;
-    private bool invitationSent = false;
+    private string _email = "";
+    private RestaurantRoleEnumDto _selectedRole = RestaurantRoleEnumDto.Employee;
+    private bool _isSending = false;
+    private bool _invitationSent = false;
 
-    private bool IsFormValid => !string.IsNullOrWhiteSpace(email);
+    private bool IsFormValid => !string.IsNullOrWhiteSpace(_email);
 
     private async Task Close()
     {
@@ -120,10 +120,10 @@
 
     private void ClearForm()
     {
-        email = "";
-        selectedRole = RestaurantRoleEnumDto.Employee;
-        isSending = false;
-        invitationSent = false;
+        _email = "";
+        _selectedRole = RestaurantRoleEnumDto.Employee;
+        _isSending = false;
+        _invitationSent = false;
     }
 
     private async Task SendInvitation()
@@ -134,7 +134,7 @@
             return;
         }
 
-        isSending = true;
+        _isSending = true;
 
 
         try
@@ -142,15 +142,15 @@
             var request = new CreateInvitationDto()
             {
                 RestaurantId = RestaurantId,
-                Email = email,
-                Role = selectedRole
+                Email = _email,
+                Role = _selectedRole
             };
 
             var response = await Http.PostAsJsonAsync("api/employeeinvitations", request);
 
             if (response.IsSuccessStatusCode)
             {
-                invitationSent = true;
+                _invitationSent = true;
                 
                 if (OnInvitationSent.HasDelegate)
                 {
@@ -182,7 +182,7 @@
         }
         finally
         {
-            isSending = false;
+            _isSending = false;
         }
     }
 

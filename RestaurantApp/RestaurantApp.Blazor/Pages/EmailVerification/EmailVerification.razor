@@ -1,6 +1,5 @@
 ﻿@page "/email-verification"
 @using System.Text.Json
-@using System.Text
 @using RestaurantApp.Shared.DTOs.Auth
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -62,10 +61,10 @@
     [SupplyParameterFromQuery(Name = "email")]
     public string? Email { get; set; }
     
-    private bool _isLoading = false;
+    private bool _isLoading;
     private string _errorMessage = string.Empty;
     private string _successMessage = string.Empty;
-    private DateTime? _lastSentTime = null;
+    private DateTime? _lastSentTime;
     private const int ResendCooldownSeconds = 60;
     
     protected override void OnInitialized()

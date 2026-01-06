@@ -1,14 +1,13 @@
 ﻿@using RestaurantApp.Shared.DTOs.Restaurant
-@using RestaurantApp.Shared.Models
 <div class="edit-container">
     <div class="restaurant-header bg-primary text-white">
         <div class="container py-4">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
+                    @if (!string.IsNullOrEmpty(Restaurant.ProfileThumbnailUrl))
                     {
-                        <img src="@restaurant.ProfileThumbnailUrl"
-                             alt="@restaurant.Name"
+                        <img src="@Restaurant.ProfileThumbnailUrl"
+                             alt="@Restaurant.Name"
                              class="restaurant-logo rounded shadow-sm">
                     }
                     else
@@ -21,11 +20,11 @@
                 </div>
                 <div class="col-auto">
                     <StarRating
-                        Restaurant="restaurant"/>
-                    <h1 class="h2 mb-1">@restaurant.Name</h1>
+                        Restaurant="Restaurant"/>
+                    <h1 class="h2 mb-1">@Restaurant.Name</h1>
                     <p class="mb-0 opacity-75">
                         <i class="bi bi-geo-alt-fill me-1"></i>
-                        @restaurant.Address
+                        @Restaurant.Address
                     </p>
                 </div>
             </div>
@@ -54,5 +53,5 @@
     
 </style>
 @code {
-    [Parameter] public RestaurantDto restaurant { get; set; }
+    [Parameter] public required RestaurantDto Restaurant { get; set; }
 }

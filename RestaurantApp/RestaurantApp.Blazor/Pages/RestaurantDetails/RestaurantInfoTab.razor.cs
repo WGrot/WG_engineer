@@ -1,7 +1,5 @@
-﻿using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Shared.DTOs.Restaurant;
-using RestaurantApp.Shared.Models;
 using LeafletForBlazor;
 using RestaurantApp.Shared.DTOs.Images;
 
@@ -16,21 +14,21 @@ public partial class RestaurantInfoTab : ComponentBase
     public int Id { get; set; }
     
     [Parameter] 
-    public RestaurantDto? restaurant { get; set; }
+    public RestaurantDto? Restaurant { get; set; }
 
-    private bool showPhotoModal = false;
-    private string? selectedPhotoUrl;
-    private int selectedPhotoIndex = 0;
+    private bool _showPhotoModal = false;
+    private string? _selectedPhotoUrl;
+    private int _selectedPhotoIndex = 0;
     
     // Mapa
-    private RealTimeMap? realTimeMap;
-    private RealTimeMap.LoadParameters mapParameters = new();
+    private RealTimeMap? _realTimeMap;
+    private RealTimeMap.LoadParameters _mapParameters = new();
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         
-        if (restaurant?.Location != null)
+        if (Restaurant?.Location != null)
         {
             InitializeMapParameters();
         }
@@ -38,14 +36,14 @@ public partial class RestaurantInfoTab : ComponentBase
 
     private void InitializeMapParameters()
     {
-        if (restaurant?.Location == null) return;
+        if (Restaurant?.Location == null) return;
 
-        mapParameters = new RealTimeMap.LoadParameters()
+        _mapParameters = new RealTimeMap.LoadParameters()
         {
             location = new RealTimeMap.Location()
             {
-                latitude = restaurant.Location.Latitude,
-                longitude = restaurant.Location.Longitude
+                latitude = Restaurant.Location.Latitude,
+                longitude = Restaurant.Location.Longitude
             },
             zoom_level = 15
         };
@@ -53,24 +51,24 @@ public partial class RestaurantInfoTab : ComponentBase
 
     private async Task OnMapLoaded(RealTimeMap.MapEventArgs args)
     {
-        if (restaurant?.Location == null || realTimeMap == null) return;
+        if (Restaurant?.Location == null || _realTimeMap == null) return;
         
         var restaurantMarker = new RealTimeMap.StreamPoint()
         {
             guid = Guid.NewGuid(),
-            latitude = restaurant.Location.Latitude,
-            longitude = restaurant.Location.Longitude,
+            latitude = Restaurant.Location.Latitude,
+            longitude = Restaurant.Location.Longitude,
             type = "restaurant",
-            value = restaurant.Name,
+            value = Restaurant.Name,
             timestamp = DateTime.Now
         };
 
 
         var points = new List<RealTimeMap.StreamPoint> { restaurantMarker };
-        await realTimeMap.Geometric.Points.upload(points, true);
+        await _realTimeMap.Geometric.Points.upload(points, true);
 
 
-        realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern = 
+        _realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern = 
             new RealTimeMap.PointSymbol()
             {
                 radius = 15,
@@ -82,10 +80,10 @@ public partial class RestaurantInfoTab : ComponentBase
             };
 
 
-        realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern = 
+        _realTimeMap.Geometric.Points.Appearance(item => item.type == "restaurant").pattern = 
             new RealTimeMap.PointTooltip()
             {
-                content = $"<strong>{restaurant.Name}</strong><br/>{restaurant.Address}",
+                content = $"<strong>{Restaurant.Name}</strong><br/>{Restaurant.Address}",
                 permanent = false,
                 opacity = 0.9
             };
@@ -93,16 +91,16 @@ public partial class RestaurantInfoTab : ComponentBase
 
     private void OpenPhotoModal(int id)
     {
-        showPhotoModal = true;
-        ImageLinkDto? chosenImage = restaurant.GalleryImages.FirstOrDefault(i => i.Id == id);
-        selectedPhotoUrl = chosenImage?.Url;
-        selectedPhotoIndex = restaurant.GalleryImages.IndexOf(chosenImage);
+        _showPhotoModal = true;
+        ImageLinkDto? chosenImage = Restaurant!.GalleryImages!.FirstOrDefault(i => i.Id == id);
+        _selectedPhotoUrl = chosenImage?.Url;
+        _selectedPhotoIndex = Restaurant!.GalleryImages!.IndexOf(chosenImage);
     }
     
     private void ShowNextPhotoModal(int index)
     {
-        showPhotoModal = true;
-        selectedPhotoIndex = index;
-        selectedPhotoUrl = restaurant.GalleryImages[selectedPhotoIndex].Url;
+        _showPhotoModal = true;
+        _selectedPhotoIndex = index;
+        _selectedPhotoUrl = Restaurant!.GalleryImages![_selectedPhotoIndex].Url;
     }
 }

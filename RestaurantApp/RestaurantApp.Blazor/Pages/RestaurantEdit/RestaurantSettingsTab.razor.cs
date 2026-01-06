@@ -10,20 +10,20 @@ namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 public partial class RestaurantSettingsTab
 {
     [Parameter] public int Id { get; set; }
-    [Parameter] public RestaurantDto? restaurant { get; set; }
+    [Parameter] public RestaurantDto? Restaurant { get; set; }
 
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private AuthService AuthService { get; set; } = default!;
     [Inject] private MessageService MessageService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
-    private SettingsDto settings = new();
-    private SettingsDto originalSettings = new();
-    private bool isLoading = false;
-    private bool showDeleteModal = false;
-    private bool isDeleting = false;
-    private bool isSaving = false;
-    private bool hasChanges = false;
+    private SettingsDto _settings = new();
+    private SettingsDto _originalSettings = new();
+    private bool _isLoading = false;
+    private bool _showDeleteModal = false;
+    private bool _isDeleting = false;
+    private bool _isSaving = false;
+    private bool _hasChanges = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,32 +32,32 @@ public partial class RestaurantSettingsTab
 
     private async Task LoadSettings()
     {
-        isLoading = true;
+        _isLoading = true;
 
         try
         {
             var response = await Http.GetAsync($"api/RestaurantSettings/{Id}/get-restaurant-settings");
             if (response.IsSuccessStatusCode)
             {
-                settings = await response.Content.ReadFromJsonAsync<SettingsDto>() ?? new SettingsDto { RestaurantId = Id };
-                originalSettings = CloneSettings(settings);
+                _settings = await response.Content.ReadFromJsonAsync<SettingsDto>() ?? new SettingsDto { RestaurantId = Id };
+                _originalSettings = CloneSettings(_settings);
             }
             else
             {
-                settings = new SettingsDto { RestaurantId = Id };
-                originalSettings = CloneSettings(settings);
-                await Http.PostAsJsonAsync($"api/RestaurantSettings", settings);
+                _settings = new SettingsDto { RestaurantId = Id };
+                _originalSettings = CloneSettings(_settings);
+                await Http.PostAsJsonAsync($"api/RestaurantSettings", _settings);
             }
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             MessageService.AddError("Error", "Error loading settings");
-            settings = new SettingsDto { RestaurantId = Id };
-            originalSettings = CloneSettings(settings);
+            _settings = new SettingsDto { RestaurantId = Id };
+            _originalSettings = CloneSettings(_settings);
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 
@@ -80,7 +80,7 @@ public partial class RestaurantSettingsTab
 
     private void MarkAsChanged()
     {
-        hasChanges = !AreSettingsEqual(settings, originalSettings);
+        _hasChanges = !AreSettingsEqual(_settings, _originalSettings);
         StateHasChanged();
     }
 
@@ -101,7 +101,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MinReservationDuration = TimeSpan.FromMinutes(value);
+            _settings.MinReservationDuration = TimeSpan.FromMinutes(value);
             MarkAsChanged();
         }
     }
@@ -110,7 +110,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MaxReservationDuration = TimeSpan.FromMinutes(value);
+            _settings.MaxReservationDuration = TimeSpan.FromMinutes(value);
             MarkAsChanged();
         }
     }
@@ -119,7 +119,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MinAdvanceBookingTime = TimeSpan.FromHours(value);
+            _settings.MinAdvanceBookingTime = TimeSpan.FromHours(value);
             MarkAsChanged();
         }
     }
@@ -128,7 +128,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MaxAdvanceBookingTime = TimeSpan.FromDays(value);
+            _settings.MaxAdvanceBookingTime = TimeSpan.FromDays(value);
             MarkAsChanged();
         }
     }
@@ -137,7 +137,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MinGuestsPerReservation = value;
+            _settings.MinGuestsPerReservation = value;
             MarkAsChanged();
         }
     }
@@ -146,7 +146,7 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.MaxGuestsPerReservation = value;
+            _settings.MaxGuestsPerReservation = value;
             MarkAsChanged();
         }
     }
@@ -155,31 +155,32 @@ public partial class RestaurantSettingsTab
     {
         if (int.TryParse(e.Value?.ToString(), out var value))
         {
-            settings.ReservationsPerUserLimit = value;
+            _settings.ReservationsPerUserLimit = value;
             MarkAsChanged();
         }
     }
 
-    private async Task ResetChanges()
+    private Task ResetChanges()
     {
-        settings = CloneSettings(originalSettings);
-        hasChanges = false;
+        _settings = CloneSettings(_originalSettings);
+        _hasChanges = false;
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void ShowDeleteModal()
     {
-        showDeleteModal = true;
+        _showDeleteModal = true;
     }
 
     private void HideDeleteModal()
     {
-        showDeleteModal = false;
+        _showDeleteModal = false;
     }
 
     private async Task DeleteRestaurant()
     {
-        isDeleting = true;
+        _isDeleting = true;
 
         try
         {
@@ -194,45 +195,45 @@ public partial class RestaurantSettingsTab
             else
             {
                 MessageService.AddError("Error", "Failed to delete restaurant.");
-                showDeleteModal = false;
+                _showDeleteModal = false;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             MessageService.AddError("Error", "Failed to delete restaurant.");
-            showDeleteModal = false;
+            _showDeleteModal = false;
         }
         finally
         {
-            isDeleting = false;
+            _isDeleting = false;
             StateHasChanged();
         }
     }
 
     private async Task SaveChanges()
     {
-        isSaving = true;
+        _isSaving = true;
 
         try
         {
             var dto = new UpdateRestaurantSettingsDto
             {
-                RestaurantId = settings.RestaurantId,
-                ReservationsNeedConfirmation = settings.ReservationsNeedConfirmation,
-                MinReservationDuration = settings.MinReservationDuration,
-                MaxReservationDuration = settings.MaxReservationDuration,
-                MinAdvanceBookingTime = settings.MinAdvanceBookingTime,
-                MaxAdvanceBookingTime = settings.MaxAdvanceBookingTime,
-                MinGuestsPerReservation = settings.MinGuestsPerReservation,
-                MaxGuestsPerReservation = settings.MaxGuestsPerReservation,
-                ReservationsPerUserLimit = settings.ReservationsPerUserLimit
+                RestaurantId = _settings.RestaurantId,
+                ReservationsNeedConfirmation = _settings.ReservationsNeedConfirmation,
+                MinReservationDuration = _settings.MinReservationDuration,
+                MaxReservationDuration = _settings.MaxReservationDuration,
+                MinAdvanceBookingTime = _settings.MinAdvanceBookingTime,
+                MaxAdvanceBookingTime = _settings.MaxAdvanceBookingTime,
+                MinGuestsPerReservation = _settings.MinGuestsPerReservation,
+                MaxGuestsPerReservation = _settings.MaxGuestsPerReservation,
+                ReservationsPerUserLimit = _settings.ReservationsPerUserLimit
             };
 
-            var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{settings.Id}", dto);
+            var response = await Http.PutAsJsonAsync($"api/RestaurantSettings/{_settings.Id}", dto);
             if (response.IsSuccessStatusCode)
             {
-                originalSettings = CloneSettings(settings);
-                hasChanges = false;
+                _originalSettings = CloneSettings(_settings);
+                _hasChanges = false;
 
                 MessageService.AddSuccess("Success", "Settings updated successfully!");
             }
@@ -247,7 +248,7 @@ public partial class RestaurantSettingsTab
         }
         finally
         {
-            isSaving = false;
+            _isSaving = false;
             StateHasChanged();
         }
     }

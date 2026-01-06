@@ -1,12 +1,9 @@
 ﻿@using RestaurantApp.Blazor.Extensions
-@using RestaurantApp.Blazor.Models.DTO
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.GeoCoding
 @using RestaurantApp.Shared.DTOs.Restaurant
-@using RestaurantApp.Shared.Models
 @inject HttpClient Http
 
-@if (restaurant != null)
+@if (Restaurant != null)
 {
     <div class="container mt-4">
         <div class="row justify-content-evenly">
@@ -22,12 +19,12 @@
                                 Restaurant name <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.Name) ? "is-invalid" : "")"
+                                   class="form-control @(string.IsNullOrWhiteSpace(_modifiedRestaurant.Name) ? "is-invalid" : "")"
                                    id="name"
-                                   @bind="modifiedRestaurant.Name"
+                                   @bind="_modifiedRestaurant.Name"
                                    @bind:after="OnFieldChanged"
                                    required/>
-                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.Name))
+                            @if (string.IsNullOrWhiteSpace(_modifiedRestaurant.Name))
                             {
                                 <div class="invalid-feedback">Restaurant name is required</div>
                             }
@@ -39,7 +36,7 @@
                                 class="form-control"
                                 id="description"
                                 rows="8"
-                                @bind="modifiedRestaurant.Description"
+                                @bind="_modifiedRestaurant.Description"
                                 @bind:after="OnFieldChanged">
                             </textarea>
                         </div>
@@ -48,12 +45,12 @@
                             <label for="street" class="form-label">
                                 Street and number: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street) ? "is-invalid" : "")"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Street) ? "is-invalid" : "")"
                                    id="street"
-                                   @bind="modifiedRestaurant.StructuredAddress.Street"
+                                   @bind="_modifiedRestaurant.StructuredAddress!.Street"
                                    @bind:after="OnAddressFieldChanged"
                                    required/>
-                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street))
+                            @if (string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Street))
                             {
                                 <div class="invalid-feedback">Street is required</div>
                             }
@@ -61,12 +58,12 @@
                             <label for="city" class="form-label">
                                 City: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City) ? "is-invalid" : "")"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.City) ? "is-invalid" : "")"
                                    id="city"
-                                   @bind="modifiedRestaurant.StructuredAddress.City"
+                                   @bind="_modifiedRestaurant.StructuredAddress!.City"
                                    @bind:after="OnAddressFieldChanged"
                                    required/>
-                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City))
+                            @if (string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.City))
                             {
                                 <div class="invalid-feedback">City is required</div>
                             }
@@ -76,19 +73,19 @@
                             </label>
                             <input class="form-control"
                                    id="postal-code"
-                                   @bind="modifiedRestaurant.StructuredAddress.PostalCode"
+                                   @bind="_modifiedRestaurant.StructuredAddress!.PostalCode"
                                    @bind:after="OnAddressFieldChanged"
                                    required/>
 
                             <label for="country" class="form-label">
                                 Country: <span class="text-danger">*</span>
                             </label>
-                            <input class="form-control @(string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country) ? "is-invalid" : "")"
+                            <input class="form-control @(string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Country) ? "is-invalid" : "")"
                                    id="country"
-                                   @bind="modifiedRestaurant.StructuredAddress.Country"
+                                   @bind="_modifiedRestaurant.StructuredAddress!.Country"
                                    @bind:after="OnAddressFieldChanged"
                                    required/>
-                            @if (string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country))
+                            @if (string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Country))
                             {
                                 <div class="invalid-feedback">Country is required</div>
                             }
@@ -98,7 +95,7 @@
 
                 <div class="col mb-3"></div>
 
-                @if (changesMade && IsFormValid)
+                @if (_changesMade && IsFormValid)
                 {
                     <div class="row justify-content-center mb-3">
                         <div class="d-flex justify-content-center gap-3">
@@ -109,7 +106,7 @@
                 }
 
                 <h4 class="mb-3 text-center">Opening hours</h4>
-                <OpeningHoursTab Id=@Id restaurant=@restaurant/>
+                <OpeningHoursTab Id=@Id Restaurant=@Restaurant/>
             </div>
         </div>
     </div>
@@ -124,33 +121,33 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    [Parameter] public required RestaurantDto? restaurant { get; set; }
-    private RestaurantDto modifiedRestaurant = new RestaurantDto();
-    private bool changesMade = false;
-    private bool addressModified = false;
+    [Parameter] public required RestaurantDto? Restaurant { get; set; }
+    private RestaurantDto _modifiedRestaurant = new();
+    private bool _changesMade = false;
+    private bool _addressModified = false;
 
     private bool IsFormValid => 
-        !string.IsNullOrWhiteSpace(modifiedRestaurant.Name) &&
-        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Street) &&
-        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.City) &&
-        !string.IsNullOrWhiteSpace(modifiedRestaurant.StructuredAddress?.Country);
+        !string.IsNullOrWhiteSpace(_modifiedRestaurant.Name) &&
+        !string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Street) &&
+        !string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.City) &&
+        !string.IsNullOrWhiteSpace(_modifiedRestaurant.StructuredAddress?.Country);
 
     protected override void OnParametersSet()
     {
-        if (restaurant != null)
+        if (Restaurant != null)
         {
-            modifiedRestaurant = new RestaurantDto
+            _modifiedRestaurant = new RestaurantDto
             {
-                Name = restaurant.Name,
-                Description = restaurant.Description,
-                Address = restaurant.Address,
-                StructuredAddress = restaurant.StructuredAddress != null
+                Name = Restaurant.Name,
+                Description = Restaurant.Description,
+                Address = Restaurant.Address,
+                StructuredAddress = Restaurant.StructuredAddress != null
                     ? new StructuresAddressDto
                     {
-                        Street = restaurant.StructuredAddress.Street,
-                        City = restaurant.StructuredAddress.City,
-                        PostalCode = restaurant.StructuredAddress.PostalCode,
-                        Country = restaurant.StructuredAddress.Country
+                        Street = Restaurant.StructuredAddress.Street,
+                        City = Restaurant.StructuredAddress.City,
+                        PostalCode = Restaurant.StructuredAddress.PostalCode,
+                        Country = Restaurant.StructuredAddress.Country
                     }
                     : new StructuresAddressDto()
             };
@@ -159,20 +156,20 @@ else
 
     private void OnFieldChanged()
     {
-        changesMade = true;
+        _changesMade = true;
     }
 
     private void OnAddressFieldChanged()
     {
-        changesMade = true;
-        addressModified = true;
+        _changesMade = true;
+        _addressModified = true;
     }
 
     private void CancelChanges()
     {
         OnParametersSet();
-        changesMade = false;
-        addressModified = false;
+        _changesMade = false;
+        _addressModified = false;
     }
 
     private async Task SaveChanges()
@@ -184,19 +181,19 @@ else
         {
             RestaurantBasicInfoDto dto = new RestaurantBasicInfoDto
             {
-                Name = modifiedRestaurant.Name,
-                Address = modifiedRestaurant.Address,
-                Description = modifiedRestaurant.Description,
+                Name = _modifiedRestaurant.Name,
+                Address = _modifiedRestaurant.Address,
+                Description = _modifiedRestaurant.Description,
             };
             await Http.RequestWithHeaderAsync(HttpMethod.Patch, $"api/restaurant/{Id}/basic-info", dto, "X-Restaurant-Id", Id.ToString());
 
-            if (addressModified)
+            if (_addressModified)
             {
-                var result = await Http.PatchAsJsonAsync($"api/restaurant/{Id}/structured-address", modifiedRestaurant.StructuredAddress);
+                var result = await Http.PatchAsJsonAsync($"api/restaurant/{Id}/structured-address", _modifiedRestaurant.StructuredAddress);
             }
 
-            changesMade = false;
-            addressModified = false;
+            _changesMade = false;
+            _addressModified = false;
         }
         catch (Exception e)
         {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Review;
 
 namespace RestaurantApp.Blazor.Components;
@@ -17,35 +16,35 @@ public partial class EditReviewModal : ComponentBase
     [Inject] private MessageService MessageService { get; set; } = null!;
     
 
-    private int tempRating;
-    private string tempContent = "";
-    private bool isSubmitting = false;
-    private bool isDeleting = false;
+    private int _tempRating;
+    private string _tempContent = "";
+    private bool _isSubmitting = false;
+    private bool _isDeleting = false;
 
 
     protected override void OnParametersSet()
     {
         if (Review != null && IsVisible)
         {
-            tempRating = Review.Rating;
-            tempContent = Review.Content ?? "";
+            _tempRating = Review.Rating;
+            _tempContent = Review.Content;
         }
     }
 
     private void SetRating(int rating)
     {
-        tempRating = rating;
+        _tempRating = rating;
     }
 
     private async Task HandleUpdate()
     {
-        if (tempRating == 0 || string.IsNullOrWhiteSpace(tempContent))
+        if (_tempRating == 0 || string.IsNullOrWhiteSpace(_tempContent))
         {
             MessageService.AddWarning("Error", "Please provide both a rating and a review.");
             return;
         }
 
-        isSubmitting = true;
+        _isSubmitting = true;
 
         try
         {
@@ -58,8 +57,8 @@ public partial class EditReviewModal : ComponentBase
                     RestaurantName = Review.RestaurantName,
                     UserId = Review.UserId,
                     UserName = Review.UserName,
-                    Rating = tempRating,
-                    Content = tempContent.Trim(),
+                    Rating = _tempRating,
+                    Content = _tempContent.Trim(),
                     CreatedAt = Review.CreatedAt,
                     UpdatedAt = DateTime.Now,
                     IsVerified = Review.IsVerified,
@@ -70,20 +69,20 @@ public partial class EditReviewModal : ComponentBase
                 await Close();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             MessageService.AddError("Error", "Failed to update review.");
         }
         finally
         {
-            isSubmitting = false;
+            _isSubmitting = false;
         }
     }
 
     private async Task HandleDelete()
     {
         if (Review == null) return;
-        isDeleting = true;
+        _isDeleting = true;
 
         try
         {
@@ -91,13 +90,13 @@ public partial class EditReviewModal : ComponentBase
             MessageService.AddSuccess("Success", "Review deleted.");
             await Close();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
            MessageService.AddError("Error", "Failed to delete review.");
         }
         finally
         {
-            isDeleting = false;
+            _isDeleting = false;
         }
     }
 
@@ -108,10 +107,10 @@ public partial class EditReviewModal : ComponentBase
 
     private async Task Close()
     {
-        tempRating = 0;
-        tempContent = "";
-        isSubmitting = false;
-        isDeleting = false;
+        _tempRating = 0;
+        _tempContent = "";
+        _isSubmitting = false;
+        _isDeleting = false;
         
         await IsVisibleChanged.InvokeAsync(false);
         await OnClose.InvokeAsync();

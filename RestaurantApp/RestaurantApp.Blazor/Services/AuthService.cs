@@ -1,11 +1,7 @@
 ﻿using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using Microsoft.JSInterop;
-using RestaurantApp.Blazor.Models.DTO;
 using RestaurantApp.Blazor.Services.Interfaces;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Auth;
 using RestaurantApp.Shared.DTOs.Auth.TwoFactor;
 using RestaurantApp.Shared.DTOs.Users;

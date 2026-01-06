@@ -27,7 +27,7 @@
                             <p>
                                 <strong>Time:</strong> @Reservation.StartTime.ToString("HH:mm") - @Reservation.EndTime.ToString("HH:mm")
                             </p>
-                            @if (Reservation is TableReservationDto tableRes)
+                            @if (Reservation is TableReservationDto)
                             {
                                 <p><strong>Table number:</strong> @Reservation.Table.TableNumber</p>
                             }

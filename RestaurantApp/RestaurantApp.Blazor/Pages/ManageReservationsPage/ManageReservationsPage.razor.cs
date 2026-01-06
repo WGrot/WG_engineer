@@ -17,24 +17,24 @@ partial class ManageReservationsPage
     [Inject] private HttpClient Http { get; set; } = null!;
     [Inject] private MessageService MessageService { get; set; } = null!;
 
-    private List<TableReservationDto>? reservations;
-    private bool isLoading = true;
+    private List<TableReservationDto>? _reservations;
+    private bool _isLoading = true;
 
 
-    private ReservationSearchParameters searchParameters = new ReservationSearchParameters
+    private ReservationSearchParameters _searchParameters = new ReservationSearchParameters
     {
         Page = 1,
         PageSize = 10,
         SortBy = "newest"
     };
     
-    private bool showReservationModal = false;
-    private bool showDeleteConfirmation = false;
-    private TableReservationDto? selectedReservation;
-    private ReservationStatusEnumDto? selectedStatus;
-    private bool isProcessing = false;
-    private string? modalError;
-    private string? modalSuccess;
+    private bool _showReservationModal = false;
+    private bool _showDeleteConfirmation = false;
+    private TableReservationDto? _selectedReservation;
+    private ReservationStatusEnumDto? _selectedStatus;
+    private bool _isProcessing = false;
+    private string? _modalError;
+    private string? _modalSuccess;
 
 
     
@@ -61,7 +61,7 @@ partial class ManageReservationsPage
         if (isLoadingMore || !hasMoreReservations) return;
 
         isLoadingMore = true;
-        searchParameters.Page++;
+        _searchParameters.Page++;
 
         try
         {
@@ -69,7 +69,7 @@ partial class ManageReservationsPage
         }
         catch (Exception ex)
         {
-            searchParameters.Page--;
+            _searchParameters.Page--;
         }
         finally
         {
@@ -79,15 +79,15 @@ partial class ManageReservationsPage
 
     private async Task SetPageSize(int size)
     {
-        searchParameters.PageSize = size;
-        searchParameters.Page = 1;
+        _searchParameters.PageSize = size;
+        _searchParameters.Page = 1;
         await LoadInitialReservations();
     }
 
     private async Task LoadInitialReservations()
     {
         isInitialLoading = true;
-        reservations = new List<TableReservationDto>();
+        _reservations = new List<TableReservationDto>();
 
         try
         {
@@ -97,7 +97,7 @@ partial class ManageReservationsPage
         {
             Console.WriteLine($"Error loading displayedRestaurants: {ex.Message}");
             MessageService.AddError("Error", "Failed to load reservations");
-            reservations = new List<TableReservationDto>();
+            _reservations = new List<TableReservationDto>();
         }
         finally
         {
@@ -107,9 +107,9 @@ partial class ManageReservationsPage
 
     private async Task SortReservations(string option)
     {
-        if (searchParameters.SortBy == option) return;
+        if (_searchParameters.SortBy == option) return;
 
-        searchParameters.SortBy = option.ToLower();
+        _searchParameters.SortBy = option.ToLower();
         await LoadInitialReservations();
     }
 
@@ -117,20 +117,20 @@ partial class ManageReservationsPage
     {
         try
         {
-            var queryString = searchParameters.BuildQueryString();
+            var queryString = _searchParameters.BuildQueryString();
 
             var response =
                 await Http.GetFromJsonAsync<PaginatedReservationsDto>($"/api/Reservation/manage/{queryString}");
             if (response != null)
             {
-                reservations.AddRange(response.Reservations);
+                _reservations!.AddRange(response.Reservations);
                 hasMoreReservations = response.HasMore;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             MessageService.AddError("Error", "Failed to load reservations");
-            reservations = new List<TableReservationDto>();
+            _reservations = new List<TableReservationDto>();
         }
         finally
         {
@@ -168,7 +168,7 @@ partial class ManageReservationsPage
 
     private async Task ClearParams()
     {
-        searchParameters = new ReservationSearchParameters
+        _searchParameters = new ReservationSearchParameters
         {
             PageSize = 10
         };
@@ -177,17 +177,17 @@ partial class ManageReservationsPage
     
     private void HandleReservationDeleted(TableReservationDto deletedReservation)
     {
-        reservations.Remove(deletedReservation);
+        _reservations!.Remove(deletedReservation);
         StateHasChanged();
     }
     
     private void OpenReservationModal(TableReservationDto reservation)
     {
-        selectedReservation = reservation;
-        selectedStatus = reservation.Status;
-        modalError = null;
-        modalSuccess = null;
-        showReservationModal = true;
+        _selectedReservation = reservation;
+        _selectedStatus = reservation.Status;
+        _modalError = null;
+        _modalSuccess = null;
+        _showReservationModal = true;
     }
    
 }

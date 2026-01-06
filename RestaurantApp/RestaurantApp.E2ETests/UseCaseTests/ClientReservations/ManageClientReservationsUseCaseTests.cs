@@ -17,7 +17,7 @@ public class ManageClientReservationsUseCaseTests : PlaywrightTestBase
         _loginPage = new LoginPage(Page);
         _reservationsPage = new MyReservationsPage(Page);
 
-        var credentials = TestDataFactory.GetTestUserCredentials(1); // Existing user with reservations
+        var credentials = TestDataFactory.GetTestUserCredentials(1); 
         await _loginPage.GotoAsync();
         await _loginPage.LoginAsync(credentials.Email, credentials.Password);
         await WaitForBlazorAsync();

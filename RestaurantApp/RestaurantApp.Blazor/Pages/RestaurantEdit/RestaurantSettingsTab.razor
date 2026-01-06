@@ -1,11 +1,4 @@
-﻿@using System.Net
-@using RestaurantApp.Shared.DTOs
-@using RestaurantApp.Shared.DTOs.Restaurant
-@using RestaurantApp.Shared.DTOs.Settings
-@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Components
-@using RestaurantApp.Blazor.Services
-@using RestaurantApp.Shared.Common
+﻿@using RestaurantApp.Blazor.Components
 
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -16,7 +9,7 @@
                 Restaurant Settings
             </h3>
 
-            @if (!isLoading)
+            @if (!_isLoading)
             {
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
@@ -31,7 +24,7 @@
                                    style="cursor: pointer;"
                                    type="checkbox"
                                    id="needConfirmationCheckbox"
-                                   @bind="settings.ReservationsNeedConfirmation"
+                                   @bind="_settings.ReservationsNeedConfirmation"
                                    @bind:after="MarkAsChanged">
                             <label class="form-check-label" style="cursor: pointer;" for="needConfirmationCheckbox">
                                 Require confirmation for reservations
@@ -60,7 +53,7 @@
                                            class="form-control"
                                            min="15"
                                            max="480"
-                                           value="@((int)settings.MinReservationDuration.TotalMinutes)"
+                                           value="@((int)_settings.MinReservationDuration.TotalMinutes)"
                                            @onchange="@(e => OnMinDurationChanged(e))">
                                     <span class="input-group-text">minutes</span>
                                 </div>
@@ -73,7 +66,7 @@
                                            class="form-control"
                                            min="30"
                                            max="480"
-                                           value="@((int)settings.MaxReservationDuration.TotalMinutes)"
+                                           value="@((int)_settings.MaxReservationDuration.TotalMinutes)"
                                            @onchange="@(e => OnMaxDurationChanged(e))">
                                     <span class="input-group-text">minutes</span>
                                 </div>
@@ -99,7 +92,7 @@
                                            class="form-control"
                                            min="0"
                                            max="168"
-                                           value="@((int)settings.MinAdvanceBookingTime.TotalHours)"
+                                           value="@((int)_settings.MinAdvanceBookingTime.TotalHours)"
                                            @onchange="@(e => OnMinAdvanceChanged(e))">
                                     <span class="input-group-text">hours</span>
                                 </div>
@@ -112,7 +105,7 @@
                                            class="form-control"
                                            min="1"
                                            max="365"
-                                           value="@((int)settings.MaxAdvanceBookingTime.TotalDays)"
+                                           value="@((int)_settings.MaxAdvanceBookingTime.TotalDays)"
                                            @onchange="@(e => OnMaxAdvanceChanged(e))">
                                     <span class="input-group-text">days</span>
                                 </div>
@@ -138,7 +131,7 @@
                                            class="form-control"
                                            min="1"
                                            max="100"
-                                           value="@settings.MinGuestsPerReservation"
+                                           value="@_settings.MinGuestsPerReservation"
                                            @onchange="@(e => OnMinGuestsChanged(e))">
                                     <span class="input-group-text">guests</span>
                                 </div>
@@ -151,7 +144,7 @@
                                            class="form-control"
                                            min="1"
                                            max="500"
-                                           value="@settings.MaxGuestsPerReservation"
+                                           value="@_settings.MaxGuestsPerReservation"
                                            @onchange="@(e => OnMaxGuestsChanged(e))">
                                     <span class="input-group-text">guests</span>
                                 </div>
@@ -164,7 +157,7 @@
                                            class="form-control"
                                            min="1"
                                            max="50"
-                                           value="@settings.ReservationsPerUserLimit"
+                                           value="@_settings.ReservationsPerUserLimit"
                                            @onchange="@(e => OnReservationsPerUserChanged(e))">
                                     <span class="input-group-text">limit</span>
                                 </div>
@@ -174,7 +167,7 @@
                     </div>
                 </div>
 
-                @if (hasChanges)
+                @if (_hasChanges)
                 {
                     <div class="card shadow-sm mb-4 border-success save-changes-card">
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -182,12 +175,12 @@
                                 <span class="fw-semibold">You have unsaved changes</span>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="button button--grey button--outline" @onclick="ResetChanges" disabled="@isSaving">
+                                <button class="button button--grey button--outline" @onclick="ResetChanges" disabled="@_isSaving">
                                     <i class="bi bi-x-circle me-1"></i>
                                     Cancel
                                 </button>
-                                <button class="button button--primary" @onclick="SaveChanges" disabled="@isSaving">
-                                    @if (isSaving)
+                                <button class="button button--primary" @onclick="SaveChanges" disabled="@_isSaving">
+                                    @if (_isSaving)
                                     {
                                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                         <span>Saving...</span>
@@ -226,7 +219,7 @@
                     </div>
                 </div>
             }
-            else if(isLoading)
+            else if(_isLoading)
             {
                 <LoadingSpinner Title="Loading settings..."/>
             }
@@ -235,12 +228,12 @@
     </div>
 </div>
 
-<ConfirmationModal @bind-IsVisible="showDeleteModal"
+<ConfirmationModal @bind-IsVisible="_showDeleteModal"
                    Title="Confirm Restaurant Deletion"
                    Message="Are you sure you want to permanently delete this restaurant? All reservations, menus, and settings will be lost."
-                   IsProcessing="isDeleting"
+                   IsProcessing="_isDeleting"
                    ConfirmButtonText="Yes, Delete Restaurant"
-                   cancelButtonText="Cancel"
+                   CancelButtonText="Cancel"
                    OnConfirm="DeleteRestaurant"
                    OnCancel="HideDeleteModal" />
 

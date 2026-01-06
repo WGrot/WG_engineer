@@ -1,9 +1,6 @@
 ﻿@using RestaurantApp.Shared.Models
-@using System.Net.Http.Json
-@using RestaurantApp.Blazor.Extensions
 @using RestaurantApp.Blazor.Models.DTO
 @using RestaurantApp.Blazor.Services
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Users
 @inject HttpClient Http
 @inject MessageService MessageService
@@ -21,23 +18,23 @@
                     
                     <div class="mb-3">
                         <label class="form-label">First name</label>
-                        <input type="text" class="form-control" @bind="firstName" />
+                        <input type="text" class="form-control" @bind="_firstName" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">last name</label>
-                        <input type="text" class="form-control" @bind="lastName" />
+                        <input type="text" class="form-control" @bind="_lastName" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" @bind="email" />
+                        <input type="email" class="form-control" @bind="_email" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
-                        <input type="tel" class="form-control" @bind="phoneNumber" />
+                        <input type="tel" class="form-control" @bind="_phoneNumber" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">RoleEnumDto</label>
-                        <select class="form-control" @bind="selectedRole">
+                        <select class="form-control" @bind="_selectedRole">
                             <option value="">-- Select role --</option>
                             @foreach (var role in Enum.GetValues<RestaurantRoleEnumDto>())
                             {
@@ -48,8 +45,8 @@
                 </div>
                 <div class="modal-footer">
                     <div class="d-flex">
-                        <button type="button" class="button button--primary btn-primary" @onclick="Save" disabled="@isSaving">
-                            @if (isSaving)
+                        <button type="button" class="button button--primary btn-primary" @onclick="Save" disabled="@_isSaving">
+                            @if (_isSaving)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 <span>Saving...</span>
@@ -74,12 +71,12 @@
     [Parameter] public EventCallback<CreateUserResponse> OnEmployeeAdded { get; set; }
     [Parameter] public string Title { get; set; } = "Add new employee account";
     
-    private bool isSaving = false;
-    private string firstName = "";
-    private string lastName = "";
-    private string email = "";
-    private string phoneNumber = "";
-    private RestaurantRoleEnumDto? selectedRole = null;
+    private bool _isSaving = false;
+    private string _firstName = "";
+    private string _lastName = "";
+    private string _email = "";
+    private string _phoneNumber = "";
+    private RestaurantRoleEnumDto? _selectedRole = null;
 
     private async Task Close()
     {
@@ -89,43 +86,43 @@
 
     private void ClearForm()
     {
-        firstName = "";
-        lastName = "";
-        email = "";
-        phoneNumber = "";
-        selectedRole = null;
-        isSaving = false;
+        _firstName = "";
+        _lastName = "";
+        _email = "";
+        _phoneNumber = "";
+        _selectedRole = null;
+        _isSaving = false;
     }
 
     private async Task Save()
     {
-        if (string.IsNullOrWhiteSpace(firstName) || 
-            string.IsNullOrWhiteSpace(lastName) || 
-            string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(_firstName) || 
+            string.IsNullOrWhiteSpace(_lastName) || 
+            string.IsNullOrWhiteSpace(_email))
         {
             MessageService.AddError("Error", "Please fill all required fields");
             return;
         }
 
-        if (!selectedRole.HasValue)
+        if (!_selectedRole.HasValue)
         {
             MessageService.AddError("Error", "Please select role for employee");
             return;
         }
 
-        isSaving = true;
+        _isSaving = true;
 
         try
         {
             var createUserDto = new CreateUserDto
             {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                PhoneNumber = phoneNumber,
+                FirstName = _firstName,
+                LastName = _lastName,
+                Email = _email,
+                PhoneNumber = _phoneNumber,
                 Password = "",
                 RestaurantId = RestaurantId,
-                Role = selectedRole.Value
+                Role = _selectedRole.Value
             };
     
             var response = await Http.PostAsJsonAsync("api/User", createUserDto);
@@ -153,7 +150,7 @@
         }
         finally
         {
-            isSaving = false;
+            _isSaving = false;
         }
     }
 }

@@ -1,20 +1,18 @@
-﻿@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Models.DTO
-@inject HttpClient Http
+﻿@inject HttpClient Http
 
 <div class="card mb-3 shadow-sm">
     <div class="card-body">
-        @if (Editing)
+        @if (_editing)
         {
             <div class="mb-3">
-                <input type="text" class="form-control mb-2" @bind="editingItem.Name" placeholder="Name"/>
-                <textarea class="form-control mb-2" @bind="editingItem.Description" placeholder="Description"></textarea>
+                <input type="text" class="form-control mb-2" @bind="_editingItem.Name" placeholder="Name"/>
+                <textarea class="form-control mb-2" @bind="_editingItem.Description" placeholder="Description"></textarea>
                 <div class="row g-2">
                     <div class="col-md-4">
-                        <input type="number" class="form-control" @bind="editingItem.Price.Amount" placeholder="Price"/>
+                        <input type="number" class="form-control" @bind="_editingItem.Price.Amount" placeholder="Price"/>
                     </div>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" @bind="editingItem.Price.CurrencyCode" placeholder="Currency"/>
+                        <input type="text" class="form-control" @bind="_editingItem.Price.CurrencyCode" placeholder="Currency"/>
                     </div>
                 </div>
             </div>
@@ -35,7 +33,7 @@
                                        class="base-button d-flex align-items-center justify-content-center"
                                        style="width: 32px; height: 32px; padding: 0; cursor: pointer;"
                                        title="Upload image">
-                                    @if (isUploadingImage)
+                                    @if (_isUploadingImage)
                                     {
                                         <span class="spinner-border spinner-border-sm" role="status"></span>
                                     }
@@ -53,7 +51,7 @@
                             <button class="base-button d-flex align-items-center justify-content-center"
                                     style="width: 32px; height: 32px; padding: 0;"
                                     @onclick="() => DeleteItemImage(Item.Id)"
-                                    disabled="@isDeletingImage"
+                                    disabled="@_isDeletingImage"
                                     title="Delete image">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -82,9 +80,9 @@
                     <div class="d-flex flex-wrap justify-content-between mt-2">
                         <div class="d-flex flex-wrap">
                             <button class="button button--primary" @onclick="OnEditClicked">Edit</button>
-                            <button class="button @(ShowMoveDropdown ? "button--grey" : "button--primary" )" @onclick="OnMoveClicked">Move</button>
-                            <button class="button @(ShowVariants ? "button--grey" : "button--primary" )" @onclick="() => ShowVariants = !ShowVariants">
-                                @(ShowVariants ? "Hide Variants" : "Show Variants")
+                            <button class="button @(_showMoveDropdown ? "button--grey" : "button--primary" )" @onclick="OnMoveClicked">Move</button>
+                            <button class="button @(_showVariants ? "button--grey" : "button--primary" )" @onclick="() => _showVariants = !_showVariants">
+                                @(_showVariants ? "Hide Variants" : "Show Variants")
                             </button>
                         </div>
                         <div>
@@ -100,7 +98,7 @@
 
 
                     <div class="mb-2">
-                        @if (Item.Tags?.Any() == true)
+                        @if (Item.Tags.Any() == true)
                         {
                             foreach (var tag in Item.Tags)
                             {
@@ -117,7 +115,7 @@
                         }
                         <span class="badge me-1 base-button"
                               style="background-color:var(--primary-color); cursor: pointer;"
-                              @onclick="() => ShowTagDropdown = !ShowTagDropdown">
+                              @onclick="() => _showTagDropdown = !_showTagDropdown">
                             <i class="bi bi-plus-lg"></i>
                         </span>
                     </div>
@@ -126,7 +124,7 @@
                 </div>
             </div>
 
-            @if (ShowMoveDropdown)
+            @if (_showMoveDropdown)
             {
                 <div class="mt-2">
                     <label class="small">Move item to category </label>
@@ -142,7 +140,7 @@
                 </div>
             }
 
-            @if (ShowTagDropdown)
+            @if (_showTagDropdown)
             {
                 <div class="mt-2">
                     <label class="small">Add tags to item </label>
@@ -154,11 +152,11 @@
                             <option value="@tag.Id">@tag.Name</option>
                         }
                     </select>
-                    <button class="grey-button" @onclick="() => ShowTagDropdown = false">Cancel</button>
+                    <button class="grey-button" @onclick="() => _showTagDropdown = false">Cancel</button>
                 </div>
             }
 
-            @if (ShowVariants)
+            @if (_showVariants)
             {
                 <hr/>
                 <div class="mt-2">
@@ -166,12 +164,12 @@
                     @foreach (var variant in Variants)
                     {
                         <div class="border rounded p-2 mb-2 bg-light">
-                            @if (editingVariantId == variant.Id)
+                            @if (_editingVariantId == variant.Id)
                             {
-                                <input class="form-control mb-2" @bind="editVariant.Name" placeholder="Name"/>
-                                <input type="number" class="form-control mb-2" @bind="editVariant.Price"
+                                <input class="form-control mb-2" @bind="_editVariant.Name" placeholder="Name"/>
+                                <input type="number" class="form-control mb-2" @bind="_editVariant.Price"
                                        placeholder="Price"/>
-                                <textarea class="form-control mb-2" @bind="editVariant.Description"
+                                <textarea class="form-control mb-2" @bind="_editVariant.Description"
                                           placeholder="Description"></textarea>
 
                                 <button class="btn btn-success btn-sm me-2"
@@ -201,14 +199,14 @@
                         </div>
                     }
 
-                    @if (isAddingNew)
+                    @if (_isAddingNew)
                     {
                         <div class="border rounded p-3 mb-2">
                             <h6>New Variant</h6>
-                            <input class="form-control mb-2" @bind="newVariant.Name" placeholder="Name"/>
-                            <input type="number" class="form-control mb-2" @bind="newVariant.Price"
+                            <input class="form-control mb-2" @bind="_newVariant.Name" placeholder="Name"/>
+                            <input type="number" class="form-control mb-2" @bind="_newVariant.Price"
                                    placeholder="Price"/>
-                            <textarea class="form-control mb-2" @bind="newVariant.Description"
+                            <textarea class="form-control mb-2" @bind="_newVariant.Description"
                                       placeholder="Description"></textarea>
                             <button class="btn btn-success btn-sm me-2" @onclick="AddNewVariant">Add</button>
                             <button class="btn btn-secondary btn-sm" @onclick="CancelAddNew">Cancel</button>

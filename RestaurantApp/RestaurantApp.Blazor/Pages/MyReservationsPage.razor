@@ -1,9 +1,7 @@
 ﻿@page "/my-reservations"
 @using RestaurantApp.Shared.Models
-@using System.Net.Http.Json
 @using Microsoft.AspNetCore.Authorization
 @using RestaurantApp.Blazor.Helpers
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.SearchParameters
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
@@ -27,18 +25,18 @@
 
     </div>
 
-    @if (isInitialLoading)
+    @if (IsInitialLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
             <div class="text-center">
-                <div class="spinner-border text-primary mb-3" role="statusEnumDto" style="width: 3rem; height: 3rem;">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                     <span class="visually-hidden">Loading...</span>
                 </div>
                 <p class="text-muted">Loading your reservations...</p>
             </div>
         </div>
     }
-    else if (reservations == null)
+    else if (_reservations == null)
     {
         <div class="alert alert-info d-flex align-items-center" role="alert">
             <i class="bi bi-info-circle-fill me-2"></i>
@@ -50,10 +48,10 @@
 
         <div class="row">
             <div class="col-lg-3 col-md-4">
-                <ReservationFilters SearchParameters="@searchParameters"
+                <ReservationFilters SearchParameters="@_searchParameters"
                                     OnApplyFilters="@LoadInitialReservations"
                                     OnClearFilters="@ClearParams"
-                                    showCustomerFilters="false">
+                                    ShowCustomerFilters="false">
 
                 </ReservationFilters>
             </div>
@@ -64,15 +62,15 @@
                         OnPageSizeChanged="@SetPageSize"
                         Title="Reservations per page: "/>
                     <SortDropdown
-                        Options="SortOptions"
-                        SelectedValue="@searchParameters.SortBy"
+                        Options="_sortOptions"
+                        SelectedValue="@_searchParameters.SortBy"
                         OnSortChanged="@SortReservations"/>
                 </div>
-                @if (isInitialLoading)
+                @if (IsInitialLoading)
                 {
                     <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
                         <div class="text-center">
-                            <div class="spinner-border text-primary mb-3" role="statusEnumDto"
+                            <div class="spinner-border text-primary mb-3" role="status"
                                  style="width: 3rem; height: 3rem;">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -82,22 +80,22 @@
                 }
                 else
                 {
-                    foreach (var reservation in reservations)
+                    foreach (var reservation in _reservations)
                     {
                         <MyReservationCard
                             Reservation="reservation"
-                            OnCancelled="() => {showCancellationModal = true; reservationToCancel = reservation; }"/>
+                            OnCancelled="() => {_showCancellationModal = true; _reservationToCancel = reservation; }"/>
                     }
 
-                    @if (hasMoreReservations && reservations.Any())
+                    @if (_hasMoreReservations && _reservations.Any())
                     {
                         <div class="text-center mt-3">
                             <button class="btn-outline-primary"
                                     @onclick="LoadMoreReservations"
-                                    disabled="@isLoadingMore">
-                                @if (isLoadingMore)
+                                    disabled="@_isLoadingMore">
+                                @if (_isLoadingMore)
                                 {
-                                    <span class="spinner-border spinner-border-sm me-2" role="statusEnumDto"></span>
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                     <span>Loading...</span>
                                 }
                                 else
@@ -116,7 +114,7 @@
                         </div>
                     }
 
-                    @if (!reservations.Any())
+                    @if (!_reservations.Any())
                     {
                         <div class="text-center py-5">
                             <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
@@ -135,30 +133,27 @@
     <ConfirmationModal
         Title="Confirm Cancellation"
         Message="Are you sure you want to cancel this reservation? This cannot be undone"
-        @bind-IsVisible="showCancellationModal"
+        @bind-IsVisible="_showCancellationModal"
         OnConfirm="CancelReservation"
-        cancelButtonText="Abort"
+        CancelButtonText="Abort"
         ConfirmButtonText="Confirm Cancellation">
         
     </ConfirmationModal>
 </div>
 
     @code {
-    private List<ReservationDto>? reservations;
-    private bool isLoading = true;
-    private string? userId;
-    private ReservationSearchParameters searchParameters = new ReservationSearchParameters
+    private List<ReservationDto>? _reservations;
+    private ReservationSearchParameters _searchParameters = new ReservationSearchParameters
     {
         Page = 1,
         PageSize = 10,
         SortBy = "newest"
     };
-    private bool isInitialLoading { get; set; } = true;
-    private int currentPage = 1;
-    bool hasMoreReservations = true;
-    private bool isLoadingMore = false;
-    private ReservationDto? reservationToCancel;
-    private bool showCancellationModal = false;
+    private bool IsInitialLoading { get; set; } = true;
+    bool _hasMoreReservations = true;
+    private bool _isLoadingMore;
+    private ReservationDto? _reservationToCancel;
+    private bool _showCancellationModal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -167,7 +162,7 @@
     
     private async Task ClearParams()
     {
-        searchParameters = new ReservationSearchParameters
+        _searchParameters = new ReservationSearchParameters
         {
             PageSize = 10
         };
@@ -176,30 +171,30 @@
     
     private async Task SortReservations(string option)
     {
-        if (searchParameters.SortBy == option) return;
+        if (_searchParameters.SortBy == option) return;
 
-        searchParameters.SortBy = option.ToLower();
+        _searchParameters.SortBy = option.ToLower();
         await LoadInitialReservations();
     }
     
     private async Task LoadInitialReservations()
     {
-        isInitialLoading = true;
-        reservations = new List<ReservationDto>();
-        searchParameters.Page = 1;
+        IsInitialLoading = true;
+        _reservations = new List<ReservationDto>();
+        _searchParameters.Page = 1;
 
         try
         {
             await LoadReservationsPage();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            reservations = new List<ReservationDto>();
+            _reservations = new List<ReservationDto>();
             MessageService.AddError("Error", "Failed to load reservations.");
         }
         finally
         {
-            isInitialLoading = false;
+            IsInitialLoading = false;
         }
     }
     
@@ -209,41 +204,41 @@
     {
         try
         {
-            var queryString = searchParameters.BuildQueryString();
+            var queryString = _searchParameters.BuildQueryString();
 
             var response =
                 await Http.GetFromJsonAsync<PaginatedReservationsDto>($"api/reservation/client/{queryString}");
             if (response != null)
             {
-                reservations.AddRange(response.Reservations);
-                hasMoreReservations = response.HasMore;
+                _reservations.AddRange(response.Reservations);
+                _hasMoreReservations = response.HasMore;
             }
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             MessageService.AddError("Error", "Failed to load reservations.");
-            reservations = new List<ReservationDto>();
+            _reservations = new List<ReservationDto>();
         }
         finally
         {
-            isLoadingMore = false;
+            _isLoadingMore = false;
         }
     }
     
     private async Task CancelReservation()
     {
-        if (reservationToCancel == null) return;
+        if (_reservationToCancel == null) return;
 
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Patch,
-                $"/api/Reservation/manage/{reservationToCancel.Id}/cancel-user-reservation");
+                $"/api/Reservation/manage/{_reservationToCancel.Id}/cancel-user-reservation");
 
             var response = await Http.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
-                reservationToCancel.Status = ReservationStatusEnumDto.Cancelled;
+                _reservationToCancel.Status = ReservationStatusEnumDto.Cancelled;
                 MessageService.AddSuccess("Success", "Reservation cancelled successfully.");
             }
             else
@@ -251,46 +246,46 @@
                 var errorMsg = await response.Content.ReadAsStringAsync();
             }
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             MessageService.AddError("Error", "Failed to cancel reservation.");
         }
         finally
         {
-            reservationToCancel = null;
-            showCancellationModal = false;
+            _reservationToCancel = null;
+            _showCancellationModal = false;
         }
     }
     
     private async Task LoadMoreReservations()
     {
-        if (isLoadingMore || !hasMoreReservations) return;
+        if (_isLoadingMore || !_hasMoreReservations) return;
 
-        isLoadingMore = true;
-        searchParameters.Page++;
+        _isLoadingMore = true;
+        _searchParameters.Page++;
 
         try
         {
             await LoadReservationsPage();
         }
-        catch (Exception ex)
+        catch (Exception )
         {
-            searchParameters.Page--;
+            _searchParameters.Page--;
         }
         finally
         {
-            isLoadingMore = false;
+            _isLoadingMore = false;
         }
     }
     
     private async Task SetPageSize(int size)
     {
-        searchParameters.PageSize = size;
-        searchParameters.Page = 1;
+        _searchParameters.PageSize = size;
+        _searchParameters.Page = 1;
         await LoadInitialReservations();
     }
     
-    private List<SortOption> SortOptions = new()
+    private List<SortOption> _sortOptions = new()
     {
         new() { Label = "Newest", Value = "newest" },
         new() { Label = "Oldest", Value = "oldest" },

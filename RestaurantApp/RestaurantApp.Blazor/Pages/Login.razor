@@ -1,6 +1,5 @@
 ﻿@page "/login"
 @using RestaurantApp.Blazor.Components
-@using RestaurantApp.Shared.DTOs
 @using RestaurantApp.Shared.DTOs.Auth
 @using Services
 @inject AuthService AuthService
@@ -59,7 +58,7 @@
 </div>
 
 <TwoFactorModal IsVisible="@_showTwoFactorModal"
-                IsLoading="@_isVerifying2FA"
+                IsLoading="@_isVerifying2Fa"
                 ErrorMessage="@_twoFactorError"
                 OnSubmit="@HandleTwoFactorSubmit"
                 OnCancel="@HandleTwoFactorCancel"
@@ -68,7 +67,7 @@
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? returnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
     
     private LoginRequest _loginRequest = new();
     private bool _isLoading = false;
@@ -76,7 +75,7 @@
     
 
     private bool _showTwoFactorModal = false;
-    private bool _isVerifying2FA = false;
+    private bool _isVerifying2Fa = false;
     private string? _twoFactorError;
     private TwoFactorModal? _twoFactorModalRef;
 
@@ -98,7 +97,7 @@
             }
             else if (success)
             {
-                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
+                Navigation.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
             }
             else
             {
@@ -123,7 +122,7 @@
 
     private async Task HandleTwoFactorSubmit(string twoFactorCode)
     {
-        _isVerifying2FA = true;
+        _isVerifying2Fa = true;
         _twoFactorError = null;
         StateHasChanged();
 
@@ -135,7 +134,7 @@
             if (success)
             {
                 _showTwoFactorModal = false;
-                Navigation.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
+                Navigation.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
             }
             else
             {
@@ -150,7 +149,7 @@
         }
         finally
         {
-            _isVerifying2FA = false;
+            _isVerifying2Fa = false;
             StateHasChanged();
         }
     }

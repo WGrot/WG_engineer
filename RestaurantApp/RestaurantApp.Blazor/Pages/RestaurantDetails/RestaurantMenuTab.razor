@@ -1,14 +1,12 @@
-﻿@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Components
-@using RestaurantApp.Shared.DTOs.Menu.MenuItems
+﻿@using RestaurantApp.Blazor.Components
 
-@if (menu != null)
+@if (Menu != null)
 {
     <div class="menu-container">
         <h3 class="mb-4 my-3 w-100 text-center">Menu</h3>
-        @foreach (var category in menu.Categories.OrderBy(c => c.DisplayOrder))
+        @foreach (var category in Menu.Categories.OrderBy(c => c.DisplayOrder))
         {
-            var isExpanded = expandedCategories.Contains(category.Id);
+            var isExpanded = _expandedCategories.Contains(category.Id);
 
             <div class="card shadow-sm mb-3 border-0 rounded-3">
                 <div
@@ -37,7 +35,7 @@
             </div>
         }
 
-        @if (menu.Items?.Any() == true)
+        @if (Menu.Items?.Any() == true)
         {
             <div class="card shadow-sm mb-3 border-0 rounded-3">
                 <div
@@ -47,12 +45,12 @@
                     <div>
                         <strong>Uncategorized Items</strong>
                     </div>
-                    <i class="bi @(showUncategorized ? "bi-chevron-up" : "bi-chevron-down") fs-5"></i>
+                    <i class="bi @(_showUncategorized ? "bi-chevron-up" : "bi-chevron-down") fs-5"></i>
                 </div>
 
-                <div class="collapse @(showUncategorized ? "show" : "")">
+                <div class="collapse @(_showUncategorized ? "show" : "")">
                     <div class="card-body bg-white">
-                        @foreach (var item in uncategorizedItems)
+                        @foreach (var item in _uncategorizedItems)
                         {
                             <MenuItemComponent Item="item"
                                                OnItemClick="HandleMenuItemClick"/>
@@ -63,18 +61,18 @@
         }
     </div>
     
-    @if(showItemDetailsModal)
+    @if(_showItemDetailsModal)
     {
         <div>
             <MenuItemDetailsModal
-                @bind-IsVisible="showItemDetailsModal"
-                Item="selectedMenuItem"/>
+                @bind-IsVisible="_showItemDetailsModal"
+                Item="_selectedMenuItem"/>
         </div> 
     }
 
     
 }
-else if(isLoading)
+else if(_isLoading)
 {
     <LoadingSpinner Title="Loading restaurant menu..."></LoadingSpinner>
 }

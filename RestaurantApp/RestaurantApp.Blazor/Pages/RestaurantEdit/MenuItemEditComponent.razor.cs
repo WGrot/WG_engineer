@@ -2,13 +2,12 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using RestaurantApp.Shared.DTOs;
 using RestaurantApp.Shared.DTOs.Images;
 using RestaurantApp.Shared.DTOs.Menu.Categories;
 using RestaurantApp.Shared.DTOs.Menu.MenuItems;
 using RestaurantApp.Shared.DTOs.Menu.Tags;
 using RestaurantApp.Shared.DTOs.Menu.Variants;
-using RestaurantApp.Shared.Models;
+
 
 namespace RestaurantApp.Blazor.Pages.RestaurantEdit;
 
@@ -23,26 +22,25 @@ public partial class MenuItemEditComponent : ComponentBase
     [Parameter] public EventCallback<int> OnDelete { get; set; }
     [Parameter] public EventCallback<(int ItemId, string? CategoryId)> OnMove { get; set; }
 
-    private bool Editing = false;
-    private bool ShowMoveDropdown = false;
-    private bool ShowTagDropdown = false;
-    private bool ShowVariants = false;
+    private bool _editing = false;
+    private bool _showMoveDropdown = false;
+    private bool _showTagDropdown = false;
+    private bool _showVariants = false;
 
-    private bool isUploadingImage = false;
-    private bool isDeletingImage = false;
+    private bool _isUploadingImage = false;
+    private bool _isDeletingImage = false;
     
-    private bool isAddingNew = false;
-    private int? editingVariantId = null;
-    private MenuItemVariantDto newVariant = new MenuItemVariantDto();
-    private MenuItemVariantDto editVariant = new MenuItemVariantDto();
+    private bool _isAddingNew = false;
+    private int? _editingVariantId = null;
+    private MenuItemVariantDto _newVariant = new MenuItemVariantDto();
+    private MenuItemVariantDto _editVariant = new MenuItemVariantDto();
     
-    // Copy of the item for editing - changes are only applied on save
-    private MenuItemDto editingItem = default!;
+
+    private MenuItemDto _editingItem = default!;
 
     private void OnEditClicked()
     {
-        // Create a deep copy for editing
-        editingItem = new MenuItemDto
+        _editingItem = new MenuItemDto
         {
             Id = Item.Id,
             Name = Item.Name,
@@ -55,42 +53,41 @@ public partial class MenuItemEditComponent : ComponentBase
             Tags = Item.Tags,
             ThumbnailUrl = Item.ThumbnailUrl
         };
-        Editing = true;
+        _editing = true;
     }
 
     private void OnCancelClicked()
     {
-        // Simply discard the copy - original Item remains unchanged
-        editingItem = default!;
-        Editing = false;
+        _editingItem = default!;
+        _editing = false;
     }
 
-    private void OnMoveClicked() => ShowMoveDropdown = !ShowMoveDropdown;
+    private void OnMoveClicked() => _showMoveDropdown = !_showMoveDropdown;
 
     protected override async Task OnParametersSetAsync()
     {
-        LoadVariants();
+        await LoadVariants();
     }
 
     private async Task OnSaveClicked()
     {
         // Apply changes from the copy to the original item
-        Item.Name = editingItem.Name;
-        Item.Description = editingItem.Description;
-        Item.Price.Amount = editingItem.Price.Amount;
-        Item.Price.CurrencyCode = editingItem.Price.CurrencyCode;
+        Item.Name = _editingItem.Name;
+        Item.Description = _editingItem.Description;
+        Item.Price.Amount = _editingItem.Price.Amount;
+        Item.Price.CurrencyCode = _editingItem.Price.CurrencyCode;
         
         await OnSave.InvokeAsync(Item);
         
         // Clean up
-        editingItem = default!;
-        Editing = false;
+        _editingItem = default!;
+        _editing = false;
     }
 
     private async Task MoveItem(int itemId, string? targetCategoryId)
     {
         await OnMove.InvokeAsync((itemId, targetCategoryId));
-        ShowMoveDropdown = false;
+        _showMoveDropdown = false;
     }
 
     private async Task AddTag(int itemId, string? targetTagId)
@@ -101,7 +98,7 @@ public partial class MenuItemEditComponent : ComponentBase
         {
             Item.Tags.Add(tagToAdd);
         }
-        ShowTagDropdown = false;
+        _showTagDropdown = false;
     }
     
     private async Task DeleteTag(int itemId, int targetTagId)
@@ -112,7 +109,7 @@ public partial class MenuItemEditComponent : ComponentBase
         {
             Item.Tags.Remove(tagToRemove);
         }
-        ShowTagDropdown = false;
+        _showTagDropdown = false;
     }
 
     private async Task LoadVariants()
@@ -130,9 +127,8 @@ public partial class MenuItemEditComponent : ComponentBase
     {
         try
         {
-            isUploadingImage = true;
+            _isUploadingImage = true;
             var file = e.File;
-            if (file is null) return;
 
             using var content = new MultipartFormDataContent();
             var streamContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024));
@@ -160,7 +156,7 @@ public partial class MenuItemEditComponent : ComponentBase
             Console.WriteLine($"Error uploading image: {ex.Message}");
         }finally
         {
-            isUploadingImage = false;
+            _isUploadingImage = false;
         }
     }
 
@@ -168,7 +164,7 @@ public partial class MenuItemEditComponent : ComponentBase
     {
         try
         {
-            isDeletingImage = true;
+            _isDeletingImage = true;
             var response = await Http.DeleteAsync($"/api/MenuItem/item/{itemId}/delete-image");
             if (!response.IsSuccessStatusCode)
             {
@@ -185,15 +181,15 @@ public partial class MenuItemEditComponent : ComponentBase
             Console.WriteLine($"Error deleting image: {ex.Message}");
         }finally
         {
-            isDeletingImage = false;
+            _isDeletingImage = false;
         }
     }
 
 
     private void StartEdit(MenuItemVariantDto variant)
     {
-        editingVariantId = variant.Id;
-        editVariant = new MenuItemVariantDto
+        _editingVariantId = variant.Id;
+        _editVariant = new MenuItemVariantDto
         {
             MenuItemId = Item.Id,
             Name = variant.Name,
@@ -204,56 +200,56 @@ public partial class MenuItemEditComponent : ComponentBase
 
     private async Task SaveVariantEdit(int variantId)
     {
-        editVariant.MenuItemId = Item.Id;
-        editVariant.Id = variantId;
-        var response = await Http.PutAsJsonAsync($"api/MenuItemVariants/{variantId}", editVariant);
+        _editVariant.MenuItemId = Item.Id;
+        _editVariant.Id = variantId;
+        var response = await Http.PutAsJsonAsync($"api/MenuItemVariants/{variantId}", _editVariant);
 
         if (response.IsSuccessStatusCode)
         {
             var variant = Variants.FirstOrDefault(v => v.Id == variantId);
             if (variant != null)
             {
-                variant.Name = editVariant.Name;
-                variant.Price = editVariant.Price;
-                variant.Description = editVariant.Description;
+                variant.Name = _editVariant.Name;
+                variant.Price = _editVariant.Price;
+                variant.Description = _editVariant.Description;
             }
 
-            editingVariantId = null;
-            editVariant = new MenuItemVariantDto();
+            _editingVariantId = null;
+            _editVariant = new MenuItemVariantDto();
         }
     }
 
     private void CancelEdit()
     {
-        editingVariantId = null;
-        editVariant = new MenuItemVariantDto();
+        _editingVariantId = null;
+        _editVariant = new MenuItemVariantDto();
     }
 
     private void StartAddNew()
     {
-        isAddingNew = true;
+        _isAddingNew = true;
 
     }
 
     private async Task AddNewVariant()
     {
-        newVariant.MenuItemId = Item.Id;
-        var response = await Http.PostAsJsonAsync($"api/MenuItemVariants", newVariant);
+        _newVariant.MenuItemId = Item.Id;
+        var response = await Http.PostAsJsonAsync($"api/MenuItemVariants", _newVariant);
 
         if (response.IsSuccessStatusCode)
         {
             var addedVariant = await response.Content.ReadFromJsonAsync<MenuItemVariantDto>();
-            Variants.Add(addedVariant);
+            if (addedVariant != null) Variants.Add(addedVariant);
 
-            isAddingNew = false;
-            newVariant = new MenuItemVariantDto();
+            _isAddingNew = false;
+            _newVariant = new MenuItemVariantDto();
         }
     }
 
     private void CancelAddNew()
     {
-        isAddingNew = false;
-        newVariant = new MenuItemVariantDto
+        _isAddingNew = false;
+        _newVariant = new MenuItemVariantDto
         {
             MenuItemId = Item.Id
         };

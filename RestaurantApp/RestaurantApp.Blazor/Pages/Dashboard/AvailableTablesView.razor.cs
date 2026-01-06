@@ -13,14 +13,14 @@ public partial class AvailableTablesView : ComponentBase, IDisposable
     [Parameter] public int RestaurantId { get; set; }
     [Parameter] public EventCallback<(int availableTables, int freeSeats)> OnAvailabilitySummaryChanged { get; set; }
     
-    private TableDto selectedTable = null!;
-    private List<TableDto> tables = new();
-    private bool showTableDetails;
-    private bool isLoading = true;
-    private int availableCount;
-    private int freeSeats;
+    private TableDto _selectedTable = null!;
+    private List<TableDto> _tables = new();
+    private bool _showTableDetails;
+    private bool _isLoading = true;
+    private int _availableCount;
+    private int _freeSeats;
     private readonly Dictionary<int, TableComponentBlazor> _tableComponents = new();
-    private readonly HashSet<int> availableTableIds = new();
+    private readonly HashSet<int> _availableTableIds = new();
     private int _loadedRestaurantId = -1;
 
     protected override async Task OnInitializedAsync()
@@ -35,9 +35,9 @@ public partial class AvailableTablesView : ComponentBase, IDisposable
         {
             _loadedRestaurantId = RestaurantId;
             _tableComponents.Clear();
-            isLoading = true;
+            _isLoading = true;
             await LoadTables();
-            isLoading = false;
+            _isLoading = false;
         }
     }
 
@@ -59,39 +59,39 @@ public partial class AvailableTablesView : ComponentBase, IDisposable
     
     private async Task LoadTables()
     {
-        tables.Clear();
-        availableCount = 0;
-        freeSeats = 0;
-        availableTableIds.Clear();
-        tables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{RestaurantId}") ?? new();
+        _tables.Clear();
+        _availableCount = 0;
+        _freeSeats = 0;
+        _availableTableIds.Clear();
+        _tables = await Http.GetFromJsonAsync<List<TableDto>>($"api/Table/restaurant/{RestaurantId}") ?? new();
     }
     
     private void ShowTableDetails(TableDto table)
     {
-        showTableDetails = true;
-        selectedTable = table;
+        _showTableDetails = true;
+        _selectedTable = table;
     }
 
     private void HandleAvailabilityChanged((TableDto table, bool isAvailable) update)
     {
         if (update.isAvailable)
         {
-            if (availableTableIds.Add(update.table.Id))
+            if (_availableTableIds.Add(update.table.Id))
             {
-                availableCount++;
-                freeSeats += update.table.Capacity;
+                _availableCount++;
+                _freeSeats += update.table.Capacity;
             }
         }
         else
         {
-            if (availableTableIds.Remove(update.table.Id))
+            if (_availableTableIds.Remove(update.table.Id))
             {
-                availableCount--;
-                freeSeats -= update.table.Capacity;
+                _availableCount--;
+                _freeSeats -= update.table.Capacity;
             }
         }
 
-        OnAvailabilitySummaryChanged.InvokeAsync((availableCount, freeSeats));
+        OnAvailabilitySummaryChanged.InvokeAsync((_availableCount, _freeSeats));
     }
     
     public void Dispose()

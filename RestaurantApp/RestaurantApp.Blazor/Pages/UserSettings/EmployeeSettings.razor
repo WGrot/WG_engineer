@@ -57,7 +57,7 @@
 
 
 @code {
-    [Parameter] public string UserId { get; set; }
+    [Parameter] public required string UserId { get; set; }
     private bool ShowConfirmDelete { get; set; }
     private int EmployeeIdToDelete { get; set; }
     private void ShowDeleteConfirmation() => ShowConfirmDelete = true;
@@ -65,7 +65,7 @@
     private List<RestaurantEmployeeDto> _employeeDtos = new();
     protected override async Task OnInitializedAsync()
     {
-        _employeeDtos = await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"/api/Employees?userId={UserId}");
+        _employeeDtos = (await Http.GetFromJsonAsync<List<RestaurantEmployeeDto>>($"/api/Employees?userId={UserId}"))!;
         foreach (var dto in _employeeDtos)
         {
             List<RestaurantPermissionDto> permissions = await GetPermissions(dto);
@@ -75,7 +75,7 @@
     
     private async Task<List<RestaurantPermissionDto>> GetPermissions(RestaurantEmployeeDto dto)
     {
-        return await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"/api/Permissions/employee/{dto.Id}");
+        return (await Http.GetFromJsonAsync<List<RestaurantPermissionDto>>($"/api/Permissions/employee/{dto.Id}"))!;
     }
     
     private async Task DeleteEmployment()

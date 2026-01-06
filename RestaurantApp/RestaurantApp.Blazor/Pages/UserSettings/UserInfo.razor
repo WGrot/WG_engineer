@@ -1,13 +1,10 @@
-﻿@using RestaurantApp.Blazor.Extensions
-@using RestaurantApp.Shared.DTOs.Users
+﻿@using RestaurantApp.Shared.DTOs.Users
 @using RestaurantApp.Blazor.Components
 @using RestaurantApp.Blazor.Services
-@using RestaurantApp.Shared.Common
-@using RestaurantApp.Shared.Models
 @inject HttpClient Http
 @inject MessageService MessageService
 
-@if (user != null)
+@if (User != null)
 {
 <div class="container mt-4">
     <div class="row justify-content-center">
@@ -17,7 +14,7 @@
                     <h5 class="mb-0">
                         <i class="bi bi-person me-2"></i>User Information
                     </h5>
-                    @if (!isEditing)
+                    @if (!_isEditing)
                     {
                         <button class="button button--white button--outline" @onclick="StartEditing">
                             <i class="bi bi-pencil me-1"></i>Edit
@@ -33,34 +30,34 @@
                             <label class="form-label">
                                 First Name <span class="text-danger">*</span>
                             </label>
-                            @if (isEditing)
+                            @if (_isEditing)
                             {
                                 <input type="text"
                                        class="form-control"
-                                       @bind="modifiedUser.FirstName"
+                                       @bind="_modifiedUser.FirstName"
                                        @bind:event="oninput"
                                        required/>
                             }
                             else
                             {
-                                <p class="form-control-plaintext">@modifiedUser.FirstName</p>
+                                <p class="form-control-plaintext">@_modifiedUser.FirstName</p>
                             }
                         </div>
                         <div class="col-md-6 col-sm-12 mb-3">
                             <label class="form-label">
                                 Last Name <span class="text-danger">*</span>
                             </label>
-                            @if (isEditing)
+                            @if (_isEditing)
                             {
                                 <input type="text"
                                        class="form-control"
-                                       @bind="modifiedUser.LastName"
+                                       @bind="_modifiedUser.LastName"
                                        @bind:event="oninput"
                                        required/>
                             }
                             else
                             {
-                                <p class="form-control-plaintext">@modifiedUser.LastName</p>
+                                <p class="form-control-plaintext">@_modifiedUser.LastName</p>
                             }
                         </div>
                     </div>
@@ -70,18 +67,18 @@
                             <label class="form-label">
                                 Phone Number <span class="text-danger">*</span>
                             </label>
-                            @if (isEditing)
+                            @if (_isEditing)
                             {
                                 <input type="tel"
                                        class="form-control"
-                                       @bind="modifiedUser.PhoneNumber"
+                                       @bind="_modifiedUser.PhoneNumber"
                                        @bind:event="oninput"
                                        required/>
                             }
                             else
                             {
                                 <p class="form-control-plaintext">
-                                    @(string.IsNullOrEmpty(modifiedUser.PhoneNumber) ? "—" : modifiedUser.PhoneNumber)
+                                    @(string.IsNullOrEmpty(_modifiedUser.PhoneNumber) ? "—" : _modifiedUser.PhoneNumber)
                                 </p>
                             }
                         </div>
@@ -89,11 +86,11 @@
                             <label class="form-label">
                                 Email Address <i class="bi bi-lock-fill text-muted small"></i>
                             </label>
-                            <p class="form-control-plaintext text-muted">@modifiedUser.Email</p>
+                            <p class="form-control-plaintext text-muted">@_modifiedUser.Email</p>
                         </div>
                     </div>
 
-                    @if (isEditing)
+                    @if (_isEditing)
                     {
                         <hr/>
                         <div class="d-flex justify-content-end gap-2">
@@ -115,21 +112,21 @@ else
 }
 
 @code {
-    [Parameter] public ResponseUserDto? user { get; set; }
+    [Parameter] public ResponseUserDto? User { get; set; }
     [Parameter] public EventCallback<ResponseUserDto> UserChanged { get; set; }
     
-    private ResponseUserDto modifiedUser = new();
-    private ResponseUserDto originalUser = new();
-    private bool isEditing = false;
+    private ResponseUserDto _modifiedUser = new();
+    private ResponseUserDto _originalUser = new();
+    private bool _isEditing = false;
 
     private bool HasChanges => 
-        modifiedUser.FirstName != originalUser.FirstName ||
-        modifiedUser.LastName != originalUser.LastName ||
-        modifiedUser.PhoneNumber != originalUser.PhoneNumber;
+        _modifiedUser.FirstName != _originalUser.FirstName ||
+        _modifiedUser.LastName != _originalUser.LastName ||
+        _modifiedUser.PhoneNumber != _originalUser.PhoneNumber;
 
     protected override void OnParametersSet()
     {
-        if (user != null && !isEditing)
+        if (User != null && !_isEditing)
         {
             CopyUserToLocal();
         }
@@ -137,51 +134,51 @@ else
 
     private void CopyUserToLocal()
     {
-        if (user == null) return;
+        if (User == null) return;
         
-        modifiedUser = new ResponseUserDto
+        _modifiedUser = new ResponseUserDto
         {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber
+            Id = User.Id,
+            Email = User.Email,
+            FirstName = User.FirstName,
+            LastName = User.LastName,
+            PhoneNumber = User.PhoneNumber
         };
         
-        originalUser = new ResponseUserDto
+        _originalUser = new ResponseUserDto
         {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber
+            Id = User.Id,
+            Email = User.Email,
+            FirstName = User.FirstName,
+            LastName = User.LastName,
+            PhoneNumber = User.PhoneNumber
         };
     }
 
     private void StartEditing()
     {
-        originalUser = new ResponseUserDto
+        _originalUser = new ResponseUserDto
         {
-            Id = modifiedUser.Id,
-            Email = modifiedUser.Email,
-            FirstName = modifiedUser.FirstName,
-            LastName = modifiedUser.LastName,
-            PhoneNumber = modifiedUser.PhoneNumber
+            Id = _modifiedUser.Id,
+            Email = _modifiedUser.Email,
+            FirstName = _modifiedUser.FirstName,
+            LastName = _modifiedUser.LastName,
+            PhoneNumber = _modifiedUser.PhoneNumber
         };
-        isEditing = true;
+        _isEditing = true;
     }
 
     private void CancelChanges()
     {
-        modifiedUser = new ResponseUserDto
+        _modifiedUser = new ResponseUserDto
         {
-            Id = originalUser.Id,
-            Email = originalUser.Email,
-            FirstName = originalUser.FirstName,
-            LastName = originalUser.LastName,
-            PhoneNumber = originalUser.PhoneNumber
+            Id = _originalUser.Id,
+            Email = _originalUser.Email,
+            FirstName = _originalUser.FirstName,
+            LastName = _originalUser.LastName,
+            PhoneNumber = _originalUser.PhoneNumber
         };
-        isEditing = false;
+        _isEditing = false;
     }
 
     private async Task SaveChanges()
@@ -192,26 +189,26 @@ else
         {
             var dto = new UpdateUserDto()
             {
-                FirstName = modifiedUser.FirstName,
-                LastName = modifiedUser.LastName,
-                PhoneNumber = modifiedUser.PhoneNumber,
-                Id = modifiedUser.Id,
+                FirstName = _modifiedUser.FirstName,
+                LastName = _modifiedUser.LastName,
+                PhoneNumber = _modifiedUser.PhoneNumber,
+                Id = _modifiedUser.Id,
             };
 
-            var result = await Http.PatchAsJsonAsync($"api/User/{modifiedUser.Id}", dto);
+            var result = await Http.PatchAsJsonAsync($"api/User/{_modifiedUser.Id}", dto);
             if (result.IsSuccessStatusCode)
             {
-                originalUser = new ResponseUserDto
+                _originalUser = new ResponseUserDto
                 {
-                    Id = modifiedUser.Id,
-                    Email = modifiedUser.Email,
-                    FirstName = modifiedUser.FirstName,
-                    LastName = modifiedUser.LastName,
-                    PhoneNumber = modifiedUser.PhoneNumber
+                    Id = _modifiedUser.Id,
+                    Email = _modifiedUser.Email,
+                    FirstName = _modifiedUser.FirstName,
+                    LastName = _modifiedUser.LastName,
+                    PhoneNumber = _modifiedUser.PhoneNumber
                 };
                 
-                isEditing = false;
-                await UserChanged.InvokeAsync(modifiedUser);
+                _isEditing = false;
+                await UserChanged.InvokeAsync(_modifiedUser);
                 MessageService.AddSuccess("Success", "User data has been updated successfully.");
             }
             else

@@ -1,13 +1,12 @@
-﻿@using System.Globalization
-@using RestaurantApp.Blazor.Models
+﻿@using RestaurantApp.Blazor.Models
 
 <div class="availability-map">
-    @if (!string.IsNullOrEmpty(TrimmedAvailability))
+    @if (!string.IsNullOrEmpty(_trimmedAvailability))
     {
-        @for (int i = 0; i < TrimmedAvailability.Length; i++)
+        @for (int i = 0; i < _trimmedAvailability.Length; i++)
         {
-            char state = TrimmedAvailability[i];
-            var time = StartTime.AddMinutes(i * 15 + leading2s * 15);
+            char state = _trimmedAvailability[i];
+            var time = StartTime.AddMinutes(i * 15 + _leading2S * 15);
             bool isHourMark = time.Minute == 0;
             bool isSelected = IsTimeInSelectedRange(time);
 
@@ -46,14 +45,14 @@
     [Parameter] public DateTime SelectedEndTime { get; set; }
     [Parameter] public EventCallback<SlotClickedArgs> OnSlotClicked { get; set; }
 
-    private string? TrimmedAvailability;
-    private int leading2s = 0;
-    private DateTime adjustedStartTime;
+    private string? _trimmedAvailability;
+    private int _leading2S = 0;
+    private DateTime _adjustedStartTime;
 
     protected override void OnParametersSet()
     {
-        TrimmedAvailability = TrimEdges(Availability);
-        adjustedStartTime = StartTime.AddMinutes(leading2s * 15);
+        _trimmedAvailability = TrimEdges(Availability);
+        _adjustedStartTime = StartTime.AddMinutes(_leading2S * 15);
     }
 
     private string? TrimEdges(string? input)
@@ -61,9 +60,9 @@
         if (string.IsNullOrEmpty(input))
             return input;
 
-        leading2s = input.TakeWhile(c => c == '2').Count();
+        _leading2S = input.TakeWhile(c => c == '2').Count();
 
-        if(leading2s > 95) 
+        if(_leading2S > 95) 
             return input;
 
         return input.Trim('2');

@@ -33,7 +33,7 @@
                                        placeholder="000000"
                                        maxlength="6"
                                        disabled="@IsLoading"
-                                       @ref="codeInput" />
+                                       @ref="_codeInput" />
                         </div>
                     </EditForm>
                 </div>
@@ -74,13 +74,13 @@
     [Parameter] public string SubmitButtonClass { get; set; } = "button--primary";
 
     private string TwoFactorCode { get; set; } = string.Empty;
-    private InputText? codeInput;
+    private InputText? _codeInput;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsVisible && codeInput?.Element != null)
+        if (IsVisible && _codeInput?.Element != null)
         {
-            await codeInput.Element.Value.FocusAsync();
+            await _codeInput.Element.Value.FocusAsync();
         }
     }
 

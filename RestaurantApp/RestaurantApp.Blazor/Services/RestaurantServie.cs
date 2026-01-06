@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
 using RestaurantApp.Blazor.Services.Interfaces;
 using RestaurantApp.Shared.DTOs.Restaurant;
 

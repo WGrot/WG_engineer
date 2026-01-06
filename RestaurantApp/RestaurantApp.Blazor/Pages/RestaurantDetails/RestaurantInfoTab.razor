@@ -1,34 +1,31 @@
-﻿@using RestaurantApp.Blazor.Extensions
-@using RestaurantApp.Blazor.Models.DTO
-@using RestaurantApp.Shared.Models
-@using RestaurantApp.Blazor.Components
+﻿@using RestaurantApp.Blazor.Components
 
-@if (restaurant != null)
+@if (Restaurant != null)
 {
     <div class="container my-4">
         <div class="row g-3">
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        @if (!string.IsNullOrEmpty(restaurant.Address))
+                        @if (!string.IsNullOrEmpty(Restaurant.Address))
                         {
                             <h5 class="card-title mb-3">
                                 <i class="bi bi-geo-alt-fill text-secondary"></i> Address
                             </h5>
                             <p class="card-text">
-                                <i class="bi bi-pin-map"></i> @restaurant.Address
+                                <i class="bi bi-pin-map"></i> @Restaurant.Address
                             </p>
                         }
 
-                        @if (!string.IsNullOrEmpty(restaurant.Description))
+                        @if (!string.IsNullOrEmpty(Restaurant.Description))
                         {
                             <h5 class="card-title mb-3">
                                 <i class="bi bi-info-circle-fill text-secondary"></i> About
                             </h5>
-                            <p class="card-text">@restaurant.Description</p>
+                            <p class="card-text">@Restaurant.Description</p>
                         }
 
-                        @if (restaurant.OpeningHours != null && restaurant.OpeningHours.Any())
+                        @if (Restaurant.OpeningHours != null && Restaurant.OpeningHours.Any())
                         {
                             <h5 class="card-title mb-3">
                                 <i class="bi bi-clock-fill text-secondary"></i> Opening Hours
@@ -36,7 +33,7 @@
                             <div class="d-flex flex-column gap-2">
                                 @foreach (var day in Enum.GetValues<DayOfWeek>())
                                 {
-                                    var hours = restaurant.OpeningHours.FirstOrDefault(h => h.DayOfWeek == day);
+                                    var hours = Restaurant.OpeningHours.FirstOrDefault(h => h.DayOfWeek == day);
                                     <div class="border rounded p-3 bg-light">
                                         <div class="row align-items-center">
                                             <div class="col-6 col-md-4">
@@ -64,7 +61,7 @@
                 </div>
             </div>
 
-            @if (restaurant.Location != null)
+            @if (Restaurant.Location != null)
             {
                 <div class="col-12 col-lg-6">
                     <div class="card shadow-sm h-100">
@@ -73,10 +70,10 @@
                                 <i class="bi bi-map-fill text-secondary"></i> Location
                             </h5>
                             <div style="height: 400px; width: 100%;">
-                                <RealTimeMap @ref="realTimeMap"
+                                <RealTimeMap @ref="_realTimeMap"
                                              height="540px"
                                              width="100%"
-                                             Parameters="@mapParameters"
+                                             Parameters="@_mapParameters"
                                              OnAfterMapLoaded="@OnMapLoaded">
                                 </RealTimeMap>
                             </div>
@@ -85,7 +82,7 @@
                 </div>
             }
 
-            @if (restaurant.GalleryImages != null && restaurant.GalleryImages.Any())
+            @if (Restaurant.GalleryImages != null && Restaurant.GalleryImages.Any())
             {
                 <div class="col-12">
                     <div class="card shadow-sm">
@@ -94,7 +91,7 @@
                                 <i class="bi bi-images"></i> Photos
                             </h5>
                             <div class="d-flex flex-wrap gap-2">
-                                @foreach (var imageLink in restaurant.GalleryImages)
+                                @foreach (var imageLink in Restaurant.GalleryImages)
                                 {
                                     <img src="@imageLink.ThumbnailUrl"
                                          class="rounded shadow-sm"
@@ -111,14 +108,14 @@
         </div>
     </div>
 
-    <GenericModal @bind-IsVisible="showPhotoModal"
+    <GenericModal @bind-IsVisible="_showPhotoModal"
                   Size="GenericModal.ModalSize.Large">
         <ChildContent>
-            @if (selectedPhotoUrl != null)
+            @if (_selectedPhotoUrl != null)
             {
                 <div class="d-flex justify-content-center align-items-center"
                      style="height: 70vh; max-height: 600px; min-height: 400px;">
-                    <img src="@selectedPhotoUrl"
+                    <img src="@_selectedPhotoUrl"
                          style="width: 100%; 
                             height: 100%; 
                             object-fit: contain;"
@@ -130,14 +127,14 @@
         <FooterContent>
             <div class="d-flex justify-content-between w-100">
                 <button class="button button--primary"
-                        disabled="@(selectedPhotoIndex < 1)"
-                        @onclick="() => ShowNextPhotoModal(selectedPhotoIndex - 1)">
+                        disabled="@(_selectedPhotoIndex < 1)"
+                        @onclick="() => ShowNextPhotoModal(_selectedPhotoIndex - 1)">
                     Previous
                 </button>
 
                 <button class="button button--primary"
-                        disabled="@(selectedPhotoIndex >= restaurant.GalleryImages.Count - 1)"
-                        @onclick="() => ShowNextPhotoModal(selectedPhotoIndex + 1)">
+                        disabled="@(_selectedPhotoIndex >= Restaurant.GalleryImages!.Count - 1)"
+                        @onclick="() => ShowNextPhotoModal(_selectedPhotoIndex + 1)">
                     Next
                 </button>
             </div>

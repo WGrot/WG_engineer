@@ -7,7 +7,7 @@
     </div>
     <div class="card-body shadow border-1">
 
-        @if (isLoading)
+        @if (_isLoading)
         {
             <div class="loading-container">
                 <div class="spinner"></div>
@@ -16,11 +16,11 @@
         }
         else
         {
-            if (tables.Any())
+            if (_tables.Any())
             {
                 <div class="row g-3">
 
-                    @foreach (var table in tables)
+                    @foreach (var table in _tables)
                     {
                         <div class="col-12 col-sm-6 col-md-4 col-lg-3" @onclick="() => ShowTableDetails(table)">
                             <TableComponentBlazor
@@ -33,9 +33,9 @@
 
 
                 <TableDetailsModal
-                    @bind-IsVisible="showTableDetails"
+                    @bind-IsVisible="_showTableDetails"
                     RestaurantId="RestaurantId"
-                    Table="selectedTable"
+                    Table="_selectedTable"
                     AutoFillUserData="false"/>
             }
             else

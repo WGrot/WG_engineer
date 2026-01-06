@@ -1,7 +1,7 @@
 ﻿@inject HttpClient Http
 
 <div class="container-fluid py-4">
-    @if (restaurant != null)
+    @if (Restaurant != null)
     {
 
         <div class="row g-3 mb-4">
@@ -13,7 +13,7 @@
                             <div>
                                 <label for="profilePhotoInput" class="base-button"
                                        style="cursor: pointer; width: 32px; height: 32px; padding: 0;">
-                                    @if (isUploadingProfile)
+                                    @if (_isUploadingProfile)
                                     {
                                         <span class="spinner-border spinner-border-sm" role="status"></span>
                                     }
@@ -29,11 +29,11 @@
                                            style="display: none;"/>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(restaurant?.ProfileThumbnailUrl))
+                            @if (!string.IsNullOrEmpty(Restaurant?.ProfileThumbnailUrl))
                             {
                                 <button class="base-button d-flex align-items-center justify-content-center"
                                         @onclick="DeleteProfilePhoto"
-                                        disabled="@isDeletingProfile"
+                                        disabled="@_isDeletingProfile"
                                         title="Delete photo"
                                         style="width: 32px; height: 32px; padding: 0;">
                                     X
@@ -44,10 +44,10 @@
                     </div>
                     <div class="card-body p-0">
 
-                        @if (!string.IsNullOrEmpty(restaurant.ProfileThumbnailUrl))
+                        @if (!string.IsNullOrEmpty(Restaurant!.ProfileThumbnailUrl))
                         {
-                            <img src="@restaurant.ProfileThumbnailUrl"
-                                 alt="@restaurant.Name"
+                            <img src="@Restaurant.ProfileThumbnailUrl"
+                                 alt="@Restaurant.Name"
                                  class="img-fluid w-100"
                                  style="max-height: 300px; object-fit: cover;"/>
                         }
@@ -65,10 +65,10 @@
             </div>
         </div>
 
-        @if (restaurant.GalleryImages != null && restaurant.GalleryImages.Any())
+        @if (Restaurant.GalleryImages != null && Restaurant.GalleryImages.Any())
         {
             <div class="row g-3 mb-4">
-                @foreach (var imageLink in restaurant.GalleryImages)
+                @foreach (var imageLink in Restaurant.GalleryImages)
                 {
                     var photoUrl = imageLink.ThumbnailUrl;
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -78,7 +78,7 @@
                                 <button
                                     class="base-button  m-1 d-flex align-items-center justify-content-center"
                                     @onclick="() => DeleteRestaurantPhoto(imageLink.Id)"
-                                    disabled="@isDeletingPhotos"
+                                    disabled="@_isDeletingPhotos"
                                     style="width: 32px; height: 32px; padding: 0;">X
                                 </button>
                             </div>
@@ -107,7 +107,7 @@
                        accept="image/*"
                        multiple
                        class="form-control"/>
-            @if (isUploadingPhotos)
+            @if (_isUploadingPhotos)
             {
                 <div class="mt-2">
                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
