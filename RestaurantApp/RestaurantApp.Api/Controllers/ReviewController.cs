@@ -29,8 +29,8 @@ public class ReviewsController : ControllerBase
         return review.ToActionResult();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var reviews = await _reviewService.GetAllAsync();

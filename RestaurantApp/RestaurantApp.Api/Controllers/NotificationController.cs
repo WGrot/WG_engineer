@@ -20,14 +20,14 @@ public class NotificationsController : ControllerBase
     }
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
+    
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var result = await _notificationService.GetByUserIdAsync(UserId, ct);
         return result.ToActionResult();
     }
-
+    
     [HttpGet("unread")]
     public async Task<IActionResult> GetUnread(CancellationToken ct)
     {
@@ -50,6 +50,7 @@ public class NotificationsController : ControllerBase
         return result.ToActionResult();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPatch("{id}/read")]
     public async Task<IActionResult> MarkAsRead(int id, CancellationToken ct)
     {
@@ -57,6 +58,7 @@ public class NotificationsController : ControllerBase
         return result.ToActionResult();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPatch("read-all")]
     public async Task<IActionResult> MarkAllAsRead(CancellationToken ct)
     {
@@ -71,6 +73,7 @@ public class NotificationsController : ControllerBase
         return result.ToActionResult();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("read")]
     public async Task<IActionResult> DeleteAllRead(CancellationToken ct)
     {

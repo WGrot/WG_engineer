@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Users;
@@ -23,6 +24,7 @@ public class UserController : ControllerBase
         return result.ToActionResult();
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpGet("search")]
     public async Task<IActionResult> Search(
         CancellationToken ct,
@@ -72,6 +74,7 @@ public class UserController : ControllerBase
         return result.ToActionResult();
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{userId}")]
     public async Task<IActionResult> DeleteUser(string userId, CancellationToken ct)
     {

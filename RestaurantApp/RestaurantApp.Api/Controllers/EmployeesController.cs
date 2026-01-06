@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RestaurantApp.Api.Common;
 using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Shared.DTOs.Employees;
@@ -15,7 +16,7 @@ public class EmployeesController : ControllerBase
     {
         _employeeService = employeeService;
     }
-
+    
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? restaurantId, [FromQuery] string? userId, CancellationToken ct)
     {
@@ -24,6 +25,7 @@ public class EmployeesController : ControllerBase
             return (await _employeeService.GetEmployeesByRestaurantWithUserDetailsAsync(restaurantId.Value, ct)).ToActionResult();
         }
 
+        
         if (!string.IsNullOrEmpty(userId))
         {
             return (await _employeeService.GetByUserIdAsync(userId, ct)).ToActionResult();

@@ -1,0 +1,89 @@
+@startuml
+
+
+'entity Restaurant {
+'    * Id : int <<PK>>
+'    --
+'    * Name : string
+'    * Address : string
+'    *Location : Point
+'    Description : string
+'    CreatedAt : datetime
+'}
+
+entity Menu {
+    * Id : int <<PK>>
+    --
+    * RestaurantId : int <<FK>>
+    * Name : string
+    * Description : string
+    * DisplayOrder : int
+    * IsActive : bool
+}
+
+entity MenuCategory {
+    * Id : int <<PK>>
+    --
+    * MenuId : int <<FK>>
+    * Name : string
+    * Description : string
+    * IsActive : bool
+}
+
+entity MenuItem {
+    * Id : int <<PK>>
+    --
+    * MenuId : int <<FK>>
+    * Name : string
+    * Description : string
+    * IsActive : bool
+    * Price : numeric
+    CategoryId : int <<FK>>
+}
+
+entity MenuItemVariant {
+    * Id : int <<PK>>
+    --
+    * MenuItemId : int <<FK>>
+    * Name : string
+    * Description : string
+    * IsActive : bool
+    * Price : numeric
+}
+
+entity MenuItemTag {
+    * Id : int <<PK>>
+    --
+    * MenuId : int <<FK>>
+    * Name : int
+    * ColorHex : string
+}
+
+entity MenuItem_Tag_Join {
+
+    * MenuItemId : int <<FK>>
+    * TagId : int <<FK>>
+}
+
+entity ImageLink {
+    * Id : int <<PK>>
+    --
+    * MenuItemId : int <<FK>>
+    * Type : ImageType
+    * Url : string
+    * ThumbnailUrl : string
+    <<pozostałe \nmetadane obrazu>>
+
+}
+
+Menu ||--o{ MenuCategory
+Menu ||--o{ MenuItem
+Menu ||-right-o{ MenuItemTag
+MenuCategory |o-right-o{ MenuItem
+MenuItem ||-right-o{ MenuItemVariant
+MenuItem |o-up-o{ MenuItem_Tag_Join
+MenuItemTag |o-left-o{ MenuItem_Tag_Join
+MenuItem |o-right-o| ImageLink
+
+
+@enduml

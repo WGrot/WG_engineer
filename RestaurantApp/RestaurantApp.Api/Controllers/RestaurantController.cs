@@ -81,7 +81,7 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] RestaurantDto restaurantDto, CancellationToken ct)
     {
         var createdRestaurantResult = await _restaurantService.CreateAsync(restaurantDto, ct);
@@ -96,6 +96,7 @@ public class RestaurantController : ControllerBase
         return createdRestaurantResult.ToActionResult();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] RestaurantDto updateRestaurantDto, CancellationToken ct)
     {

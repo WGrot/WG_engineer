@@ -13,58 +13,127 @@ public class MenuCategoryRepository : IMenuCategoryRepository
         _context = context;
     }
 
-    public async Task<MenuCategory?> GetByIdAsync(int categoryId, CancellationToken ct, bool includeItems = false)
+    public async Task<RepositoryResult<MenuCategory?>> GetByIdAsync(
+        int categoryId, 
+        CancellationToken ct, 
+        bool includeItems = false)
     {
-        var query = _context.MenuCategories.AsQueryable();
-
-        if (includeItems)
+        try
         {
-            query = query.Include(c => c.Items);
+            var query = _context.MenuCategories.AsQueryable();
+
+            if (includeItems)
+            {
+                query = query.Include(c => c.Items);
+            }
+
+            var result = await query.FirstOrDefaultAsync(c => c.Id == categoryId, ct);
+            return RepositoryResult<MenuCategory?>.Success(result);
         }
-
-        return await query.FirstOrDefaultAsync(c => c.Id == categoryId, cancellationToken: ct);
-    }
-
-    public async Task<IEnumerable<MenuCategory>> GetActiveByMenuIdAsync(int? menuId, CancellationToken ct)
-    {
-        var query = _context.MenuCategories
-            .Include(c => c.Items)
-            .Where(c => c.IsActive);
-
-        if (menuId.HasValue)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            query = query.Where(c => c.MenuId == menuId.Value);
+            return RepositoryResult<MenuCategory?>.Failure($"Failed to retrieve category with ID {categoryId}", ex);
         }
-
-        return await query
-            .OrderBy(c => c.DisplayOrder)
-            .ToListAsync(cancellationToken: ct);
     }
 
-    public async Task<int> GetMaxDisplayOrderAsync(int menuId, CancellationToken ct)
+    public async Task<RepositoryResult<IEnumerable<MenuCategory>>> GetActiveByMenuIdAsync(
+        int? menuId, 
+        CancellationToken ct)
     {
-        return await _context.MenuCategories
-            .Where(c => c.MenuId == menuId)
-            .MaxAsync(c => (int?)c.DisplayOrder, cancellationToken: ct) ?? 0;
+        try
+        {
+            var query = _context.MenuCategories
+                .Include(c => c.Items)
+                .Where(c => c.IsActive);
+
+            if (menuId.HasValue)
+            {
+                query = query.Where(c => c.MenuId == menuId.Value);
+            }
+
+            var result = await query.OrderBy(c => c.DisplayOrder).ToListAsync(ct);
+            return RepositoryResult<IEnumerable<MenuCategory>>.Success(result);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return RepositoryResult<IEnumerable<MenuCategory>>.Failure(
+                $"Failed to retrieve active categories for menu {menuId}", ex);
+        }
     }
 
-    public async Task<Menu?> GetMenuByIdAsync(int menuId, CancellationToken ct)
+    public async Task<RepositoryResult<int>> GetMaxDisplayOrderAsync(int menuId, CancellationToken ct)
     {
-        return await _context.Menus.FindAsync(menuId, ct);
+        try
+        {
+            var result = await _context.MenuCategories
+                .Where(c => c.MenuId == menuId)
+                .MaxAsync(c => (int?)c.DisplayOrder, ct) ?? 0;
+            
+            return RepositoryResult<int>.Success(result);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return RepositoryResult<int>.Failure($"Failed to get max display order for menu {menuId}", ex);
+        }
     }
 
-    public async Task AddAsync(MenuCategory category, CancellationToken ct)
+    public async Task<RepositoryResult<Menu?>> GetMenuByIdAsync(int menuId, CancellationToken ct)
     {
-        await _context.MenuCategories.AddAsync(category, ct);
+        try
+        {
+            var result = await _context.Menus.FindAsync(new object[] { menuId }, ct);
+            return RepositoryResult<Menu?>.Success(result);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return RepositoryResult<Menu?>.Failure($"Failed to retrieve menu with ID {menuId}", ex);
+        }
     }
 
-    public void Remove(MenuCategory category, CancellationToken ct)
+    public async Task<RepositoryResult> AddAsync(MenuCategory category, CancellationToken ct)
     {
-        _context.MenuCategories.Remove(category);
+        try
+        {
+            await _context.MenuCategories.AddAsync(category, ct);
+            return RepositoryResult.Success();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return RepositoryResult.Failure("Failed to add category", ex);
+        }
+    }
+    
+    public RepositoryResult Remove(MenuCategory category, CancellationToken ct)
+    {
+        try
+        {
+            _context.MenuCategories.Remove(category);
+            return RepositoryResult.Success();
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResult.Failure($"Failed to remove category with ID {category.Id}", ex);
+        }
     }
 
-    public async Task SaveChangesAsync(CancellationToken ct)
+    public async Task<RepositoryResult> SaveChangesAsync(CancellationToken ct)
     {
-        await _context.SaveChangesAsync(ct);
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+            return RepositoryResult.Success();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            return RepositoryResult.Failure("Concurrency conflict occurred while saving changes", ex);
+        }
+        catch (DbUpdateException ex)
+        {
+            return RepositoryResult.Failure("Database error occurred while saving changes", ex);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return RepositoryResult.Failure("Failed to save changes", ex);
+        }
     }
 }

@@ -150,9 +150,6 @@ public class ReservationController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangeReservationStatus(int id, [FromBody] ReservationStatusEnumDto status, CancellationToken ct)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         var result = await _reservationService.UpdateStatusAsync(id, status, ct);
         return result.ToActionResult();
     }
