@@ -278,11 +278,13 @@ public class DetailsTableBookingTab
         await SetCustomerNameAsync(name);
         await SetCustomerPhoneAsync(phone);
         await SetCustomerEmailAsync(email);
-        
+    
         if (!string.IsNullOrEmpty(specialRequests))
         {
             await SetSpecialRequestsAsync(specialRequests);
         }
+        
+        await _page.Keyboard.PressAsync("Tab");
     }
     
     public async Task<bool> IsCustomerInfoPrefilledAsync()

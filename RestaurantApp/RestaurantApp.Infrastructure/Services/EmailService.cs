@@ -33,7 +33,7 @@ public class EmailService: IEmailService
         {
             return;
         }
-        
+        return;
         
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(fromName, fromEmail));

@@ -367,14 +367,14 @@
 
             if (openingHours != null && openingHours.IsClosed)
             {
-                MessageService.AddWarning("Incorrect data", "Restaurant is closed on this day.");
+                MessageService.AddError("Incorrect data", "Restaurant is closed on this day.");
                 _availableTables = new List<TableDto>();
                 return;
             }
 
             if (openingHours != null && (startTimeOnly < openingHours.OpenTime || endTimeOnly > openingHours.CloseTime))
             {
-                MessageService.AddWarning("Incorrect data", "Selected hours do not fit into opening schedule for this restaurant.");
+                MessageService.AddError("Incorrect data", "Selected hours do not fit into opening schedule for this restaurant.");
                 _availableTables = new List<TableDto>();
                 return;
             }
