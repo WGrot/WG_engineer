@@ -32,11 +32,6 @@ public class ValidatedEmployeeService : IEmployeeService
         return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct)
-    {
-        return await _inner.GetByIdAsync(id, ct);
-    }
-
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
         return await _inner.GetByRestaurantIdAsync(restaurantId, ct);

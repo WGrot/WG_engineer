@@ -32,12 +32,6 @@ public class AuthorizedEmployeeService : IEmployeeService
         return await _inner.GetAllAsync(ct);
     }
 
-    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct)
-    {
-        //TODO authorize
-        return await _inner.GetByIdAsync(id, ct);
-    }
-
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {
          if (!await AuthorizePermission(restaurantId, ct))
@@ -48,7 +42,6 @@ public class AuthorizedEmployeeService : IEmployeeService
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId, CancellationToken ct)
     {
-        //TODO authorize
         return await _inner.GetByUserIdAsync(userId, ct);
     }
 

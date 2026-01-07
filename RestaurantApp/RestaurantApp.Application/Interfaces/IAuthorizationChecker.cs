@@ -29,6 +29,7 @@ public interface IAuthorizationChecker
     Task<bool> IsEmployeeWithId(string userId, int restaurantEmployeeId);
     
     Task<bool> HasPermissionInAnyRestaurantAsync(string userId, PermissionType permission);
+    
 
     public Task<bool> CanManageRestaurantSettingsAsync(string userId, int restaurantSettingsId);
 

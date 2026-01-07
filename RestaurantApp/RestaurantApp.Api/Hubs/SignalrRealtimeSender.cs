@@ -14,8 +14,8 @@ public class SignalrRealtimeSender: IRealtimeSender
 
     public async Task SendAsync(string userId, int notificationId)
     {
-        Console.WriteLine($"[Sender] Sending notification {notificationId} to user {userId}");
-        await _hubContext.Clients.Group(userId).SendAsync("NewNotification", notificationId);
+        Console.WriteLine($"[Sender] Sending notification {notificationId} to user_{userId}");
+        await _hubContext.Clients.Group($"user_{userId}").SendAsync("NewNotification", notificationId);
         Console.WriteLine($"[Sender] Sent!");
     }
 

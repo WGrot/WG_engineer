@@ -3,6 +3,8 @@
 @using RestaurantApp.Shared.DTOs.Restaurant
 @using RestaurantApp.Shared.DTOs.Tables
 @using RestaurantApp.Shared.DTOs.Users
+@using System.Text.Json
+@using RestaurantApp.Blazor.Models.DTO
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject MessageService MessageService
@@ -97,21 +99,21 @@
 
                     <div class="row mb-4">
 
-                        
-                            <button class="base-button" @onclick="CheckAvailability" disabled="@_isCheckingAvailability">
-                                @if (_isCheckingAvailability)
-                                {
-                                    <span>Checking...</span>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-calendar-event me-2"></i>
-                                    <span> Check Available Tables</span>
-                                }
-                            </button>
-                        
 
-                        @if (_availableTables != null)
+                        <button class="base-button" @onclick="CheckAvailability" disabled="@_isCheckingAvailability">
+                            @if (_isCheckingAvailability)
+                            {
+                                <span>Checking...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-calendar-event me-2"></i>
+                                <span> Check Available Tables</span>
+                            }
+                        </button>
+
+
+                        @if (_availableTables != null && _availableTables.Any())
                         {
                             <hr class="my-4">
                             <div class="available-tables">
@@ -342,7 +344,7 @@
 
     private async Task CheckAvailability()
     {
-        if ( _allTables == null)
+        if (_allTables == null)
             return;
 
         try
@@ -465,8 +467,7 @@
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                MessageService.AddError("Error", error);
+                await HandleErrorResponse(response);
             }
         }
         catch (Exception ex)
@@ -477,6 +478,33 @@
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private async Task HandleErrorResponse(HttpResponseMessage response)
+    {
+        var errorContent = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(errorContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (errorResponse?.Errors?.Any() == true)
+            {
+                foreach (var error in errorResponse.Errors)
+                {
+                    MessageService.AddError("Error", error);
+                }
+            }
+            else
+            {
+                MessageService.AddError("Error", errorContent);
+            }
+        }
+        catch (JsonException)
+        {
+            MessageService.AddError("Error", errorContent);
         }
     }
 

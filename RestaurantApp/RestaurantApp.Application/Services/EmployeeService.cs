@@ -31,15 +31,7 @@ public class EmployeeService : IEmployeeService
         var employees = await _employeeRepository.GetAllWithDetailsAsync(ct);
         return Result<IEnumerable<RestaurantEmployeeDto>>.Success(employees.ToDtoList());
     }
-
-    public async Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct)
-    {
-        var employee = await _employeeRepository.GetByIdWithDetailsAsync(id, ct);
-
-        return employee == null
-            ? Result<RestaurantEmployeeDto>.NotFound($"Employee with ID {id} not found.")
-            : Result<RestaurantEmployeeDto>.Success(employee.ToDto());
-    }
+    
 
     public async Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct)
     {

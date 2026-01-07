@@ -1,10 +1,11 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using RestaurantApp.Blazor.Models.DTO;
 using RestaurantApp.Blazor.Services;
 using RestaurantApp.Shared.DTOs.Reservation;
 using RestaurantApp.Shared.DTOs.Tables;
 using RestaurantApp.Shared.DTOs.Users;
-
 
 namespace RestaurantApp.Blazor.Components;
 
@@ -45,7 +46,7 @@ public partial class TableReservationSection : ComponentBase
                 _currentUser = await Http.GetFromJsonAsync<ResponseUserDto>("api/Auth/me");
                 if (_currentUser != null)
                 {
-                    _customerName = _currentUser.FirstName + " " +_currentUser.LastName;
+                    _customerName = _currentUser.FirstName + " " + _currentUser.LastName;
                     _customerEmail = _currentUser.Email;
                     _customerPhone = _currentUser.PhoneNumber;
                     _userId = _currentUser.Id;
@@ -56,7 +57,6 @@ public partial class TableReservationSection : ComponentBase
                 _currentUser = null;
             }
         }
-        
     }
     
     private async Task MakeReservation()
@@ -86,12 +86,10 @@ public partial class TableReservationSection : ComponentBase
             {
                 MessageService.AddSuccess("Success", "Your reservation has been made successfully.");
                 await OnReservationMade.InvokeAsync();
-                
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                MessageService.AddError("Error", "Failed to make reservation.");
+                await HandleErrorResponse(response);
             }
         }
         catch (Exception ex)
@@ -104,5 +102,31 @@ public partial class TableReservationSection : ComponentBase
             _isSubmitting = false;
         }
     }
-    
+
+    private async Task HandleErrorResponse(HttpResponseMessage response)
+    {
+        var errorContent = await response.Content.ReadAsStringAsync();
+        
+        try
+        {
+            var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(errorContent, 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            
+            if (errorResponse?.Errors?.Any() == true)
+            {
+                foreach (var error in errorResponse.Errors)
+                {
+                    MessageService.AddError("Error", error);
+                }
+            }
+            else
+            {
+                MessageService.AddError("Error", "Failed to make reservation.");
+            }
+        }
+        catch (JsonException)
+        {
+            MessageService.AddError("Error", errorContent);
+        }
+    }
 }

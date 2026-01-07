@@ -29,26 +29,31 @@ public class EmployeeInvitationValidator : IEmployeeInvitationValidator
     {
         var restaurant = await _restaurantRepository.GetByIdAsync(dto.RestaurantId, ct);
         if (restaurant == null)
-            return Result.NotFound($"Restaurant with not found.");
+            return Result.Failure($"Restaurant with not found.", 404);
 
         var user = await _userRepository.GetByEmailAsync(dto.Email, ct);
         if (user == null)
         {
-            return Result.Failure($"No user with this email found.");
+            return Result.Failure($"No user with this email found.", 404);
+        }
+        
+        if(user.CanBeSearched == false)
+        {
+            return Result.Failure("The user has disabled being invited to restaurants.", 403);
         }
         
         var existingEmployee = await _employeeRepository.GetByUserIdWithDetailsAsync(user.Id, ct);
         foreach (var employee in existingEmployee)
         {
             if (employee.RestaurantId == dto.RestaurantId)
-                return Result.Failure($"User is already an employee of restaurant.");
+                return Result.Failure($"User is already an employee of restaurant.", 409);
         }
         
         var existingInvitation = await _employeeInvitationRepository.GetByUserIdAsync(user.Id, ct);
         foreach (var invitation in existingInvitation)
         {
             if (invitation.RestaurantId == dto.RestaurantId && invitation.Status == Domain.Enums.InvitationStatus.Pending)
-                return Result.Failure($"User already received your invite.");
+                return Result.Failure($"User already received your invite.", 409);
         }
         
         return Result.Success();

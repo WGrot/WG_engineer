@@ -7,7 +7,6 @@ namespace RestaurantApp.Application.Interfaces.Services;
 public interface IEmployeeService
 {
     Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetAllAsync(CancellationToken ct = default);
-    Task<Result<RestaurantEmployeeDto>> GetByIdAsync(int id, CancellationToken ct = default);
     Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByRestaurantIdAsync(int restaurantId, CancellationToken ct = default);
     Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetByUserIdAsync(string userId, CancellationToken ct = default);
     Task<Result<IEnumerable<RestaurantEmployeeDto>>> GetEmployeesByRestaurantWithUserDetailsAsync(int restaurantId, CancellationToken ct = default);

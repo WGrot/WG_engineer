@@ -184,6 +184,7 @@ public class AuthorizationChecker: IAuthorizationChecker
         return result;
     }
     
+
     public async Task<bool> CanManageRestaurantSettingsAsync(string userId, int restaurantSettingsId)
     {
         return await _context.RestaurantSettings

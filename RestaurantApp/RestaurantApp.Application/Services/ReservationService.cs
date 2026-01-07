@@ -17,6 +17,7 @@ public class ReservationService : IReservationService
     private readonly IReservationRepository _reservationRepository;
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IUserNotificationService _userNotificationService;
 
     private const int DefaultPageSize = 5;
     private const int MaxPageSize = 50;
@@ -24,11 +25,13 @@ public class ReservationService : IReservationService
     public ReservationService(
         IReservationRepository reservationRepository,
         IRestaurantRepository restaurantRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IUserNotificationService userNotificationService)
     {
         _reservationRepository = reservationRepository;
         _restaurantRepository = restaurantRepository;
         _currentUserService = currentUserService;
+        _userNotificationService = userNotificationService;
     }
 
     public async Task<Result<ReservationDto>> GetByIdAsync(int reservationId, CancellationToken ct)
@@ -136,11 +139,25 @@ public class ReservationService : IReservationService
 
     public async Task<Result> UpdateStatusAsync(int reservationId, ReservationStatusEnumDto status, CancellationToken ct)
     {
-        var reservation = await _reservationRepository.GetByIdAsync(reservationId, ct);
+        var reservation = await _reservationRepository.GetByIdWithRestaurantAsync(reservationId, ct);
 
         reservation!.Status = status.ToDomain();
         await _reservationRepository.UpdateAsync(reservation, ct);
 
+        if (!string.IsNullOrEmpty(reservation.UserId))
+        {
+            await _userNotificationService.CreateAsync(new UserNotification()
+            {
+                UserId = reservation.UserId!,
+                Title = "Reservation update",
+                Content = $"Your reservation at '{reservation.Restaurant.Name}' has changed status to {status.ToString().ToLower()}.",
+                Type = NotificationType.Info,
+                Category = NotificationCategory.ReservationUpdate, 
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            }, ct);
+            
+        }
         return Result.Success();
     }
 

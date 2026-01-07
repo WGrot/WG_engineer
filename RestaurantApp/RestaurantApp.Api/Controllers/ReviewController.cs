@@ -25,15 +25,14 @@ public class ReviewsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var review = await _reviewService.GetByIdAsync(id);
+        var review = await _reviewService.GetByIdAsync(id, ct);
         return review.ToActionResult();
     }
-
-    [Authorize(Roles = "Admin")]
+    
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var reviews = await _reviewService.GetAllAsync();
+        var reviews = await _reviewService.GetAllAsync(ct);
         return reviews.ToActionResult();
     }
 
@@ -41,7 +40,7 @@ public class ReviewsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetByRestaurant(int restaurantId, CancellationToken ct)
     {
-        var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId);
+        var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId, ct);
         return reviews.ToActionResult();
     }
     
