@@ -6,6 +6,7 @@ using RestaurantApp.Application.Interfaces.Services;
 using RestaurantApp.Application.Interfaces.Settings;
 using RestaurantApp.Application.Mappers;
 using RestaurantApp.Application.Mappers.EnumMappers;
+using RestaurantApp.Application.Services.Email.Templates.AccountManagement;
 using RestaurantApp.Domain.Enums;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -24,6 +25,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     private readonly IUrlHelper _urlHelper;
     private readonly IUserRepository _userRepository;
     private readonly IRestaurantPermissionRepository _restaurantPermissionRepository;
+    private readonly IEmailComposer _emailComposer;
 
     public EmployeeInvitationService(
         IEmployeeInvitationRepository invitationRepository,
@@ -34,7 +36,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         IUserRepository userRepository,
         IRestaurantPermissionRepository restaurantPermissionRepository,
         IUserNotificationService userNotificationService,
-        IUrlHelper urlHelper)
+        IUrlHelper urlHelper,
+        IEmailComposer emailComposer)
     {
         _invitationRepository = invitationRepository;
         _restaurantRepository = restaurantRepository;
@@ -45,6 +48,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _restaurantPermissionRepository = restaurantPermissionRepository;
         _userNotificationService = userNotificationService;
         _urlHelper = urlHelper;
+        _emailComposer = emailComposer;
     }
 
     public async Task<Result<EmployeeInvitationDto>> CreateInvitationAsync(CreateInvitationDto dto, CancellationToken ct)
@@ -82,6 +86,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         invitation.NotificationId = notification.Id;
         
         await _invitationRepository.AddAsync(invitation, ct);
+        
+        var emailBody = new EmployeeInvitationEmail(user.UserName!, invitationLink, dto.Role.ToString() ,restaurant.Name );
+        await _emailComposer.SendAsync(user.Email!, emailBody);
 
         return Result.Success(invitation.ToDto());
     }
