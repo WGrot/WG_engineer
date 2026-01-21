@@ -168,7 +168,13 @@ public class ReservationRepository : IReservationRepository
         return await _context.Reservations
             .FirstOrDefaultAsync(r => r.Id == reservationId && r.UserId == userId, cancellationToken: ct);
     }
-    
+
+    public async Task<int> CountActiveUserReservationsAsync(string userId, CancellationToken ct, int restaurantId)
+    {
+        return await _context.Reservations
+            .CountAsync(r => r.UserId == userId &&  r.RestaurantId == restaurantId &&r.Status == ReservationStatus.Pending, cancellationToken: ct);
+    }
+
 
     public async Task<int> CountByRestaurantAndDateRangeAsync(int restaurantId, DateTime from, DateTime to, CancellationToken ct)
     {

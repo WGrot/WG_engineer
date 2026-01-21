@@ -1,4 +1,5 @@
-﻿using RestaurantApp.Application.Interfaces.Repositories;
+﻿using RestaurantApp.Application.Interfaces;
+using RestaurantApp.Application.Interfaces.Repositories;
 using RestaurantApp.Application.Interfaces.Validators;
 using RestaurantApp.Domain.Models;
 using RestaurantApp.Shared.Common;
@@ -12,17 +13,20 @@ public class TableReservationValidator : ITableReservationValidator
     private readonly ITableRepository _tableRepository;
     private readonly IRestaurantRepository _restaurantRepository;
     private readonly IRestaurantSettingsRepository _restaurantSettingsRepository;
+    private readonly ICurrentUserService _currentUserService;
 
     public TableReservationValidator(
         IReservationRepository reservationRepository,
         ITableRepository tableRepository,
         IRestaurantRepository restaurantRepository,
-        IRestaurantSettingsRepository restaurantSettingsRepository)
+        IRestaurantSettingsRepository restaurantSettingsRepository,
+        ICurrentUserService currentUserService)
     {
         _reservationRepository = reservationRepository;
         _tableRepository = tableRepository;
         _restaurantRepository = restaurantRepository;
         _restaurantSettingsRepository = restaurantSettingsRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> ValidateReservationExistsAsync(int reservationId, CancellationToken ct)
@@ -103,6 +107,18 @@ public class TableReservationValidator : ITableReservationValidator
 
         return Task.FromResult(Result.Success());
     }
+    
+    public async Task<Result> ValidateReservationLimitAsync(int restaurantId, RestaurantSettings settings, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        var currentPendingReservations =  await _reservationRepository
+            .CountActiveUserReservationsAsync(userId!, ct, restaurantId);
+        if (currentPendingReservations > settings.ReservationsPerUserLimit)
+        {
+            return Result.Failure("You have reached the maximum number of pending reservations allowed in this restaurant.", 433);
+        }
+        return Result.Success();
+    }
 
     public async Task<Result> ValidateNoConflictAsync(int tableId,
         DateOnly date,
@@ -161,6 +177,14 @@ public class TableReservationValidator : ITableReservationValidator
         if (!restaurantResult.IsSuccess)
             return restaurantResult;
 
+        if (dto.UseUserId)
+        {
+            var reservationLimitResult = await ValidateReservationLimitAsync(dto.RestaurantId, settings, ct);
+            if( !reservationLimitResult.IsSuccess)
+                return reservationLimitResult;
+        }
+        
+        
         return Result.Success();
     }
 

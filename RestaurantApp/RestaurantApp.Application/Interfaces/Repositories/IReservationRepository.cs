@@ -37,6 +37,7 @@ public interface IReservationRepository
     Task<IEnumerable<int>> GetManagedRestaurantIdsAsync(string userId, CancellationToken ct);
     Task<ReservationBase?> GetByIdAndUserIdAsync(int reservationId, string userId, CancellationToken ct);
     
+    Task<int> CountActiveUserReservationsAsync(string userId, CancellationToken ct, int restaurantId);
     Task<int> CountByRestaurantAndDateRangeAsync(int restaurantId, DateTime from, DateTime to, CancellationToken ct);
     Task<IEnumerable<ReservationBase>> GetByRestaurantAndDateRangeAsync(int restaurantId, DateTime from, DateTime to, CancellationToken ct);
     Task<IEnumerable<TableReservation>> GetTableReservationsForDateAsync(int tableId, DateTime date, CancellationToken ct);

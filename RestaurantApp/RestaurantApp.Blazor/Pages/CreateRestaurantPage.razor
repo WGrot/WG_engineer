@@ -11,7 +11,7 @@
 
 <AuthorizeView>
     <Authorized>
-        <div class="container-fluid d-flex flex-column justify-content-center align-items-center vh-100 text-center text-white bg-primary p-4 shadow-lg">
+        <div class="container-fluid d-flex flex-column justify-content-center align-items-center min-vh-100 text-center text-white bg-primary p-4 shadow-lg">
             <h1 class="mb-3">Create Your Restaurant Profile</h1>
             <h5 class="mb-4">
                 Fill out the form below to register your restaurant. After that proceed to restaurant edit page to add more details.
@@ -123,13 +123,15 @@
             MessageService.AddSuccess("Success", "Restaurant created successfully, you will be logged out to refresh your permissions.");
             await Task.Delay(1500);
             await AuthService.LogoutAsync();
+            Navigation.NavigateTo($"/login");
         }
         else
         {
             var errorMessage = (int)response.StatusCode switch
             {
                 422 => "Geocoding error, try correcting the address",
-                _ => "Failed to create restaurant. Please try again."
+                403 => "You need to be verified to create a restaurant",
+                _ => "Failed to create restaurant. Please try again later."
             };
             MessageService.AddError("Error", errorMessage);
         }

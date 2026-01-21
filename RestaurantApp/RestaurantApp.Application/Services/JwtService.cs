@@ -35,7 +35,9 @@ public class JwtService: IJwtService
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("2fa_verified", is2FaVerified.ToString().ToLower())
+            new Claim("2fa_verified", is2FaVerified.ToString().ToLower()),
+            new Claim("email_verified", user.EmailConfirmed.ToString().ToLower())
+            
         };
         
         var roles = await _userManager.GetRolesAsync(user);

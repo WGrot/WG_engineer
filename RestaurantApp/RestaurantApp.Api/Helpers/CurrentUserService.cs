@@ -17,4 +17,6 @@ public class CurrentUserService: ICurrentUserService
     public bool IsAuthenticated => !string.IsNullOrEmpty(UserId);
     
     public bool IsAdmin => _httpContextAccessor.HttpContext?.User.IsInRole("Admin") ?? false;
+    
+    public bool IsEmailVerified => _httpContextAccessor.HttpContext?.User.FindFirstValue("email_verified") == "true";
 }
